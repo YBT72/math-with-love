@@ -1,0 +1,225 @@
+/* Стили для главной страницы */
+/* Используем глобальные переменные из variables.css */
+:root {
+  /* Локальные алиасы для удобства */
+  --color-body-bg: var(--color-white);
+  --color-black: var(--color-soft-black);
+}
+
+/* Основной контейнер страницы */
+.home-content {
+  padding: 2rem 0;
+  background-color: var(--color-base-bg); /* Используем основной фон сайта */
+  display: flex;
+  flex-direction: column;
+  min-height: 70vh; /* минимальная высота чтобы гарантировать отображение всего содержимого */
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  align-items: center;
+  gap: 2rem;
+  flex: 1; /* контейнер должен растягиваться, чтобы занять доступное пространство */
+}
+
+/* Секции с контентом и изображением */
+.content, .image {
+  flex: 1 1 300px;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 2rem; /* дополнительный отступ снизу */
+  position: relative; /* добавляем для правильного позиционирования */
+  z-index: 2; /* выше, чем у футера, чтобы контент не перекрывался */
+}
+
+/* Стили для заголовков и текста */
+.content h1 {
+  font-size: 3rem;
+  line-height: 1.2;
+  color: var(--color-accent); /* Основной акцентный цвет сайта */
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 1px 1px 2px var(--color-shadow); /* Легкая тень для выделения */
+}
+
+.content p {
+  font-size: 1.8rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--color-text);
+  font-weight: 400;
+}
+
+/* Кнопки выбора единиц изучения */
+.btns {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.btns button {
+  padding: 0.8rem 1.5rem;
+  font-size: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-accent); /* Акцентный цвет рамки */
+  background: var(--color-surface); /* Белый фон для лучшего контраста */
+  color: var(--color-accent); /* Цвет текста соответствует акцентному цвету */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px var(--color-shadow); /* Лёгкая тень для объёмности */
+  font-weight: 500; /* Чуть более жирный шрифт */
+}
+
+.btns button:hover,
+.btns button:active {
+  border: 1px solid var(--color-accent-dark);
+  background: var(--color-accent); /* При наведении фон становится акцентным */
+  color: var(--color-surface); /* Текст становится белым для контраста */
+  transform: translateY(-2px); /* Лёгкий эффект подъёма */
+  box-shadow: 0 4px 8px var(--color-shadow-medium); /* Усиленная тень при наведении */
+}
+
+/* Стили для изображений */
+.image img {
+  width: 100%;
+  height: auto;
+  max-height: 50vh;
+  object-fit: contain;
+}
+
+/* Popup для выбора экзамена */
+.popup-overlay {
+  z-index: 1000; /* Гарантируем, что popup будет поверх всех других элементов */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: none; /* Изначально скрыт */
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  backdrop-filter: blur(3px); /* Эффект размытия фона */
+}
+
+.popup {
+  background-color: var(--color-white);
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px var(--color-shadow-medium);
+  text-align: center;
+  display: inline-block;
+  max-width: 90%;
+  width: 400px;
+  transform: translateY(0);
+  transition: all 0.3s ease;
+  border-top: 4px solid var(--color-accent); /* Акцентная полоса сверху */
+}
+
+.popup p {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--color-accent); /* Заголовок попапа в акцентном цвете */
+}
+
+.popup-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.popup-buttons button {
+  padding: 0.8rem 1.5rem;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-accent); /* Соответствует кнопкам на главной странице */
+  background: var(--color-surface);
+  color: var(--color-accent);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px var(--color-shadow); /* Лёгкая тень для объёмности */
+  font-weight: 500; /* Чуть более жирный шрифт */
+}
+
+.popup-buttons button:hover,
+.popup-buttons button:active {
+  border: 1px solid var(--color-accent-dark);
+  background: var(--color-accent);
+  color: var(--color-surface);
+  transform: translateY(-2px); /* Лёгкий эффект подъёма */
+  box-shadow: 0 4px 8px var(--color-shadow-medium); /* Усиленная тень при наведении */
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem;
+  }
+  
+  .content h1 {
+    font-size: 2rem;
+  }
+  
+  .content p {
+    font-size: 1.4rem;
+  }
+  
+  .btns button {
+    font-size: 1.3rem;
+    padding: 0.7rem 1.2rem;
+  }
+  
+  .popup {
+    padding: 1.5rem;
+    width: 90%;
+    max-width: 350px;
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .content h1 {
+    font-size: 1.7rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .content p {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .btns {
+    gap: 0.7rem;
+  }
+  
+  .btns button {
+    font-size: 1.1rem;
+    padding: 0.6rem 1rem;
+    width: 100%;
+  }
+  
+  .popup p {
+    font-size: 1.2rem;
+  }
+  
+  .popup-buttons button {
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+  }
+}

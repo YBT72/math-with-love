@@ -1,0 +1,50 @@
+/*
+  variables.css
+  This file defines CSS variables for colors, backgrounds, and other design tokens.
+  You can use these variables in other CSS files for consistency and easy updates.
+  Each variable is explained below for learning purposes.
+*/
+
+:root {
+  /* Основные цвета */
+  --color-base-bg: #f8fafc;        /* Main background color for the site */
+  --color-surface: #ffffff;        /* Surface color for cards, menus, etc. */
+  --color-text: #1f2937;           /* Main text color */
+  --color-text-dark: #111111;      /* Darker text color */
+  --color-white: #ffffff;          /* White color */
+  
+  /* Серые оттенки */
+  --color-subtle-gray: #e5e7eb;    /* Subtle gray for borders or backgrounds */
+  --color-border: #d1d5db;         /* Border color for elements */
+  --color-gray-light: #9ca3af;     /* Light gray for disabled or secondary text */
+  --color-gray-strong: #37474f;    /* Stronger gray for emphasis */
+  
+  /* Акцентные цвета */
+  --color-accent: #3366cc;         /* Accent color for buttons, links, highlights */
+  --color-accent-dark: #2541a2;    /* Darker accent for hover or active states */
+  --color-hover: #1d4ed8;          /* Color for hover effects */
+  
+  /* Синие оттенки */
+  --color-blue-tool: #4fb3bf;      /* Blue color for tools */
+  --color-blue-dark: #006974;      /* Dark blue color */
+  --color-blue-bg: #e0f7fa;        /* Light blue background */
+  --color-blue-light: #b2ebf2;     /* Light blue highlight */
+  --color-blue-heading: #1a1a7a;   /* Blue for headings */
+  
+  /* Другие цвета */
+  --color-red-heart: #e53935;      /* Red color (same as alert) */
+  --color-alert: #e53935;          /* Alert/error color */
+  --color-info: #14a0cc;           /* Info color for messages */
+  --color-success: #22c55e;        /* Success color for confirmations */
+  --color-soft-black: #212121;     /* Soft black color */
+  --color-cream: #fff8e1;          /* Cream background color */
+  
+  /* Прозрачные цвета */
+  --color-shadow: rgba(0, 0, 0, 0.06);           /* Light shadow */
+  --color-shadow-medium: rgba(0, 0, 0, 0.2);     /* Medium shadow */
+  --color-overlay: rgba(0, 0, 0, 0.5);           /* Overlay background */
+  --color-white-opacity-20: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
+  
+  /* Размеры */
+  --height-header: 10vh;           /* Height of the header area */
+}

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>שיעור 1 - מספרים מרוכבים</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.js"></script>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: David, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      direction: rtl;
+      color: #111;
+      overflow-x: hidden;
+    }
+    /* סגנון מיוחד לקטעי נוסחאות ב-LTR */
+    .math {
+      direction: ltr;
+      font-family: 'Times New Roman', serif;
+      font-size: 1.1rem;
+      display: inline-block;
+      unicode-bidi: embed;
+    }
+    header {
+      background-color: #0b2447; /* כחול כהה */
+      color: white;
+      width: 100%;
+      padding: 12px 24px;
+      font-weight: 700;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0;
+    }
+    nav {
+      display: flex;
+      gap: 1.2rem;
+      font-size: 1.8rem;
+      user-select: none;
+    }
+    nav span {
+      cursor: pointer;
+      color: #ccc;
+      transition: color 0.2s, font-weight 0.2s;
+    }
+    nav span.active {
+      color: #fff;
+      font-weight: 700;
+      text-decoration: underline;
+    }
+    nav span:hover {
+      color: #fff;
+      font-weight: 700;
+    }
+    main {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    section {
+      width: 100%;
+      padding: 24px;
+      margin: 0;
+      box-sizing: border-box;
+      border-bottom: 1px solid #d0d7db; /* פס גבול אפור בהיר בין פרקים */
+      background-color: transparent;
+    }
+    section:last-child {
+      border-bottom: none;
+    }
+    /* רקעים לפי בקשה */
+    section.kania, section.shb {
+      background-color: #f9f9f9; /* אפור בהיר מאוד */
+    }
+    section.targil {
+      background-color: #fff; /* לבן */
+    }
+    .section-title {
+      background-color: transparent !important; /* רקע שקוף לכותרת */
+      padding: 0;
+      margin: 0 0 1rem 0;
+      font-weight: 700;
+      font-size: 1.5rem;
+      /* צבע כותרת בהתאם לרקע הפרק */
+    }
+    /* צבעי כותרת שונים לפי רקע הפרק */
+    section.kania > .section-title,
+    section.shb > .section-title {
+      color: #0b2447; /* כחול כהה */
+    }
+    section.targil > .section-title {
+      color: #1d4ed8; /* כחול בהיר יותר */

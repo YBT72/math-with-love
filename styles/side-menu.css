@@ -1,0 +1,67 @@
+#side-menu {
+  background-color: var(--color-surface);
+  display: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: calc(100% - var(--height-header));
+  width: 280px;
+  box-shadow: -2px 0 5px var(--color-shadow);
+  z-index: 1100;
+  overflow-y: auto;
+  padding: 0 1rem;
+  font-size: 1.1rem;
+  transition: transform 0.3s ease;
+}
+
+/* Адаптивное боковое меню для мобильных устройств */
+@media (max-width: 576px) {
+  #side-menu {
+    width: 85%; /* Более широкое меню на малых экранах */
+    font-size: 1rem;
+  }
+}
+
+#side-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#side-menu li {
+  min-height: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--color-subtle-gray);
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+#side-menu li:hover {
+  background-color: var(--color-base-bg);
+}
+
+.submenu-title {
+  color: var(--color-accent-dark);
+  height: var(--height-header);
+  border-bottom: 1px solid var(--color-accent);
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  font-size: 2.2rem;
+}
+
+.submenu-title .back-arrow {
+  color: var(--color-accent-dark);
+  font-size: 2rem;
+  cursor: pointer;
+  transition: color 0.3s, transform 0.2s;
+}
+
+.submenu-title .back-arrow:hover {
+  color: var(--color-hover);
+}

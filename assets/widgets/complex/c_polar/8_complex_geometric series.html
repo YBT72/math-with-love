@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מישור גאוס אינטראקטיבי - סדרה הנדסית</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- KaTeX for LaTeX rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" xintegrity="sha384-n8MVd4RsNIU0KOVEMckDpbOc7ymOFAKfCcfdudfA1BErQoRvkDn4CIvQEfRIbMzp" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" xintegrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+
+    <!-- Updated Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=David+Libre:wght@400;700&family=Tinos:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'David Libre', serif;
+            overflow: hidden;
+        }
+        .math-text {
+            font-family: 'Tinos', 'Times New Roman', serif;
+        }
+        canvas {
+            cursor: grab;
+            display: block; 
+        }
+        canvas:active {
+            cursor: grabbing;
+        }
+        .katex {
+            font-size: 1.1em !important;
+        }
+        /* Style for the toggle switch */
+        .toggle-switch {
+            display: flex;
+            cursor: pointer;
+            border: 1px solid #cbd5e1; /* slate-300 */
+            border-radius: 0.5rem; /* rounded-lg */
+            overflow: hidden;
+            width: 100%;
+        }
+        .toggle-option {
+            padding: 0.5rem 0.75rem;
+            transition: background-color 0.2s ease-in-out;
+            color: #475569; /* slate-600 */
+            font-weight: 600; /* font-semibold */
+            flex: 1;
+            text-align: center;
+        }
+        .toggle-option.active {
+            background-color: #334155; /* slate-700 */
+            color: white;
+        }
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #cbd5e1;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #8b5cf6; /* Violet-500 */
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #8b5cf6; /* Violet-500 */
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        #slider-ticks {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 5px;
+        }
+        #slider-ticks span {
+            color: #64748b;
+            font-size: 12px;
+            transition: font-weight 0.2s, color 0.2s;
+        }
+        #slider-ticks span.active-tick {
+            font-weight: 700;
+            color: #4c1d95; /* violet-800 */
+        }
+    </style>
+</head>
+<body class="bg-slate-100 w-full h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="w-full max-w-5xl flex flex-col md:flex-row-reverse items-center justify-center gap-4 md:gap-8 flex-grow min-h-0">
+        
+        <!-- Grouping container for Title and Canvas -->
+        <div class="flex flex-col w-full max-w-4xl">
+            <div class="w-full text-center mb-2 flex-shrink-0">
+                <h1 class="text-2xl md:text-3xl font-bold text-slate-700">מישור גאוס האינטראקטיבי</h1>
+                <p class="text-slate-600 text-sm md:text-base">גרור את הנקודות a₁ ו-q ובחר את מספר האיברים</p>
+            </div>
+
+            <!-- Rectangular Background Container -->
+            <div id="canvas-container" class="w-full bg-white rounded-xl shadow-lg p-2 flex items-center justify-center" style="aspect-ratio: 1.25 / 1;">
+                <canvas id="complexPlane"></canvas>
+            </div>
+        </div>
+
+        <!-- Display Container -->
+        <div class="w-full max-w-xs flex flex-col items-center justify-center gap-3 mt-2 md:mt-0">
+             <h2 class="text-lg font-bold text-slate-600 text-center">
+‎                סדרה הנדסית במישור המרוכב
+             </h2>
+             
+             <!-- Display Mode Toggle Switch -->
+            <div class="toggle-switch my-2">
+                <span id="polar-btn" class="toggle-option">הצגה קוטבית</span>
+                <span id="algebraic-btn" class="toggle-option active">הצגה אלגברית</span>
+            </div>
+
+             <div id="a1_display" dir="ltr" class="bg-green-100 border border-green-200 p-2 rounded-xl shadow-md text-lg font-bold text-green-800 w-full text-center math-text"></div>
+             <div id="q_display" dir="ltr" class="bg-blue-100 border border-blue-200 p-2 rounded-xl shadow-md text-lg text-blue-800 w-full text-center math-text"></div>
+             
+             <div class="w-full flex flex-col items-center gap-1 bg-slate-200 p-2 rounded-xl shadow-md" dir="ltr">
+                <label for="n_slider" class="font-bold text-slate-700 text-sm" dir="rtl">מספר איברים בסכום (n): <span id="n_value">1</span></label>
+                <input type="range" id="n_slider" min="1" max="10" value="1" class="w-full">
+                <div id="slider-ticks" class="w-full"></div>
+             </div>
+
+             <div id="infinite_sum_display" class="bg-amber-100 border border-amber-200 p-2 rounded-xl shadow-md text-lg text-amber-800 w-full text-center min-h-[52px] flex items-center"></div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Setup ---
+        const canvas = document.getElementById('complexPlane');
+        const ctx = canvas.getContext('2d');
+        const a1Display = document.getElementById('a1_display');
+        const qDisplay = document.getElementById('q_display');
+        const nSlider = document.getElementById('n_slider');
+        const nValueDisplay = document.getElementById('n_value');
+        const infiniteSumDisplay = document.getElementById('infinite_sum_display');
+        const algebraicBtn = document.getElementById('algebraic-btn');
+        const polarBtn = document.getElementById('polar-btn');
+        const sliderTicksContainer = document.getElementById('slider-ticks');
+
+        // --- Configuration ---
+        const pointRadius = 8;
+        const sumPointRadius = 4;
+        const colors = {
+            a1: '#16a34a', // Green
+            q: '#3b82f6',  // Blue
+            sum: '#8b5cf6', // Violet
+            infSum: '#f59e0b', // Amber
+            real: '#3b82f6',
+            imag: '#ef4444'
+        };
+        
+        const gridColor = '#e2e8f0'; 
+        const axisColor = '#64748b'; 
+        const fontColor = '#475569'; 
+        const labelFontColor = '#1e293b'; 
+
+        let origin = { x: 0, y: 0 };
+        let scale = 100; 
+        
+        // --- State ---
+        let a1 = { a: 1, b: 0 };
+        let q = { a: 0, b: 1 };
+        let n = 1; // Default to 1
+        let draggingPoint = null;
+        let displayMode = 'algebraic';
+
+        // --- Helper Functions ---
+        function formatComplex(p, mode) {
+            const epsilon = 0.01;
+            if (mode === 'algebraic') {
+                const a = p.a;
+                const b = p.b;
+                if (Math.abs(a) < epsilon && Math.abs(b) < epsilon) return '0';
+                if (Math.abs(a) < epsilon) return `${b.toFixed(1)}i`;
+                if (Math.abs(b) < epsilon) return `${a.toFixed(1)}`;
+                const sign = b >= 0 ? '+' : '-';
+                return `${a.toFixed(1)} ${sign} ${Math.abs(b).toFixed(1)}i`;
+            } else { // polar
+                const r = Math.hypot(p.a, p.b);
+                if (r < 0.01) return '0';
+                let theta = Math.atan2(p.b, p.a) * (180 / Math.PI);
+                return `${r.toFixed(1)} cis(${theta.toFixed(1)}°)`;
+            }
+        }
+
+        // --- Math Functions ---
+        function complexAdd(z1, z2) { return { a: z1.a + z2.a, b: z1.b + z2.b }; }
+        function complexMultiply(z1, z2) { return { a: z1.a * z2.a - z1.b * z2.b, b: z1.a * z2.b + z1.b * z2.a }; }
+        function complexSubtract(z1, z2) { return { a: z1.a - z2.a, b: z1.b - z2.b }; }
+        function complexDivide(z1, z2) {
+            const den = z2.a * z2.a + z2.b * z2.b;
+            if (Math.abs(den) < 1e-9) return {a: NaN, b: NaN};
+            return { a: (z1.a * z2.a + z1.b * z2.b) / den, b: (z1.b * z2.a - z1.a * z2.b) / den };
+        }
+
+        function calculateSeries() {
+            let partialSums = [];
+            let currentTerm = a1;
+            let currentSum = {a: 0, b: 0};
+            for (let i = 1; i <= n; i++) {
+                currentSum = complexAdd(currentSum, currentTerm);
+                partialSums.push(currentSum);
+                currentTerm = complexMultiply(currentTerm, q);
+            }
+
+            let infiniteSum = null;
+            const q_mod = Math.hypot(q.a, q.b);
+            if (q_mod < 1) {
+                infiniteSum = complexDivide(a1, complexSubtract({a: 1, b: 0}, q));
+            }
+            
+            return { partialSums, infiniteSum };
+        }
+
+        // --- Coordinate Conversion Functions ---
+        function complexToCanvas(a, b) { return { x: origin.x + a * scale, y: origin.y - b * scale }; }
+        function canvasToComplex(x, y) { return { a: (x - origin.x) / scale, b: (origin.y - y) / scale }; }
+
+        // --- Drawing Functions ---
+        function drawGrid() {
+            ctx.strokeStyle = gridColor; ctx.lineWidth = 1;
+            const unit = 0.1 * scale;
+            const maxTicks = Math.ceil(Math.max(canvas.width, canvas.height) / 2 / unit);
+            for (let i = 1; i < maxTicks; i++) {
+                ctx.beginPath(); ctx.moveTo(origin.x + i * unit, 0); ctx.lineTo(origin.x + i * unit, canvas.height); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(origin.x - i * unit, 0); ctx.lineTo(origin.x - i * unit, canvas.height); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, origin.y + i * unit); ctx.lineTo(canvas.width, origin.y + i * unit); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, origin.y - i * unit); ctx.lineTo(canvas.width, origin.y - i * unit); ctx.stroke();
+            }
+        }
+
+        function drawAxes() {
+            ctx.strokeStyle = axisColor; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(0, origin.y); ctx.lineTo(canvas.width, origin.y); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(canvas.width - 12, origin.y - 7); ctx.lineTo(canvas.width - 2, origin.y); ctx.lineTo(canvas.width - 12, origin.y + 7); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(origin.x, canvas.height); ctx.lineTo(origin.x, 2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(origin.x - 7, 12); ctx.lineTo(origin.x, 2); ctx.lineTo(origin.x + 7, 12); ctx.stroke();
+            
+            ctx.fillStyle = fontColor; 
+            ctx.font = 'bold 16px Tinos'; ctx.fillStyle = labelFontColor; 
+            ctx.textAlign = 'right';
+            ctx.fillText('Re', canvas.width - 15, origin.y + 15);
+            ctx.textAlign = 'right';
+            ctx.fillText('Im', origin.x - 12, 15);
+
+            ctx.font = '14px Tinos';
+            const tickLength = 5;
+            for (let i = -10; i <= 10; i++) {
+                if (i === 0) continue;
+                // Integer ticks
+                if (Math.abs(i * scale) < canvas.width / 2 - 20) {
+                    ctx.beginPath();
+                    ctx.moveTo(origin.x + i * scale, origin.y - tickLength);
+                    ctx.lineTo(origin.x + i * scale, origin.y + tickLength);
+                    ctx.stroke();
+                    ctx.fillText(i.toString(), origin.x + i * scale, origin.y + 15);
+                }
+                if (Math.abs(i * scale) < canvas.height / 2 - 20) {
+                     ctx.beginPath();
+                    ctx.moveTo(origin.x - tickLength, origin.y - i * scale);
+                    ctx.lineTo(origin.x + tickLength, origin.y - i * scale);
+                    ctx.stroke();
+                    ctx.fillText(i.toString(), origin.x - 8, origin.y - i * scale + 4);
+                }
+            }
+        }
+        
+        function drawPoint(p, radius, color, label, options = {}) {
+            const canvasPos = complexToCanvas(p.a, p.b);
+            
+            if (options.isDraggable) {
+                if (displayMode === 'algebraic') {
+                    drawProjections(canvasPos, color);
+                } else {
+                    drawAngleSector(p, color);
+                }
+            }
+
+            ctx.beginPath(); ctx.arc(canvasPos.x, canvasPos.y, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = color; ctx.fill();
+            ctx.strokeStyle = 'white'; ctx.lineWidth = 1.5; ctx.stroke();
+            if (label) drawLabel(canvasPos, label, color, radius, options);
+        }
+
+        function drawProjections(canvasPos, color) {
+            ctx.save();
+            ctx.setLineDash([3, 3]);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = `rgba(${parseInt(colors.real.slice(1,3),16)}, ${parseInt(colors.real.slice(3,5),16)}, ${parseInt(colors.real.slice(5,7),16)}, 0.7)`;
+            ctx.beginPath(); ctx.moveTo(canvasPos.x, canvasPos.y); ctx.lineTo(canvasPos.x, origin.y); ctx.stroke();
+            ctx.strokeStyle = `rgba(${parseInt(colors.imag.slice(1,3),16)}, ${parseInt(colors.imag.slice(3,5),16)}, ${parseInt(colors.imag.slice(5,7),16)}, 0.7)`;
+            ctx.beginPath(); ctx.moveTo(canvasPos.x, canvasPos.y); ctx.lineTo(origin.x, canvasPos.y); ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawAngleSector(p, color) {
+            const r = Math.hypot(p.a, p.b);
+            if (r < 0.01) return;
+            const angleRad = Math.atan2(p.b, p.a);
+            
+            const canvasPos = complexToCanvas(p.a, p.b);
+            
+            // Draw dashed, semi-transparent vector
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(origin.x, origin.y);
+            ctx.lineTo(canvasPos.x, canvasPos.y);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 4]);
+            ctx.globalAlpha = 0.5;
+            ctx.stroke();
+            ctx.restore();
+
+            // Draw sector
+            ctx.beginPath();
+            ctx.moveTo(origin.x, origin.y);
+            ctx.arc(origin.x, origin.y, r * scale, 0, -angleRad, angleRad > 0);
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.globalAlpha = 0.15;
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+        }
+
+        function drawLabel(canvasPos, label, color, radius, options = {}) {
+            const offset = radius + 4;
+            let angle = Math.atan2(canvasPos.y - origin.y, canvasPos.x - origin.x);
+
+            if (options.avoidS1) {
+                angle += Math.PI;
+            }
+
+            let x = canvasPos.x + offset * Math.cos(angle);
+            let y = canvasPos.y + offset * Math.sin(angle);
+            
+            ctx.save();
+            ctx.direction = 'ltr';
+            ctx.fillStyle = color;
+            ctx.font = 'bold 14px Tinos';
+            
+            ctx.textAlign = (Math.cos(angle) > 0) ? 'left' : 'right';
+            ctx.textBaseline = (Math.sin(angle) > 0) ? 'top' : 'bottom';
+            
+            ctx.fillText(label, x, y);
+            ctx.restore(); 
+        }
+
+        function drawSpline(points) {
+            if (points.length < 2) return;
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            const tension = 0.5; // Standard Catmull-Rom tension
+            for (let i = 0; i < points.length - 1; i++) {
+                const p1 = points[i];
+                const p2 = points[i + 1];
+
+                // Determine control points p0 and p3, creating virtual points at the ends
+                const p0 = (i > 0) ? points[i - 1] : { x: 2 * p1.x - p2.x, y: 2 * p1.y - p2.y };
+                const p3 = (i < points.length - 2) ? points[i + 2] : { x: 2 * p2.x - p1.x, y: 2 * p2.y - p1.y };
+                
+                // Calculate Bezier control points from Catmull-Rom tangents
+                const cp1x = p1.x + (p2.x - p0.x) / 6 * tension;
+                const cp1y = p1.y + (p2.y - p0.y) / 6 * tension;
+                const cp2x = p2.x - (p3.x - p1.x) / 6 * tension;
+                const cp2y = p2.y - (p3.y - p1.y) / 6 * tension;
+                
+                ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+            }
+            ctx.stroke();
+        }
+        
+        function updateDisplay(series) {
+            a1Display.innerHTML = `<span dir="ltr"><b>a₁ = ${formatComplex(a1, displayMode)}</b></span>`;
+            qDisplay.innerHTML = `<span dir="ltr"><b>q = ${formatComplex(q, displayMode)}</b></span>`;
+
+            if (series.infiniteSum) {
+                infiniteSumDisplay.innerHTML = `<div class="w-full text-center"><span dir="ltr"><b>S<sub>∞</sub> = ${formatComplex(series.infiniteSum, displayMode)}</b></span></div>`;
+            } else {
+                infiniteSumDisplay.innerHTML = `<div class="flex justify-between items-center w-full px-2"><span style="font-family: 'David Libre', serif;" dir="rtl">הסדרה מתבדרת</span><span class="math-text" dir="ltr">(|q| ≥ 1)</span></div>`;
+            }
+        }
+
+        function drawAll() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGrid();
+            drawAxes();
+            
+            const series = calculateSeries();
+            
+            if (series.partialSums.length > 1) { // Only draw spline if there are at least 2 points
+                const canvasPoints = series.partialSums.map(p => complexToCanvas(p.a, p.b));
+                
+                ctx.strokeStyle = 'rgba(139, 92, 246, 0.4)'; // Violet-500 with alpha
+                ctx.lineWidth = 2;
+                drawSpline(canvasPoints);
+            }
+
+            const labelThreshold = 25;
+            let lastPos = complexToCanvas(0, 0);
+
+            series.partialSums.forEach((p, i) => {
+                const canvasPos = complexToCanvas(p.a, p.b);
+                const dist = Math.hypot(canvasPos.x - lastPos.x, canvasPos.y - lastPos.y);
+                const showLabel = dist > labelThreshold;
+                
+                // Don't draw sector for S1 in polar mode to avoid overlap with a1
+                if (displayMode === 'polar' && i > 0) {
+                    drawAngleSector(p, colors.sum);
+                }
+
+                drawPoint(p, sumPointRadius, colors.sum, showLabel ? `S${i+1}` : null);
+                lastPos = canvasPos;
+            });
+
+            if (series.infiniteSum) {
+                if (displayMode === 'polar') {
+                    drawAngleSector(series.infiniteSum, colors.infSum);
+                }
+                drawPoint(series.infiniteSum, pointRadius, colors.infSum, 'S∞');
+            }
+            
+            const isA1OverlappingS1 = n > 0 && Math.hypot(a1.a - series.partialSums[0].a, a1.b - series.partialSums[0].b) < 0.01;
+            drawPoint(a1, pointRadius, colors.a1, 'a₁', { isDraggable: true, avoidS1: isA1OverlappingS1 });
+            drawPoint(q, pointRadius, colors.q, 'q', { isDraggable: true });
+            
+            updateDisplay(series);
+        }
+
+        // --- Event Handlers ---
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            if (e.touches && e.touches.length > 0) { return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top }; }
+            return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        }
+        
+        function handleStart(e) {
+            e.preventDefault();
+            const pos = getPos(e);
+            const a1Pos = complexToCanvas(a1.a, a1.b);
+            const qPos = complexToCanvas(q.a, q.b);
+            const d_a1 = Math.hypot(pos.x - a1Pos.x, pos.y - a1Pos.y);
+            const d_q = Math.hypot(pos.x - qPos.x, pos.y - qPos.y);
+            
+            if (d_a1 < pointRadius + 10) { draggingPoint = a1; } 
+            else if (d_q < pointRadius + 10) { draggingPoint = q; } 
+            else { draggingPoint = null; }
+            if(draggingPoint) canvas.style.cursor = 'grabbing';
+        }
+
+        function handleMove(e) {
+            if (draggingPoint) {
+                e.preventDefault();
+                const pos = getPos(e);
+                const complexPos = canvasToComplex(pos.x, pos.y);
+                draggingPoint.a = complexPos.a;
+                draggingPoint.b = complexPos.b;
+                drawAll();
+            }
+        }
+
+        function handleEnd() {
+            draggingPoint = null;
+            canvas.style.cursor = 'grab';
+        }
+
+        function setActiveDisplayButton(btn) {
+            [algebraicBtn, polarBtn].forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        algebraicBtn.addEventListener('click', () => {
+            displayMode = 'algebraic';
+            setActiveDisplayButton(algebraicBtn);
+            drawAll();
+        });
+
+        polarBtn.addEventListener('click', () => {
+            displayMode = 'polar';
+            setActiveDisplayButton(polarBtn);
+            drawAll();
+        });
+
+        nSlider.addEventListener('input', (e) => {
+            n = parseInt(e.target.value);
+            nValueDisplay.textContent = n;
+            updateSliderTicks(n);
+            drawAll();
+        });
+
+        canvas.addEventListener('mousedown', handleStart);
+        canvas.addEventListener('mousemove', handleMove);
+        canvas.addEventListener('mouseup', handleEnd);
+        canvas.addEventListener('mouseleave', handleEnd); 
+        canvas.addEventListener('touchstart', handleStart, { passive: false });
+        canvas.addEventListener('touchmove', handleMove, { passive: false });
+        canvas.addEventListener('touchend', handleEnd);
+        canvas.addEventListener('touchcancel', handleEnd);
+        
+        function resizeCanvas() {
+            const parent = document.getElementById('canvas-container');
+            const parentWidth = parent.clientWidth;
+            const parentHeight = parent.clientHeight;
+            if (parentWidth > 0 && parentHeight > 0) {
+                canvas.width = parentWidth;
+                canvas.height = parentHeight;
+                origin.x = canvas.width / 2;
+                origin.y = canvas.height / 2;
+                scale = canvas.width / 4; // Adjust scale for better view
+                drawAll();
+            }
+        }
+        
+        function updateSliderTicks(currentValue) {
+            const ticks = document.querySelectorAll('#slider-ticks span');
+            ticks.forEach((tick, index) => {
+                if ((index + 1) === currentValue) {
+                    tick.classList.add('active-tick');
+                } else {
+                    tick.classList.remove('active-tick');
+                }
+            });
+        }
+
+        function initializeSliderTicks() {
+            for (let i = 1; i <= 10; i++) {
+                const tick = document.createElement('span');
+                tick.textContent = i;
+                sliderTicksContainer.appendChild(tick);
+            }
+            updateSliderTicks(n);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        
+        initializeSliderTicks();
+        setTimeout(resizeCanvas, 50);
+    </script>
+</body>
+</html>
+

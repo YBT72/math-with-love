@@ -1,0 +1,239 @@
+/*
+  header.css
+  This file styles the header area of the site.
+  The header usually contains the site logo, navigation, and search button.
+  All colors and sizes use CSS variables for easy customization.
+*/
+
+body {
+  /* Base styles for the whole site */
+  margin: 0;
+  font-family: 'Assistant', 'Open Sans', 'Arial', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  background-color: var(--color-base-bg); /* Uses variable from variables.css */
+  color: var(--color-text); /* Uses variable from variables.css */
+  overflow-x: hidden;
+  min-height: 100vh; /* Минимальная высота для правильного отображения на мобильных */
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1; /* Основной контент занимает всё доступное пространство */
+}
+
+/* Адаптивная типография */
+@media (max-width: 768px) {
+  body {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 576px) {
+  body {
+    font-size: 14px;
+  }
+}
+
+
+.header-container {
+  /* Sticky header stays at the top when scrolling */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between; /* Распределяет содержимое между начальной и конечной точками */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  transition: background-color 0.4s ease, box-shadow 0.4s ease;
+  width: 100%;
+  padding: 0;
+  background-color: var(--color-accent);
+  box-sizing: border-box;
+}
+
+
+.header-container.scrolled {
+  /* Header style when page is scrolled */
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: 0 4px 10px var(--color-shadow);
+}
+
+
+header {
+  /* Main header bar styles */
+  background-color: var(--color-accent);
+  color: var(--color-surface);
+  height: var(--height-header);
+  box-sizing: border-box;
+  font-size: 1.2rem;
+  width: 100%;
+}
+
+.header-spacer {
+  flex-grow: 1; /* Растягивается и занимает доступное пространство */
+}
+
+/* Поисковая область слева */
+.header-left {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative;
+  padding-left: 2rem; /* Добавляем отступ слева (в LTR) */
+}
+
+/* Для RTL направления */
+html[dir="rtl"] .header-left {
+  margin-right: 0;
+  padding-left: 2rem; /* Отступ слева (для RTL - это правый конец) */
+}
+
+.header-right {
+  /* Right side of header (navigation menu) */
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-shrink: 0;
+  padding-right: 2rem; /* Добавляем отступ справа, для RTL это левая сторона */
+}
+
+
+nav ul {
+  /* Navigation menu list styles */
+  list-style: none;
+  display: flex;
+  gap: 1.2rem;
+}
+
+
+nav a {
+  /* Navigation links styles */
+  text-decoration: none;
+  color: white;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+
+nav a:hover {
+  /* Navigation link hover effect */
+  color: var(--color-hover);
+}
+
+
+nav a:active {
+  /* Navigation link active effect */
+  color: var(--color-surface);
+  font-weight: bold;
+}
+
+
+#menu-toggle {
+  /* Hamburger menu button styles */
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--color-base-bg);
+  cursor: pointer;
+  transition: color 0.3s, transform 0.2s;
+  height: 36px;
+  width: 36px;
+}
+
+
+#menu-toggle:hover {
+  /* Hamburger menu hover effect */
+  color: var(--color-hover);
+}
+
+
+#menu-toggle.active {
+  /* Hamburger menu active effect */
+  color: var(--color-gray-light);
+  transform: scale(0.95);
+}
+
+/* Стили для навигационного меню */
+header nav ul {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+header nav ul li {
+  margin: 0 0.2rem;
+}
+
+header nav ul li a {
+  color: var(--color-surface);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  font-weight: 400;
+}
+
+header nav ul li a:hover {
+  /* Убран голубоватый фон при наведении */
+  color: var(--color-hover);
+}
+
+/* Стиль для активной ссылки в меню */
+header nav ul li a.active {
+  /* Убран голубоватый фон для активного пункта */
+  font-weight: 600;
+}
+
+/* Адаптивное меню для мобильных устройств */
+@media (max-width: 768px) {
+  .header-right {
+    padding-right: 1rem;
+  }
+  
+  .header-left {
+    padding-left: 1rem;
+  }
+  
+  header nav ul {
+    gap: 0.5rem;
+  }
+  
+  header nav ul li a {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Для очень маленьких экранов скрываем обычное меню и показываем гамбургер-меню */
+@media (max-width: 576px) {
+  header nav ul {
+    display: none;
+  }
+  
+  #menu-toggle {
+    display: block; /* Показываем кнопку меню на малых экранах */
+  }
+  
+  #side-menu.active + header nav ul {
+    display: block;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 100%;
+    background-color: var(--color-accent);
+    padding: 1rem;
+    box-shadow: 0 4px 8px var(--color-shadow);
+    z-index: 999;
+  }
+  
+  #side-menu.active + header nav ul li {
+    margin: 0.5rem 0;
+  }
+}

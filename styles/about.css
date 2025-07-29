@@ -1,0 +1,78 @@
+/* Стили для страницы About */
+.container {
+  max-width: 800px;
+  margin: auto;
+  text-align: right;
+  padding: 2rem;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: var(--color-text-dark);
+  min-height: 60vh; /* Обеспечивает минимальную высоту контейнера */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Заголовки */
+.container h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  color: var(--color-blue-heading);
+}
+
+.container h2 {
+  font-size: 1.8rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: var(--color-blue-heading);
+}
+
+/* Параграфы */
+.container p {
+  margin-bottom: 1rem;
+}
+
+/* Выделения */
+.container strong {
+  font-weight: 700;
+}
+
+.container em {
+  font-style: italic;
+}
+
+/* Адаптивность для планшетов и мобильных устройств */
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem;
+    font-size: 1.1rem;
+  }
+  
+  .container h1 {
+    font-size: 2rem;
+    margin-bottom: 1.2rem;
+  }
+  
+  .container h2 {
+    font-size: 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.8rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+  
+  .container h1 {
+    font-size: 1.7rem;
+    margin-bottom: 1rem;
+  }
+  
+  .container h2 {
+    font-size: 1.3rem;
+    margin-top: 1.2rem;
+    margin-bottom: 0.7rem;
+  }
+}

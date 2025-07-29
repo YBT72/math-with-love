@@ -1,0 +1,24 @@
+/*
+ * main.css - Главный файл стилей сайта
+ * Импортирует все остальные файлы стилей
+ */
+
+/* Базовые стили и переменные */
+@import 'reset.css';
+@import 'variables.css';
+
+/* Общий макет страницы */
+@import 'main-layout.css';
+
+/* Компоненты страницы */
+@import 'header.css';
+@import 'search.css';
+@import 'side-menu.css';
+@import 'footer.css';
+
+/* Стили для основных страниц */
+@import 'index-content.css';
+@import 'about.css';
+
+/* Страница может импортировать дополнительные стили через JavaScript */
+/* Например, стили для конкретных страниц будут загружаться динамически */

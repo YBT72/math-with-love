@@ -1,0 +1,17 @@
+/*
+  reset.css
+  This file resets browser default styles to provide a consistent base for all browsers.
+  It removes default margins, paddings, and sets box-sizing to border-box for all elements.
+  You can add your own base styles below.
+*/
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+  /* Set base font and background color for the site using variables from variables.css */
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-base-bg);
+  color: var(--color-text);
+}

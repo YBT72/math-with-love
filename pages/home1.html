@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>מתמטיקה באהבה</title>
+  <!--
+  <link rel="stylesheet" href="styles/styles.css">
+  -->
+  <!-- -->
+  <style>
+    :root {
+      --color-red-heart: #e53935;
+      --color-soft-black: #212121;
+      --color-gray-strong: #37474f;
+      --color-cream: #fff8e1;
+      --color-blue-tool: #4fb3bf;
+      --color-blue-dark: #006974;
+      --color-blue-bg: #e0f7fa;
+      --color-blue-light: #b2ebf2;
+      --color-white: #ffffff;
+      --color-body-bg: var(--color-white);
+      --color-black: var(--color-soft-black);
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: Helvetica, Heebo, Arial, sans-serif;
+      font-size: 16px;
+      background: var(--color-white);
+      color: var(--color-gray-strong);
+      overflow-x: hidden;
+    }
+    .header-container {
+      background: var(--color-white);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      transition: background-color 0.4s ease, box-shadow 0.4s ease;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    }
+    .header-container.scrolled {
+      background-color: var(--color-white);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    header {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .header-top {
+      height: 60px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      font-weight: normal;
+      font-size: 1rem;
+      gap: 1rem;
+    }
+   #menu-toggle {
+      background: none;
+      border: none;
+      color: var(--color-black);
+      cursor: pointer;
+      font: inherit;
+      padding: 0;
+      font-size: 1.3rem;
+      transition: color 0.3s ease;
+    }
+    #menu-toggle:hover {
+      color: var(--color-blue-dark);
+    }
+    #menu-toggle:active {
+      color: var(--color-white);
+      font-weight: bold;
+    }
+    .main-nav {
+      display: flex;
+      gap: 1.5rem;
+      font-weight: normal;
+      font-size: 1.1rem;
+      background-color: transparent;
+    }
+    .main-nav button {
+      background: none;
+      border: none;
+      color: var(--color-black);
+      cursor: pointer;
+      font: inherit;
+      padding: 0;
+      transition: color 0.3s ease;
+    }
+    .main-nav button:hover {
+      color: var(--color-blue-dark);
+    }
+    .main-nav button:active {
+      color: var(--color-white);
+      font-weight: bold;
+    }
+    .search-wrapper {
+      margin-right: auto;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .search-box {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--color-black);
+      border-radius: 18px;
+      padding: 0.4rem 0.8rem;
+      background-color: var(--color-white);
+      width: 0;
+      height: 36px;
+      opacity: 0;
+      pointer-events: none;
+      overflow: hidden;
+      transition: width 0.4s ease, opacity 0.3s ease;
+    }
+    .search-wrapper.open .search-box {
+      width: 220px;
+      opacity: 1;
+      pointer-events: auto;
+      padding-left: 2.5rem;
+    }
+    .search-wrapper.open .search-box:hover {
+      border-color: var(--color-blue-dark);
+    }
+    .search-box input {
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      background: transparent;
+      direction: rtl;
+      width: 100%;
+    }
+    .search-icon-btn {
+      position: absolute;
+      left: 6px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 36px;
+      width: 36px;
+      color: var(--color-black);
+      transition: color 0.3s;
+      z-index: 4;
+    }
+    .search-icon-btn:hover {
+      color: var(--color-blue-dark);
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      gap: 2rem;
+    }
+    .content, .image {
+      flex: 1 1 300px;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .content h1 {
+      font-size: 2.5rem;
+      line-height: 1.2;
+      color: var(--color-red-heart);
+    }
+    .content p {
+      font-size: 1.8rem;
+      margin-top: 1rem;
+    }
+    .btns {
+      margin-top: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+    .btns button {
+      padding: 0.8rem 1.2rem;
+      font-size: 1.5rem;
+      border-radius: 12px;
+      border: 1px solid var(--color-blue-tool);
+      background: var(--color-blue-bg);
+      color: var(--color-blue-tool);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btns button:hover,
+    .btns button:active {
+      border: 1px solid var(--color-blue-bg);
+      background: var(--color-blue-tool);
+      color: var(--color-blue-bg);
+    }
+    .image img {
+      width: 100%;
+      height: auto;
+      max-height: 50vh;
+      object-fit: contain;
+    }
+    @media (max-width: 768px) {
+      .main-nav {
+        font-size: 1.1rem;
+        gap: 1rem;
+      }
+      .content h1 {
+        font-size: 2rem;
+      }
+      .content p {
+        font-size: 1.4rem;
+      }
+      .btns button {
+        font-size: 1.3rem;
+      }
+    }
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+    .popup {
+      background-color: var(--color-white);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      display: inline-block;
+    }
+    .popup-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .popup-buttons button {
+      padding: 0.8rem 1.2rem;
+      font-size: 1.1rem;
+      border-radius: 12px;
+      border: 1px solid var(--color-blue-tool);
+      background: var(--color-blue-bg);
+      color: var(--color-blue-tool);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .popup-buttons button:hover,
+    .popup-buttons button:active {
+      border: 1px solid var(--color-blue-bg);
+      background: var(--color-blue-tool);
+      color: var(--color-blue-bg);
+    }
+  </style>
+  <!-- -->
+  
+</head>
+<body>
+  <!-- --
+  <div id="header-placeholder"></div>
+  <script>
+    fetch('header.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('header-placeholder').innerHTML = html;
+      });
+  </script>
+  -->
+  <!-- התחלה: HEADER כולל תפריט + breadcrumb-bar -->
+  <header>
+    <div class="header-top">
+      <button id="menu-toggle">☰</button>
+      <nav id="nav-menu" class="main-nav">
+        <button>בית</button>
+        <button>אודות</button>
+        <button>צור קשר</button>
+      </nav>
+      <div class="search-wrapper" id="search-wrapper">
+        <div id="search-container" class="search-box">
+          <input type="text" id="search-input" placeholder="חיפוש באתר..." />
+        </div>
+        <button id="search-btn" class="search-icon-btn" aria-label="חיפוש">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+ </header>
+  <!-- סוף HEADER -->
+  
+  
+  <!-- קוד להפעלה אוטומטית של header.html -->
+  <!-- --
+  <div id="header-placeholder"></div>
+  <script>
+    fetch('header.html')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('header-placeholder').innerHTML = html;
+      });
+  </script>
+  <!-- -->
+
+  <main class="container">
+    <div class="image">
+      <img src="../assets/logo/logo_transp_right.png" alt="זה הלוגו שלנו" />
+    </div>
+    <div class="content">
+      <h1>מתמטיקה<br />באהבה</h1>
+      <p>לימוד מדויק, פשוט ואישי!</p>
+      <div class="btns">
+        <button class="unit-btn" data-units="3" data-exams="35371,35372">3 יח״ל</button>
+        <button class="unit-btn" data-units="4" data-exams="35471,35472">4 יח״ל</button>
+        <button class="unit-btn" data-units="5" data-exams="35571,35572">5 יח״ל</button>
+      </div>
+    </div>
+  </main>
+
+  <div class="popup-overlay" id="popup">
+    <div class="popup">
+      <p>בחר שאלון</p>
+      <div class="popup-buttons">
+        <button>35571</button>
+        <button>35572</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const searchBtn = document.getElementById('search-btn');
+    const searchWrapper = document.getElementById('search-wrapper');
+    const searchBox = document.getElementById('search-container');
+    const searchInput = document.getElementById('search-input');
+
+    if (searchBtn && searchWrapper && searchInput && searchBox) {
+      searchBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        searchWrapper.classList.toggle('open');
+        if (searchWrapper.classList.contains('open')) {
+          searchInput.focus();
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        const isClickInside = searchWrapper.contains(e.target);
+        if (!isClickInside) {
+          searchWrapper.classList.remove('open');
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const popup = document.getElementById('popup');
+      const popupButtons = document.querySelectorAll('.popup-buttons button');
+      const unitButtons = document.querySelectorAll('.unit-btn');
+
+      unitButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const exams = btn.dataset.exams.split(',');
+          popupButtons[0].textContent = exams[0];
+          popupButtons[1].textContent = exams[1];
+          popup.style.display = 'flex';
+          setTimeout(() => {
+            popup.style.display = 'none';
+          }, 3000);
+        });
+      });
+
+      if (popup) {
+        document.addEventListener('click', (event) => {
+          if (event.target === popup) {
+            popup.style.display = 'none';
+          }
+        });
+
+        popupButtons.forEach(btn => {
+          btn.addEventListener('click', () => {
+            popup.style.display = 'none';
+          });
+        });
+      }
+    });
+  </script>
+</body>
+</html>

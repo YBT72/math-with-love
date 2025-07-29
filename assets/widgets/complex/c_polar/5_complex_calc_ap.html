@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>פעולות חשבון במישור גאוס</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=David+Libre:wght@400;700&display=swap" rel="stylesheet">
+    <!-- KaTeX library for rendering mathematical formulas -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" xintegrity="sha384-n8MVd4RsNIU07EWpWGbS0fqACpCs/99w8jRLeZ3CVLagTUYgN5YLSKiDNQ4BgIWo" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" xintegrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmImMNkdOF" crossorigin="anonymous"></script>
+    <style>
+        /* General body styling */
+        body {
+            font-family: 'David Libre', serif;
+            overflow: hidden; /* Prevents scrollbars on the main body */
+        }
+        /* Canvas styling for cursor feedback */
+        canvas {
+            cursor: grab;
+            display: block; 
+            touch-action: none; /* Prevents default touch actions like scrolling */
+        }
+        canvas:active {
+            cursor: grabbing;
+        }
+        /* Styling for operation buttons */
+        .operation-btn {
+            transition: all 0.2s;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 2.75rem;
+            width: 100%;
+            font-size: 21px; /* Uniform font size for all buttons */
+            border: 1px solid #cbd5e1; /* slate-300 */
+        }
+        /* Styling for the active operation button */
+        .operation-btn.active {
+            background-color: #475569; /* slate-600 */
+            color: white;
+            border-color: #475569; /* slate-600 */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        /* Utility class to hide elements */
+        .hidden {
+            display: none;
+        }
+        /* Styling for result display boxes */
+        .result-box {
+            height: 58px; /* Fixed height for consistent layout */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            white-space: nowrap; /* Prevent line breaks */
+            overflow: hidden; /* Hide overflow */
+        }
+        #result-row {
+            height: 58px; /* Fixed height for the result row */
+            width: 100%;
+        }
+        /* KaTeX specific styling */
+        .katex { font-size: 1.1em !important; }
+        .katex-display { margin: 0; }
+        
+        .unary-result-box {
+            white-space: nowrap;
+        }
+        /* LTR direction for math text */
+        .ltr-text {
+            direction: ltr;
+        }
+        /* Specific font for mathematical symbols and numbers */
+        .math-font {
+            font-family: 'Times New Roman', Times, serif;
+        }
+        /* Styling for the display mode toggle switch */
+        .toggle-btn-active {
+            background-color: #475569; /* slate-600 */
+            color: white;
+        }
+        .toggle-btn-inactive {
+            background-color: #e2e8f0; /* slate-200 */
+            color: #475569; /* slate-600 */
+        }
+    </style>
+</head>
+<body class="bg-slate-100 w-full h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="w-full max-w-6xl flex flex-col md:flex-row-reverse md:items-center justify-center gap-4 md:gap-8 min-h-0">
+        
+        <!-- Container for Title and Canvas -->
+        <div class="flex flex-col items-center w-full max-w-4xl">
+            <div class="text-center mb-2 flex-shrink-0">
+                <h1 class="text-2xl md:text-3xl font-bold text-slate-700">מישור גאוס האינטראקטיבי</h1>
+                <p class="text-slate-600 text-sm md:text-base">גרור את הנקודות z<sub>1</sub> ו-z<sub>2</sub> ובחר בפעולה הרצויה</p>
+            </div>
+
+            <!-- Canvas Container -->
+            <div id="canvas-container" class="w-full bg-white rounded-xl shadow-lg p-2 flex items-center justify-center" style="aspect-ratio: 1.25 / 1;">
+                <canvas id="complexPlane"></canvas>
+            </div>
+        </div>
+
+        <!-- Display & Controls Container -->
+        <div class="w-full max-w-sm flex flex-col items-center justify-center gap-3 md:mt-0">
+            
+            <h2 class="text-lg font-bold text-slate-700 text-center">פעולות חשבון עם מספרים מרוכבים</h2>
+            <div id="info-title" class="text-center text-slate-600 text-base font-bold"></div>
+            
+            <!-- Display Mode Segmented Control -->
+            <div class="w-full flex justify-center">
+                <div class="flex border border-slate-300 rounded-lg overflow-hidden w-full">
+                    <button id="polar-btn" class="w-1/2 text-center toggle-btn-inactive px-4 py-1 text-sm font-bold transition-colors">הצגה קוטבית</button>
+                    <button id="algebraic-btn" class="w-1/2 text-center toggle-btn-active px-4 py-1 text-sm font-bold transition-colors">הצגה אלגברית</button>
+                </div>
+            </div>
+
+            <!-- Display for z1 and z2 -->
+            <div class="flex gap-3 w-full">
+                <div id="z2_display" class="result-box ltr-text bg-purple-100 border border-purple-200 p-3 rounded-xl shadow-md text-purple-800 font-bold"></div>
+                <div id="z1_display" class="result-box ltr-text bg-blue-100 border border-blue-200 p-3 rounded-xl shadow-md text-blue-800 font-bold"></div>
+            </div>
+
+            <!-- Result Display Area -->
+            <div id="result-row" class="w-full">
+                <!-- Display for binary operations -->
+                <div id="binary_result_display" class="result-box ltr-text bg-green-100 border border-green-200 p-3 rounded-xl shadow-md text-green-800"></div>
+                <!-- Container for unary operations results -->
+                <div id="unary_results_container" class="hidden flex gap-3 w-full">
+                    <div id="unary_result2_display" class="result-box unary-result-box ltr-text bg-purple-50 border border-purple-200 p-2 rounded-xl shadow-sm text-purple-700"></div>
+                    <div id="unary_result1_display" class="result-box unary-result-box ltr-text bg-blue-50 border border-blue-200 p-2 rounded-xl shadow-sm text-blue-700"></div>
+                </div>
+            </div>
+            
+            <!-- Operation Buttons -->
+            <div class="w-full flex flex-col gap-2 my-2">
+                <div class="grid grid-cols-4 gap-2">
+                    <button id="add-btn" class="operation-btn bg-slate-200 text-slate-800 font-bold rounded-lg">+</button>
+                    <button id="subtract-btn" class="operation-btn bg-slate-200 text-slate-800 font-bold rounded-lg">-</button>
+                    <button id="multiply-btn" class="operation-btn bg-slate-200 text-slate-800 font-bold rounded-lg">×</button>
+                    <button id="divide-btn" class="operation-btn bg-slate-200 text-slate-800 font-bold rounded-lg">÷</button>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <button id="sqrt-btn" class="operation-btn bg-slate-200 text-slate-800 font-bold rounded-lg"></button>
+                    <button id="conjugate-btn" class="operation-btn bg-slate-200 text-slate-800 font-bold rounded-lg"></button>
+                    <button id="abs-btn" class="operation-btn bg-slate-200 text-slate-800 font-bold rounded-lg"></button>
+                </div>
+            </div>
+        
+            <button id="reset-btn" class="bg-yellow-100 hover:bg-yellow-200 border border-yellow-300 text-yellow-800 font-bold py-2 px-4 rounded-lg w-full">איפוס</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Setup ---
+        // Get references to DOM elements
+        const canvas = document.getElementById('complexPlane');
+        const ctx = canvas.getContext('2d');
+        const z1Display = document.getElementById('z1_display');
+        const z2Display = document.getElementById('z2_display');
+        const binaryResultDisplay = document.getElementById('binary_result_display');
+        const unaryResultsContainer = document.getElementById('unary_results_container');
+        const unaryResult1Display = document.getElementById('unary_result1_display');
+        const unaryResult2Display = document.getElementById('unary_result2_display');
+        const infoTitle = document.getElementById('info-title');
+        const algebraicBtn = document.getElementById('algebraic-btn');
+        const polarBtn = document.getElementById('polar-btn');
+        
+        // Get references to all operation buttons
+        const buttons = {
+            add: document.getElementById('add-btn'),
+            subtract: document.getElementById('subtract-btn'),
+            multiply: document.getElementById('multiply-btn'),
+            divide: document.getElementById('divide-btn'),
+            sqrt: document.getElementById('sqrt-btn'),
+            conjugate: document.getElementById('conjugate-btn'),
+            abs: document.getElementById('abs-btn'),
+        };
+        const resetBtn = document.getElementById('reset-btn');
+
+        // Define operation types
+        const UNARY_OPS = ['sqrt', 'conjugate', 'abs'];
+        const BINARY_OPS = ['add', 'subtract', 'multiply', 'divide'];
+
+        // --- Constants and State Variables ---
+        const pointRadius = 9;
+        const unaryPointRadius = 6;
+        const colors = { 
+            z1: '#3b82f6', z2: '#8b5cf6', result: '#16a34a',
+            z1_light: '#93c5fd', z2_light: '#d8b4fe' 
+        };
+        const gridColor = '#e2e8f0', axisColor = '#64748b', fontColor = '#475569', labelFontColor = '#1e293b';
+        const mathFont = "'Times New Roman', Times, serif";
+
+        // Canvas state
+        let origin = { x: 0, y: 0 };
+        let scale = 40; 
+        
+        // Complex numbers state
+        let point1 = { a: 1, b: 0 }; 
+        let point2 = { a: 0, b: 1 };
+        let resultPoint = null;
+        let draggingPoint = null;
+        let currentOperation = null; 
+        let displayMode = 'algebraic'; // 'algebraic' or 'polar'
+
+        // State for unary operation results
+        let unaryResults1 = [];
+        let unaryResults2 = [];
+        let absValue1 = null;
+        let absValue2 = null;
+
+        // --- KaTeX Rendering ---
+        /**
+         * Renders a LaTeX string into a specified DOM element using KaTeX.
+         * @param {HTMLElement} element - The DOM element to render into.
+         * @param {string} latexString - The LaTeX string to render.
+         * @param {string} [baseFontSize='0.9rem'] - The base font size for the rendered math.
+         */
+        function renderMath(element, latexString, baseFontSize = '0.9rem') {
+             element.style.fontSize = baseFontSize;
+            try {
+                katex.render(latexString, element, { throwOnError: false, displayMode: false });
+            } catch (e) {
+                element.textContent = "Error";
+                console.error(e);
+            }
+        }
+
+        /**
+         * Renders the mathematical symbols on the unary operation buttons.
+         */
+        function renderButtons() {
+            renderMath(buttons.sqrt, "\\mathbf{\\sqrt{\\phantom{z}}}");
+            renderMath(buttons.conjugate, "\\mathbf{\\overline{z}}");
+            renderMath(buttons.abs, "\\mathbf{|z|}");
+        }
+
+        // --- Coordinate Conversion ---
+        /**
+         * Converts complex number coordinates to canvas coordinates.
+         * @param {number} a - The real part.
+         * @param {number} b - The imaginary part.
+         * @returns {{x: number, y: number}} The corresponding canvas coordinates.
+         */
+        function complexToCanvas(a, b) { return { x: origin.x + a * scale, y: origin.y - b * scale }; }
+        
+        /**
+         * Converts canvas coordinates to complex number coordinates.
+         * @param {number} x - The canvas x-coordinate.
+         * @param {number} y - The canvas y-coordinate.
+         * @returns {{a: number, b: number}} The corresponding complex number.
+         */
+        function canvasToComplex(x, y) { return { a: (x - origin.x) / scale, b: (origin.y - y) / scale }; }
+
+        // --- Calculation & State Update ---
+        /**
+         * A wrapper function to update the display and redraw the canvas.
+         * This is called whenever a change occurs (e.g., point drag, operation change).
+         */
+        function performOperation() {
+            updateDisplay();
+            drawAll();
+        }
+
+        // --- Drawing Functions ---
+        /**
+         * Draws the grid lines on the canvas.
+         */
+        function drawGrid() {
+            ctx.strokeStyle = gridColor;
+            ctx.lineWidth = 1;
+            // Vertical lines
+            for (let x = origin.x + scale; x < canvas.width; x += scale) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+            for (let x = origin.x - scale; x > 0; x -= scale) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+            // Horizontal lines
+            for (let y = origin.y + scale; y < canvas.height; y += scale) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+            for (let y = origin.y - scale; y > 0; y -= scale) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+        }
+
+        /**
+         * Draws the real and imaginary axes, including labels and numbers.
+         */
+        function drawAxes() {
+            ctx.strokeStyle = axisColor;
+            ctx.lineWidth = 2;
+            
+            // Real axis (X)
+            ctx.beginPath(); ctx.moveTo(0, origin.y); ctx.lineTo(canvas.width, origin.y); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(canvas.width - 12, origin.y - 7); ctx.lineTo(canvas.width, origin.y); ctx.lineTo(canvas.width - 12, origin.y + 7); ctx.stroke();
+
+            // Imaginary axis (Y)
+            ctx.beginPath(); ctx.moveTo(origin.x, canvas.height); ctx.lineTo(origin.x, 0); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(origin.x - 7, 12); ctx.lineTo(origin.x, 2); ctx.lineTo(origin.x + 7, 12); ctx.stroke();
+            
+            // Draw axis numbers
+            ctx.fillStyle = axisColor; 
+            const yNumberOffset = 10; 
+            for (let i = -10; i <= 10; i++) {
+                if (i === 0) continue;
+                ctx.save();
+                ctx.direction = 'ltr';
+                ctx.textAlign = 'center';
+                ctx.font = `12px ${mathFont}`;
+                // Draw numbers on real axis
+                let xPos = origin.x + i * scale;
+                if (Math.abs(xPos - origin.x) < canvas.width/2 - 25) ctx.fillText(i, xPos, origin.y + 15);
+                
+                // Draw numbers on imaginary axis
+                let yPos = origin.y - i * scale;
+                if (Math.abs(yPos - origin.y) < canvas.height/2 - 20) {
+                    ctx.textAlign = 'right';
+                    ctx.textBaseline = 'middle'; 
+                    ctx.fillText(i, origin.x - yNumberOffset, yPos);
+                }
+                ctx.restore();
+            }
+
+            // Draw axis labels ('Re', 'Im')
+            ctx.fillStyle = axisColor; 
+            ctx.font = `bold 16px ${mathFont}`;
+            
+            const yLabelOffset = 8;
+            ctx.textAlign = 'right';
+            ctx.fillText('Im', origin.x - yLabelOffset, 15);
+
+            ctx.textAlign = 'center';
+            ctx.fillText('Re', canvas.width - 15, origin.y + 15);
+        }
+        
+        /**
+         * Draws a single complex point on the canvas, including its vector from the origin.
+         * @param {{a: number, b: number}} p - The complex point to draw.
+         * @param {string} color - The color for the point and its vector.
+         * @param {string} name - The label for the point (e.g., 'z₁').
+         * @param {number} [radius=pointRadius] - The radius of the point.
+         */
+        function drawPoint(p, color, name, radius = pointRadius) {
+            if (!p) return;
+            const canvasPos = complexToCanvas(p.a, p.b);
+            
+            // Draw vector from origin
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(origin.x, origin.y); ctx.lineTo(canvasPos.x, canvasPos.y); ctx.stroke();
+            ctx.restore();
+
+            // Draw the point circle
+            ctx.beginPath(); ctx.arc(canvasPos.x, canvasPos.y, radius, 0, 2 * Math.PI); ctx.fillStyle = color; ctx.fill();
+            ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.stroke();
+           
+            // Draw the label if provided
+            if (name) {
+                const labelColor = (name === 'z₁') ? colors.z1 : (name === 'z₂') ? colors.z2 : labelFontColor;
+                drawLabel(canvasPos, name, labelColor, radius);
+            }
+        }
+
+        /**
+         * Draws a label next to a point, with smart positioning to avoid overlap and going off-screen.
+         * @param {{x: number, y: number}} canvasPos - The canvas position of the point.
+         * @param {string} label - The text of the label.
+         * @param {string} color - The color of the label text.
+         * @param {number} radius - The radius of the point, used for offset calculation.
+         */
+        function drawLabel(canvasPos, label, color, radius) {
+            ctx.save();
+            ctx.direction = 'ltr';
+            ctx.fillStyle = color;
+            ctx.font = `bold 16px ${mathFont}`;
+            
+            // Calculate angle from origin to position the label radially
+            const angle = Math.atan2(canvasPos.y - origin.y, canvasPos.x - origin.x);
+            const offset = radius + 8;
+            
+            let anchorX = canvasPos.x + offset * Math.cos(angle);
+            let anchorY = canvasPos.y + offset * Math.sin(angle);
+
+            // Adjust text alignment based on quadrant to keep label outside the vector
+            if (Math.cos(angle) < -0.1) { 
+                ctx.textAlign = 'right';
+            } else if (Math.cos(angle) > 0.1) {
+                ctx.textAlign = 'left';
+            } else {
+                ctx.textAlign = 'center';
+            }
+
+            if (Math.sin(angle) < -0.1) {
+                ctx.textBaseline = 'bottom';
+            } else if (Math.sin(angle) > 0.1) {
+                ctx.textBaseline = 'top';
+            } else {
+                ctx.textBaseline = 'middle';
+            }
+            
+            // Prevent label from going off-screen
+            const metrics = ctx.measureText(label);
+            const textWidth = metrics.width;
+            const textHeight = (metrics.fontBoundingBoxAscent || metrics.actualBoundingBoxAscent) + 
+                               (metrics.fontBoundingBoxDescent || metrics.actualBoundingBoxDescent);
+            const padding = 5;
+
+            let left, right, top, bottom;
+            if (ctx.textAlign === 'left') {
+                left = anchorX; right = anchorX + textWidth;
+            } else if (ctx.textAlign === 'right') {
+                left = anchorX - textWidth; right = anchorX;
+            } else {
+                left = anchorX - textWidth / 2; right = anchorX + textWidth / 2;
+            }
+            if (ctx.textBaseline === 'top') {
+                top = anchorY; bottom = anchorY + textHeight;
+            } else if (ctx.textBaseline === 'bottom') {
+                top = anchorY - textHeight; bottom = anchorY;
+            } else {
+                top = anchorY - textHeight / 2; bottom = anchorY + textHeight / 2;
+            }
+
+            const overflowX = Math.max(0, right - (canvas.width - padding)) - Math.max(0, padding - left);
+            const overflowY = Math.max(0, bottom - (canvas.height - padding)) - Math.max(0, padding - top);
+
+            anchorX -= overflowX;
+            anchorY -= overflowY;
+
+            ctx.fillText(label, anchorX, anchorY);
+            ctx.restore(); 
+        }
+
+        /**
+         * Draws the argument (angle) arc for a point in polar mode.
+         * @param {{a: number, b: number}} point - The complex point.
+         * @param {string} color - The color for the arc.
+         */
+        function drawArgumentArc(point, color) {
+            if (!point || (point.a === 0 && point.b === 0)) return;
+
+            const angle = Math.atan2(point.b, point.a);
+            const canvasPos = complexToCanvas(point.a, point.b);
+            const canvasRadius = Math.hypot(canvasPos.x - origin.x, canvasPos.y - origin.y);
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(origin.x, origin.y);
+            // Draw arc from positive real axis to the vector
+            ctx.arc(origin.x, origin.y, canvasRadius, 0, -angle, angle > 0);
+            ctx.closePath();
+
+            // Use a semi-transparent version of the point's color
+            const r = parseInt(color.slice(1, 3), 16);
+            const g = parseInt(color.slice(3, 5), 16);
+            const b = parseInt(color.slice(5, 7), 16);
+            ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.2)`;
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        /**
+         * Formats a complex number into an algebraic LaTeX string (a + bi).
+         * @param {{a: number, b: number}} p - The complex number.
+         * @param {boolean} [addPlusMinus=false] - Whether to prepend '±'.
+         * @returns {string} The formatted LaTeX string.
+         */
+        function toAlgebraicLatex(p, addPlusMinus = false) {
+            if (!p) return "";
+            const epsilon = 1e-9;
+            let a = p.a, b = p.b;
+            if (Math.abs(a) < epsilon) a = 0;
+            if (Math.abs(b) < epsilon) b = 0;
+
+            if (a === 0 && b === 0) return '0';
+            
+            let realPart = a !== 0 ? a.toFixed(1) : '';
+            let imagPart = '';
+            if (b !== 0) {
+                if (Math.abs(b - 1) < epsilon) imagPart = 'i';
+                else if (Math.abs(b + 1) < epsilon) imagPart = '-i';
+                else imagPart = `${b.toFixed(1)}i`;
+            }
+
+            let result;
+            if (realPart && imagPart) {
+                result = b > 0 ? `${realPart} + ${imagPart}` : `${realPart} - ${imagPart.substring(1)}`;
+            } else {
+                result = realPart || imagPart;
+            }
+            
+            return addPlusMinus ? `\\pm(${result})` : result;
+        }
+
+        /**
+         * Formats a complex number into a polar LaTeX string (r cis(θ)).
+         * @param {{a: number, b: number}} p - The complex number.
+         * @returns {string} The formatted LaTeX string.
+         */
+        function toPolarLatex(p) {
+            if (!p) return "";
+            const epsilon = 1e-9;
+            if (Math.abs(p.a) < epsilon && Math.abs(p.b) < epsilon) return '0';
+
+            const r = Math.hypot(p.a, p.b);
+            const thetaDegrees = Math.atan2(p.b, p.a) * (180 / Math.PI);
+            
+            return `${r.toFixed(1)} \\text{ cis}(${thetaDegrees.toFixed(1)}^\\circ)`;
+        }
+
+        /**
+         * Formats a complex number based on the current display mode (algebraic or polar).
+         * @param {{a: number, b: number}} p - The complex number.
+         * @param {boolean} [addPlusMinus=false] - Whether to prepend '±'.
+         * @returns {string} The formatted LaTeX string.
+         */
+        function formatComplex(p, addPlusMinus = false) {
+            if (displayMode === 'polar') {
+                const polarStr = toPolarLatex(p);
+                return addPlusMinus ? `\\pm(${polarStr})` : polarStr;
+            }
+            return toAlgebraicLatex(p, addPlusMinus);
+        }
+
+        /**
+         * Updates all calculations and display elements based on the current state.
+         */
+        function updateDisplay() {
+            // Update displays for z1 and z2
+            renderMath(z1Display, `z_1 = ${formatComplex(point1)}`, '1rem');
+            renderMath(z2Display, `z_2 = ${formatComplex(point2)}`, '1rem');
+
+            const isBinary = BINARY_OPS.includes(currentOperation);
+            const isUnary = UNARY_OPS.includes(currentOperation);
+            
+            // Reset results before recalculating
+            resultPoint = null;
+            unaryResults1 = [];
+            unaryResults2 = [];
+            absValue1 = null;
+            absValue2 = null;
+            
+            // Toggle visibility of result containers based on operation type
+            if (isUnary) {
+                infoTitle.textContent = '';
+                binaryResultDisplay.classList.add('hidden');
+                binaryResultDisplay.innerHTML = '';
+                unaryResultsContainer.classList.remove('hidden');
+            } else { 
+                infoTitle.textContent = '';
+                binaryResultDisplay.classList.remove('hidden');
+                unaryResultsContainer.classList.add('hidden');
+                unaryResult1Display.innerHTML = '';
+                unaryResult2Display.innerHTML = '';
+            }
+
+            let error = false;
+
+            // Perform binary operations
+            if (isBinary) {
+                switch (currentOperation) {
+                    case 'add': resultPoint = { a: point1.a + point2.a, b: point1.b + point2.b }; break;
+                    case 'subtract': resultPoint = { a: point1.a - point2.a, b: point1.b - point2.b }; break;
+                    case 'multiply': resultPoint = { a: (point1.a * point2.a) - (point1.b * point2.b), b: (point1.a * point2.b) + (point1.b * point2.a) }; break;
+                    case 'divide':
+                        const denominator = point2.a * point2.a + point2.b * point2.b;
+                        if (Math.abs(denominator) < 1e-9) error = true; // Check for division by zero
+                        else resultPoint = { a: (point1.a * point2.a + point1.b * point2.b) / denominator, b: (point1.b * point2.a - point1.a * point2.b) / denominator };
+                        break;
+                }
+                if (error) {
+                    binaryResultDisplay.innerHTML = `<span class="text-red-600 font-bold">שגיאה: חילוק באפס</span>`;
+                } else {
+                    renderMath(binaryResultDisplay, `z = z_1 ${currentOperation === 'add' ? '+' : currentOperation === 'subtract' ? '-' : currentOperation === 'multiply' ? '\\times' : '\\div'} z_2 = ${formatComplex(resultPoint)}`);
+                }
+            } 
+            // Perform unary operations
+            else if (isUnary) {
+                let res1, res2;
+                switch(currentOperation) {
+                    case 'sqrt':
+                        // Calculate principal square root and its negative for z1
+                        const r1 = Math.hypot(point1.a, point1.b), phi1 = Math.atan2(point1.b, point1.a);
+                        res1 = { a: Math.sqrt(r1) * Math.cos(phi1 / 2), b: Math.sqrt(r1) * Math.sin(phi1 / 2) };
+                        unaryResults1.push(res1, {a: -res1.a, b: -res1.b});
+
+                        // Calculate principal square root and its negative for z2
+                        const r2 = Math.hypot(point2.a, point2.b), phi2 = Math.atan2(point2.b, point2.a);
+                        res2 = { a: Math.sqrt(r2) * Math.cos(phi2 / 2), b: Math.sqrt(r2) * Math.sin(phi2 / 2) };
+                        unaryResults2.push(res2, {a: -res2.a, b: -res2.b});
+
+                        renderMath(unaryResult1Display, `\\sqrt{z_1} = ${formatComplex(res1, true)}`);
+                        renderMath(unaryResult2Display, `\\sqrt{z_2} = ${formatComplex(res2, true)}`);
+                        break;
+                    case 'conjugate':
+                        res1 = { a: point1.a, b: -point1.b };
+                        unaryResults1.push(res1);
+                        res2 = { a: point2.a, b: -point2.b };
+                        unaryResults2.push(res2);
+
+                        renderMath(unaryResult1Display, `\\overline{z_1} = ${formatComplex(res1)}`);
+                        renderMath(unaryResult2Display, `\\overline{z_2} = ${formatComplex(res2)}`);
+                        break;
+                    case 'abs':
+                        absValue1 = Math.hypot(point1.a, point1.b);
+                        absValue2 = Math.hypot(point2.a, point2.b);
+                        
+                        renderMath(unaryResult1Display, `|z_1| = ${absValue1.toFixed(1)}`);
+                        renderMath(unaryResult2Display, `|z_2| = ${absValue2.toFixed(1)}`);
+                        break;
+                }
+            }
+        }
+
+        /**
+         * Draws the visual representation of unary operation results on the canvas.
+         */
+        function drawUnaryResults() {
+            if (!UNARY_OPS.includes(currentOperation)) return;
+
+            if (currentOperation === 'abs') {
+                // Draw label for |z1| along its vector
+                if (absValue1 !== null) {
+                    const canvasPos = complexToCanvas(point1.a, point1.b);
+                    let angle = Math.atan2(-point1.b, point1.a); // Angle for text rotation
+                    
+                    ctx.save();
+                    ctx.translate((origin.x + canvasPos.x) / 2, (origin.y + canvasPos.y) / 2); // Move to midpoint of vector
+                    
+                    // Adjust angle to keep text upright
+                    if (angle > Math.PI / 2 || angle < -Math.PI / 2) {
+                        angle += Math.PI;
+                    }
+                    ctx.rotate(angle);
+
+                    ctx.direction = 'ltr';
+                    ctx.fillStyle = colors.z1;
+                    ctx.font = `bold 14px ${mathFont}`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    const labelPrefix1 = displayMode === 'polar' ? 'r₁' : '|z₁|';
+                    ctx.fillText(`${labelPrefix1} = ${absValue1.toFixed(1)}`, 0, -2);
+                    ctx.restore();
+                }
+                // Draw label for |z2| along its vector
+                if (absValue2 !== null) {
+                    const canvasPos = complexToCanvas(point2.a, point2.b);
+                    let angle = Math.atan2(-point2.b, point2.a);
+                    ctx.save();
+                    ctx.translate((origin.x + canvasPos.x) / 2, (origin.y + canvasPos.y) / 2);
+                    
+                    if (angle > Math.PI / 2 || angle < -Math.PI / 2) {
+                        angle += Math.PI;
+                    }
+                    ctx.rotate(angle);
+
+                    ctx.direction = 'ltr';
+                    ctx.fillStyle = colors.z2;
+                    ctx.font = `bold 14px ${mathFont}`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    const labelPrefix2 = displayMode === 'polar' ? 'r₂' : '|z₂|';
+                    ctx.fillText(`${labelPrefix2} = ${absValue2.toFixed(1)}`, 0, -2);
+                    ctx.restore();
+                }
+            } else if (currentOperation === 'conjugate') {
+                unaryResults1.forEach(p => drawPoint(p, colors.z1_light, 'z̅₁', unaryPointRadius));
+                unaryResults2.forEach(p => drawPoint(p, colors.z2_light, 'z̅₂', unaryPointRadius));
+            } else if (currentOperation === 'sqrt') {
+                if (unaryResults1.length > 0) {
+                    drawPoint(unaryResults1[0], colors.z1_light, '√z₁', unaryPointRadius);
+                    drawPoint(unaryResults1[1], colors.z1_light, '-√z₁', unaryPointRadius);
+                }
+                if (unaryResults2.length > 0) {
+                    drawPoint(unaryResults2[0], colors.z2_light, '√z₂', unaryPointRadius);
+                    drawPoint(unaryResults2[1], colors.z2_light, '-√z₂', unaryPointRadius);
+                }
+            }
+        }
+
+        /**
+         * Main drawing function. Clears the canvas and redraws everything.
+         */
+        function drawAll() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGrid();
+            drawAxes();
+
+            // Draw argument arcs if in polar mode
+            if (displayMode === 'polar') {
+                drawArgumentArc(point1, colors.z1);
+                drawArgumentArc(point2, colors.z2);
+            }
+
+            // Draw the main points and results
+            drawPoint(point1, colors.z1, 'z₁');
+            drawPoint(point2, colors.z2, 'z₂');
+            drawUnaryResults();
+            if (resultPoint && currentOperation) drawPoint(resultPoint, colors.result, 'z');
+        }
+
+        // --- Event Handlers ---
+        /**
+         * Gets the mouse or touch position relative to the canvas.
+         * @param {MouseEvent|TouchEvent} e - The event object.
+         * @returns {{x: number, y: number}} The position.
+         */
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches ? e.touches[0] : e;
+            return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+        }
+        
+        /**
+         * Handles the start of a drag operation (mousedown or touchstart).
+         * @param {MouseEvent|TouchEvent} e - The event object.
+         */
+        function handleStart(e) {
+            e.preventDefault();
+            const pos = getPos(e);
+            const p1Pos = complexToCanvas(point1.a, point1.b);
+            const p2Pos = complexToCanvas(point2.a, point2.b);
+            const d1 = Math.hypot(pos.x - p1Pos.x, pos.y - p1Pos.y);
+            const d2 = Math.hypot(pos.x - p2Pos.x, pos.y - p2Pos.y);
+            // Check if the click is near a point
+            if (d1 < pointRadius + 5) draggingPoint = point1;
+            else if (d2 < pointRadius + 5) draggingPoint = point2;
+            else draggingPoint = null;
+            if(draggingPoint) canvas.style.cursor = 'grabbing';
+        }
+
+        /**
+         * Handles the drag movement (mousemove or touchmove).
+         * @param {MouseEvent|TouchEvent} e - The event object.
+         */
+        function handleMove(e) {
+            if (draggingPoint) {
+                e.preventDefault();
+                const pos = getPos(e);
+                const complexPos = canvasToComplex(pos.x, pos.y);
+                draggingPoint.a = complexPos.a;
+                draggingPoint.b = complexPos.b;
+                performOperation(); // Update everything on move
+            }
+        }
+
+        /**
+         * Handles the end of a drag operation (mouseup, mouseleave, touchend, touchcancel).
+         */
+        function handleEnd() {
+            draggingPoint = null;
+            canvas.style.cursor = 'grab';
+        }
+        
+        /**
+         * Sets the visual 'active' state for an operation button.
+         * @param {HTMLElement} btn - The button to activate.
+         */
+        function setActiveButton(btn) {
+            Object.values(buttons).forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+        }
+
+        /**
+         * Sets the display mode and updates the UI accordingly.
+         * @param {'algebraic'|'polar'} mode - The new display mode.
+         */
+        function setDisplayMode(mode) {
+            displayMode = mode;
+            if (mode === 'polar') {
+                polarBtn.classList.replace('toggle-btn-inactive', 'toggle-btn-active');
+                algebraicBtn.classList.replace('toggle-btn-active', 'toggle-btn-inactive');
+            } else {
+                algebraicBtn.classList.replace('toggle-btn-inactive', 'toggle-btn-active');
+                polarBtn.classList.replace('toggle-btn-active', 'toggle-btn-inactive');
+            }
+            performOperation(); // Update display with new format
+        }
+
+        // --- Event Listeners ---
+        polarBtn.addEventListener('click', () => setDisplayMode('polar'));
+        algebraicBtn.addEventListener('click', () => setDisplayMode('algebraic'));
+
+        // Add click listeners for all operation buttons
+        Object.entries(buttons).forEach(([op, btn]) => {
+            btn.addEventListener('click', () => {
+                currentOperation = op;
+                setActiveButton(btn);
+                performOperation();
+            });
+        });
+
+        // Reset button listener
+        resetBtn.addEventListener('click', () => {
+            point1 = { a: 1, b: 0 };
+            point2 = { a: 0, b: 1 };
+            currentOperation = null;
+            setActiveButton(null);
+            setDisplayMode('algebraic');
+            performOperation();
+        });
+
+        // Canvas mouse and touch event listeners
+        canvas.addEventListener('mousedown', handleStart);
+        canvas.addEventListener('mousemove', handleMove);
+        canvas.addEventListener('mouseup', handleEnd);
+        canvas.addEventListener('mouseleave', handleEnd); 
+        canvas.addEventListener('touchstart', handleStart, { passive: false });
+        canvas.addEventListener('touchmove', handleMove, { passive: false });
+        canvas.addEventListener('touchend', handleEnd);
+        canvas.addEventListener('touchcancel', handleEnd);
+        
+        /**
+         * Resizes the canvas to fit its container, recalculating origin and scale.
+         */
+        function resizeCanvas() {
+            const parent = document.getElementById('canvas-container');
+            if (!parent) return;
+            const parentWidth = parent.clientWidth;
+            const parentHeight = parent.clientHeight;
+            if (parentWidth > 0 && parentHeight > 0) {
+                canvas.width = parentWidth;
+                canvas.height = parentHeight;
+                origin.x = canvas.width / 2;
+                origin.y = canvas.height / 2;
+                // Adjust scale based on width to maintain a consistent view
+                scale = canvas.width / 12; 
+                performOperation();
+            }
+        }
+
+        // Resize canvas when the window is resized
+        window.addEventListener('resize', resizeCanvas);
+        
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set initial state of display mode buttons correctly
+            setDisplayMode('algebraic');
+            renderButtons();
+            // A short delay to ensure layout is stable before sizing the canvas
+            setTimeout(resizeCanvas, 50);
+        });
+
+    </script>
+</body>
+</html>
+

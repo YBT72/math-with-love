@@ -1,0 +1,115 @@
+.search-wrapper {
+  margin-right: auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+html[dir="rtl"] .search-wrapper {
+  margin-left: auto;
+}
+
+html[dir="ltr"] .search-wrapper {
+  margin-right: auto;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  padding: 0.4rem 0.8rem;
+  background-color: var(--color-surface);
+  width: 0;
+  height: 36px;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+  transition: width 0.4s ease, opacity 0.3s ease;
+  position: relative; /* Добавляем относительное позиционирование */
+}
+
+.search-wrapper.open .search-box {
+  width: 220px;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Специфический стиль для открытого поиска в разных направлениях */
+html[dir="rtl"] .search-wrapper.open .search-box {
+  padding-left: 2.5rem; /* В RTL режиме место для кнопки слева */
+  padding-right: 0.8rem;
+}
+
+html[dir="ltr"] .search-wrapper.open .search-box {
+  padding-right: 2.5rem; /* В LTR режиме место для кнопки справа */
+  padding-left: 0.8rem;
+}
+
+/* Адаптивность поиска для планшетов и мобильных устройств */
+@media (max-width: 768px) {
+  .search-wrapper.open .search-box {
+    width: 180px;
+  }
+}
+
+@media (max-width: 576px) {
+  .search-wrapper.open .search-box {
+    width: 140px;
+  }
+  
+  .search-icon-btn {
+    font-size: 0.9rem;
+  }
+}
+
+/* При открытии поиска меняем цвет иконки */
+.search-wrapper.open .search-icon-btn {
+  color: var(--color-text);
+  z-index: 5; /* Иконка всегда поверх поля */
+  transform: none; /* Предотвращаем трансформацию иконки */
+}
+
+.search-box input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  color: var(--color-text);
+  width: 100%;
+  padding: 0.4rem;
+}
+
+html[dir="rtl"] .search-box input {
+  direction: rtl;
+}
+
+.search-icon-btn {
+  position: absolute;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  width: 36px;
+  color: white;
+  transition: color 0.3s;
+  z-index: 4;
+}
+
+/* Позиция иконки для разных направлений */
+html[dir="ltr"] .search-icon-btn {
+  right: 6px; /* В LTR режиме иконка справа */
+  left: auto;
+}
+
+html[dir="rtl"] .search-icon-btn {
+  left: 6px; /* В RTL режиме иконка слева */
+  right: auto;
+}
+
+.search-icon-btn:hover {
+  color: var(--color-hover);
+}

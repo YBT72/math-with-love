@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>שיעור 1 - מספרים מרוכבים</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+          onload="renderMathInElement(document.body, {delimiters: [{left: '\\(', right: '\\)', display: false}]})">
+  </script>
+  <style>
+    body {
+      font-family: David, sans-serif;
+      direction: rtl;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+    }
+    header {
+      background-color: #0b2447;
+      color: #fff;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav span {
+      margin-left: 16px;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    section {
+      width: 100%;
+    }
+    .section-block {
+      width: 100%;
+      padding: 16px 24px;
+      box-sizing: border-box;
+      border-bottom: 1px solid #ccc;
+    }
+    .header-section {
+      background-color: transparent;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #0b2447;
+      margin-bottom: 12px;
+    }
+    .section-kniya {
+      background-color: #f0f0f0;
+    }
+    .section-targil {
+      background-color: #ffffff;
+    }
+    .section-shb {
+      background-color: #f4f8fb;
+    }
+    .lesson-flex {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .lesson-text {
+      width: 50%;
+    }
+    .lesson-text p {
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+    .exercise-answer {
+      font-style: italic;
+      color: gray;
+    }
+    .katex {
+      direction: ltr;
+      unicode-bidi: embed;
+    }
+    .frame-box {
+      width: 50%;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    }
+    .frame-box img {
+      width: 100%;
+      display: block;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>שיעור 1 – הגדרה אלגברית וגיאומטרית של מספר מרוכב</div>
+    <nav>
+      <span title="הסבר">📖</span>
+      <span title="תרגול">🏠</span>
+      <span title="שיעורי בית">📑</span>
+      <span title="הארה">💡</span>
+    </nav>
+  </header>
+
+  <!-- פרק א: הסבר -->
+  <section class="section-block section-kniya">
+    <div class="header-section">פרק א: הסבר</div>
+    <div class="lesson-flex">
+      <div class="lesson-text">
+        <p>הרחבת מערכת המספרים הממשיים למרוכבים נולדה מהצורך לפתור משוואות שלא ניתנות לפתרון רגיל, כמו \( x^2 = -1 \).</p>
+        <p>הגדרה: מספר מרוכב הוא מהצורה \( z = a + bi \)</p>
+        <p>שוויון מספרים מרוכבים: \( a + bi = c + di \) אם ורק אם \( a = c \) וגם \( b = d \)</p>
+        <p><strong>דוגמה:</strong></p>
+        <p>מצא את החלק הממשי והמדומה של \( 3 - 4i \)</p>
+        <p class="exercise-answer">תשובה: \( \text{Re}(z) = 3 \), \( \text{Im}(z) = -4 \)</p>
+      </div>
+      <div class="frame-box">
+        <img src="https://via.placeholder.com/400x250.png?text=הדמיה+כאן" alt="תמונה להדמיה">
+      </div>
+    </div>
+  </section>
+
+  <!-- פרק ב: תרגול -->
+  <section class="section-block section-targil">
+    <div class="header-section">פרק ב: תרגול בכיתה</div>
+    <p>1. מהו החלק הממשי והחלק המדומה של \( 2 + 5i \)?</p>
+    <p>2. האם \( 3 - 2i = 3 + 2i \)? נמק.</p>
+  </section>
+
+  <!-- פרק ג: שיעורי בית -->
+  <section class="section-block section-shb">
+    <div class="header-section">פרק ג: שיעורי בית</div>
+    <p>1. כתוב שלושה מספרים מרוכבים שונים והפרד ביניהם את החלק הממשי והמדומה.</p>
+    <p>2. הוכח: \( 4 + i = 4 - i \) אינו נכון.</p>
+  </section>
+
+</body>
+</html>

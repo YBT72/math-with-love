@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>פעולות חשבון במישור גאוס</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=David+Libre:wght@400;700&display=swap" rel="stylesheet">
+    <!-- KaTeX library -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" xintegrity="sha384-n8MVd4RsNIU07EWpWGbS0fqACpCs/99w8jRLeZ3CVLagTUYgN5YLSKiDNQ4BgIWo" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" xintegrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmImMNkdOF" crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: 'David Libre', serif;
+            overflow: hidden;
+        }
+        canvas {
+            cursor: grab;
+            display: block; 
+            touch-action: none;
+        }
+        canvas:active {
+            cursor: grabbing;
+        }
+        .operation-btn {
+            transition: all 0.2s;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 2.75rem;
+            width: 100%;
+            font-size: 21px; /* Uniform font size for all buttons */
+        }
+        .operation-btn.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .hidden {
+            display: none;
+        }
+        .result-box {
+            min-height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        #result-row {
+            min-height: 58px;
+            width: 100%;
+        }
+        .katex { font-size: 1.1em !important; }
+        .katex-display { margin: 0; }
+        
+        .unary-result-box {
+            white-space: nowrap;
+        }
+        .ltr-text {
+            direction: ltr;
+        }
+        .math-font {
+            font-family: 'Times New Roman', Times, serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 w-full h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="w-full max-w-5xl text-center mb-2 flex-shrink-0">
+        <h1 class="text-2xl md:text-3xl font-bold text-slate-800">פעולות חשבון במישור גאוס</h1>
+        <p class="text-slate-600 text-sm md:text-base">גרור את הנקודות z<sub>1</sub> ו-z<sub>2</sub> ובחר בפעולה הרצויה</p>
+    </div>
+
+    <div class="w-full max-w-6xl flex flex-col md:flex-row-reverse items-center justify-center gap-4 md:gap-8 flex-grow min-h-0">
+        <!-- Canvas Container -->
+        <div id="canvas-container" class="w-full max-w-4xl bg-white rounded-xl shadow-lg p-2 flex items-center justify-center" style="aspect-ratio: 1.25 / 1;">
+            <canvas id="complexPlane"></canvas>
+        </div>
+
+        <!-- Display & Controls Container -->
+        <div class="w-full max-w-xs flex flex-col items-center justify-center gap-3 mt-2 md:mt-0">
+            
+            <div id="info-title" class="text-center text-slate-600 text-base font-bold min-h-[1.5rem]"></div>
+
+            <div class="flex gap-3 w-full">
+                <div id="z2_display" class="result-box ltr-text bg-purple-100 border border-purple-200 p-3 rounded-xl shadow-md text-purple-800"></div>
+                <div id="z1_display" class="result-box ltr-text bg-blue-100 border border-blue-200 p-3 rounded-xl shadow-md text-blue-800"></div>
+            </div>
+
+            <div id="result-row" class="w-full">
+                <div id="binary_result_display" class="result-box ltr-text bg-green-100 border border-green-200 p-3 rounded-xl shadow-md text-green-800"></div>
+                <div id="unary_results_container" class="hidden flex gap-3 w-full">
+                    <div id="unary_result2_display" class="result-box unary-result-box ltr-text bg-purple-50 border border-purple-200 p-2 rounded-xl shadow-sm text-purple-700"></div>
+                    <div id="unary_result1_display" class="result-box unary-result-box ltr-text bg-blue-50 border border-blue-200 p-2 rounded-xl shadow-sm text-blue-700"></div>
+                </div>
+            </div>
+            
+            <div class="w-full flex flex-col gap-2 my-2">
+                <div class="grid grid-cols-4 gap-2">
+                    <button id="add-btn" class="operation-btn active bg-slate-200 text-slate-800 font-bold rounded-lg">+</button>
+                    <button id="subtract-btn" class="operation-btn bg-slate-200 text-slate-800 font-bold rounded-lg">-</button>
+                    <button id="multiply-btn" class="operation-btn bg-slate-200 text-slate-800 font-bold rounded-lg">×</button>
+                    <button id="divide-btn" class="operation-btn bg-slate-200 text-slate-800 font-bold rounded-lg">÷</button>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <button id="sqrt-btn" class="operation-btn bg-slate-200 text-slate-800 font-bold rounded-lg"></button>
+                    <button id="conjugate-btn" class="operation-btn bg-slate-200 text-slate-800 font-bold rounded-lg"></button>
+                    <button id="abs-btn" class="operation-btn bg-slate-200 text-slate-800 font-bold rounded-lg"></button>
+                </div>
+            </div>
+        
+            <button id="reset-btn" class="bg-yellow-100 hover:bg-yellow-200 border border-yellow-300 text-yellow-800 font-bold py-2 px-4 rounded-lg w-full mt-2">איפוס</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Setup ---
+        const canvas = document.getElementById('complexPlane');
+        const ctx = canvas.getContext('2d');
+        const z1Display = document.getElementById('z1_display');
+        const z2Display = document.getElementById('z2_display');
+        const binaryResultDisplay = document.getElementById('binary_result_display');
+        const unaryResultsContainer = document.getElementById('unary_results_container');
+        const unaryResult1Display = document.getElementById('unary_result1_display');
+        const unaryResult2Display = document.getElementById('unary_result2_display');
+        const infoTitle = document.getElementById('info-title');
+        
+        const buttons = {
+            add: document.getElementById('add-btn'),
+            subtract: document.getElementById('subtract-btn'),
+            multiply: document.getElementById('multiply-btn'),
+            divide: document.getElementById('divide-btn'),
+            sqrt: document.getElementById('sqrt-btn'),
+            conjugate: document.getElementById('conjugate-btn'),
+            abs: document.getElementById('abs-btn'),
+        };
+        const resetBtn = document.getElementById('reset-btn');
+
+        const UNARY_OPS = ['sqrt', 'conjugate', 'abs'];
+        const BINARY_OPS = ['add', 'subtract', 'multiply', 'divide'];
+
+        const pointRadius = 9;
+        const colors = { z1: '#3b82f6', z2: '#8b5cf6', result: '#16a34a' };
+        const gridColor = '#e2e8f0', axisColor = '#64748b', fontColor = '#475569', labelFontColor = '#1e293b';
+        const mathFont = "'Times New Roman', Times, serif";
+
+        let origin = { x: 0, y: 0 };
+        let scale = 40; 
+        
+        let point1 = { a: 1, b: 0 }; 
+        let point2 = { a: 0, b: 1 };
+        let resultPoint = null;
+        let draggingPoint = null;
+        let currentOperation = 'add';
+
+        // --- KaTeX Rendering ---
+        function renderMath(element, latexString, baseFontSize = '1.1rem') {
+             element.style.fontSize = baseFontSize;
+            try {
+                katex.render(latexString, element, { throwOnError: false, displayMode: false });
+            } catch (e) {
+                element.textContent = "Error";
+                console.error(e);
+            }
+        }
+
+        function renderButtons() {
+            renderMath(buttons.sqrt, "\\mathbf{\\sqrt{\\phantom{z}}}");
+            renderMath(buttons.conjugate, "\\mathbf{\\overline{z}}");
+            renderMath(buttons.abs, "\\mathbf{|z|}");
+        }
+
+        // --- Coordinate Conversion ---
+        function complexToCanvas(a, b) { return { x: origin.x + a * scale, y: origin.y - b * scale }; }
+        function canvasToComplex(x, y) { return { a: (x - origin.x) / scale, b: (origin.y - y) / scale }; }
+
+        // --- Calculation & State Update ---
+        function performOperation() {
+            updateDisplay();
+            drawAll();
+        }
+
+        // --- Drawing Functions ---
+        function drawGrid() {
+            ctx.strokeStyle = gridColor;
+            ctx.lineWidth = 1;
+            for (let x = origin.x + scale; x < canvas.width; x += scale) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+            for (let x = origin.x - scale; x > 0; x -= scale) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+            for (let y = origin.y + scale; y < canvas.height; y += scale) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+            for (let y = origin.y - scale; y > 0; y -= scale) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+        }
+
+        function drawAxes() {
+            ctx.strokeStyle = axisColor;
+            ctx.lineWidth = 2;
+            
+            ctx.beginPath(); ctx.moveTo(0, origin.y); ctx.lineTo(canvas.width, origin.y); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(canvas.width - 12, origin.y - 7); ctx.lineTo(canvas.width, origin.y); ctx.lineTo(canvas.width - 12, origin.y + 7); ctx.stroke();
+
+            ctx.beginPath(); ctx.moveTo(origin.x, canvas.height); ctx.lineTo(origin.x, 0); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(origin.x - 7, 12); ctx.lineTo(origin.x, 2); ctx.lineTo(origin.x + 7, 12); ctx.stroke();
+            
+            ctx.fillStyle = fontColor;
+            const yNumberOffset = 10; 
+            for (let i = -10; i <= 10; i++) {
+                if (i === 0) continue;
+                ctx.save();
+                ctx.direction = 'ltr';
+                ctx.textAlign = 'center';
+                ctx.font = `12px ${mathFont}`;
+                let xPos = origin.x + i * scale;
+                if (Math.abs(xPos - origin.x) < canvas.width/2 - 20) ctx.fillText(i, xPos, origin.y + 15);
+                let yPos = origin.y - i * scale;
+                if (Math.abs(yPos - origin.y) < canvas.height/2 - 20) ctx.fillText(i, origin.x - yNumberOffset, yPos);
+                ctx.restore();
+            }
+
+            ctx.fillStyle = labelFontColor;
+            ctx.font = `bold 16px ${mathFont}`;
+            
+            const yLabelOffset = 8;
+            ctx.textAlign = 'right';
+            ctx.fillText('Im(z)', origin.x - yLabelOffset, 15);
+
+            ctx.textAlign = 'center';
+            ctx.fillText('Re(z)', canvas.width - 35, origin.y + 15);
+        }
+        
+        function drawPoint(p, color, name) {
+            if (!p) return;
+            const canvasPos = complexToCanvas(p.a, p.b);
+            
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(origin.x, origin.y); ctx.lineTo(canvasPos.x, canvasPos.y); ctx.stroke();
+            ctx.restore();
+
+            ctx.beginPath(); ctx.arc(canvasPos.x, canvasPos.y, pointRadius, 0, 2 * Math.PI); ctx.fillStyle = color; ctx.fill();
+            ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.stroke();
+           
+            ctx.save();
+            ctx.direction = 'ltr';
+            ctx.fillStyle = labelFontColor;
+            ctx.font = `bold 16px ${mathFont}`;
+            
+            const offset = 12;
+            const diagonalOffset = offset / Math.sqrt(2);
+            let xSign = 1, ySign = -1;
+            if (canvasPos.x > canvas.width - 40) xSign = -1;
+            if (canvasPos.y < 20) ySign = 1;
+            const labelX = canvasPos.x + xSign * diagonalOffset;
+            const labelY = canvasPos.y + ySign * diagonalOffset;
+            ctx.textAlign = xSign > 0 ? 'left' : 'right';
+            ctx.textBaseline = ySign > 0 ? 'top' : 'bottom';
+            ctx.fillText(name, labelX, labelY);
+            ctx.restore();
+        }
+
+        function toLatex(p, addPlusMinus = false) {
+            if (!p) return "";
+            const epsilon = 1e-9;
+            let a = p.a, b = p.b;
+            if (Math.abs(a) < epsilon) a = 0;
+            if (Math.abs(b) < epsilon) b = 0;
+
+            if (a === 0 && b === 0) return '0';
+            
+            let realPart = a !== 0 ? a.toFixed(1) : '';
+            let imagPart = '';
+            if (b !== 0) {
+                if (Math.abs(b - 1) < epsilon) imagPart = 'i';
+                else if (Math.abs(b + 1) < epsilon) imagPart = '-i';
+                else imagPart = `${b.toFixed(1)}i`;
+            }
+
+            let result;
+            if (realPart && imagPart) {
+                result = b > 0 ? `${realPart} + ${imagPart}` : `${realPart} - ${imagPart.substring(1)}`;
+            } else {
+                result = realPart || imagPart;
+            }
+            
+            return addPlusMinus ? `\\pm(${result})` : result;
+        }
+
+        function adjustFontSize(elements) {
+            requestAnimationFrame(() => {
+                let shouldShrink = false;
+                elements.forEach(el => {
+                    el.style.fontSize = ''; // Reset to default
+                    if (el.scrollWidth > el.clientWidth) {
+                        shouldShrink = true;
+                    }
+                });
+
+                if (shouldShrink) {
+                    elements.forEach(el => {
+                        el.style.fontSize = '0.8rem'; // Apply smaller size to all
+                    });
+                }
+            });
+        }
+
+        function updateDisplay() {
+            renderMath(z1Display, `z_1 = ${toLatex(point1)}`);
+            renderMath(z2Display, `z_2 = ${toLatex(point2)}`);
+
+            const isUnary = UNARY_OPS.includes(currentOperation);
+            
+            binaryResultDisplay.classList.toggle('hidden', isUnary);
+            unaryResultsContainer.classList.toggle('hidden', !isUnary);
+            infoTitle.textContent = isUnary ? 'פעולות אונריות לא תציגו תשובה במישור גאוס' : 'תוצאת הפעולה מוצגת במישור גאוס בצבע ירוק';
+
+            resultPoint = null;
+            let error = false;
+
+            if (BINARY_OPS.includes(currentOperation)) {
+                switch (currentOperation) {
+                    case 'add': resultPoint = { a: point1.a + point2.a, b: point1.b + point2.b }; break;
+                    case 'subtract': resultPoint = { a: point1.a - point2.a, b: point1.b - point2.b }; break;
+                    case 'multiply': resultPoint = { a: (point1.a * point2.a) - (point1.b * point2.b), b: (point1.a * point2.b) + (point1.b * point2.a) }; break;
+                    case 'divide':
+                        const denominator = point2.a * point2.a + point2.b * point2.b;
+                        if (Math.abs(denominator) < 1e-9) error = true;
+                        else resultPoint = { a: (point1.a * point2.a + point1.b * point2.b) / denominator, b: (point1.b * point2.a - point1.a * point2.b) / denominator };
+                        break;
+                }
+                if (error) {
+                    binaryResultDisplay.innerHTML = `<span class="text-red-600 font-bold">שגיאה: חילוק באפס</span>`;
+                } else {
+                    renderMath(binaryResultDisplay, `z = z_1 ${currentOperation === 'add' ? '+' : currentOperation === 'subtract' ? '-' : currentOperation === 'multiply' ? '\\times' : '\\div'} z_2 = ${toLatex(resultPoint)}`);
+                    adjustFontSize([binaryResultDisplay]);
+                }
+            } else if (isUnary) {
+                let res1, res2;
+                switch(currentOperation) {
+                    case 'sqrt':
+                        const r1 = Math.hypot(point1.a, point1.b), phi1 = Math.atan2(point1.b, point1.a);
+                        res1 = { a: Math.sqrt(r1) * Math.cos(phi1 / 2), b: Math.sqrt(r1) * Math.sin(phi1 / 2) };
+                        const r2 = Math.hypot(point2.a, point2.b), phi2 = Math.atan2(point2.b, point2.a);
+                        res2 = { a: Math.sqrt(r2) * Math.cos(phi2 / 2), b: Math.sqrt(r2) * Math.sin(phi2 / 2) };
+                        renderMath(unaryResult1Display, `\\sqrt{z_1} = ${toLatex(res1, true)}`);
+                        renderMath(unaryResult2Display, `\\sqrt{z_2} = ${toLatex(res2, true)}`);
+                        break;
+                    case 'conjugate':
+                        res1 = { a: point1.a, b: -point1.b };
+                        res2 = { a: point2.a, b: -point2.b };
+                        renderMath(unaryResult1Display, `\\overline{z_1} = ${toLatex(res1)}`);
+                        renderMath(unaryResult2Display, `\\overline{z_2} = ${toLatex(res2)}`);
+                        break;
+                    case 'abs':
+                        res1 = { a: Math.hypot(point1.a, point1.b), b: 0 };
+                        res2 = { a: Math.hypot(point2.a, point2.b), b: 0 };
+                        renderMath(unaryResult1Display, `|z_1| = ${toLatex(res1)}`);
+                        renderMath(unaryResult2Display, `|z_2| = ${toLatex(res2)}`);
+                        break;
+                }
+                adjustFontSize([unaryResult1Display, unaryResult2Display]);
+            }
+        }
+
+        function drawAll() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGrid();
+            drawAxes();
+            drawPoint(point1, colors.z1, 'z₁');
+            drawPoint(point2, colors.z2, 'z₂');
+            if (resultPoint) drawPoint(resultPoint, colors.result, 'z');
+        }
+
+        // --- Event Handlers ---
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches ? e.touches[0] : e;
+            return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+        }
+        
+        function handleStart(e) {
+            e.preventDefault();
+            const pos = getPos(e);
+            const p1Pos = complexToCanvas(point1.a, point1.b);
+            const p2Pos = complexToCanvas(point2.a, point2.b);
+            const d1 = Math.hypot(pos.x - p1Pos.x, pos.y - p1Pos.y);
+            const d2 = Math.hypot(pos.x - p2Pos.x, pos.y - p2Pos.y);
+            if (d1 < pointRadius + 5) draggingPoint = point1;
+            else if (d2 < pointRadius + 5) draggingPoint = point2;
+            else draggingPoint = null;
+            if(draggingPoint) canvas.style.cursor = 'grabbing';
+        }
+
+        function handleMove(e) {
+            if (draggingPoint) {
+                e.preventDefault();
+                const pos = getPos(e);
+                const complexPos = canvasToComplex(pos.x, pos.y);
+                draggingPoint.a = complexPos.a;
+                draggingPoint.b = complexPos.b;
+                performOperation();
+            }
+        }
+
+        function handleEnd() {
+            draggingPoint = null;
+            canvas.style.cursor = 'grab';
+        }
+        
+        function setActiveButton(btn) {
+            Object.values(buttons).forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        Object.entries(buttons).forEach(([op, btn]) => {
+            btn.addEventListener('click', () => {
+                currentOperation = op;
+                setActiveButton(btn);
+                performOperation();
+            });
+        });
+
+        resetBtn.addEventListener('click', () => {
+            point1 = { a: 1, b: 0 };
+            point2 = { a: 0, b: 1 };
+            currentOperation = 'add';
+            setActiveButton(buttons.add);
+            performOperation();
+        });
+
+        canvas.addEventListener('mousedown', handleStart);
+        canvas.addEventListener('mousemove', handleMove);
+        canvas.addEventListener('mouseup', handleEnd);
+        canvas.addEventListener('mouseleave', handleEnd); 
+        canvas.addEventListener('touchstart', handleStart, { passive: false });
+        canvas.addEventListener('touchmove', handleMove, { passive: false });
+        canvas.addEventListener('touchend', handleEnd);
+        canvas.addEventListener('touchcancel', handleEnd);
+        
+        function resizeCanvas() {
+            const parent = document.getElementById('canvas-container');
+            const parentWidth = parent.clientWidth;
+            const parentHeight = parent.clientHeight;
+            if (parentWidth > 0 && parentHeight > 0) {
+                canvas.width = parentWidth;
+                canvas.height = parentHeight;
+                origin.x = canvas.width / 2;
+                origin.y = canvas.height / 2;
+                scale = canvas.width / 15; 
+                performOperation();
+            }
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Initial load
+        setTimeout(() => {
+            renderButtons();
+            resizeCanvas();
+        }, 50);
+
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>מתמטיקה באהבה</title>
+  <!--
+    We use a single CSS file that imports all other style files.
+    This approach reduces repetitive code and makes maintenance easier.
+    Additional page-specific styles are loaded dynamically via JavaScript.
+  -->
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <!--
+    The header, search box, and sidebar menu will be loaded dynamically into these containers.
+    You do not need to change these IDs. They are used by JavaScript below.
+  -->
+  <header id="header-placeholder"></header>
+  <div id="header-search-placeholder"></div>
+  <div id="side-menu"></div>
+  <!--
+    This is the main content area for each page.
+    When you create a new page, you can insert your unique content into <main id="page-content">.
+  -->
+  <main id="page-content">
+    <!-- Unique page content goes here -->
+  </main>
+  
+  <!-- Footer будет загружен сюда -->
+  <footer id="footer-placeholder"></footer>
+  
+  <!-- Отладочная информация -->
+  <div id="debug-info" style="position: fixed; bottom: 5px; left: 5px; background: rgba(0,0,0,0.7); color: white; padding: 5px; border-radius: 4px; font-size: 12px; z-index: 9999; display: none;">
+    <div>Debug Info</div>
+  </div>
+</body>
+<script>
+  /*
+    This script loads the shared header, footer and search box templates into the page.
+    After loading, it loads the external JavaScript files for search and sidebar menu functionality.
+    This way, every page that uses this layout will automatically have all features.
+  */
+  // Загружаем шапку сайта
+  fetch('components/header.html')
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById('header-placeholder').innerHTML = html;
+      
+      // После загрузки шапки загружаем футер
+      return fetch('components/footer.html');
+    })
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById('footer-placeholder').innerHTML = html;
+      
+      // После загрузки всех компонентов загружаем скрипты
+      loadExternalScripts();
+    });
+
+  // Loads external JS files for search and sidebar menu
+  function loadExternalScripts() {
+    // Загружаем утилиту для управления стилями
+    const stylesLoaderScript = document.createElement('script');
+    stylesLoaderScript.src = 'scripts/styles-loader.js';
+    document.body.appendChild(stylesLoaderScript);
+    
+    // Loads search box functionality
+    const searchScript = document.createElement('script');
+    searchScript.src = 'scripts/search.js';
+    searchScript.onload = function() {
+      if (typeof initSearchScripts === 'function') {
+        initSearchScripts();
+      }
+    };
+    document.body.appendChild(searchScript);
+
+    // Loads sidebar menu functionality
+    const sideMenuScript = document.createElement('script');
+    sideMenuScript.src = 'scripts/side-menu.js';
+    sideMenuScript.onload = function() {
+      if (typeof initSideMenuScripts === 'function') {
+        initSideMenuScripts();
+      }
+    };
+    document.body.appendChild(sideMenuScript);
+    
+    // Сразу загружаем диагностический скрипт
+    const debugScript = document.createElement('script');
+    debugScript.src = 'scripts/debug.js';
+    document.body.appendChild(debugScript);
+    
+    // Загружаем основной скрипт без задержки
+    const pageLoaderScript = document.createElement('script');
+    pageLoaderScript.src = 'scripts/page-loader.js';
+    document.body.appendChild(pageLoaderScript);
+  }
+</script>
+</html>

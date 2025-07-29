@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מישור גאוס אינטראקטיבי</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- KaTeX for mathematical rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" xintegrity="sha384-n8MVd4RsNIU0KOVEMckDpbDM7QIYBEf1VlBDavfi1dCQpk9AIr35VPAvRhtGDs/i" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" xintegrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=David+Libre:wght@400;700&family=Tinos:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'David Libre', serif;
+            overflow: hidden;
+        }
+        .math-text, .katex .text {
+            font-family: 'Tinos', 'Times New Roman', serif;
+        }
+        canvas {
+            cursor: grab;
+            display: block; 
+        }
+        canvas:active {
+            cursor: grabbing;
+        }
+        .toggle-btn-active {
+            background-color: #475569;
+            color: white;
+        }
+        .toggle-btn-inactive {
+            background-color: #e2e8f0;
+            color: #475569;
+        }
+        .katex {
+            font-size: 1.2em !important;
+        }
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #cbd5e1;
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+        input[type=range]:hover {
+            opacity: 1;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3b82f6; /* Blue */
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 2px rgba(0,0,0,0.3);
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6; /* Blue */
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 2px rgba(0,0,0,0.3);
+        }
+        #powersListContainer {
+            height: 110px;
+            overflow-y: auto;
+            background-color: #f5f3ff; /* violet-50 */
+            border: 1px solid #ddd6fe; /* violet-200 */
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 2px;
+            padding: 4px;
+            font-size: 0.7rem;
+            line-height: 1.2;
+        }
+        #powersListContainer div:hover {
+            background-color: #c4b5fd; /* violet-300 */
+        }
+        #powersListContainer div.highlighted-result {
+            font-weight: 700;
+            color: #4c1d95; /* violet-800 */
+        }
+        #slider-ticks span.active-tick {
+            font-weight: 700;
+            color: #1d4ed8; /* blue-700 */
+        }
+    </style>
+</head>
+<body class="bg-slate-100 w-full h-screen flex flex-col items-center justify-center p-2 md:p-4">
+
+    <div class="w-full max-w-6xl flex flex-col md:flex-row-reverse items-center justify-center gap-4 md:gap-8 flex-grow min-h-0">
+        
+        <div class="w-full max-w-4xl flex flex-col items-center">
+             <div class="text-center mb-2 flex-shrink-0">
+                <h1 class="text-2xl md:text-3xl font-bold text-slate-600">מישור גאוס האינטראקטיבי</h1>
+                <p class="text-slate-600 text-sm md:text-base">גרור את הנקודה הירוקה כדי לשנות את המספר המרוכב</p>
+            </div>
+            <div id="canvas-container" class="w-full bg-white rounded-xl shadow-lg p-2 flex items-center justify-center" style="aspect-ratio: 1.25 / 1;">
+                <canvas id="complexPlane"></canvas>
+            </div>
+        </div>
+
+        <div class="w-full max-w-xs flex flex-col items-center justify-center gap-1 mt-2 md:mt-0">
+             <h2 class="text-lg font-bold text-slate-600 text-center">ויזואליזציה של משפט דה מואבר</h2>
+             <div id="side-de-moivre-formula" class="w-full bg-amber-50 border border-amber-200 py-0 px-1 rounded-md text-slate-700 font-bold shadow-sm flex items-center justify-center" dir="ltr"></div>
+
+            <div class="w-full flex justify-center my-1">
+                <div class="flex border border-slate-300 rounded-lg overflow-hidden">
+                    <button id="polarBtn" class="toggle-btn-inactive px-4 py-1 text-sm font-bold transition-colors">הצגה קוטבית</button>
+                    <button id="algebraicBtn" class="toggle-btn-active px-4 py-1 text-sm font-bold transition-colors">הצגה אלגברית</button>
+                </div>
+            </div>
+             <div id="valueDisplay" class="bg-green-100 border border-green-200 p-2 rounded-xl shadow-md text-lg font-bold w-full text-center math-text min-h-[40px] flex items-center justify-center"></div>
+            
+             <p class="text-xs font-bold text-slate-500 text-center mt-1 mb-0">תוצאות החזקות:</p>
+             <div id="powersListContainer" class="w-full rounded-lg text-sm math-text" dir="ltr"></div>
+
+            <div class="w-full bg-blue-100 border border-blue-200 p-2 rounded-xl shadow-md flex items-center gap-2" dir="rtl">
+                <label for="powerSlider" class="font-bold text-blue-800 text-right flex-shrink-0 w-1/3 leading-tight">תבחר חזקה מרבית</label>
+                <div class="flex-grow" dir="ltr">
+                    <input type="range" id="powerSlider" min="1" max="9" value="1" step="1" class="w-full">
+                    <div id="slider-ticks" class="flex justify-between text-xs text-slate-500 px-1 mt-1"></div>
+                </div>
+            </div>
+            <button id="resetBtn" class="w-full bg-yellow-200 hover:bg-yellow-300 text-orange-800 font-bold py-2 px-4 rounded-xl shadow-md transition-colors">איפוס</button>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Setup ---
+        const canvas = document.getElementById('complexPlane');
+        const ctx = canvas.getContext('2d');
+        const valueDisplay = document.getElementById('valueDisplay');
+        const polarBtn = document.getElementById('polarBtn');
+        const algebraicBtn = document.getElementById('algebraicBtn');
+        const powerSlider = document.getElementById('powerSlider');
+        const resetBtn = document.getElementById('resetBtn');
+        const powersListContainer = document.getElementById('powersListContainer');
+        let displayMode = 'algebraic';
+
+        // --- Color Configuration ---
+        const pointColor = '#16a34a';
+        const powerPointColor = '#8b5cf6';
+        const realColor = '#3b82f6';
+        const imagColor = '#ef4444';
+        const polarRadiusColor = '#f97316';
+        const polarAngleColor = '#6366f1';
+        const gridColor = '#f1f5f9';
+        const axisColor = '#36454F'; // Asphalt Gray
+        const tickColor = '#000000';
+        const fontColor = '#475569';
+        const highlightColor = '#facc15';
+
+        // --- Point Configuration ---
+        const pointRadius = 8;
+        const powerPointRadius = 5;
+
+        let origin = { x: 0, y: 0 };
+        let scale = 1; 
+        
+        // --- State ---
+        let point = { a: 0.8, b: 0.4 }; 
+        const initialPoint = { a: 0.8, b: 0.4 };
+        let powerN = 1;
+        let isDragging = false;
+        let highlightedPowerIndex = -1;
+
+        // --- Coordinate Conversion Functions ---
+        function complexToCanvas(a, b) {
+            return { x: origin.x + a * scale, y: origin.y - b * scale };
+        }
+
+        function canvasToComplex(x, y) {
+            return { a: (x - origin.x) / scale, b: (origin.y - y) / scale };
+        }
+
+        // --- Drawing Functions ---
+        function drawGrid() {
+            ctx.strokeStyle = gridColor;
+            ctx.lineWidth = 1;
+            const unit = 0.1 * scale;
+            const maxTicks = Math.ceil(Math.max(canvas.width, canvas.height) / 2 / unit);
+            for (let i = 1; i < maxTicks; i++) {
+                ctx.beginPath(); ctx.moveTo(origin.x + i * unit, 0); ctx.lineTo(origin.x + i * unit, canvas.height); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(origin.x - i * unit, 0); ctx.lineTo(origin.x - i * unit, canvas.height); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, origin.y + i * unit); ctx.lineTo(canvas.width, origin.y + i * unit); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, origin.y - i * unit); ctx.lineTo(canvas.width, origin.y - i * unit); ctx.stroke();
+            }
+        }
+
+        function drawAxes() {
+            ctx.strokeStyle = axisColor;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(0, origin.y); ctx.lineTo(canvas.width, origin.y); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(origin.x, 0); ctx.lineTo(origin.x, canvas.height); ctx.stroke();
+            
+            drawArrowhead(ctx, canvas.width - 2, origin.y, 0, axisColor);
+            drawArrowhead(ctx, origin.x, 2, -Math.PI / 2, axisColor);
+
+            ctx.fillStyle = fontColor;
+            ctx.font = 'bold 14px Tinos';
+            ctx.direction = 'ltr';
+            
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+            ctx.fillText('Re', canvas.width - 25, origin.y + 19);
+            
+            ctx.textAlign = 'right';
+            ctx.fillText('Im', origin.x - 10, 20);
+            
+            ctx.font = '14px Tinos';
+            const labels = [1, -1];
+            labels.forEach(val => {
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'alphabetic';
+                ctx.fillText(val.toString(), origin.x + val * scale, origin.y + 19);
+                
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(val.toString(), origin.x - 8, origin.y - val * scale);
+            });
+            
+            ctx.strokeStyle = tickColor; 
+            const maxTicks = Math.ceil(Math.max(canvas.width, canvas.height) / 2 / (0.1 * scale));
+            for(let i = 1; i < maxTicks; i++) {
+                const pos = i * 0.1 * scale;
+                let tickLength = 3;
+                if (i % 10 === 0) tickLength = 6;
+                else if (i % 5 === 0) tickLength = 4;
+                
+                ctx.beginPath(); ctx.moveTo(origin.x + pos, origin.y - tickLength); ctx.lineTo(origin.x + pos, origin.y + tickLength); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(origin.x - pos, origin.y - tickLength); ctx.lineTo(origin.x - pos, origin.y + tickLength); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(origin.x - tickLength, origin.y + pos); ctx.lineTo(origin.x + tickLength, origin.y + pos); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(origin.x - tickLength, origin.y - pos); ctx.lineTo(origin.x + tickLength, origin.y - pos); ctx.stroke();
+            }
+        }
+        
+        function drawPointAndProjections() {
+            const canvasPos = complexToCanvas(point.a, point.b);
+            
+            if (displayMode === 'algebraic') {
+                ctx.save();
+                ctx.setLineDash([4, 4]);
+                ctx.strokeStyle = realColor;
+                ctx.beginPath(); ctx.moveTo(canvasPos.x, canvasPos.y); ctx.lineTo(canvasPos.x, origin.y); ctx.stroke();
+                ctx.strokeStyle = imagColor;
+                ctx.beginPath(); ctx.moveTo(canvasPos.x, canvasPos.y); ctx.lineTo(origin.x, canvasPos.y); ctx.stroke();
+                ctx.restore();
+                
+                const highlightRadius = 4;
+                ctx.fillStyle = realColor;
+                ctx.beginPath(); ctx.arc(canvasPos.x, origin.y, highlightRadius, 0, 2 * Math.PI); ctx.fill();
+                ctx.fillStyle = imagColor;
+                ctx.beginPath(); ctx.arc(origin.x, canvasPos.y, highlightRadius, 0, 2 * Math.PI); ctx.fill();
+            }
+
+            ctx.beginPath();
+            ctx.arc(canvasPos.x, canvasPos.y, pointRadius, 0, 2 * Math.PI);
+            ctx.fillStyle = pointColor;
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            drawIntelligentZLabel(canvasPos, 'z', null);
+        }
+
+        function drawSpline(points) {
+            if (points.length < 2) return;
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            // Use a higher tension for a more rounded, loopy curve
+            const tension = 0.7; 
+            for (let i = 0; i < points.length - 1; i++) {
+                const p0 = (i > 0) ? points[i - 1] : points[i];
+                const p1 = points[i];
+                const p2 = points[i + 1];
+                const p3 = (i < points.length - 2) ? points[i + 2] : p2;
+                
+                // Catmull-Rom spline calculation with adjusted divisor for more curve
+                const cp1x = p1.x + (p2.x - p0.x) / 4 * tension;
+                const cp1y = p1.y + (p2.y - p0.y) / 4 * tension;
+                const cp2x = p2.x - (p3.x - p1.x) / 4 * tension;
+                const cp2y = p2.y - (p3.y - p1.y) / 4 * tension;
+                
+                ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
+            }
+            ctx.stroke();
+        }
+
+        function drawPowerSpiralAndPoint() {
+            const r = Math.hypot(point.a, point.b);
+            const theta = Math.atan2(point.b, point.a);
+            let powerPoints = [];
+            let powerComplexValues = [];
+
+            for (let i = 1; i <= powerN; i++) {
+                const r_n = Math.pow(r, i);
+                const theta_n = theta * i;
+                const a_n = r_n * Math.cos(theta_n);
+                const b_n = r_n * Math.sin(theta_n);
+                powerPoints.push(complexToCanvas(a_n, b_n));
+                powerComplexValues.push({a: a_n, b: b_n});
+            }
+
+            if (powerN > 1) {
+                if (displayMode === 'polar') {
+                    for (let i = 1; i < powerPoints.length; i++) {
+                        const p = powerPoints[i];
+                        const prev_theta = theta * i;
+                        const current_theta = theta * (i + 1);
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(origin.x, origin.y);
+                        ctx.lineTo(p.x, p.y);
+                        ctx.strokeStyle = powerPointColor;
+                        ctx.lineWidth = 1;
+                        ctx.globalAlpha = 0.3;
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.moveTo(origin.x, origin.y);
+                        ctx.arc(origin.x, origin.y, Math.hypot(p.x-origin.x, p.y-origin.y), -prev_theta, -current_theta, theta > 0);
+                        ctx.closePath();
+                        ctx.fillStyle = powerPointColor;
+                        ctx.globalAlpha = 0.08;
+                        ctx.fill();
+                        ctx.globalAlpha = 1.0;
+                    }
+                }
+
+                ctx.strokeStyle = powerPointColor;
+                ctx.lineWidth = 2;
+                ctx.globalAlpha = 0.6;
+                drawSpline(powerPoints);
+                ctx.globalAlpha = 1.0;
+                
+                for (let i = 1; i < powerPoints.length; i++) {
+                    const p = powerPoints[i];
+                    const currentPower = i + 1;
+                    const isHighlighted = (i + 1) === highlightedPowerIndex;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, isHighlighted ? powerPointRadius + 3 : powerPointRadius, 0, 2 * Math.PI);
+                    ctx.fillStyle = powerPointColor;
+                    ctx.fill();
+                    ctx.strokeStyle = isHighlighted ? highlightColor : 'white';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    drawIntelligentZLabel(p, 'z', currentPower);
+                }
+            }
+            updatePowersList(powerComplexValues);
+        }
+        
+        function drawIntelligentZLabel(canvasPos, base, power) {
+            ctx.save();
+            ctx.direction = 'ltr';
+            const labelColor = (base === 'z' && !power) ? pointColor : powerPointColor;
+            ctx.fillStyle = labelColor;
+            const angle = Math.atan2(canvasPos.y - origin.y, canvasPos.x - origin.x);
+            const offset = (base === 'z' && !power ? pointRadius : powerPointRadius) + 5;
+            const anchorX = canvasPos.x + offset * Math.cos(angle);
+            const anchorY = canvasPos.y + offset * Math.sin(angle);
+            ctx.font = 'bold 16px Tinos';
+            const baseWidth = ctx.measureText(base).width;
+            let powerWidth = 0;
+            let powerText = '';
+            if (power) {
+                ctx.font = 'bold 12px Tinos';
+                powerText = power.toString();
+                powerWidth = ctx.measureText(powerText).width;
+            }
+            const totalWidth = baseWidth + powerWidth;
+            const totalHeight = 16;
+            let finalX = anchorX, finalY = anchorY;
+            if (Math.cos(angle) < -0.1) { finalX -= totalWidth; } 
+            else if (Math.abs(Math.cos(angle)) < 0.1) { finalX -= totalWidth / 2; }
+            if (Math.sin(angle) < -0.1) { finalY -= totalHeight; } 
+            else if (Math.abs(Math.sin(angle)) < 0.1) { finalY -= totalHeight / 2; }
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+            ctx.font = 'bold 16px Tinos';
+            ctx.fillText(base, finalX, finalY + totalHeight * 0.75);
+            if (power) {
+                ctx.font = 'bold 12px Tinos';
+                ctx.fillText(powerText, finalX + baseWidth, finalY + totalHeight * 0.25);
+            }
+            ctx.restore(); 
+        }
+        
+        function drawRadiusVector() {
+            if (displayMode !== 'polar') return;
+            const canvasPos = complexToCanvas(point.a, point.b);
+            ctx.beginPath();
+            ctx.moveTo(origin.x, origin.y);
+            ctx.lineTo(canvasPos.x, canvasPos.y);
+            ctx.strokeStyle = pointColor;
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+            ctx.save();
+            ctx.fillStyle = pointColor;
+            ctx.font = 'bold 16px Tinos';
+            ctx.direction = 'ltr';
+            const midX = (origin.x + canvasPos.x) / 2;
+            const midY = (origin.y + canvasPos.y) / 2;
+            ctx.translate(midX, midY);
+            ctx.rotate(-Math.atan2(point.b, point.a));
+            ctx.fillText('r', 0, -8);
+            ctx.restore();
+        }
+
+        function drawArrowhead(ctx, x, y, angle, color) {
+            const headlen = 10;
+            ctx.save();
+            ctx.fillStyle = color;
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-headlen, headlen / 2.5);
+            ctx.lineTo(-headlen, -headlen / 2.5);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawAngleArc() {
+            if (displayMode !== 'polar') return;
+            const angleRad = Math.atan2(point.b, point.a);
+            const angleDeg = angleRad * 180 / Math.PI;
+            const r = Math.hypot(point.a, point.b);
+            
+            ctx.beginPath();
+            ctx.moveTo(origin.x, origin.y);
+            ctx.arc(origin.x, origin.y, r * scale, 0, -angleRad, angleRad > 0);
+            ctx.closePath();
+            ctx.fillStyle = pointColor;
+            ctx.globalAlpha = 0.1;
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+
+            const arcRadius = 0.2 * scale;
+            const canvasAngle = -angleRad; 
+            ctx.save();
+            ctx.strokeStyle = polarAngleColor;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(origin.x, origin.y, arcRadius, 0, canvasAngle, angleRad > 0);
+            ctx.stroke();
+            const endX = origin.x + arcRadius * Math.cos(canvasAngle);
+            const endY = origin.y + arcRadius * Math.sin(canvasAngle);
+            const tangentAngle = canvasAngle + (angleRad > 0 ? -Math.PI / 2 : Math.PI/2);
+            drawArrowhead(ctx, endX, endY, tangentAngle, polarAngleColor);
+            ctx.fillStyle = polarAngleColor;
+            ctx.font = 'bold 14px Tinos';
+            ctx.direction = 'ltr';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            let labelAngle = -angleRad / 2;
+            const labelRadius = arcRadius + 12;
+            const textX = origin.x + labelRadius * Math.cos(labelAngle);
+            const textY = origin.y + labelRadius * Math.sin(labelAngle);
+            ctx.fillText(`${Math.round(angleDeg)}°`, textX, textY);
+            ctx.restore();
+        }
+
+        function updateDisplay() {
+            const r_z = Math.hypot(point.a, point.b);
+            const angle_z_rad = Math.atan2(point.b, point.a);
+            let angle_z_deg = angle_z_rad * 180 / Math.PI;
+
+            let valueHTML = '';
+            if (displayMode === 'algebraic') {
+                const imagSign = point.b >= 0 ? '+' : '-';
+                valueHTML = `<span style="direction: ltr;"><span style="color: ${pointColor};">z = </span><span style="color: ${realColor};">${point.a.toFixed(2)}</span> <span style="color: ${pointColor};">${imagSign}</span> <span style="color: ${imagColor};">${Math.abs(point.b).toFixed(2)}</span><span style="color: ${pointColor};">i</span></span>`;
+            } else {
+                valueHTML = `<span style="direction: ltr;"><span style="color: ${pointColor};">z = </span><span style="color:${polarRadiusColor};">${r_z.toFixed(2)}</span><span style="color: ${pointColor};"> cis(</span><span style="color:${polarAngleColor};">${Math.round(angle_z_deg)}°</span><span style="color: ${pointColor};">)</span></span>`;
+            }
+            
+            valueDisplay.innerHTML = valueHTML;
+        }
+        
+        function updatePowersList(complexValues) {
+            powersListContainer.innerHTML = '';
+            if (powerN < 2) return;
+
+            complexValues.slice(1).forEach((val, index) => {
+                const power = index + 2;
+                const item = document.createElement('div');
+                item.className = 'p-1 cursor-pointer flex items-center';
+                if (power === highlightedPowerIndex) {
+                    item.classList.add('highlighted-result');
+                }
+                
+                const leftText = `z<sup>${power}</sup> =`;
+                let rightText;
+
+                if (displayMode === 'algebraic') {
+                    const sign = val.b >= 0 ? '+' : '-';
+                    rightText = `${val.a.toFixed(2)} ${sign} ${Math.abs(val.b).toFixed(2)}i`;
+                } else {
+                    const r = Math.hypot(val.a, val.b);
+                    let angle = Math.atan2(val.b, val.a) * 180 / Math.PI;
+                    rightText = `${r.toFixed(2)} cis(${Math.round(angle)}°)`;
+                }
+                
+                item.innerHTML = `
+                    <span class="w-[45%] text-right pr-1">${leftText}</span>
+                    <span class="w-[55%] text-left pl-1">${rightText}</span>
+                `;
+
+                item.addEventListener('mouseover', () => {
+                    highlightedPowerIndex = power;
+                    drawAll();
+                });
+                item.addEventListener('mouseout', () => {
+                    highlightedPowerIndex = -1;
+                    drawAll();
+                });
+                powersListContainer.appendChild(item);
+            });
+        }
+
+        function drawAll() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGrid();
+            drawAxes();
+            if (displayMode === 'polar') {
+                drawAngleArc();
+                drawRadiusVector();
+            }
+            drawPowerSpiralAndPoint();
+            drawPointAndProjections();
+            updateDisplay();
+        }
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches ? e.touches[0] : e;
+            return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+        }
+        
+        function handleStart(e) {
+            e.preventDefault();
+            const pos = getPos(e);
+            const canvasPos = complexToCanvas(point.a, point.b);
+            const dx = pos.x - canvasPos.x;
+            const dy = pos.y - canvasPos.y;
+            if (dx * dx + dy * dy < (pointRadius + 15) * (pointRadius + 15)) {
+                isDragging = true;
+                canvas.style.cursor = 'grabbing';
+            }
+        }
+
+        function handleMove(e) {
+            if (isDragging) {
+                e.preventDefault();
+                const pos = getPos(e);
+                const complexPos = canvasToComplex(pos.x, pos.y);
+                point.a = complexPos.a;
+                point.b = complexPos.b;
+                drawAll();
+            }
+        }
+
+        function handleEnd() {
+            isDragging = false;
+            canvas.style.cursor = 'grab';
+        }
+
+        function handleReset() {
+            point.a = initialPoint.a;
+            point.b = initialPoint.b;
+            powerSlider.value = 1;
+            powerN = 1;
+            updateSliderTicks(1);
+            drawAll();
+        }
+        
+        function updateSliderTicks(currentValue) {
+            const ticks = document.querySelectorAll('#slider-ticks span');
+            ticks.forEach((tick, index) => {
+                if ((index + 1) === currentValue) {
+                    tick.classList.add('active-tick');
+                } else {
+                    tick.classList.remove('active-tick');
+                }
+            });
+        }
+
+        canvas.addEventListener('mousedown', handleStart);
+        canvas.addEventListener('mousemove', handleMove);
+        canvas.addEventListener('mouseup', handleEnd);
+        canvas.addEventListener('mouseleave', handleEnd); 
+        canvas.addEventListener('touchstart', handleStart, { passive: false });
+        canvas.addEventListener('touchmove', handleMove, { passive: false });
+        canvas.addEventListener('touchend', handleEnd);
+        canvas.addEventListener('touchcancel', handleEnd);
+        
+        powerSlider.addEventListener('input', (e) => {
+            powerN = parseInt(e.target.value);
+            updateSliderTicks(powerN);
+            drawAll();
+        });
+
+        resetBtn.addEventListener('click', handleReset);
+        
+        function setDisplayMode(mode) {
+            displayMode = mode;
+            polarBtn.classList.toggle('toggle-btn-active', mode === 'polar');
+            polarBtn.classList.toggle('toggle-btn-inactive', mode !== 'polar');
+            algebraicBtn.classList.toggle('toggle-btn-active', mode === 'algebraic');
+            algebraicBtn.classList.toggle('toggle-btn-inactive', mode !== 'algebraic');
+            drawAll();
+        }
+
+        polarBtn.addEventListener('click', () => setDisplayMode('polar'));
+        algebraicBtn.addEventListener('click', () => setDisplayMode('algebraic'));
+
+        function resizeCanvas() {
+            const parent = document.getElementById('canvas-container');
+            const parentWidth = parent.clientWidth;
+            const parentHeight = parent.clientHeight;
+            if (parentWidth > 0 && parentHeight > 0) {
+                canvas.width = parentWidth;
+                canvas.height = parentHeight;
+                origin.x = canvas.width / 2;
+                origin.y = canvas.height / 2;
+                scale = Math.min(canvas.width, canvas.height) / 2.5;
+                drawAll();
+            }
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        
+        function initialize() {
+            const katexCheck = setInterval(() => {
+                if (typeof katex !== 'undefined') {
+                    clearInterval(katexCheck);
+                    
+                    const sideFormulaContainer = document.getElementById('side-de-moivre-formula');
+                    if (sideFormulaContainer) {
+                        try {
+                            const formula = String.raw`\mathbf{(r \cdot \text{cis}(\theta))^n = r^n \cdot \text{cis}(n\theta)}`;
+                            katex.render(formula, sideFormulaContainer, { throwOnError: false, displayMode: true });
+                        } catch (e) {
+                            console.error('KaTeX rendering failed:', e);
+                            sideFormulaContainer.textContent = '(r * cis(θ))^n = r^n * cis(nθ)';
+                        }
+                    }
+
+                    const sliderTicks = document.getElementById('slider-ticks');
+                    for (let i = 1; i <= 9; i++) {
+                        const tick = document.createElement('span');
+                        tick.textContent = i;
+                        sliderTicks.appendChild(tick);
+                    }
+                    updateSliderTicks(1);
+                    resizeCanvas();
+                }
+            }, 50);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initialize);
+        } else {
+            initialize();
+        }
+
+    </script>
+</body>
+</html>
+
