@@ -1,0 +1,72 @@
+<!-- Модальный диалог для обратной связи -->
+<div class="contact-modal-overlay" id="contact-modal">
+  <div class="contact-modal">
+    <div class="modal-header">
+      <h3>צור קשר איתנו</h3>
+      <button class="close-btn" id="close-contact-modal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="contact-form" class="contact-form">
+        <div class="form-group">
+          <label for="contact-name">שם מלא</label>
+          <input 
+            type="text" 
+            id="contact-name" 
+            name="name" 
+            required 
+            placeholder="השם שלך"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="contact-email">כתובת אימייל</label>
+          <input 
+            type="email" 
+            id="contact-email" 
+            name="email" 
+            required 
+            placeholder="example@email.com"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="contact-subject">נושא</label>
+          <select id="contact-subject" name="subject" required>
+            <option value="">בחר נושא</option>
+            <option value="general">שאלה כללית</option>
+            <option value="technical">תמיכה טכנית</option>
+            <option value="content">שאלה על תוכן</option>
+            <option value="suggestion">הצעה לשיפור</option>
+            <option value="other">אחר</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="contact-message">הודעה</label>
+          <textarea 
+            id="contact-message" 
+            name="message" 
+            required 
+            rows="5" 
+            placeholder="כתוב כאן את ההודעה שלך..."
+          ></textarea>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" id="cancel-contact">ביטול</button>
+          <button type="submit" class="btn-submit">שלח הודעה</button>
+        </div>
+      </form>
+      
+      <!-- הודעת הצלחה -->
+      <div class="success-message" id="contact-success" style="display: none;">
+        <div class="success-content">
+          <div class="success-icon">✅</div>
+          <h4>ההודעה נשלחה בהצלחה!</h4>
+          <p>תודה על פנייתך. נחזור אליך בהקדם האפשרי.</p>
+          <button class="btn-ok" id="success-ok">אישור</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

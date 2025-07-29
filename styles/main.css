@@ -15,6 +15,7 @@
 @import 'search.css';
 @import 'side-menu.css';
 @import 'footer.css';
+@import 'contact-modal.css';
 
 /* Стили для основных страниц */
 @import 'index-content.css';

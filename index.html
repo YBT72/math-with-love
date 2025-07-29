@@ -10,6 +10,8 @@
     Additional page-specific styles are loaded dynamically via JavaScript.
   -->
   <link rel="stylesheet" href="styles/main.css">
+  <!-- EmailJS Library -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
   <!--
@@ -29,6 +31,9 @@
   
   <!-- Footer будет загружен сюда -->
   <footer id="footer-placeholder"></footer>
+  
+  <!-- Contact Modal будет загружен сюда -->
+  <div id="contact-modal-placeholder"></div>
   
   <!-- Отладочная информация -->
   <div id="debug-info" style="position: fixed; bottom: 5px; left: 5px; background: rgba(0,0,0,0.7); color: white; padding: 5px; border-radius: 4px; font-size: 12px; z-index: 9999; display: none;">
@@ -53,6 +58,13 @@
     .then(response => response.text())
     .then(html => {
       document.getElementById('footer-placeholder').innerHTML = html;
+      
+      // После загрузки футера загружаем contact modal
+      return fetch('components/contact-modal.html');
+    })
+    .then(response => response.text())
+    .then(html => {
+      document.getElementById('contact-modal-placeholder').innerHTML = html;
       
       // После загрузки всех компонентов загружаем скрипты
       loadExternalScripts();
@@ -111,6 +123,14 @@
     stickyHeaderScript.onload = () => console.log('✅ sticky-header.js loaded');
     stickyHeaderScript.onerror = () => console.error('❌ sticky-header.js failed to load');
     document.body.appendChild(stickyHeaderScript);
+    
+    // Загружаем contact modal скрипт
+    console.log('📄 Loading contact-modal.js...');
+    const contactModalScript = document.createElement('script');
+    contactModalScript.src = 'scripts/contact-modal.js';
+    contactModalScript.onload = () => console.log('✅ contact-modal.js loaded');
+    contactModalScript.onerror = () => console.error('❌ contact-modal.js failed to load');
+    document.body.appendChild(contactModalScript);
     
     // Загружаем основной скрипт без задержки
     console.log('📄 Loading page-loader.js...');
