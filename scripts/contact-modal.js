@@ -6,11 +6,24 @@
 // Инициализация модального диалога сразу после загрузки скрипта
 initContactModal();
 
-// Инициализация EmailJS (замените на ваш реальный Public Key)
+// Инициализация EmailJS (теперь использует внешнюю конфигурацию)
 if (typeof emailjs !== 'undefined') {
-    // Замените 'YOUR_PUBLIC_KEY' на ваш реальный ключ
-    // emailjs.init('YOUR_PUBLIC_KEY');
     console.log('📧 EmailJS library loaded');
+    
+    // Ждем загрузки конфигурации
+    const waitForConfig = () => {
+        if (typeof EMAIL_CONFIG !== 'undefined') {
+            if (EMAIL_CONFIG.isConfigured()) {
+                emailjs.init(EMAIL_CONFIG.publicKey);
+                console.log('✅ EmailJS initialized with config');
+            } else {
+                console.log('⚠️ EmailJS config not set up yet, using simulation mode');
+            }
+        } else {
+            setTimeout(waitForConfig, 100); // Ждем загрузки конфига
+        }
+    };
+    waitForConfig();
 } else {
     console.log('⚠️ EmailJS library not loaded, using simulation mode');
 }
@@ -116,27 +129,35 @@ function initContactModal() {
         submitBtn.textContent = 'שולח...';
 
         try {
-            // Отправляем через EmailJS
-            console.log('📧 Sending email via EmailJS...');
-            
-            // Замените эти значения на ваши реальные
-            const serviceID = 'YOUR_SERVICE_ID'; // Получите на emailjs.com
-            const templateID = 'YOUR_TEMPLATE_ID'; // Создайте шаблон на emailjs.com
-            const publicKey = 'YOUR_PUBLIC_KEY'; // Получите на emailjs.com
-            
-            // Отправка email
-            const response = await emailjs.send(serviceID, templateID, contactData, publicKey);
-            
-            console.log('✅ Email sent successfully:', response);
-            
-            // Показываем сообщение об успехе
-            showSuccessMessage();
+            // Проверяем готовность EmailJS конфигурации
+            if (typeof EMAIL_CONFIG !== 'undefined' && EMAIL_CONFIG.isConfigured()) {
+                // Отправляем через EmailJS
+                console.log('📧 Sending email via EmailJS...');
+                
+                const response = await emailjs.send(
+                    EMAIL_CONFIG.serviceID, 
+                    EMAIL_CONFIG.templateID, 
+                    contactData, 
+                    EMAIL_CONFIG.publicKey
+                );
+                
+                console.log('✅ Email sent successfully:', response);
+                
+                // Показываем сообщение об успехе
+                showSuccessMessage();
+                
+            } else {
+                // EmailJS не настроен, используем симуляцию
+                console.log('📧 EmailJS not configured, using simulation...');
+                await simulateEmailSend(contactData);
+                showSuccessMessage();
+            }
             
         } catch (error) {
             console.error('❌ Error sending email:', error);
             
-            // Пока EmailJS не настроен, используем имитацию
-            console.log('📧 EmailJS not configured, using simulation...');
+            // Fallback на симуляцию при ошибке
+            console.log('📧 Falling back to simulation mode...');
             await simulateEmailSend(contactData);
             showSuccessMessage();
         } finally {

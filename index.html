@@ -124,6 +124,22 @@
     stickyHeaderScript.onerror = () => console.error('❌ sticky-header.js failed to load');
     document.body.appendChild(stickyHeaderScript);
     
+    // Загружаем общие настройки сайта
+    console.log('📄 Loading site-config.js...');
+    const siteConfigScript = document.createElement('script');
+    siteConfigScript.src = 'config/site-config.js';
+    siteConfigScript.onload = () => console.log('✅ site-config.js loaded');
+    siteConfigScript.onerror = () => console.error('❌ site-config.js failed to load');
+    document.body.appendChild(siteConfigScript);
+    
+    // Загружаем конфигурацию EmailJS
+    console.log('📄 Loading emailjs-config.js...');
+    const emailConfigScript = document.createElement('script');
+    emailConfigScript.src = 'config/emailjs-config.js';
+    emailConfigScript.onload = () => console.log('✅ emailjs-config.js loaded');
+    emailConfigScript.onerror = () => console.error('❌ emailjs-config.js failed to load');
+    document.body.appendChild(emailConfigScript);
+    
     // Загружаем contact modal скрипт
     console.log('📄 Loading contact-modal.js...');
     const contactModalScript = document.createElement('script');
