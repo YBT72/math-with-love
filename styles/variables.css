@@ -46,5 +46,5 @@
   --color-white-opacity-20: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
   
   /* Размеры */
-  --height-header: 10vh;           /* Height of the header area */
+  --height-header: 80px;           /* Height of the header area - фиксированная высота вместо 10vh */
 }

@@ -60,39 +60,67 @@
 
   // Loads external JS files for search and sidebar menu
   function loadExternalScripts() {
+    console.log('🔄 Starting to load external scripts...');
+    
     // Загружаем утилиту для управления стилями
+    console.log('📄 Loading styles-loader.js...');
     const stylesLoaderScript = document.createElement('script');
     stylesLoaderScript.src = 'scripts/styles-loader.js';
+    stylesLoaderScript.onload = () => console.log('✅ styles-loader.js loaded');
+    stylesLoaderScript.onerror = () => console.error('❌ styles-loader.js failed to load');
     document.body.appendChild(stylesLoaderScript);
     
     // Loads search box functionality
+    console.log('📄 Loading search.js...');
     const searchScript = document.createElement('script');
     searchScript.src = 'scripts/search.js';
     searchScript.onload = function() {
+      console.log('✅ search.js loaded');
       if (typeof initSearchScripts === 'function') {
         initSearchScripts();
       }
     };
+    searchScript.onerror = () => console.error('❌ search.js failed to load');
     document.body.appendChild(searchScript);
 
     // Loads sidebar menu functionality
+    console.log('📄 Loading side-menu.js...');
     const sideMenuScript = document.createElement('script');
     sideMenuScript.src = 'scripts/side-menu.js';
     sideMenuScript.onload = function() {
+      console.log('✅ side-menu.js loaded');
       if (typeof initSideMenuScripts === 'function') {
         initSideMenuScripts();
       }
     };
+    sideMenuScript.onerror = () => console.error('❌ side-menu.js failed to load');
     document.body.appendChild(sideMenuScript);
     
     // Сразу загружаем диагностический скрипт
+    console.log('📄 Loading debug.js...');
     const debugScript = document.createElement('script');
     debugScript.src = 'scripts/debug.js';
+    debugScript.onload = () => console.log('✅ debug.js loaded');
+    debugScript.onerror = () => console.error('❌ debug.js failed to load');
     document.body.appendChild(debugScript);
     
+    // Загружаем sticky header скрипт
+    console.log('📄 Loading sticky-header.js...');
+    const stickyHeaderScript = document.createElement('script');
+    stickyHeaderScript.src = 'scripts/sticky-header.js';
+    stickyHeaderScript.onload = () => console.log('✅ sticky-header.js loaded');
+    stickyHeaderScript.onerror = () => console.error('❌ sticky-header.js failed to load');
+    document.body.appendChild(stickyHeaderScript);
+    
     // Загружаем основной скрипт без задержки
+    console.log('📄 Loading page-loader.js...');
     const pageLoaderScript = document.createElement('script');
     pageLoaderScript.src = 'scripts/page-loader.js';
+    pageLoaderScript.onload = () => {
+      console.log('✅ page-loader.js loaded');
+      console.log('🔍 Checking if pageLoader exists:', typeof window.pageLoader);
+    };
+    pageLoaderScript.onerror = () => console.error('❌ page-loader.js failed to load');
     document.body.appendChild(pageLoaderScript);
   }
 </script>

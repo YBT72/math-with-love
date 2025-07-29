@@ -17,6 +17,8 @@ body {
   min-height: 100vh; /* Минимальная высота для правильного отображения на мобильных */
   display: flex;
   flex-direction: column;
+  padding-top: var(--height-header); /* Отступ сверху для fixed header */
+  box-sizing: border-box; /* Включаем padding в общую высоту */
 }
 
 main {
@@ -38,13 +40,15 @@ main {
 
 
 .header-container {
-  /* Sticky header stays at the top when scrolling */
+  /* Fixed header stays at the top when scrolling */
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between; /* Распределяет содержимое между начальной и конечной точками */
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 1000;
   transition: background-color 0.4s ease, box-shadow 0.4s ease;
   width: 100%;
@@ -58,7 +62,9 @@ main {
   /* Header style when page is scrolled */
   background-color: var(--color-surface);
   color: var(--color-text);
-  box-shadow: 0 4px 10px var(--color-shadow);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(8px); /* Эффект размытия для современного вида */
+  background-color: rgba(255, 255, 255, 0.95); /* Полупрозрачный фон */
 }
 
 

@@ -3,9 +3,9 @@
  */
 
 // Этот скрипт можно запустить из консоли браузера для проверки загрузки файлов
-console.log('Testing fetch for home_copy.html...');
+console.log('Testing fetch for home.html...');
 
-fetch('pages/home_copy.html')
+fetch('pages/home.html')
   .then(response => {
     console.log('Fetch response:', response);
     if (!response.ok) {
@@ -14,11 +14,11 @@ fetch('pages/home_copy.html')
     return response.text();
   })
   .then(html => {
-    console.log('Home copy HTML content length:', html.length);
+    console.log('Home HTML content length:', html.length);
     console.log('First 100 characters:', html.substring(0, 100));
   })
   .catch(error => {
-    console.error('Error fetching home_copy.html:', error);
+    console.error('Error fetching home.html:', error);
   });
 
 // Проверяем загрузку about.html
@@ -48,7 +48,7 @@ document.body.appendChild(testContainer);
 testContainer.id = 'test-container';
 testContainer.style.display = 'none';
 
-fetch('pages/home_copy.html')
+fetch('pages/home.html')
   .then(response => {
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);

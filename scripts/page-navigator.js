@@ -7,7 +7,7 @@
 const pageNavigator = {
   // Маппинг страниц для загрузки
   pages: {
-    'home': 'pages/home_copy.html',
+    'home': 'pages/home.html',
     'about': 'pages/about.html'
   },
   

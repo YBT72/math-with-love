@@ -71,7 +71,5 @@ const pageLoader = {
   }
 };
 
-// Запускаем загрузку при загрузке страницы
-window.onload = function() {
-  pageLoader.init();
-};
+// Запускаем загрузку сразу при загрузке скрипта
+pageLoader.init();

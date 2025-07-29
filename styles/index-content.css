@@ -8,23 +8,24 @@
 
 /* Основной контейнер страницы */
 .home-content {
-  padding: 2rem 0;
+  padding: 1rem 0; /* Уменьшаем отступы */
   background-color: var(--color-base-bg); /* Используем основной фон сайта */
   display: flex;
   flex-direction: column;
-  min-height: 70vh; /* минимальная высота чтобы гарантировать отображение всего содержимого */
+  /* Убираем min-height - пусть контент определяет размер */
 }
 
 .container {
   display: flex;
+  flex-direction: row !important;
   flex-wrap: wrap;
   justify-content: center;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1.5rem; /* Уменьшаем отступы */
   align-items: center;
   gap: 2rem;
-  flex: 1; /* контейнер должен растягиваться, чтобы занять доступное пространство */
+  /* Убираем flex: 1 - пусть контент определяет размер */
 }
 
 /* Секции с контентом и изображением */
@@ -35,32 +36,32 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin-bottom: 2rem; /* дополнительный отступ снизу */
+  margin-bottom: 0.5rem; /* Минимальный отступ снизу */
   position: relative; /* добавляем для правильного позиционирования */
   z-index: 2; /* выше, чем у футера, чтобы контент не перекрывался */
 }
 
 /* Стили для заголовков и текста */
 .content h1 {
-  font-size: 3rem;
+  font-size: 2.5rem; /* Уменьшаем с 3rem */
   line-height: 1.2;
   color: var(--color-accent); /* Основной акцентный цвет сайта */
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem; /* Уменьшаем отступ */
   text-shadow: 1px 1px 2px var(--color-shadow); /* Легкая тень для выделения */
 }
 
 .content p {
-  font-size: 1.8rem;
-  margin-top: 0.5rem;
-  margin-bottom: 1.5rem;
+  font-size: 1.5rem; /* Уменьшаем с 1.8rem */
+  margin-top: 0.3rem; /* Уменьшаем отступ */
+  margin-bottom: 1rem; /* Уменьшаем отступ */
   color: var(--color-text);
   font-weight: 400;
 }
 
 /* Кнопки выбора единиц изучения */
 .btns {
-  margin-top: 2rem;
+  margin-top: 1.5rem; /* Уменьшаем отступ сверху */
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
@@ -68,8 +69,8 @@
 }
 
 .btns button {
-  padding: 0.8rem 1.5rem;
-  font-size: 1.5rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 1.2rem;
   border-radius: 8px;
   border: 1px solid var(--color-accent); /* Акцентный цвет рамки */
   background: var(--color-surface); /* Белый фон для лучшего контраста */
@@ -93,7 +94,7 @@
 .image img {
   width: 100%;
   height: auto;
-  max-height: 50vh;
+  max-height: 300px; /* Фиксированная максимальная высота вместо 50vh */
   object-fit: contain;
 }
 

@@ -1,0 +1,58 @@
+<!-- 
+  Файл home.html - содержимое для главной страницы
+  Этот файл предназначен для включения в index.html
+-->
+
+<div class="home-content">
+  <div class="container">
+    <div class="image">
+      <img src="../assets/logo/logo_transp_right.png" alt="זה הלוגו שלנו" />
+    </div>
+    <div class="content">
+      <h1>מתמטיקה<br />באהבה</h1>
+      <p>לימוד מדויק, פשוט ואישי!</p>
+      <div class="btns">
+        <button class="unit-btn" data-units="3" data-exams="35371,35372">3 יח״ל</button>
+        <button class="unit-btn" data-units="4" data-exams="35471,35472">4 יח״ל</button>
+        <button class="unit-btn" data-units="5" data-exams="35571,35572">5 יח״ל</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Popup для выбора экзамена -->
+<div class="popup-overlay" id="popup">
+  <div class="popup">
+    <p>בחר שאלון</p>
+    <div class="popup-buttons">
+      <button>35571</button>
+      <button>35572</button>
+    </div>
+  </div>
+</div>
+
+<!-- Временный дополнительный контент для тестирования скролла -->
+<div style="background: linear-gradient(135deg, #f8fafc 0%, #e5e7eb 100%); padding: 3rem 2rem; margin: 2rem 0;">
+  <div style="max-width: 1200px; margin: 0 auto; text-align: center;">
+    <h2 style="color: var(--color-accent); margin-bottom: 1.5rem;">למה לבחור בנו?</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+      <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <h3 style="color: var(--color-accent);">📚 תוכן איכותי</h3>
+        <p>חומרי לימוד מעודכנים ומותאמים לתכנית הלימודים החדשה</p>
+      </div>
+      <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <h3 style="color: var(--color-accent);">🎯 לימוד מותאם</h3>
+        <p>התאמה אישית לקצב הלימוד וליכולות של כל תלמיד</p>
+      </div>
+      <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <h3 style="color: var(--color-accent);">💝 באהבה</h3>
+        <p>גישה חמה ואוהבת שהופכת את הלימוד לחוויה מהנה</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 
+  Конец содержания страницы
+  JavaScript функционал будет загружен отдельно через index.html
+-->

@@ -9,6 +9,8 @@ function initSideMenuScripts() {
       renderMainMenu();
       sideMenu.style.display = 'block';
       toggleButton.classList.add('active');
+      // Скрываем scrollbar при открытии меню
+      document.body.style.overflow = 'hidden';
     });
   }
 
@@ -83,5 +85,7 @@ function initSideMenuScripts() {
   function closeMenu() {
     sideMenu.style.display = 'none';
     toggleButton.classList.remove('active');
+    // Возвращаем scrollbar при закрытии меню
+    document.body.style.overflow = '';
   }
 }
