@@ -20,6 +20,11 @@
 /* Стили для основных страниц */
 @import 'index-content.css';
 @import 'about.css';
+@import 'courses.css';
+@import 'lesson-template.css';
+
+/* Mathematical content styles */
+@import 'math-styles.css';
 
 /* Страница может импортировать дополнительные стили через JavaScript */
 /* Например, стили для конкретных страниц будут загружаться динамически */

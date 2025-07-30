@@ -24,10 +24,14 @@ function initSideMenuScripts() {
 
     const ul = document.createElement('ul');
     const menuItems = [
-      { label: '3 יח"ל', submenu: [ { label: '35371', topics: ['נושא א', 'נושא ב'] }, { label: '35372', topics: ['נושא ג', 'נושא ד'] } ] },
-      { label: '4 יח"ל', submenu: [ { label: '35471', topics: ['נושא ה'] }, { label: '35472', topics: ['נושא ו'] } ] },
-      { label: '5 יח"ל', submenu: [ { label: '35571', topics: ['נושא ה'] }, { label: '35572', topics: ['נושא ו'] } ] },
-      { label: 'עזרה' }
+      { label: '3 יח"ל', submenu: [ { label: '35371', action: () => alert('35371 בפיתוח') }, { label: '35372', action: () => alert('35372 בפיתוח') } ] },
+      { label: '4 יח"ל', submenu: [ { label: '35471', action: () => alert('35471 בפיתוח') }, { label: '35472', action: () => alert('35472 בפיתוח') } ] },
+      { label: '5 יח"ל', submenu: [ 
+        { label: '35571', action: () => navigateToExam('35571') }, 
+        { label: '35572', action: () => navigateToExam('35572') } 
+      ] },
+      { label: 'אודות', action: () => navigateToPage('about') },
+      { label: 'בית', action: () => navigateToPage('home') }
     ];
     for (const item of menuItems) {
       const li = document.createElement('li');
@@ -50,8 +54,13 @@ function initSideMenuScripts() {
     const ul = document.createElement('ul');
     for (const item of subItems) {
       const li = document.createElement('li');
-      li.innerHTML = item.label + (item.topics ? ' <span>&rsaquo;&nbsp;&nbsp;</span>' : '');
-      li.onclick = item.topics ? () => renderSubSubmenu(item.label, item.topics, { titleText, subItems }) : closeMenu;
+      li.innerHTML = item.label;
+      li.onclick = () => {
+        closeMenu();
+        if (item.action) {
+          item.action();
+        }
+      };
       ul.appendChild(li);
     }
     sideMenu.appendChild(ul);
@@ -87,5 +96,23 @@ function initSideMenuScripts() {
     toggleButton.classList.remove('active');
     // Возвращаем scrollbar при закрытии меню
     document.body.style.overflow = '';
+  }
+
+  // Navigation helper functions
+  function navigateToPage(pagePath) {
+    if (window.pageLoader) {
+      window.pageLoader.loadPage(pagePath);
+    } else {
+      console.error('Page loader not available');
+    }
+  }
+
+  function navigateToExam(examNumber) {
+    if (window.pageLoader) {
+      const pagePath = `courses/5-units/${examNumber}/${examNumber}-index`;
+      window.pageLoader.loadPage(pagePath);
+    } else {
+      console.error('Page loader not available');
+    }
   }
 }

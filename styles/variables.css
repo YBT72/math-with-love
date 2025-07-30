@@ -47,4 +47,17 @@
   
   /* Размеры */
   --height-header: 80px;           /* Height of the header area - фиксированная высота вместо 10vh */
+  
+  /* Professional Colors - צבעים מקצועיים */
+  --professional-primary: #1e40af;      /* Professional blue primary */
+  --professional-secondary: #3b82f6;    /* Professional blue secondary */
+  --professional-light: #dbeafe;        /* Professional light blue */
+  --professional-success: #059669;      /* Professional green */
+  --professional-warning: #d97706;      /* Professional orange */
+  --professional-text-dark: #1f2937;    /* Professional dark text */
+  --professional-text-medium: #4b5563;  /* Professional medium text */
+  --professional-text-light: #6b7280;   /* Professional light text */
+  --professional-background: #f8fafc;   /* Professional background */
+  --professional-surface: #ffffff;      /* Professional surface */
+  --professional-border: #e5e7eb;       /* Professional border */
 }

@@ -45,50 +45,113 @@ const homePage = {
         return false;
       }
       
-      // Добавляем обработчики событий для кнопок единиц изучения
+      // Add event listeners for unit buttons
       unitButtons.forEach(btn => {
         console.log('Adding event listener to button:', btn.textContent);
-        
-        btn.addEventListener('click', function() {
-          const exams = this.dataset.exams.split(',');
-          console.log('Button clicked, exams:', exams);
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
           
-          // Обновляем текст кнопок в popup с соответствующими номерами экзаменов
-          if (popupButtons.length >= 2) {
-            popupButtons[0].textContent = exams[0];
-            popupButtons[1].textContent = exams[1];
+          const units = this.getAttribute('data-units');
+          console.log('Unit button clicked:', units);
+          
+          // Show popup with exam options
+          if (units === '5') {
+            console.log('=== Calling showExamPopup ===');
+            showExamPopup();
+          } else {
+            // For other units, show "coming soon" message
+            alert(`${units} יח״ל בפיתוח - בקרוב!`);
           }
-          
-          // Отображаем popup
-          popup.style.display = 'flex';
-          
-          console.log('Popup displayed');
         });
       });
-      
-      // Закрытие popup при клике вне его области
-      if (popup) {
-        document.addEventListener('click', (event) => {
-          if (event.target === popup) {
-            popup.style.display = 'none';
-            console.log('Popup closed (click outside)');
-          }
-        });
-        
-        // Закрытие popup при клике на кнопку внутри него
-        popupButtons.forEach(btn => {
-          btn.addEventListener('click', () => {
-            popup.style.display = 'none';
-            console.log('Popup closed (exam button clicked)');
-          });
-        });
-      }
-      
+
       this.initialized = true;
       return true;
-    }, 300);  // Добавляем большую задержку для гарантированного обновления DOM
+    }, 300); // Add delay to ensure DOM is updated
     
-    return true; // Временно возвращаем успех, чтобы не блокировать процесс
+    return true; // Return success to not block the process
+  },
+  
+  // Показать popup с выбором экзаменов
+  showExamPopup: function() {
+    console.log('=== showExamPopup called ===');
+    const popup = document.getElementById('popup');
+    console.log('Popup element found:', popup ? true : false);
+    
+    if (!popup) {
+      console.error('Popup element not found');
+      return;
+    }
+    
+    console.log('Updating popup HTML...');
+    
+    // Обновляем содержимое popup в исходном стиле
+    popup.innerHTML = `
+      <div class="popup">
+        <p>בחר שאלון</p>
+        <div class="popup-buttons">
+          <button onclick="homePage.navigateToExam('35571'); console.log('35571 button clicked');">35571</button>
+          <button onclick="homePage.navigateToExam('35572'); console.log('35572 button clicked');">35572</button>
+        </div>
+      </div>
+    `;
+    
+    popup.style.display = 'flex';
+    
+    // Добавляем обработчик клика по overlay для закрытия
+    popup.onclick = function(e) {
+      if (e.target === popup) {
+        homePage.closePopup();
+      }
+    };
+    
+    // Автоматическое закрытие через 3 секунды
+    this.popupTimer = setTimeout(() => {
+      this.closePopup();
+    }, 3000);
+  },
+  
+  // Навигация к экзамену
+  navigateToExam: function(examNumber) {
+    console.log('=== navigateToExam called ===');
+    console.log('Exam number:', examNumber);
+    console.log('window.pageLoader exists:', typeof window.pageLoader !== 'undefined');
+    console.log('window.pageLoader.loadPage exists:', typeof window.pageLoader?.loadPage === 'function');
+    
+    this.closePopup(); // Закрываем popup и очищаем таймер
+    
+    if (typeof window.pageLoader !== 'undefined' && typeof window.pageLoader.loadPage === 'function') {
+      const pagePath = `courses/5-units/${examNumber}/${examNumber}-index`;
+      console.log('Loading exam page with path:', pagePath);
+      console.log('Full URL will be: pages/' + pagePath + '.html');
+      
+      window.pageLoader.loadPage(pagePath)
+        .then(() => {
+          console.log('Page loaded successfully');
+        })
+        .catch(error => {
+          console.error('Error loading page:', error);
+        });
+    } else {
+      console.error('Page loader not available or loadPage is not a function');
+      console.log('window.pageLoader:', window.pageLoader);
+    }
+  },
+  
+  // Закрыть popup
+  closePopup: function() {
+    const popup = document.getElementById('popup');
+    if (popup) {
+      popup.style.display = 'none';
+      // Удаляем обработчик клика
+      popup.onclick = null;
+    }
+    
+    // Очищаем таймер автоматического закрытия
+    if (this.popupTimer) {
+      clearTimeout(this.popupTimer);
+      this.popupTimer = null;
+    }
   },
   
   // Метод инициализации страницы
@@ -109,4 +172,26 @@ window.initHomePage = function() {
 window.initHomePageEvents = function() {
   console.log('Legacy home page events initialization requested');
   return homePage.initEvents();
+};
+
+// Глобальная функция для показа popup экзаменов
+window.showExamPopup = function() {
+  return homePage.showExamPopup();
+};
+
+// Функция для тестирования навигации
+window.testNavigation = function(examNumber) {
+  console.log('=== Testing navigation to exam:', examNumber, '===');
+  console.log('pageLoader exists:', typeof window.pageLoader !== 'undefined');
+  console.log('pageNavigator exists:', typeof window.pageNavigator !== 'undefined');
+  
+  if (window.pageLoader && window.pageLoader.loadPage) {
+    const path = `courses/5-units/${examNumber}/${examNumber}-index`;
+    console.log('Trying to load:', path);
+    window.pageLoader.loadPage(path)
+      .then(() => console.log('SUCCESS: Page loaded'))
+      .catch(err => console.error('ERROR:', err));
+  } else {
+    console.error('PageLoader not available');
+  }
 };

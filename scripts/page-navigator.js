@@ -41,12 +41,21 @@ const pageNavigator = {
   
   /**
    * Загружает контент указанной страницы в основной контейнер
-   * @param {string} pageName - имя страницы из объекта pages
+   * @param {string} pageName - имя страницы из объекта pages или путь
    * @returns {Promise} - промис, который разрешается после загрузки страницы
    */
   loadPage: function(pageName) {
     console.log('Loading page:', pageName);
-    const pageUrl = this.pages[pageName];
+    
+    // Если это путь к курсу, формируем полный URL
+    let pageUrl;
+    if (pageName.startsWith('courses/')) {
+      pageUrl = `pages/${pageName}.html`;
+    } else {
+      pageUrl = this.pages[pageName];
+    }
+    
+    console.log('Resolved page URL:', pageUrl);
     
     if (!pageUrl) {
       console.error(`Страница ${pageName} не найдена в конфигурации`);
@@ -259,3 +268,6 @@ window.initPageNavigator = function() {
       console.error('Failed to load home page:', err);
     });
 };
+
+// Делаем pageNavigator доступным глобально
+window.pageNavigator = pageNavigator;

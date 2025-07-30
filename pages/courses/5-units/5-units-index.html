@@ -1,1 +1,104 @@
-Индекс курсов 5 единиц.
+<!-- 5-units course selection page -->
+<div class="course-level-page">
+  <!-- Breadcrumb navigation -->
+  <nav class="breadcrumb">
+    <a href="#" onclick="window.pageLoader.loadPage('home')" class="breadcrumb-link">בית</a>
+    <span class="breadcrumb-separator">←</span>
+    <span class="breadcrumb-current">5 יח״ל</span>
+  </nav>
+
+  <!-- Main heading -->
+  <div class="page-header">
+    <h1>מתמטיקה 5 יחידות לימוד</h1>
+    <p class="page-description">בחר את השאלון המתאים לך</p>
+  </div>
+
+  <!-- Exam selection cards -->
+  <div class="exam-selection-grid">
+    <!-- 35571 Exam Card -->
+    <div class="exam-card" onclick="navigateToExam('35571')">
+      <div class="exam-card-header">
+        <h2>שאלון 35571</h2>
+      </div>
+      
+      <div class="exam-card-content">
+        <div class="topics-preview">
+          <h4>נושאים עיקריים:</h4>
+          <ul class="topics-list">
+            <li>📐 גיאומטריה אנליטית</li>
+            <li>📊 הסתברות וסטטיסטיקה</li>
+            <li>📈 חדו״א (נגזרות ואינטגרלים)</li>
+            <li>🔢 טריגונומטריה</li>
+            <li>⚡ שאלות קצרות</li>
+          </ul>
+        </div>
+        
+        <div class="exam-status">
+          <span class="status-badge developing">🚧 בפיתוח</span>
+          <small>12 נושאים מתוכננים</small>
+        </div>
+      </div>
+      
+      <div class="exam-card-footer">
+        <button class="exam-button">להתחלת הלמידה</button>
+      </div>
+    </div>
+
+    <!-- 35572 Exam Card -->
+    <div class="exam-card" onclick="navigateToExam('35572')">
+      <div class="exam-card-header">
+        <h2>שאלון 35572</h2>
+      </div>
+      
+      <div class="exam-card-content">
+        <div class="topics-preview">
+          <h4>נושאים עיקריים:</h4>
+          <ul class="topics-list">
+            <li>🔢 מספרים מרוכבים</li>
+            <li>📐 גיאומטריה אנליטית מתקדמת</li>
+            <li>📈 חדו״א מתקדם</li>
+            <li>📏 וקטורים</li>
+          </ul>
+        </div>
+        
+        <div class="exam-status">
+          <span class="status-badge developing">🚧 בפיתוח</span>
+          <small>8 נושאים מתוכננים</small>
+        </div>
+      </div>
+      
+      <div class="exam-card-footer">
+        <button class="exam-button">להתחלת הלמידה</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional info section -->
+  <div class="additional-info">
+    <div class="info-card">
+      <h3>💡 כיצד לבחור?</h3>
+      <p>בחר את השאלון המתאים. כל שאלון מכיל את הנושאים הרלוונטיים לפי תוכנית הלימודיםs="info-card">
+      <h3>📚 מה כלול?</h3>
+      <ul>
+        <li>הסברים מפורטים לכל נושא</li>
+        <li>דוגמאות מעשיות</li>
+        <li>תרגילים עם פתרונות</li>
+        <li>טיפים לבחינה</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+// Navigation function for exam selection
+function navigateToExam(examCode) {
+  console.log('Navigating to exam:', examCode);
+  
+  if (typeof window.pageLoader !== 'undefined') {
+    const pagePath = `courses/5-units/${examCode}/${examCode}-index`;
+    window.pageLoader.loadPage(pagePath);
+  } else {
+    console.error('Page loader not available');
+  }
+}
+</script>

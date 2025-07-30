@@ -68,8 +68,22 @@ const pageLoader = {
       .catch(error => {
         console.error('Failed to load scripts:', error);
       });
+  },
+
+  // Метод для загрузки страниц (проксирует вызовы к pageNavigator)
+  loadPage: function(pageName) {
+    if (window.pageNavigator && typeof window.pageNavigator.loadPage === 'function') {
+      console.log('PageLoader: Delegating to pageNavigator.loadPage for:', pageName);
+      return window.pageNavigator.loadPage(pageName);
+    } else {
+      console.error('PageNavigator not available!');
+      return Promise.reject('PageNavigator not available');
+    }
   }
 };
+
+// Делаем pageLoader доступным глобально
+window.pageLoader = pageLoader;
 
 // Запускаем загрузку сразу при загрузке скрипта
 pageLoader.init();
