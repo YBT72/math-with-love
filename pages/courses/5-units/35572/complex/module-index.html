@@ -1,1 +1,219 @@
-Список функций для 35572.
+<!-- 
+===========================================
+📚 מודול מספרים מרוכבים - עמוד ראשי
+===========================================
+-->
+
+<div class="module-page">
+  <!-- 🍞 ניווט Breadcrumb -->
+  <nav class="breadcrumb">
+    <a href="#" onclick="window.pageLoader.loadPage('home')" class="breadcrumb-link">בית</a>
+    <span class="breadcrumb-separator">←</span>
+    <a href="#" onclick="window.pageLoader.loadPage('courses/5-units/5-units-index')" class="breadcrumb-link">5 יח״ל</a>
+    <span class="breadcrumb-separator">←</span>
+    <a href="#" onclick="window.pageLoader.loadPage('courses/5-units/35572/35572-index')" class="breadcrumb-link">שאלון 35572</a>
+    <span class="breadcrumb-separator">←</span>
+    <span class="breadcrumb-current">מספרים מרוכבים</span>
+  </nav>
+
+  <!-- 📚 כותרת המודול -->
+  <div class="module-header">
+    <div class="module-title">
+      <h1>מספרים מרוכבים</h1>
+      <p class="module-subtitle">מבוא מקיף לעולם המספרים המרוכבים - מהבסיס ועד ליישומים מתקדמים</p>
+    </div>
+    
+    <div class="module-meta">
+      <div class="meta-item">
+        <span class="meta-icon">📖</span>
+        <span class="meta-text">8 שיעורים</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-icon">⏱️</span>
+        <span class="meta-text">~6 שעות</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-icon">🎯</span>
+        <span class="meta-text">רמה: בסיסי-בינוני</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-icon">📚</span>
+        <span class="meta-text">מצב קלאסי</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔄 מתג למצב מודרני -->
+  <div class="mode-switcher">
+    <div class="current-mode">
+      <span class="mode-icon">📚</span>
+      <span class="mode-text">אתה במצב קלאסי</span>
+    </div>
+    <button class="switch-mode-btn" onclick="switchToModernMode()">
+      🎮 עבור למצב מודרני
+    </button>
+  </div>
+
+  <!-- 📋 תוכן המודול -->
+  <div class="module-content">
+    
+    <!-- 🎯 מטרות המודול -->
+    <div class="section-card objectives-section">
+      <h2 class="section-title">🎯 מטרות המודול</h2>
+      <div class="objectives-grid">
+        <div class="objective-item">
+          <div class="objective-icon">🔢</div>
+          <div class="objective-content">
+            <h3>הבנת המושג</h3>
+            <p>הכרת מספרים מרוכבים כהרחבה של המספרים הממשיים</p>
+          </div>
+        </div>
+        <div class="objective-item">
+          <div class="objective-icon">📐</div>
+          <div class="objective-content">
+            <h3>ייצוגים שונים</h3>
+            <p>שליטה בצורה אלגברית, קוטבית וגיאומטרית</p>
+          </div>
+        </div>
+        <div class="objective-item">
+          <div class="objective-icon">🧮</div>
+          <div class="objective-content">
+            <h3>פעולות חשבון</h3>
+            <p>ביצוע חיבור, חיסור, כפל וחילוק מספרים מרוכבים</p>
+          </div>
+        </div>
+        <div class="objective-item">
+          <div class="objective-icon">🎨</div>
+          <div class="objective-content">
+            <h3>ייצוג גרפי</h3>
+            <p>הבנת המישור המרוכב והפעולות הגיאומטריות</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 📚 רשימת השיעורים -->
+    <div class="section-card lessons-section">
+      <h2 class="section-title">📚 שיעורי המודול</h2>
+      
+      <div class="lessons-list">
+        
+        <!-- שיעור 1 -->
+        <div class="lesson-card available" onclick="window.pageLoader.loadPage('templates/topics/complex-numbers/algebraic-form')">
+          <div class="lesson-number">1</div>
+          <div class="lesson-content">
+            <h3 class="lesson-title">הצגה אלגברית של מספרים מרוכבים</h3>
+            <p class="lesson-description">מבוא למספרים מרוכבים, צורה אלגברית a+bi, פעולות בסיסיות</p>
+            <div class="lesson-meta">
+              <span class="duration">⏱️ 45 דקות</span>
+              <span class="difficulty">📊 בסיסי</span>
+              <span class="status available">✅ זמין</span>
+            </div>
+          </div>
+          <div class="lesson-action">
+            <span class="action-text">התחל שיעור</span>
+            <span class="action-arrow">←</span>
+          </div>
+        </div>
+
+        <!-- שיעור 2 -->
+        <div class="lesson-card coming-soon">
+          <div class="lesson-number">2</div>
+          <div class="lesson-content">
+            <h3 class="lesson-title">מספר מרוכב צמוד ומודולוס</h3>
+            <p class="lesson-description">הגדרת מספר צמוד, חישוב מודולוס והמשמעות הגיאומטרית</p>
+            <div class="lesson-meta">
+              <span class="duration">⏱️ 40 דקות</span>
+              <span class="difficulty">📊 בסיסי</span>
+              <span class="status coming-soon">🔜 בקרוב</span>
+            </div>
+          </div>
+          <div class="lesson-action">
+            <span class="action-text">בקרוב</span>
+          </div>
+        </div>
+
+        <!-- שיעור 3 -->
+        <div class="lesson-card coming-soon">
+          <div class="lesson-number">3</div>
+          <div class="lesson-content">
+            <h3 class="lesson-title">כפל וחילוק מספרים מרוכבים</h3>
+            <p class="lesson-description">פעולות כפל וחילוק, מציאת הופכי ופתרון משוואות</p>
+            <div class="lesson-meta">
+              <span class="duration">⏱️ 50 דקות</span>
+              <span class="difficulty">📊 בינוני</span>
+              <span class="status coming-soon">🔜 בקרוב</span>
+            </div>
+          </div>
+          <div class="lesson-action">
+            <span class="action-text">בקרוב</span>
+          </div>
+        </div>
+
+        <!-- Остальные уроки... -->
+        <div class="lesson-card coming-soon">
+          <div class="lesson-number">4-8</div>
+          <div class="lesson-content">
+            <h3 class="lesson-title">שיעורים נוספים</h3>
+            <p class="lesson-description">המישור המרוכב, צורה קוטבית, נוסחת דה מואבר ועוד...</p>
+            <div class="lesson-meta">
+              <span class="status coming-soon">🔜 בפיתוח</span>
+            </div>
+          </div>
+          <div class="lesson-action">
+            <span class="action-text">בקרוב</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 🔄 ניווט למודולים אחרים -->
+  <div class="module-navigation">
+    <div class="nav-container">
+      <button class="nav-btn prev-module" onclick="window.pageLoader.loadPage('courses/5-units/35572/35572-index')">
+        ← חזרה לשאלון 35572
+      </button>
+      <button class="nav-btn next-module" onclick="alert('מודולים נוספים בקרוב!')">
+        מודול הבא: וקטורים →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 🎯 JavaScript לפונקציונליות -->
+<script>
+// Switch to modern mode
+function switchToModernMode() {
+  if (confirm('האם תרצה לעבור למצב המודרני? זה יכלול gamification ושיעורים קצרים יותר.')) {
+    // Store preference
+    localStorage.setItem('complexNumbers_preferredMode', 'modern');
+    
+    // Navigate to modern version
+    if (window.pageLoader) {
+      window.pageLoader.loadPage('templates/topics/complex-numbers/algebraic-form-modern');
+    }
+    
+    // Show success message
+    const notification = document.createElement('div');
+    notification.className = 'mode-switch-notification';
+    notification.innerHTML = '🎮 עובר למצב מודרני...';
+    notification.style.cssText = `
+      position: fixed; top: 20px; right: 20px; z-index: 10000;
+      background: linear-gradient(135deg, #ffd60a, #ff6b6b);
+      color: white; padding: 15px 25px; border-radius: 15px;
+      font-weight: 600; box-shadow: 0 8px 25px rgba(255, 214, 10, 0.4);
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.remove();
+    }, 2000);
+  }
+}
+</script>
+
+<!-- טעינת CSS ספציפי למודול -->
+<link rel="stylesheet" href="../../../../styles/lesson-template.css">

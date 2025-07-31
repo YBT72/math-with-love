@@ -1,0 +1,964 @@
+/* Course pages styling - for all course-related pages */
+
+/* Breadcrumb navigation */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 12px 0;
+  border-bottom: 2px solid var(--primary-color);
+  font-size: 14px;
+}
+
+.breadcrumb-link {
+  color: var(--secondary-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.breadcrumb-link:hover {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
+.breadcrumb-separator {
+  color: var(--muted-color);
+  font-weight: bold;
+}
+
+.breadcrumb-current {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Course level pages */
+.course-level-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.course-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, var(--primary-color-light), var(--accent-color-light));
+  border-radius: 16px;
+  color: white;
+}
+
+.course-title h1 {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.course-subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  margin-bottom: 16px;
+}
+
+.course-description {
+  font-size: 1rem;
+  opacity: 0.8;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Exams grid */
+.exams-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.exam-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.exam-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+}
+
+.exam-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary-color-light);
+}
+
+.exam-card h3 {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.exam-year {
+  color: var(--secondary-color);
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.exam-description {
+  color: var(--text-color);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.exam-stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--muted-color);
+}
+
+/* Exam topics pages */
+.exam-topics-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.exam-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  padding: 24px;
+  background: linear-gradient(135deg, var(--primary-color-light), var(--accent-color-light));
+  border-radius: 12px;
+  color: white;
+}
+
+.exam-title h1 {
+  font-size: 2.2rem;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.exam-subtitle {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.exam-progress {
+  text-align: right;
+}
+
+.progress-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.status-badge.developing {
+  background: rgba(255, 193, 7, 0.9);
+  color: #333;
+}
+
+.progress-info small {
+  opacity: 0.8;
+  font-size: 0.85rem;
+}
+
+/* Topics grid */
+.topics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.topic-category {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-color);
+}
+
+.category-title {
+  font-size: 1.4rem;
+  color: var(--primary-color);
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--primary-color-light);
+  font-weight: 600;
+}
+
+/* Темы внутри категории теперь в flex */
+.category-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+/* Для страниц уровней курсов - сетка экзаменов (2 в ряд) */
+.exam-selection-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.course-level-page .exam-card {
+  flex: 1 1 400px;
+  max-width: calc(50% - 12px);
+  min-width: 400px;
+}
+
+/* По умолчанию для страниц экзаменов - темы (3 карточки в ряд на больших экранах) */
+.exam-topics-page .category-topics .topic-card {
+  flex: 1 1 280px;
+  max-width: calc(33.333% - 11px);
+  min-width: 280px;
+}
+
+/* Если в категории только одна тема, она растягивается */
+.topic-category:has(.topic-card:only-child) .category-topics {
+  grid-template-columns: 1fr;
+}
+
+.topic-card {
+  background: #fafafa;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  height: fit-content;
+}
+
+.topic-card:hover {
+  background: #f0f0f0;
+  border-color: var(--primary-color-light);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.topic-card.coming-soon {
+  border-left: 4px solid var(--accent-color);
+  background: linear-gradient(135deg, #fff8f0, #fff);
+}
+
+.topic-card.coming-soon:hover {
+  background: linear-gradient(135deg, #fff5e6, #fafafa);
+  box-shadow: 0 8px 25px rgba(255, 159, 28, 0.2);
+}
+
+.topic-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.topic-header h3 {
+  font-size: 1.1rem;
+  color: var(--primary-color);
+  margin: 0;
+  font-weight: 600;
+  flex: 1;
+}
+
+.topic-status {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: var(--accent-color-light);
+  color: var(--accent-color);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.topic-content p {
+  color: var(--text-color);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+}
+
+.topic-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--muted-color);
+}
+
+.lessons-count {
+  font-weight: 500;
+}
+
+/* Coming soon modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  max-width: 400px;
+  margin: 0 20px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  animation: modalAppear 0.3s ease;
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-content h3 {
+  color: var(--primary-color);
+  margin-bottom: 16px;
+  font-size: 1.3rem;
+}
+
+.modal-content p {
+  color: var(--text-color);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.modal-button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.modal-button:hover {
+  background: var(--primary-color-dark);
+}
+
+/* Responsive design - правильные breakpoints */
+
+/* Responsive design - правильные breakpoints */
+
+/* Для больших экранов (более 1200px) */
+@media (min-width: 1200px) {
+  /* Страницы экзаменов - 3 карточки в ряд */
+  .exam-topics-page .category-topics .topic-card {
+    max-width: calc(33.333% - 11px);
+  }
+  
+  /* Страницы уровней курсов - 2 карточки в ряд */
+  .course-level-page .exam-card {
+    max-width: calc(50% - 12px);
+  }
+}
+
+/* Для средних экранов (641px-1199px) */
+@media (min-width: 641px) and (max-width: 1199px) {
+  /* Страницы экзаменов - 2 карточки в ряд */
+  .exam-topics-page .category-topics .topic-card {
+    max-width: calc(50% - 8px);
+  }
+  
+  /* Страницы уровней курсов - 2 карточки в ряд */
+  .course-level-page .exam-card {
+    max-width: calc(50% - 12px);
+  }
+}
+
+/* Для маленьких экранов (до 640px) - 1 карточка в ряд */
+@media (max-width: 640px) {
+  .category-topics,
+  .exam-selection-grid {
+    flex-direction: column;
+  }
+  
+  .category-topics .topic-card,
+  .course-level-page .exam-card {
+    max-width: 100%;
+    flex: 1 1 auto;
+  }
+  
+  .topic-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .topic-status {
+    align-self: flex-end;
+  }
+}
+
+/* Для очень маленьких экранов (телефоны) */
+@media (max-width: 480px) {
+  .course-header,
+  .exam-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  
+  .exam-progress {
+    text-align: center;
+  }
+  
+  .progress-info {
+    align-items: center;
+  }
+  
+  .course-title h1,
+  .exam-title h1 {
+    font-size: 1.8rem;
+  }
+  
+  .exams-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .course-level-page,
+  .exam-topics-page {
+    padding: 0 16px;
+  }
+  
+  .modal-content {
+    margin: 0 16px;
+    padding: 24px;
+  }
+  
+  .breadcrumb {
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+}
+
+/* ==============================================
+   🎮 LEARNING MODE SELECTION MODAL STYLES
+   ============================================== */
+
+/* Learning mode selection modal */
+.learning-mode-modal {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.learning-mode-modal.modal-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.learning-selection {
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-blue-heading));
+  border-radius: 20px;
+  padding: 0;
+  box-shadow: 0 25px 60px var(--color-shadow-medium);
+  color: white;
+}
+
+.classic-mode {
+  border-left: 4px solid var(--color-success);
+}
+
+.classic-mode:hover {
+  box-shadow: 0 15px 35px rgba(34, 197, 94, 0.3);
+}
+
+.modern-mode {
+  border-left: 4px solid var(--color-accent);
+}
+
+.modern-mode:hover {
+  box-shadow: 0 15px 35px rgba(51, 102, 204, 0.3);
+}
+
+.classic-btn:hover {
+  background: var(--color-success);
+  color: white;
+  transform: scale(1.05);
+}
+
+.modern-btn:hover {
+  background: var(--color-accent);
+  color: white;
+  transform: scale(1.05);
+}
+
+.modal-header {
+  text-align: center;
+  padding: 30px 30px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header h2 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.modal-subtitle {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.learning-modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 30px;
+}
+
+.learning-mode-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  padding: 25px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.learning-mode-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.learning-mode-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.learning-mode-card:hover::before {
+  opacity: 1;
+}
+
+.classic-mode {
+  border-left: 4px solid #06d6a0;
+}
+
+.classic-mode:hover {
+  box-shadow: 0 15px 35px rgba(6, 214, 160, 0.3);
+}
+
+.modern-mode {
+  border-left: 4px solid #ffd60a;
+}
+
+.modern-mode:hover {
+  box-shadow: 0 15px 35px rgba(255, 214, 10, 0.3);
+}
+
+.mode-icon {
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.mode-info h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.mode-description {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  margin-bottom: 20px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.mode-features {
+  flex-grow: 1;
+  margin-bottom: 20px;
+}
+
+.feature {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+  padding-right: 15px;
+  opacity: 0.9;
+}
+
+.recommended-for {
+  margin-bottom: 20px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.recommended-for .label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 5px;
+  font-size: 0.85rem;
+}
+
+.recommended-for .audience {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.mode-action {
+  text-align: center;
+}
+
+.mode-btn {
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+}
+
+.classic-btn:hover {
+  background: #06d6a0;
+  color: white;
+  transform: scale(1.05);
+}
+
+.modern-btn:hover {
+  background: #ffd60a;
+  color: #333;
+  transform: scale(1.05);
+}
+
+.modal-footer {
+  padding: 20px 30px 30px;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 10px 25px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 15px;
+}
+
+.modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.mode-hint {
+  opacity: 0.7;
+  font-size: 0.8rem;
+}
+
+/* Interactive card enhancements */
+.topic-card.interactive-card {
+  position: relative;
+  /* overflow: hidden; */ /* Убрано чтобы tooltip был виден */
+}
+
+.topic-card.interactive-card.available {
+  border-left: 4px solid var(--color-accent);
+  background: linear-gradient(135deg, rgba(51, 102, 204, 0.03), rgba(79, 179, 191, 0.03));
+}
+
+.topic-card.interactive-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px var(--color-shadow-medium);
+}
+
+.learning-modes-preview {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: center;
+}
+
+.mode-pill {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-color);
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.mode-pill.classic {
+  background: var(--color-accent);
+  color: white;
+}
+
+.mode-pill.modern {
+  background: var(--color-blue-tool);
+  color: white;
+}
+
+.new-feature {
+  background: var(--color-accent);
+  color: white;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.hover-effect {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  right: auto;
+  width: max-content;
+  max-width: 200px;
+  background: var(--color-text-dark);
+  color: white;
+  padding: 8px 15px;
+  text-align: center;
+  transform: translateX(-50%) translateY(-100%) scale(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  box-shadow: 0 4px 15px var(--color-shadow-medium);
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hover-effect::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--color-text-dark);
+}
+
+.topic-card.interactive-card:hover .hover-effect {
+  transform: translateX(-50%) translateY(-100%) scale(1);
+  opacity: 1;
+}
+
+/* Временный костыль - более специфичное правило */
+.topic-card.interactive-card.available:hover .hover-effect {
+  transform: translateX(-50%) translateY(-100%) scale(1) !important;
+  opacity: 1 !important;
+}
+
+.click-hint {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Success notification */
+.mode-selection-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--color-accent);
+  color: white;
+  padding: 15px 25px;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px var(--color-shadow-medium);
+  z-index: 10000;
+  animation: slideInFromRight 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.notification-icon {
+  font-size: 1.2rem;
+}
+
+.notification-text {
+  font-weight: 600;
+}
+
+/* Mobile responsiveness for learning mode modal */
+@media (max-width: 768px) {
+  .learning-selection {
+    width: 95%;
+    margin: 0 10px;
+  }
+  
+  .learning-modes {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 20px;
+  }
+  
+  .modal-header {
+    padding: 20px 20px 15px;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .modal-subtitle {
+    font-size: 1rem;
+  }
+  
+  .learning-mode-card {
+    padding: 20px;
+  }
+  
+  .mode-icon {
+    font-size: 2.5rem;
+  }
+  
+  .mode-info h3 {
+    font-size: 1.1rem;
+  }
+  
+  .mode-description {
+    font-size: 0.9rem;
+  }
+  
+  .feature {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .learning-selection {
+    width: 98%;
+    border-radius: 15px;
+  }
+  
+  .modal-header {
+    padding: 15px;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .learning-modes {
+    padding: 15px;
+  }
+  
+  .learning-mode-card {
+    padding: 15px;
+  }
+  
+  .mode-selection-notification {
+    right: 10px;
+    left: 10px;
+    padding: 12px 20px;
+  }
+}
+
+/* Animation keyframes */
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}

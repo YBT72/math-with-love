@@ -1,0 +1,1105 @@
+<!-- 
+===========================================
+📚 TEMPLATE לשיעור במספרים מרוכבים - שאלון 35572
+===========================================
+
+הוראות שימוש:
+1. העתק את הקובץ הזה לתיקייה: pages/courses/5-units/35572/topics/complex-numbers/
+2. שנה את השם לפי הנושא הספציפי (למשל: algebraic-form.html)
+3. מלא את כל המקומות המסומנים ב-[כאן להכניס...]
+4. הוסף תוכן בחלקים המסומנים בהערות
+5. שמור ובדוק בדפדפן
+
+מבנה הטאבים:
+- טאב א': תיאוריה + דוגמאות + ויזואליזציה
+- טאב ב': תרגילים מונחים (עם פתרונות הדרגתיים)  
+- טאב ג': תרגילי בית
+-->
+
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>מספרים מרוכבים - צורה אלגברית</title>
+  <style>
+    /* ===== CSS עיצוב למצב קלאסי ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fa 100%);
+      color: #1a1a1a;
+      line-height: 1.6;
+      direction: rtl;
+      min-height: 100vh;
+    }
+
+    .lesson-page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+
+    /* ===== Breadcrumb Navigation ===== */
+    .breadcrumb {
+      background: #f8f9fa;
+      padding: 12px 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      border-right: 4px solid #2196f3;
+    }
+
+    .breadcrumb-link {
+      color: #2196f3;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .breadcrumb-link:hover {
+      color: #1976d2;
+    }
+
+    .breadcrumb-separator {
+      margin: 0 10px;
+      color: #666;
+    }
+
+    .breadcrumb-current {
+      color: #333;
+      font-weight: 600;
+    }
+
+    /* ===== Lesson Header ===== */
+    .lesson-header {
+      background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+      color: white;
+      padding: 30px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .lesson-title h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .lesson-subtitle {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      margin-bottom: 20px;
+    }
+
+    .lesson-meta {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.2);
+      padding: 8px 15px;
+      border-radius: 25px;
+      backdrop-filter: blur(10px);
+    }
+
+    .meta-icon {
+      font-size: 1.2rem;
+    }
+
+    /* ===== Tab Navigation ===== */
+    .lesson-tabs {
+      display: flex;
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 5px;
+      margin-bottom: 30px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .tab-button {
+      flex: 1;
+      padding: 15px 20px;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      color: #666;
+    }
+
+    .tab-button.active {
+      background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+    }
+
+    .tab-button:hover:not(.active) {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    /* ===== Tab Content ===== */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== Content Sections ===== */
+    .content-section {
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      border-right: 4px solid #2196f3;
+    }
+
+    .content-section h3 {
+      color: #1976d2;
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .content-section h4 {
+      color: #333;
+      margin: 20px 0 10px 0;
+      font-size: 1.2rem;
+    }
+
+    /* ===== Mathematical Content ===== */
+    .formula-box {
+      background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+      border: 2px solid #2196f3;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(33, 150, 243, 0.2);
+    }
+
+    .formula {
+      font-size: 1.8rem;
+      color: #1976d2;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .formula-explanation {
+      color: #666;
+      font-style: italic;
+    }
+
+    /* ===== Example Boxes ===== */
+    .example-box {
+      background: #fff3e0;
+      border: 2px solid #ff9800;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .example-title {
+      color: #f57c00;
+      font-weight: bold;
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+    }
+
+    /* ===== Exercise Styles ===== */
+    .exercise {
+      background: #f1f8e9;
+      border: 2px solid #4caf50;
+      border-radius: 10px;
+      padding: 20px;
+      margin: 15px 0;
+    }
+
+    .exercise-title {
+      color: #2e7d32;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .solution-toggle {
+      background: #4caf50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      cursor: pointer;
+      margin-top: 15px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .solution-toggle:hover {
+      background: #45a049;
+      transform: translateY(-2px);
+    }
+
+    .solution {
+      display: none;
+      background: #e8f5e8;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      border-right: 4px solid #4caf50;
+    }
+
+    /* ===== Homework Section ===== */
+    .homework-section {
+      background: #fce4ec;
+      border: 2px solid #e91e63;
+      border-radius: 12px;
+      padding: 25px;
+      margin: 20px 0;
+    }
+
+    .homework-title {
+      color: #c2185b;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .homework-exercise {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 10px 0;
+      border-right: 4px solid #e91e63;
+    }
+
+    /* ===== Interactive Elements ===== */
+    .interactive-demo {
+      background: #f3e5f5;
+      border: 2px solid #9c27b0;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .demo-button {
+      background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      margin: 10px;
+      transition: all 0.3s;
+    }
+
+    .demo-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(156, 39, 176, 0.4);
+    }
+
+    /* ===== Progress Indicator ===== */
+    .progress-container {
+      background: #f8f9fa;
+      border-radius: 25px;
+      padding: 5px;
+      margin: 20px 0;
+    }
+
+    .progress-bar {
+      background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+      height: 20px;
+      border-radius: 20px;
+      width: 0%;
+      transition: width 0.5s ease-in-out;
+    }
+
+    /* ===== Responsive Design ===== */
+    @media (max-width: 768px) {
+      .lesson-page {
+        margin: 10px;
+        padding: 15px;
+      }
+      
+      .lesson-header {
+        padding: 20px;
+      }
+      
+      .lesson-title h1 {
+        font-size: 2rem;
+      }
+      
+      .lesson-meta {
+        gap: 15px;
+      }
+      
+      .tab-button {
+        padding: 12px 15px;
+        font-size: 1rem;
+      }
+    }
+
+    /* ===== Utility Classes ===== */
+    .text-center { text-align: center; }
+    .text-blue { color: #2196f3; }
+    .text-green { color: #4caf50; }
+    .text-orange { color: #ff9800; }
+    .mb-20 { margin-bottom: 20px; }
+    .mt-20 { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  </style>
+</head>
+<body>
+
+<div class="lesson-page">
+  <!-- 🍞 ניווט Breadcrumb -->
+  <nav class="breadcrumb">
+    <a href="#" onclick="window.pageLoader.loadPage('home')" class="breadcrumb-link">בית</a>
+    <span class="breadcrumb-separator">←</span>
+    <a href="#" onclick="window.pageLoader.loadPage('courses/5-units/5-units-index')" class="breadcrumb-link">5 יח״ל</a>
+    <span class="breadcrumb-separator">←</span>
+    <a href="#" onclick="window.pageLoader.loadPage('courses/5-units/35572/35572-index')" class="breadcrumb-link">שאלון 35572</a>
+    <span class="breadcrumb-separator">←</span>
+    <span class="breadcrumb-current">מספרים מרוכבים - צורה אלגברית</span>
+  </nav>
+
+  <!-- 📝 כותרת השיעור -->
+  <div class="lesson-header">
+    <div class="lesson-title">
+      <h1>מספרים מרוכבים - צורה אלגברית</h1>
+      <p class="lesson-subtitle">הכירו את הצורה הבסיסית a + bi ופעולות בסיסיות על מספרים מרוכבים</p>
+    </div>
+    
+    <div class="lesson-meta">
+      <div class="meta-item">
+        <span class="meta-icon">⏱️</span>
+        <span class="meta-text">45 דקות</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-icon">📊</span>
+        <span class="meta-text">רמה: בסיסי</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-icon">🎯</span>
+        <span class="meta-text">יעד: הבנת מספרים מרוכבים</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📑 טאבים -->
+  <div class="lesson-tabs">
+    <button class="tab-button active" onclick="openTab(event, 'theory')">
+      📚 תיאוריה
+    </button>
+    <button class="tab-button" onclick="openTab(event, 'practice')">
+      💪 תרגול
+    </button>
+    <button class="tab-button" onclick="openTab(event, 'homework')">
+      📝 תרגילי בית
+    </button>
+  </div>
+
+  <!-- 📖 תיאוריה -->
+  <div id="theory" class="tab-content active">
+    
+    <div class="content-section">
+      <h3>🎯 מה נלמד היום?</h3>
+      <ul>
+        <li>מה זה מספר מרוכב?</li>
+        <li>הצורה האלגברית a + bi</li>
+        <li>חלק ממשי וחלק מדומה</li>
+        <li>פעולות חיבור וחיסור</li>
+        <li>כפל מספרים מרוכבים</li>
+      </ul>
+    </div>
+
+    <div class="content-section">
+      <h3>🔍 הגדרה</h3>
+      <p><strong>מספר מרוכב</strong> הוא מספר שניתן לכתיבה בצורה:</p>
+      
+      <div class="formula-box">
+        <div class="formula">z = a + bi</div>
+        <div class="formula-explanation">
+          כאשר a, b מספרים ממשיים ו-i היא היחידה המדומה (i² = -1)
+        </div>
+      </div>
+
+      <ul>
+        <li><strong>a</strong> נקרא <span class="text-blue">החלק הממשי</span> של z</li>
+        <li><strong>b</strong> נקרא <span class="text-orange">החלק המדומה</span> של z</li>
+        <li><strong>i</strong> היא <span class="text-green">היחידה המדומה</span> כאשר i² = -1</li>
+      </ul>
+    </div>
+
+    <div class="example-box">
+      <div class="example-title">🌟 דוגמאות</div>
+      <ul>
+        <li>z₁ = 3 + 4i → החלק הממשי: 3, החלק המדומה: 4</li>
+        <li>z₂ = -2 + 7i → החלק הממשי: -2, החלק המדומה: 7</li>
+        <li>z₃ = 5 → מספר ממשי (החלק המדומה = 0)</li>
+        <li>z₄ = 2i → מספר מדומה טהור (החלק הממשי = 0)</li>
+      </ul>
+    </div>
+
+    <div class="content-section">
+      <h3>➕ פעולות על מספרים מרוכבים</h3>
+      
+      <h4>חיבור וחיסור:</h4>
+      <div class="formula-box">
+        <div class="formula">(a + bi) ± (c + di) = (a ± c) + (b ± d)i</div>
+        <div class="formula-explanation">מחברים/מחסרים נפרד חלקים ממשיים וחלקים מדומים</div>
+      </div>
+
+      <h4>כפל:</h4>
+      <div class="formula-box">
+        <div class="formula">(a + bi)(c + di) = (ac - bd) + (ad + bc)i</div>
+        <div class="formula-explanation">זכרו: i² = -1</div>
+      </div>
+    </div>
+
+    <div class="example-box">
+      <div class="example-title">💡 דוגמה מפורטת - כפל</div>
+      <p><strong>חשבו:</strong> (3 + 2i)(1 + 4i)</p>
+      <div style="background: white; padding: 15px; border-radius: 8px; margin-top: 10px;">
+        <p><strong>פתרון:</strong></p>
+        <p>(3 + 2i)(1 + 4i) = 3·1 + 3·4i + 2i·1 + 2i·4i</p>
+        <p>= 3 + 12i + 2i + 8i²</p>
+        <p>= 3 + 14i + 8(-1)</p>
+        <p>= 3 + 14i - 8</p>
+        <p><strong>תשובה:</strong> -5 + 14i</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 💪 תרגול -->
+  <div id="practice" class="tab-content">
+    
+    <div class="exercise">
+      <div class="exercise-title">תרגיל 1: זיהוי חלקים</div>
+      <p>עבור המספר המרוכב z = -3 + 7i, מצאו:</p>
+      <ul>
+        <li>א. החלק הממשי</li>
+        <li>ב. החלק המדומה</li>
+      </ul>
+      <button class="solution-toggle" onclick="toggleSolution('sol1')">הצג פתרון</button>
+      <div id="sol1" class="solution">
+        <p><strong>פתרון:</strong></p>
+        <p>א. החלק הממשי: -3</p>
+        <p>ב. החלק המדומה: 7</p>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="exercise-title">תרגיל 2: חיבור וחיסור</div>
+      <p>חשבו:</p>
+      <ul>
+        <li>א. (2 + 3i) + (4 - i)</li>
+        <li>ב. (5 + 2i) - (1 + 4i)</li>
+      </ul>
+      <button class="solution-toggle" onclick="toggleSolution('sol2')">הצג פתרון</button>
+      <div id="sol2" class="solution">
+        <p><strong>פתרון:</strong></p>
+        <p>א. (2 + 3i) + (4 - i) = (2 + 4) + (3 - 1)i = 6 + 2i</p>
+        <p>ב. (5 + 2i) - (1 + 4i) = (5 - 1) + (2 - 4)i = 4 - 2i</p>
+      </div>
+    </div>
+
+    <div class="exercise">
+      <div class="exercise-title">תרגיל 3: כפל</div>
+      <p>חשבו: (1 + 2i)(3 - i)</p>
+      <button class="solution-toggle" onclick="toggleSolution('sol3')">הצג פתרון</button>
+      <div id="sol3" class="solution">
+        <p><strong>פתרון:</strong></p>
+        <p>(1 + 2i)(3 - i) = 1·3 + 1·(-i) + 2i·3 + 2i·(-i)</p>
+        <p>= 3 - i + 6i - 2i²</p>
+        <p>= 3 - i + 6i - 2(-1)</p>
+        <p>= 3 - i + 6i + 2</p>
+        <p>= 5 + 5i</p>
+      </div>
+    </div>
+
+    <div class="interactive-demo">
+      <h3>🎮 תרגול אינטראקטיבי</h3>
+      <p>לחצו על הכפתור למספר מרוכב אקראי:</p>
+      <button class="demo-button" onclick="generateRandomComplex()">צור מספר מרוכב</button>
+      <div id="random-result" style="margin-top: 15px; font-size: 1.2rem; font-weight: bold;"></div>
+    </div>
+
+  </div>
+
+  <!-- 📝 תרגילי בית -->
+  <div id="homework" class="tab-content">
+    
+    <div class="homework-section">
+      <div class="homework-title">📚 תרגילי בית</div>
+      
+      <div class="homework-exercise">
+        <h4>שאלה 1</h4>
+        <p>עבור z₁ = 4 + 3i ו-z₂ = 2 - 5i, חשבו:</p>
+        <ul>
+          <li>א. z₁ + z₂</li>
+          <li>ב. z₁ - z₂</li>
+          <li>ג. z₁ · z₂</li>
+        </ul>
+      </div>
+
+      <div class="homework-exercise">
+        <h4>שאלה 2</h4>
+        <p>חשבו את הביטויים הבאים:</p>
+        <ul>
+          <li>א. (1 + i)²</li>
+          <li>ב. (2 - 3i)(2 + 3i)</li>
+          <li>ג. i³ + i⁴ + i⁵</li>
+        </ul>
+      </div>
+
+      <div class="homework-exercise">
+        <h4>שאלה 3</h4>
+        <p>מצאו את כל הפתרונות הממשיים והמרוכבים של המשוואות:</p>
+        <ul>
+          <li>א. x² + 4 = 0</li>
+          <li>ב. x² - 2x + 5 = 0</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="progress-container">
+      <div class="progress-bar" id="homework-progress"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  // פונקציה לפתיחת טאבים
+  function openTab(evt, tabName) {
+    var i, tabcontent, tablinks;
+    
+    // הסתרת כל התוכן
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].classList.remove("active");
+    }
+    
+    // הסרת active מכל הכפתורים
+    tablinks = document.getElementsByClassName("tab-button");
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].classList.remove("active");
+    }
+    
+    // הצגת הטאב הנבחר והוספת active לכפתור
+    document.getElementById(tabName).classList.add("active");
+    evt.currentTarget.classList.add("active");
+  }
+
+  // פונקציה להצגת פתרונות
+  function toggleSolution(solutionId) {
+    var solution = document.getElementById(solutionId);
+    if (solution.style.display === "none" || solution.style.display === "") {
+      solution.style.display = "block";
+    } else {
+      solution.style.display = "none";
+    }
+  }
+
+  // פונקציה ליצירת מספר מרוכב אקראי
+  function generateRandomComplex() {
+    var realPart = Math.floor(Math.random() * 21) - 10; // מספר בין -10 ל-10
+    var imaginaryPart = Math.floor(Math.random() * 21) - 10;
+    var result = realPart + " + " + imaginaryPart + "i";
+    if (imaginaryPart < 0) {
+      result = realPart + " - " + Math.abs(imaginaryPart) + "i";
+    }
+    document.getElementById("random-result").innerHTML = "z = " + result;
+  }
+
+  // עדכון פס התקדמות (לדוגמה)
+  window.onload = function() {
+    setTimeout(function() {
+      document.getElementById("homework-progress").style.width = "30%";
+    }, 1000);
+  }
+</script>
+
+</body>
+</html>
+        <span class="meta-text">[כאן להכניס: מספר מטרות] מטרות לימוד</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔖 מערכת טאבים -->
+  <div class="lesson-tabs">
+    <div class="tab-navigation">
+      <button class="tab-button active" onclick="showTab('theory')" id="theory-tab">
+        📚 חלק א': תיאוריה ודוגמאות
+      </button>
+      <button class="tab-button" onclick="showTab('practice')" id="practice-tab">
+        💪 חלק ב': תרגול מונחה
+      </button>
+      <button class="tab-button" onclick="showTab('homework')" id="homework-tab">
+        🏠 חלק ג': שיעורי בית
+      </button>
+    </div>
+
+    <!-- 📚 טאב א': תיאוריה ודוגמאות -->
+    <div class="tab-content active" id="theory-content">
+      <div class="tab-section">
+        
+        <!-- 🎯 מטרות השיעור -->
+        <div class="section-card objectives">
+          <h2 class="section-title">🎯 מטרות השיעור</h2>
+          <div class="section-content">
+            <!-- [כאן להכניס רשימת מטרות] -->
+            <ul class="objectives-list">
+              <li>[כאן להכניס: מטרה ראשונה]</li>
+              <li>[כאן להכניס: מטרה שנייה]</li>
+              <li>[כאן להכניס: מטרה שלישית]</li>
+              <!-- הוסף עוד מטרות לפי הצורך -->
+            </ul>
+          </div>
+        </div>
+
+        <!-- 📖 הקניית ידע -->
+        <div class="section-card theory">
+          <h2 class="section-title">📖 תיאוריה</h2>
+          <div class="section-content">
+            <!-- [כאן להכניס תיאוריה] -->
+            <div class="theory-block">
+              <h3>[כאן להכניס: כותרת נושא ראשון]</h3>
+              <p>[כאן להכניס: הסבר תיאורטי]</p>
+              
+              <!-- נוסחה חשובה -->
+              <div class="formula-box">
+                <div class="formula-title">נוסחה חשובה:</div>
+                <div class="formula">[כאן להכניס: נוסחה מתמטית]</div>
+              </div>
+            </div>
+
+            <div class="theory-block">
+              <h3>[כאן להכניס: כותרת נושא שני]</h3>
+              <p>[כאן להכניס: הסבר נוסף]</p>
+            </div>
+            
+            <!-- הוסף עוד theory-block לפי הצורך -->
+          </div>
+        </div>
+
+        <!-- 🔍 דוגמאות עם פתרון -->
+        <div class="section-card examples">
+          <h2 class="section-title">🔍 דוגמאות מפורטות</h2>
+          <div class="section-content">
+            
+            <!-- דוגמה ראשונה -->
+            <div class="example-box">
+              <h3 class="example-title">דוגמה 1: [כאן להכניס: כותרת הדוגמה]</h3>
+              <div class="example-problem">
+                <strong>שאלה:</strong> [כאן להכניס: נוסח השאלה]
+              </div>
+              <div class="example-solution">
+                <strong>פתרון:</strong>
+                <div class="solution-steps">
+                  <div class="step">
+                    <span class="step-number">1</span>
+                    <span class="step-content">[כאן להכניס: צעד ראשון]</span>
+                  </div>
+                  <div class="step">
+                    <span class="step-number">2</span>
+                    <span class="step-content">[כאן להכניס: צעד שני]</span>
+                  </div>
+                  <div class="step">
+                    <span class="step-number">3</span>
+                    <span class="step-content">[כאן להכניס: צעד שלישי]</span>
+                  </div>
+                  <!-- הוסף עוד צעדים לפי הצורך -->
+                </div>
+                <div class="final-answer">
+                  <strong>תשובה סופית:</strong> [כאן להכניס: התשובה הסופית]
+                </div>
+              </div>
+            </div>
+
+            <!-- דוגמה שנייה -->
+            <div class="example-box">
+              <h3 class="example-title">דוגמה 2: [כאן להכניס: כותרת הדוגמה השנייה]</h3>
+              <div class="example-problem">
+                <strong>שאלה:</strong> [כאן להכניס: נוסח השאלה השנייה]
+              </div>
+              <div class="example-solution">
+                <strong>פתרון:</strong>
+                <div class="solution-steps">
+                  <!-- העתק מבנה צעדים מלמעלה -->
+                </div>
+                <div class="final-answer">
+                  <strong>תשובה סופית:</strong> [כאן להכניס: התשובה הסופית]
+                </div>
+              </div>
+            </div>
+
+            <!-- הוסף עוד דוגמאות לפי הצורך -->
+          </div>
+        </div>
+
+        <!-- 🎨 ויזואליזציה -->
+        <div class="section-card visualization">
+          <h2 class="section-title">🎨 ויזואליזציה אינטראקטיבית</h2>
+          <div class="section-content">
+            <!-- [כאן להכניס iframe או קישור לויזואליזציה] -->
+            <div class="visualization-container">
+              <p class="visualization-description">[כאן להכניס: תיאור מה הויזואליזציה מראה]</p>
+              
+              <!-- אם יש לך HTML ויזואליזציה נפרד -->
+              <div class="visualization-frame">
+                <iframe src="[כאן להכניס: נתיב לקובץ הויזואליזציה].html" 
+                        width="100%" 
+                        height="400" 
+                        frameborder="0">
+                </iframe>
+              </div>
+              
+              <!-- או אם תרצה להטמיע ישירות -->
+              <div class="visualization-embed">
+                [כאן להכניס: קוד ויזואליזציה או canvas]
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 💡 טיפים חשובים -->
+        <div class="section-card tips">
+          <h2 class="section-title">💡 טיפים לזכירה</h2>
+          <div class="section-content">
+            <div class="tip-box">
+              <div class="tip-icon">🔑</div>
+              <div class="tip-content">[כאן להכניס: טיפ חשוב ראשון]</div>
+            </div>
+            <div class="tip-box">
+              <div class="tip-icon">⚠️</div>
+              <div class="tip-content">[כאן להכניס: אזהרה או טעות נפוצה]</div>
+            </div>
+            <div class="tip-box">
+              <div class="tip-icon">✨</div>
+              <div class="tip-content">[כאן להכניס: טריק או קיצור דרך]</div>
+            </div>
+            <!-- הוסף עוד טיפים לפי הצורך -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 💪 טאב ב': תרגול מונחה -->
+    <div class="tab-content" id="practice-content">
+      <div class="tab-section">
+        
+        <div class="section-card practice-intro">
+          <h2 class="section-title">💪 תרגילים מונחים</h2>
+          <div class="section-content">
+            <p class="practice-description">
+              [כאן להכניס: הסבר על מטרת התרגילים והגישה לפתרון]
+            </p>
+            <div class="practice-instructions">
+              <h4>הוראות:</h4>
+              <ul>
+                <li>נסה לפתור כל תרגיל בעצמך לפני הצגת הפתרון</li>
+                <li>השתמש בכפתור "רמז" אם אתה תקוע</li>
+                <li>הצג את הפתרון בהדרגה לבדיקה עצמית</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- תרגיל ראשון -->
+        <div class="section-card exercise">
+          <h3 class="exercise-title">תרגיל 1: [כאן להכניס: כותרת התרגיל]</h3>
+          <div class="exercise-content">
+            
+            <div class="exercise-problem">
+              <strong>שאלה:</strong> [כאן להכניס: נוסח התרגיל]
+            </div>
+
+            <div class="exercise-tools">
+              <button class="hint-btn" onclick="toggleHint('ex1')">💡 רמז</button>
+              <button class="solution-btn" onclick="toggleSolution('ex1')">📝 הצג פתרון</button>
+              <button class="step-btn" onclick="showNextStep('ex1')">👣 צעד הבא</button>
+            </div>
+
+            <div class="hint-box" id="ex1-hint" style="display: none;">
+              <div class="hint-content">
+                <strong>רמז:</strong> [כאן להכניס: רמז לפתרון]
+              </div>
+            </div>
+
+            <div class="solution-container" id="ex1-solution" style="display: none;">
+              <div class="solution-steps">
+                <div class="solution-step" data-step="1">
+                  <span class="step-number">1</span>
+                  <span class="step-content">[כאן להכניס: צעד ראשון בפתרון]</span>
+                </div>
+                <div class="solution-step" data-step="2">
+                  <span class="step-number">2</span>
+                  <span class="step-content">[כאן להכניס: צעד שני בפתרון]</span>
+                </div>
+                <div class="solution-step" data-step="3">
+                  <span class="step-number">3</span>
+                  <span class="step-content">[כאן להכניס: צעד שלישי בפתרון]</span>
+                </div>
+                <!-- הוסף עוד צעדים לפי הצורך -->
+              </div>
+              <div class="final-answer">
+                <strong>תשובה סופית:</strong> [כאן להכניס: התשובה הסופית]
+              </div>
+            </div>
+
+            <div class="exercise-tips">
+              <strong>טיפ לתרגיל זה:</strong> [כאן להכניס: טיפ ספציפי לתרגיל]
+            </div>
+          </div>
+        </div>
+
+        <!-- תרגיל שני -->
+        <div class="section-card exercise">
+          <h3 class="exercise-title">תרגיל 2: [כאן להכניס: כותרת התרגיל השני]</h3>
+          <div class="exercise-content">
+            <!-- העתק מבנה התרגיל מלמעלה ושנה מספרי ID -->
+            <div class="exercise-problem">
+              <strong>שאלה:</strong> [כאן להכניס: נוסח התרגיל השני]
+            </div>
+
+            <div class="exercise-tools">
+              <button class="hint-btn" onclick="toggleHint('ex2')">💡 רמז</button>
+              <button class="solution-btn" onclick="toggleSolution('ex2')">📝 הצג פתרון</button>
+              <button class="step-btn" onclick="showNextStep('ex2')">👣 צעד הבא</button>
+            </div>
+
+            <div class="hint-box" id="ex2-hint" style="display: none;">
+              <div class="hint-content">
+                <strong>רמז:</strong> [כאן להכניס: רמז לפתרון השני]
+              </div>
+            </div>
+
+            <div class="solution-container" id="ex2-solution" style="display: none;">
+              <!-- פתרון התרגיל השני -->
+            </div>
+
+            <div class="exercise-tips">
+              <strong>טיפ לתרגיל זה:</strong> [כאן להכניס: טיפ ספציפי לתרגיל השני]
+            </div>
+          </div>
+        </div>
+
+        <!-- הוסף עוד תרגילים לפי הצורך -->
+        <!-- תרגיל 3, 4, 5... בפורמט זהה -->
+
+      </div>
+    </div>
+
+    <!-- 🏠 טאב ג': שיעורי בית -->
+    <div class="tab-content" id="homework-content">
+      <div class="tab-section">
+        
+        <div class="section-card homework-intro">
+          <h2 class="section-title">🏠 תרגילי שיעורי בית</h2>
+          <div class="section-content">
+            <p class="homework-description">
+              [כאן להכניס: הסבר על מטרת תרגילי הבית ורמת הקושי]
+            </p>
+            <div class="homework-instructions">
+              <h4>הוראות להגשה:</h4>
+              <ul>
+                <li>[כאן להכניס: הוראה ראשונה]</li>
+                <li>[כאן להכניס: הוראה שנייה]</li>
+                <li>מועד הגשה: [כאן להכניס: תאריך]</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- רשימת תרגילי בית -->
+        <div class="section-card homework-list">
+          <h3 class="homework-section-title">📝 התרגילים</h3>
+          
+          <!-- תרגיל בית 1 -->
+          <div class="homework-exercise">
+            <div class="homework-header">
+              <h4 class="homework-title">תרגיל 1</h4>
+              <span class="homework-points">[X] נקודות</span>
+            </div>
+            <div class="homework-problem">
+              [כאן להכניס: נוסח תרגיל הבית הראשון]
+            </div>
+            <div class="homework-answer">
+              <button class="answer-toggle" onclick="toggleAnswer('hw1')">👁️ הצג תשובה</button>
+              <div class="answer-content" id="hw1-answer" style="display: none;">
+                <strong>תשובה:</strong> [כאן להכניס: התשובה הסופית]
+              </div>
+            </div>
+          </div>
+
+          <!-- תרגיל בית 2 -->
+          <div class="homework-exercise">
+            <div class="homework-header">
+              <h4 class="homework-title">תרגיל 2</h4>
+              <span class="homework-points">[X] נקודות</span>
+            </div>
+            <div class="homework-problem">
+              [כאן להכניס: נוסח תרגיל הבית השני]
+            </div>
+            <div class="homework-answer">
+              <button class="answer-toggle" onclick="toggleAnswer('hw2')">👁️ הצג תשובה</button>
+              <div class="answer-content" id="hw2-answer" style="display: none;">
+                <strong>תשובה:</strong> [כאן להכניס: התשובה הסופית השנייה]
+              </div>
+            </div>
+          </div>
+
+          <!-- הוסף עוד תרגילי בית לפי הצורך -->
+          <!-- תרגיל 3, 4, 5... בפורמט זהה -->
+
+        </div>
+
+        <!-- משאבים נוספים -->
+        <div class="section-card resources">
+          <h3 class="resources-title">📚 משאבים נוספים</h3>
+          <div class="resources-content">
+            <ul class="resources-list">
+              <li><a href="[קישור]" target="_blank">[כאן להכניס: שם המשאב הראשון]</a></li>
+              <li><a href="[קישור]" target="_blank">[כאן להכניס: שם המשאב השני]</a></li>
+              <li><a href="[קישור]" target="_blank">[כאן להכניס: שם המשאב השלישי]</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔄 ניווט למעבר בין שיעורים -->
+  <div class="lesson-navigation">
+    <div class="nav-container">
+      <button class="nav-btn prev-lesson" onclick="window.pageLoader.loadPage('[נתיב לשיעור הקודם]')">
+        ← שיעור קודם
+      </button>
+      <button class="nav-btn next-lesson" onclick="window.pageLoader.loadPage('[נתיב לשיעור הבא]')">
+        שיעור הבא →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 🎯 JavaScript לפונקציונליות הטאבים -->
+<script>
+// מעבר בין טאבים
+function showTab(tabName) {
+  // הסתר את כל הטאבים
+  const tabContents = document.querySelectorAll('.tab-content');
+  const tabButtons = document.querySelectorAll('.tab-button');
+  
+  tabContents.forEach(content => content.classList.remove('active'));
+  tabButtons.forEach(button => button.classList.remove('active'));
+  
+  // הצג את הטאב הנבחר
+  document.getElementById(tabName + '-content').classList.add('active');
+  document.getElementById(tabName + '-tab').classList.add('active');
+}
+
+// הצגת רמזים
+function toggleHint(exerciseId) {
+  const hint = document.getElementById(exerciseId + '-hint');
+  hint.style.display = hint.style.display === 'none' ? 'block' : 'none';
+}
+
+// הצגת פתרון מלא
+function toggleSolution(exerciseId) {
+  const solution = document.getElementById(exerciseId + '-solution');
+  solution.style.display = solution.style.display === 'none' ? 'block' : 'none';
+}
+
+// הצגת צעד הבא בפתרון
+function showNextStep(exerciseId) {
+  const solution = document.getElementById(exerciseId + '-solution');
+  const steps = solution.querySelectorAll('.solution-step');
+  
+  // מצא את הצעד הבא שטרם הוצג
+  for (let step of steps) {
+    if (step.style.display === 'none' || step.style.display === '') {
+      step.style.display = 'flex';
+      break;
+    }
+  }
+  
+  // הצג את הקונטיינר אם הוא מוסתר
+  if (solution.style.display === 'none') {
+    solution.style.display = 'block';
+  }
+}
+
+// הצגת תשובות בתרגילי בית
+function toggleAnswer(homeworkId) {
+  const answer = document.getElementById(homeworkId + '-answer');
+  answer.style.display = answer.style.display === 'none' ? 'block' : 'none';
+}
+
+// אתחול - הסתר את כל הצעדים בהתחלה
+document.addEventListener('DOMContentLoaded', function() {
+  const allSteps = document.querySelectorAll('.solution-step');
+  allSteps.forEach(step => step.style.display = 'none');
+});
+</script>
+
+<!-- 
+===========================================
+📝 CHECKLIST לפני פרסום:
+===========================================
+
+□ מילאתי את כל ה-[כאן להכניס...] 
+□ בדקתי שהנתיבים בניווט נכונים
+□ הוספתי תוכן לכל הטאבים
+□ בדקתי שהקישורים לויזואליזציה עובדים
+□ וידאתי שמספרי ה-ID ייחודיים לכל תרגיל
+□ בדקתי את התצוגה בדפדפן
+□ שמרתי את הקובץ במיקום הנכון
+
+===========================================
+💡 טיפים לעריכה מהירה:
+===========================================
+
+- השתמש ב-Ctrl+F כדי למצוא "[כאן להכניס"
+- העתק מבנה תרגילים לחסוך זמן
+- שמור עותק של הטמפלט לשימוש חוזר
+- בדוק שה-JavaScript עובד אחרי עריכות
+
+===========================================
+-->

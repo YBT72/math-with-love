@@ -31,7 +31,7 @@
             overflow: hidden;
         }
         
-        /* Хлебные крошки */
+        /* Breadcrumb navigation */
         .breadcrumb {
             background: var(--color-surface-secondary, #f1f5f9);
             padding: 15px 30px;
@@ -54,7 +54,7 @@
             font-weight: 600;
         }
         
-        /* Заголовок урока */
+        /* Lesson header */
         .lesson-header {
             padding: 40px 30px;
             background: linear-gradient(135deg, var(--color-math-primary, #2563eb), var(--color-math-secondary, #1e40af));
@@ -62,7 +62,7 @@
             position: relative;
         }
         
-        /* Заголовок с датой и информацией */
+        /* Title container with date and info */
         .lesson-title-container {
             display: flex;
             align-items: center;
@@ -76,7 +76,7 @@
             font-weight: 700;
         }
         
-        /* Информация в центре заголовка */
+        /* Header info section */
         .header-info {
             display: flex;
             gap: 15px;
@@ -98,7 +98,7 @@
             opacity: 0.9;
         }
         
-        /* Дата урока в заголовке */
+        /* Lesson date in header */
         .lesson-date {
             background: transparent;
             padding: 8px 15px;
@@ -110,7 +110,7 @@
             text-align: center;
         }
         
-        /* Подменю с навигацией и целями */
+        /* Submenu with navigation and objectives */
         .lesson-submenu {
             display: flex;
             align-items: center;
@@ -118,7 +118,7 @@
             margin-top: 20px;
         }
         
-        /* Кнопка целей урока */
+        /* Lesson objectives trigger button */
         .objectives-trigger {
             background: none;
             border: none;
@@ -147,7 +147,7 @@
             transform: scale(1.15);
         }
         
-        /* Навигационные иконки */
+        /* Navigation icons */
         .nav-icons {
             display: flex;
             gap: 15px;
@@ -180,7 +180,7 @@
             transform: scale(1.15);
         }
         
-        /* Информация о уроке */
+        /* Lesson information */
         .lesson-info {
             display: flex;
             align-items: center;
@@ -198,7 +198,7 @@
             font-weight: 500;
         }
         
-        /* Модальное окно для целей */
+        /* Modal window for objectives */
         .objectives-modal {
             display: none;
             position: fixed;
@@ -253,12 +253,12 @@
             border-bottom: none;
         }
         
-        /* Контент урока */
+        /* Lesson content */
         .lesson-content {
             padding: 25px 30px;
         }
         
-        /* Секции урока */
+        /* Lesson sections */
         .lesson-section {
             margin-bottom: 40px;
         }
@@ -271,7 +271,7 @@
             border-bottom: 2px solid var(--color-math-primary, #2563eb);
         }
         
-        /* Минимизируемое окно визуализации */
+        /* Minimizable visualization widget */
         .visualization-widget {
             margin: 30px 0;
             border: 2px solid var(--color-border, #e2e8f0);
@@ -345,7 +345,7 @@
             border-radius: 8px;
         }
         
-        /* Математические формулы */
+        /* Mathematical formulas */
         .math-definition {
             background: var(--color-surface-secondary, #f1f5f9);
             border: 1px solid var(--color-math-primary, #2563eb);
@@ -355,10 +355,10 @@
             position: relative;
         }
         
-        /* Иконка виджета в заголовке */
+        /* Widget icon in definition header */
         .definition-header {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: space-between;
             margin-bottom: 10px;
         }
@@ -372,6 +372,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             flex-shrink: 0;
+            margin-top: 2px;
         }
         
         .definition-widget-icon img {
@@ -388,7 +389,7 @@
             filter: brightness(0) saturate(100%) invert(35%) sepia(93%) saturate(1890%) hue-rotate(213deg) brightness(99%) contrast(89%);
         }
         
-        /* Всплывающая подсказка */
+        /* Tooltip */
         .tooltip {
             position: relative;
         }
@@ -427,7 +428,7 @@
             opacity: 1;
         }
         
-        /* LTR для математических формул */
+        /* LTR for mathematical formulas */
         .math-ltr {
             direction: ltr;
             text-align: center;
@@ -437,7 +438,7 @@
             width: 100%;
         }
         
-        /* LTR для математики в списках */
+        /* LTR for math in lists */
         .math-definition li .math-ltr {
             direction: ltr;
             text-align: center;
@@ -448,7 +449,7 @@
             min-width: 120px;
         }
         
-        /* Компактные стили для списков с математикой */
+        /* Compact styles for lists with math */
         .math-definition ul {
             list-style: none;
             padding: 0;
@@ -486,7 +487,7 @@
             margin: 8px 0;
         }
         
-        /* Компактные примеры */
+        /* Compact examples */
         .math-example {
             background: var(--color-success-light, #f0fdf4);
             border: 1px solid var(--color-complex-real, #059669);
@@ -509,7 +510,7 @@
             margin: 8px 0;
         }
         
-        /* Компактная структура секций */
+        /* Compact section structure */
         .lesson-section {
             margin-bottom: 25px;
         }
@@ -530,13 +531,13 @@
             width: 24px;
             height: 24px;
             flex-shrink: 0;
-            /* Синий цвет #2563eb */
+            /* Blue color #2563eb */
             filter: invert(27%) sepia(98%) saturate(1694%) hue-rotate(213deg) brightness(96%) contrast(92%);
             vertical-align: middle;
             align-self: center;
         }
         
-        /* Двухколоночная раскладка для больших экранов */
+        /* Two-column layout for large screens */
         @media (min-width: 1024px) {
             .definitions-container {
                 display: grid;
@@ -560,7 +561,7 @@
             border-radius: 8px;
         }
         
-        /* Отдельный стиль для домашнего задания */
+        /* Separate style for homework section */
         .homework-example {
             background: #faf5ff;
             border: 1px solid #8b5cf6;
@@ -577,6 +578,16 @@
         .homework-example h4 {
             margin: 15px 0 8px 0;
             font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .homework-example .homework-icon {
+            width: 20px;
+            height: 20px;
+            filter: brightness(0) saturate(100%) invert(11%) sepia(8%) saturate(1670%) hue-rotate(181deg) brightness(97%) contrast(91%);
+            flex-shrink: 0;
         }
         
         .homework-example p {
@@ -593,7 +604,7 @@
                 height: 400px;
             }
             
-            /* Адаптивное подменю */
+            /* Adaptive submenu */
             .lesson-submenu {
                 flex-direction: column;
                 gap: 15px;
@@ -625,7 +636,7 @@
 </head>
 <body>
     <div class="lesson-container">
-        <!-- Хлебные крошки -->
+        <!-- Breadcrumb navigation -->
         <nav class="breadcrumb">
             <a href="#">בית</a>
             <span class="breadcrumb-separator">←</span>
@@ -636,13 +647,13 @@
             <span class="breadcrumb-current">יחידה 1</span>
         </nav>
         
-        <!-- Заголовок урока -->
+        <!-- Lesson header -->
         <div class="lesson-header">
-            <!-- Заголовок с датой и информацией -->
+            <!-- Title container with date and info -->
             <div class="lesson-title-container">
                 <h1 class="lesson-title">יחידה 1</h1>
                 
-                <!-- Информация по центру -->
+                <!-- Header info center -->
                 <div class="header-info">
                     <span class="info-badge">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-left: 5px; vertical-align: middle;">
@@ -662,9 +673,9 @@
             
             <p class="lesson-subtitle">מספרים מרוכבים - הצגה אלגברית</p>
             
-            <!-- Подменю с навигацией и целями (поменяны местами) -->
+            <!-- Submenu with navigation and objectives (swapped positions) -->
             <div class="lesson-submenu">
-                <!-- Навигационные иконки слева -->
+                <!-- Navigation icons on the left -->
                 <div class="nav-icons">
                     <a href="#theory-section" class="nav-icon" title="תיאוריה ומושגי יסוד">
                         <img src="../../../../assets/icons/teach_icon_c_new.svg" alt="תיאוריה">
@@ -677,14 +688,14 @@
                     </a>
                 </div>
                 
-                <!-- Кнопка целей урока справа -->
+                <!-- Lesson objectives button on the right -->
                 <button class="objectives-trigger" onclick="openObjectivesModal()" title="מטרות השיעור">
                     <img src="../../../../assets/icons/lamp_icon_c.svg" alt="מטרות">
                 </button>
             </div>
         </div>
         
-        <!-- Модальное окно целей -->
+        <!-- Modal window for objectives -->
         <div id="objectivesModal" class="objectives-modal">
             <div class="objectives-modal-content">
                 <span class="modal-close" onclick="closeObjectivesModal()">&times;</span>
@@ -726,7 +737,7 @@
                     <div class="math-definition">
                         <div class="definition-header">
                             <h3>הגדרת מספר מרוכב</h3>
-                            <!-- Иконка виджета с всплывающей подсказкой -->
+                            <!-- Widget icon with tooltip -->
                             <div class="definition-widget-icon tooltip" onclick="openFullWidget('complex-definition')">
                                 <img src="/assets/icons/gauss_visual.svg" alt="ויזואליזציה">
                                 <span class="tooltip-text">כלי אינטראקטיבי: ייצוג במישור המרוכב</span>
@@ -792,17 +803,26 @@
                 <div class="homework-example">
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
                         <div>
-                            <h4>🎮 משחק זיהוי מספרים מרוכבים</h4>
+                            <h4>
+                                <img src="../../../../assets/icons/game_icon.svg" alt="משחק" class="homework-icon">
+                                משחק זיהוי מספרים מרוכבים
+                            </h4>
                             <p>זיהוי החלק הממשי והמדומה במספרים מרוכבים שונים.</p>
                         </div>
                         
                         <div>
-                            <h4>🧩 חידות חיבור וכפל</h4>
+                            <h4>
+                                <img src="../../../../assets/icons/puzzle_icon.svg" alt="חידות" class="homework-icon">
+                                חידות חיבור וכפל
+                            </h4>
                             <p>חידות מתמטיות הכוללות פעולות על מספרים מרוכבים.</p>
                         </div>
                         
                         <div>
-                            <h4>📈 סימולטור המישור המרוכב</h4>
+                            <h4>
+                                <img src="../../../../assets/icons/gauss_visual.svg" alt="סימולטור" class="homework-icon">
+                                סימולטור המישור המרוכב
+                            </h4>
                             <p>חקר התנהגות מספרים מרוכבים במישור הקרטזי.</p>
                         </div>
                     </div>
@@ -816,7 +836,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"></script>
     
     <script>
-        // Функции для модального окна целей
+        // Functions for objectives modal window
         function openObjectivesModal() {
             document.getElementById('objectivesModal').style.display = 'block';
         }
@@ -825,7 +845,7 @@
             document.getElementById('objectivesModal').style.display = 'none';
         }
         
-        // Закрытие модального окна при клике вне его
+        // Close modal when clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('objectivesModal');
             if (event.target === modal) {
@@ -833,37 +853,37 @@
             }
         }
         
-        // Функции для виджетов
+        // Functions for widgets
         function openFullWidget(widgetId) {
-            // Открываем полярный виджет
+            // Open polar widget
             if (widgetId === 'complex-definition') {
                 window.open('../../../../assets/widgets/complex/c_polar/1_complex_intro_ap.html', '_blank', 'width=1000,height=700,scrollbars=yes');
             }
         }
         
-        // Функция рендеринга математики
+        // Math rendering function
         function renderMath() {
-            // Основные определения
+            // Basic definitions
             katex.render("i = \\sqrt{-1}", document.getElementById("imaginary-unit-def"));
             katex.render("i^2 = -1", document.getElementById("i-squared"));
             katex.render("z = a + bi", document.getElementById("complex-form-def"));
             katex.render("\\text{Re}(z) = a", document.getElementById("real-part-def"));
             katex.render("\\text{Im}(z) = b", document.getElementById("imaginary-part-def"));
             
-            // Правила операций
+            // Operation rules
             katex.render("(a + bi) + (c + di) = (a + c) + (b + d)i", document.getElementById("addition-rule"));
             katex.render("(a + bi) \\cdot (c + di) = (ac - bd) + (ad + bc)i", document.getElementById("multiplication-rule"));
             katex.render("i^2 = -1", document.getElementById("i-squared-reminder"));
             
-            // Примеры
+            // Examples
             katex.render("(3 + 2i) + (1 + 4i) = 4 + 6i", document.getElementById("addition-example-1"));
             katex.render("(5 + 3i) - (2 + i) = 3 + 2i", document.getElementById("subtraction-example-1"));
             katex.render("(2 + 3i)(1 + 2i) = 2 + 4i + 3i + 6i^2 = 2 + 7i - 6 = -4 + 7i", document.getElementById("multiplication-example-1"));
         }
         
-        // Инициализация при загрузке страницы
+        // Initialization on page load
         document.addEventListener('DOMContentLoaded', function() {
-            // Отображение текущей даты в формате dd/mm/yyyy
+            // Display current date in dd/mm/yyyy format
             const currentDate = new Date();
             const day = currentDate.getDate().toString().padStart(2, '0');
             const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
@@ -871,10 +891,10 @@
             const dateString = `${day}/${month}/${year}`;
             document.getElementById('current-date').textContent = dateString;
             
-            // Рендеринг математики
+            // Render mathematics
             renderMath();
             
-            // Плавная прокрутка для навигационных ссылок
+            // Smooth scroll for navigation links
             document.querySelectorAll('.nav-icon[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
                     e.preventDefault();

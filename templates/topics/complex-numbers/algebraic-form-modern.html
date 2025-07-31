@@ -1,0 +1,1573 @@
+<!-- 
+===========================================
+🎮 תבנית מודרנית: מספרים מרוכבים (דור TikTok)
+לגילאים: 16-18
+מאפיינים: מיקרו-למידה, גיימיפיקציה, אינטראקטיביות
+===========================================
+-->
+
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>מספרים מרוכבים - מצב מודרני</title>
+  <style>
+    /* ===== Modern TikTok Style - RTL Hebrew ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #e3f2fd 0%, #f0f4ff 100%);
+      color: #1a1a1a;
+      direction: rtl;
+      overflow-x: hidden;
+    }
+
+    /* ===== Progress Bar ===== */
+    .lesson-progress-container {
+      position: fixed;
+      top: 0;
+      right: 0;
+      left: 0;
+      background: white;
+      z-index: 1000;
+      padding: 10px 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .lesson-progress-bar {
+      background: #e0e0e0;
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, #2196f3, #1976d2);
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .xp-indicator {
+      background: linear-gradient(135deg, #4caf50, #45a049);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 15px;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    /* ===== Achievement Panel ===== */
+    .achievement-panel {
+      position: fixed;
+      top: 80px;
+      left: 20px;
+      z-index: 999;
+      background: white;
+      border-radius: 15px;
+      padding: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      max-width: 200px;
+    }
+
+    .achievement-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .badge {
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #2196f3, #1976d2);
+      color: white;
+      border: 2px solid #2196f3;
+    }
+
+    .badge.locked {
+      background: #e0e0e0;
+      color: #999;
+      border-color: #ccc;
+    }
+
+    /* ===== Main Content ===== */
+    .modern-lesson-page {
+      margin-top: 80px;
+      padding: 20px;
+      max-width: 100vw;
+    }
+
+    .modern-breadcrumb {
+      margin-bottom: 20px;
+    }
+
+    .breadcrumb-back {
+      background: #f5f5f5;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 25px;
+      color: #2196f3;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .breadcrumb-back:hover {
+      background: #2196f3;
+      color: white;
+    }
+
+    .current-lesson {
+      margin-right: 15px;
+      color: #666;
+      font-weight: 500;
+    }
+
+    /* ===== Modern Header ===== */
+    .modern-lesson-header {
+      text-align: center;
+      background: linear-gradient(135deg, #2196f3, #1976d2);
+      color: white;
+      padding: 30px 20px;
+      border-radius: 20px;
+      margin-bottom: 30px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .modern-lesson-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      animation: pulse 4s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.1); opacity: 0.2; }
+    }
+
+    .lesson-meta-compact {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .difficulty-badge {
+      background: rgba(255,255,255,0.2);
+      padding: 6px 15px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      backdrop-filter: blur(10px);
+    }
+
+    .time-estimate, .focus-mode {
+      background: rgba(255,255,255,0.2);
+      padding: 6px 15px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .focus-mode:hover {
+      background: rgba(255,255,255,0.3);
+      transform: scale(1.05);
+    }
+
+    .lesson-title-modern {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      position: relative;
+      z-index: 2;
+    }
+
+    .lesson-subtitle-modern {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ===== Micro Lessons Container ===== */
+    .micro-lessons-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .micro-lesson {
+      background: white;
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.5s ease;
+      display: none;
+    }
+
+    .micro-lesson.active {
+      display: block;
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .micro-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .micro-number {
+      background: linear-gradient(135deg, #2196f3, #1976d2);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 25px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .micro-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #333;
+      flex-grow: 1;
+      text-align: center;
+    }
+
+    .micro-timer {
+      background: #e3f2fd;
+      color: #1976d2;
+      padding: 8px 15px;
+      border-radius: 25px;
+      font-weight: bold;
+      font-size: 14px;
+      border: 2px solid #2196f3;
+    }
+
+    /* ===== Content Styles ===== */
+    .hook-question h3 {
+      color: #1976d2;
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .hook-question p {
+      text-align: center;
+      font-size: 1.1rem;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .quick-poll {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+    }
+
+    .quick-poll h4 {
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    .poll-option {
+      background: linear-gradient(135deg, #2196f3, #1976d2);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 25px;
+      margin: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .poll-option:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+    }
+
+    .poll-option.selected {
+      background: linear-gradient(135deg, #4caf50, #45a049);
+    }
+
+    /* ===== Navigation ===== */
+    .micro-navigation {
+      margin-top: 25px;
+      text-align: center;
+    }
+
+    .next-micro, .prev-micro {
+      background: linear-gradient(135deg, #2196f3, #1976d2);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 30px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 0 10px;
+      transition: all 0.3s;
+    }
+
+    .next-micro:hover, .prev-micro:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4);
+    }
+
+    .prev-micro {
+      background: #6c757d;
+    }
+
+    .prev-micro:hover {
+      box-shadow: 0 8px 25px rgba(108, 117, 125, 0.4);
+    }
+
+    /* ===== Interactive Elements ===== */
+    .discovery-animation {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .formula-reveal {
+      background: linear-gradient(135deg, #e3f2fd, #f0f4ff);
+      border: 3px solid #2196f3;
+      border-radius: 15px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .formula-step {
+      font-size: 2rem;
+      color: #1976d2;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .formula-explanation {
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    .interactive-demo {
+      background: #f8f9fa;
+      border-radius: 15px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .drag-drop-area {
+      background: white;
+      border: 3px dashed #2196f3;
+      border-radius: 15px;
+      padding: 30px;
+      margin: 15px 0;
+      transition: all 0.3s;
+    }
+
+    .drag-drop-area:hover {
+      border-color: #1976d2;
+      background: #f0f4ff;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 768px) {
+      .achievement-panel {
+        position: static;
+        margin-bottom: 20px;
+        max-width: none;
+      }
+
+      .lesson-title-modern {
+        font-size: 2rem;
+      }
+
+      .micro-lesson {
+        padding: 20px;
+      }
+
+      .lesson-meta-compact {
+        gap: 10px;
+      }
+
+      .micro-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+      }
+
+      .next-micro, .prev-micro {
+        padding: 12px 25px;
+        font-size: 1rem;
+      }
+    }
+
+    /* ===== Animations ===== */
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes slideInLeft {
+      from { transform: translateX(-100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .slide-in-right { animation: slideInRight 0.5s ease-out; }
+    .slide-in-left { animation: slideInLeft 0.5s ease-out; }
+  </style>
+</head>
+<body>
+
+<div class="modern-lesson-page" data-lesson-id="complex-algebraic">
+  
+  <!-- 🚀 פס התקדמות השיעור -->
+  <div class="lesson-progress-container">
+    <div class="lesson-progress-bar">
+      <div class="progress-fill" id="main-progress" style="width: 0%"></div>
+    </div>
+    <div class="progress-text">
+      <span id="progress-percentage">0%</span> הושלם
+      <span class="xp-indicator">+<span id="current-xp">0</span> נקודות</span>
+    </div>
+  </div>
+
+  <!-- 🏆 מערכת הישגים -->
+  <div class="achievement-panel" id="achievement-panel">
+    <div class="achievement-badges">
+      <div class="badge" id="badge-starter" data-requirement="1">🌟 מתחיל</div>
+      <div class="badge locked" id="badge-explorer" data-requirement="3">🔍 חוקר</div>
+      <div class="badge locked" id="badge-master" data-requirement="6">🏆 מאסטר</div>
+      <div class="badge locked" id="badge-speed" data-requirement="fast">⚡ מהיר</div>
+    </div>
+  </div>
+
+  <!-- 🍞 ניווט קומפקטי -->
+  <nav class="modern-breadcrumb">
+    <button onclick="window.pageLoader.loadPage('courses/5-units/35572/complex/module-index')" class="breadcrumb-back">
+      ← מספרים מרוכבים
+    </button>
+    <span class="current-lesson">צורה אלגברית</span>
+  </nav>
+
+  <!-- 📱 כותרת מודרנית -->
+  <div class="modern-lesson-header">
+    <div class="lesson-meta-compact">
+      <span class="difficulty-badge beginner">בסיסי</span>
+      <span class="time-estimate">⏱️ 25 דק'</span>
+      <span class="focus-mode" onclick="toggleFocusMode()">🎯 מיקוד</span>
+    </div>
+    <h1 class="lesson-title-modern">צורה אלגברית</h1>
+    <p class="lesson-subtitle-modern">לומדים a + bi — הבסיס של מספרים מרוכבים</p>
+  </div>
+
+  <!-- 🎮 מכולת המיקרו-שיעורים -->
+  <div class="micro-lessons-container" id="micro-container">
+    
+    <!-- 🎯 מיקרו-שיעור 1: התחלה מהירה -->
+    <div class="micro-lesson active" data-micro="1" data-duration="3" data-type="intro">
+      <div class="micro-header">
+        <div class="micro-number">1/8</div>
+        <div class="micro-title">🚀 התחלה מהירה</div>
+        <div class="micro-timer" id="timer-1">3:00</div>
+      </div>
+      
+      <div class="micro-content">
+        <div class="hook-question">
+          <h3>🤔 איך פותרים את המשוואה x² = -1?</h3>
+          <p>בבית ספר אמרו "אין פתרון". אבל מה אם יש? 🌟</p>
+        </div>
+        
+        <div class="quick-poll" id="poll-1">
+          <h4>מה אתם חושבים?</h4>
+          <button class="poll-option" data-answer="impossible">בלתי אפשרי</button>
+          <button class="poll-option" data-answer="exists">חייב להיות קיים</button>
+          <button class="poll-option" data-answer="dunno">לא יודע</button>
+        </div>
+      </div>
+      
+      <div class="micro-navigation">
+        <button class="next-micro" onclick="nextMicro()">הבא ←</button>
+      </div>
+    </div>
+
+    <!-- 🔍 מיקרו-שיעור 2: גילוי -->
+    <div class="micro-lesson" data-micro="2" data-duration="4" data-type="discovery">
+      <div class="micro-header">
+        <div class="micro-number">2/8</div>
+        <div class="micro-title">🔍 גילוי</div>
+        <div class="micro-timer" id="timer-2">4:00</div>
+      </div>
+      
+      <div class="micro-content">
+        <div class="discovery-animation">
+          <h3>בואו נכיר: היחידה המדומה i</h3>
+          <div class="formula-reveal" id="formula-reveal">
+            <div class="formula-step">i² = -1</div>
+            <div class="formula-explanation">זה המספר ה"קסום" שפותר את המשוואה שלנו!</div>
+          </div>
+        </div>
+        
+        <div class="interactive-demo">
+          <h4>🎮 נסו בעצמכם:</h4>
+          <div class="drag-drop-area">
+            <p>גררו את המספרים ליצירת מספר מרוכב</p>
+            <div style="margin-top: 15px;">
+              <button onclick="createComplexDemo()" style="background: #2196f3; color: white; border: none; padding: 10px 20px; border-radius: 15px; cursor: pointer;">
+                צרו מספר מרוכב!
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="micro-navigation">
+        <button class="prev-micro" onclick="prevMicro()">→ קודם</button>
+        <button class="next-micro" onclick="nextMicro()">הבא ←</button>
+      </div>
+    </div>
+
+    <!-- 🧮 מיקרו-שיעור 3: פעולות בסיסיות -->
+    <div class="micro-lesson" data-micro="3" data-duration="5" data-type="practice">
+      <div class="micro-header">
+        <div class="micro-number">3/8</div>
+        <div class="micro-title">🧮 פעולות בסיסיות</div>
+        <div class="micro-timer" id="timer-3">5:00</div>
+      </div>
+      
+      <div class="micro-content">
+        <div class="discovery-animation">
+          <h3>חיבור מספרים מרוכבים זה קל!</h3>
+          <div class="formula-reveal">
+            <div class="formula-step">(a + bi) + (c + di) = (a + c) + (b + d)i</div>
+            <div class="formula-explanation">פשוט מחברים חלק ממשי עם חלק ממשי, מדומה עם מדומה</div>
+          </div>
+        </div>
+        
+        <div class="interactive-demo">
+          <h4>� תרגיל מהיר:</h4>
+          <p>חשבו: (3 + 2i) + (1 + 4i)</p>
+          <div style="margin: 15px 0;">
+            <button class="poll-option" onclick="checkAnswer(this, false)">4 + 6i</button>
+            <button class="poll-option" onclick="checkAnswer(this, true)">4 + 6i</button>
+            <button class="poll-option" onclick="checkAnswer(this, false)">3 + 5i</button>
+          </div>
+          <div id="answer-feedback" style="margin-top: 15px; font-weight: bold;"></div>
+        </div>
+      </div>
+      
+      <div class="micro-navigation">
+        <button class="prev-micro" onclick="prevMicro()">→ קודם</button>
+        <button class="next-micro" onclick="nextMicro()">הבא ←</button>
+      </div>
+    </div>
+
+    <!-- 🎊 מיקרו-שיעור 4: סיכום -->
+    <div class="micro-lesson" data-micro="4" data-duration="3" data-type="summary">
+      <div class="micro-header">
+        <div class="micro-number">4/8</div>
+        <div class="micro-title">🎊 סיכום וחזרה</div>
+        <div class="micro-timer" id="timer-4">3:00</div>
+      </div>
+      
+      <div class="micro-content">
+        <div style="text-align: center;">
+          <h3>🎉 כל הכבוד! סיימתם את החלק הראשון</h3>
+          <p>עכשיו אתם יודעים:</p>
+          <ul style="text-align: right; margin: 20px 0; list-style: none;">
+            <li>✅ מה זה מספר מרוכב</li>
+            <li>✅ מה זה i והצורה a + bi</li>
+            <li>✅ איך מחברים מספרים מרוכבים</li>
+          </ul>
+          
+          <div style="background: linear-gradient(135deg, #4caf50, #45a049); color: white; padding: 20px; border-radius: 15px; margin: 20px 0;">
+            <h4>🏆 הרווחתם 50 נקודות!</h4>
+            <p>דרגה חדשה: חוקר מספרים מרוכבים</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="micro-navigation">
+        <button class="prev-micro" onclick="prevMicro()">→ קודם</button>
+        <button class="next-micro" onclick="nextMicro()">ממשיכים! ←</button>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+  let currentMicro = 1;
+  let totalXP = 0;
+  const totalMicros = 4;
+
+  // פונקציה למעבר למיקרו-שיעור הבא
+  function nextMicro() {
+    if (currentMicro < totalMicros) {
+      // הסתרת המיקרו הנוכחי
+      document.querySelector(`[data-micro="${currentMicro}"]`).classList.remove('active');
+      
+      // מעבר למיקרו הבא
+      currentMicro++;
+      document.querySelector(`[data-micro="${currentMicro}"]`).classList.add('active');
+      
+      // עדכון פס התקדמות
+      updateProgress();
+      
+      // הוספת נקודות
+      addXP(10);
+    }
+  }
+
+  // פונקציה למעבר למיקרו-שיעור הקודם
+  function prevMicro() {
+    if (currentMicro > 1) {
+      document.querySelector(`[data-micro="${currentMicro}"]`).classList.remove('active');
+      currentMicro--;
+      document.querySelector(`[data-micro="${currentMicro}"]`).classList.add('active');
+      updateProgress();
+    }
+  }
+
+  // עדכון פס התקדמות
+  function updateProgress() {
+    const progress = (currentMicro / totalMicros) * 100;
+    document.getElementById('main-progress').style.width = progress + '%';
+    document.getElementById('progress-percentage').textContent = Math.round(progress) + '%';
+  }
+
+  // הוספת נקודות
+  function addXP(points) {
+    totalXP += points;
+    document.getElementById('current-xp').textContent = totalXP;
+    
+    // עדכון תגים
+    updateBadges();
+  }
+
+  // עדכון תגי הישגים
+  function updateBadges() {
+    if (totalXP >= 10) {
+      document.getElementById('badge-starter').classList.remove('locked');
+    }
+    if (totalXP >= 30) {
+      document.getElementById('badge-explorer').classList.remove('locked');
+    }
+    if (totalXP >= 60) {
+      document.getElementById('badge-master').classList.remove('locked');
+    }
+  }
+
+  // פונקציה לבדיקת תשובות
+  function checkAnswer(button, isCorrect) {
+    const feedback = document.getElementById('answer-feedback');
+    const allButtons = button.parentElement.querySelectorAll('.poll-option');
+    
+    // הסרת בחירות קודמות
+    allButtons.forEach(btn => btn.classList.remove('selected'));
+    
+    // סימון הכפתור שנבחר
+    button.classList.add('selected');
+    
+    if (isCorrect) {
+      feedback.innerHTML = '🎉 נכון! מעולה!';
+      feedback.style.color = '#4caf50';
+      addXP(15);
+    } else {
+      feedback.innerHTML = '🤔 לא בדיוק... נסו שוב!';
+      feedback.style.color = '#f44336';
+    }
+  }
+
+  // דמו יצירת מספר מרוכב
+  function createComplexDemo() {
+    const realPart = Math.floor(Math.random() * 10) + 1;
+    const imagPart = Math.floor(Math.random() * 10) + 1;
+    const demoArea = document.querySelector('.drag-drop-area');
+    
+    demoArea.innerHTML = `
+      <h4 style="color: #2196f3; margin-bottom: 15px;">נוצר מספר מרוכב!</h4>
+      <div style="font-size: 1.5rem; color: #1976d2; font-weight: bold;">
+        z = ${realPart} + ${imagPart}i
+      </div>
+      <p style="margin-top: 10px; color: #666;">
+        חלק ממשי: ${realPart}, חלק מדומה: ${imagPart}
+      </p>
+      <button onclick="createComplexDemo()" style="background: #4caf50; color: white; border: none; padding: 10px 20px; border-radius: 15px; cursor: pointer; margin-top: 15px;">
+        עוד אחד!
+      </button>
+    `;
+    
+    addXP(5);
+  }
+
+  // מצב מיקוד (הסתרת הישגים)
+  function toggleFocusMode() {
+    const panel = document.getElementById('achievement-panel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  }
+
+  // בחירת תשובה בסקר
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('poll-option') && !e.target.onclick) {
+      const allOptions = e.target.parentElement.querySelectorAll('.poll-option');
+      allOptions.forEach(opt => opt.classList.remove('selected'));
+      e.target.classList.add('selected');
+      addXP(5);
+    }
+  });
+
+  // התחלת טיימרים
+  window.onload = function() {
+    updateProgress();
+    startTimer(1, 3 * 60); // 3 דקות
+  };
+
+  // פונקציית טיימר
+  function startTimer(microNum, seconds) {
+    const timerElement = document.getElementById(`timer-${microNum}`);
+    if (!timerElement) return;
+    
+    const interval = setInterval(() => {
+      const minutes = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      timerElement.textContent = `${minutes}:${secs.toString().padStart(2, '0')}`;
+      
+      if (seconds <= 0) {
+        clearInterval(interval);
+        timerElement.textContent = '⏰ זמן!';
+      }
+      seconds--;
+    }, 1000);
+  }
+</script>
+
+</body>
+</html>
+            <div class="draggable" draggable="true" data-value="i">i</div>
+            <div class="draggable" draggable="true" data-value="²">²</div>
+            <div class="drop-zone">Перетащи сюда: __ = -1</div>
+          </div>
+        </div>
+        
+        <div class="understanding-check">
+          <h4>Понял концепт?</h4>
+          <button class="check-btn" data-level="got-it" onclick="markUnderstanding('got-it')">✅ Понял!</button>
+          <button class="check-btn" data-level="confused" onclick="markUnderstanding('confused')">🤔 Запутался</button>
+        </div>
+      </div>
+      
+      <div class="micro-navigation">
+        <button class="prev-micro" onclick="prevMicro()">← Назад</button>
+        <button class="next-micro" onclick="nextMicro()">Далее →</button>
+      </div>
+    </div>
+
+    <!-- 📐 Микро-урок 3: Структура -->
+    <div class="micro-lesson" data-micro="3" data-duration="5" data-type="structure">
+      <div class="micro-header">
+        <div class="micro-number">3/8</div>
+        <div class="micro-title">📐 Анатомия комплексного числа</div>
+        <div class="micro-timer" id="timer-3">5:00</div>
+      </div>
+      
+      <div class="micro-content">
+        <div class="number-anatomy">
+          <h3>Разбираем число z = a + bi</h3>
+          <div class="interactive-number" id="interactive-complex">
+            <div class="number-part real" data-part="real">
+              <div class="part-value">a</div>
+              <div class="part-label">Действительная часть</div>
+            </div>
+            <div class="operator">+</div>
+            <div class="number-part imaginary" data-part="imaginary">
+              <div class="part-value">b</div>
+              <div class="part-label">Мнимая часть</div>
+            </div>
+            <div class="number-part unit" data-part="unit">
+              <div class="part-value">i</div>
+              <div class="part-label">Мнимая единица</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="examples-carousel">
+          <h4>🔄 Примеры (свайпни):</h4>
+          <div class="examples-container" id="examples-swiper">
+            <div class="example-card active">
+              <div class="example-number">3 + 4i</div>
+              <div class="example-breakdown">
+                <span class="real-part">Re = 3</span>
+                <span class="imag-part">Im = 4</span>
+              </div>
+            </div>
+            <div class="example-card">
+              <div class="example-number">-2 + 7i</div>
+              <div class="example-breakdown">
+                <span class="real-part">Re = -2</span>
+                <span class="imag-part">Im = 7</span>
+              </div>
+            </div>
+            <div class="example-card">
+              <div class="example-number">5 - 3i</div>
+              <div class="example-breakdown">
+                <span class="real-part">Re = 5</span>
+                <span class="imag-part">Im = -3</span>
+              </div>
+            </div>
+          </div>
+          <div class="swipe-indicators">
+            <span class="indicator active"></span>
+            <span class="indicator"></span>
+            <span class="indicator"></span>
+          </div>
+        </div>
+
+        <div class="quick-quiz">
+          <h4>⚡ Быстрая проверка:</h4>
+          <p>Для числа z = -4 + 6i, что такое Re(z)?</p>
+          <div class="quiz-options">
+            <button class="quiz-option" data-correct="false">6</button>
+            <button class="quiz-option" data-correct="true">-4</button>
+            <button class="quiz-option" data-correct="false">-4i</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="micro-navigation">
+        <button class="prev-micro" onclick="prevMicro()">← Назад</button>
+        <button class="next-micro" onclick="nextMicro()">Далее →</button>
+      </div>
+    </div>
+
+    <!-- 🧮 Микро-урок 4: Сложение -->
+    <div class="micro-lesson" data-micro="4" data-duration="6" data-type="operation">
+      <div class="micro-header">
+        <div class="micro-number">4/8</div>
+        <div class="micro-title">🧮 Сложение — это просто!</div>
+        <div class="micro-timer" id="timer-4">6:00</div>
+      </div>
+      
+      <div class="micro-content">
+        <div class="operation-visual">
+          <h3>Правило: складываем отдельно!</h3>
+          <div class="visual-formula">
+            <div class="formula-line">
+              <span class="term">(a + bi)</span>
+              <span class="operator"> + </span>
+              <span class="term">(c + di)</span>
+              <span class="equals"> = </span>
+              <span class="result">(a + c) + (b + d)i</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="interactive-calculator">
+          <h4>🎮 Попробуй:</h4>
+          <div class="calc-input">
+            <div class="input-group">
+              <label>Первое число:</label>
+              <input type="number" id="a1" placeholder="a"> +
+              <input type="number" id="b1" placeholder="b">i
+            </div>
+            <div class="calc-operator">+</div>
+            <div class="input-group">
+              <label>Второе число:</label>
+              <input type="number" id="a2" placeholder="c"> +
+              <input type="number" id="b2" placeholder="d">i
+            </div>
+            <button class="calc-button" onclick="calculateSum()">Вычислить</button>
+            <div class="calc-result" id="calc-result"></div>
+          </div>
+        </div>
+
+        <div class="step-by-step" id="steps-demo" style="display: none;">
+          <h4>📝 Пошагово:</h4>
+          <div class="step-container">
+            <div class="step">Шаг 1: Складываем действительные части</div>
+            <div class="step">Шаг 2: Складываем мнимые части</div>
+            <div class="step">Шаг 3: Записываем результат</div>
+          </div>
+        </div>
+
+        <div class="mastery-check">
+          <h4>🏆 Проверь мастерство:</h4>
+          <p>Вычисли: (3 + 2i) + (-1 + 5i)</p>
+          <input type="text" id="mastery-answer" placeholder="Твой ответ">
+          <button onclick="checkMastery()">Проверить</button>
+        </div>
+      </div>
+      
+      <div class="micro-navigation">
+        <button class="prev-micro" onclick="prevMicro()">← Назад</button>
+        <button class="next-micro" onclick="nextMicro()">Далее →</button>
+      </div>
+    </div>
+
+    <!-- ➖ Микро-урок 5: Вычитание -->
+    <div class="micro-lesson" data-micro="5" data-duration="5" data-type="operation">
+      <div class="micro-header">
+        <div class="micro-number">5/8</div>
+        <div class="micro-title">➖ Вычитание как сложение</div>
+        <div class="micro-timer" id="timer-5">5:00</div>
+      </div>
+      
+      <div class="micro-content">
+        <div class="connection-insight">
+          <h3>💡 Инсайт: вычитание = сложение с отрицательным</h3>
+          <div class="transformation-demo">
+            <div class="transform-step">
+              <span class="original">(a + bi) - (c + di)</span>
+              <span class="arrow">→</span>
+              <span class="transformed">(a + bi) + (-c - di)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="interactive-subtraction">
+          <h4>🎯 Интерактивная практика:</h4>
+          <div class="problem-generator">
+            <button onclick="generateProblem()">Сгенерировать задачу</button>
+            <div class="generated-problem" id="generated-problem"></div>
+            <div class="solution-input">
+              <input type="text" id="solution-input" placeholder="Введи ответ">
+              <button onclick="checkSolution()">Проверить</button>
+            </div>
+            <div class="feedback" id="feedback"></div>
+          </div>
+        </div>
+
+        <div class="speed-challenge">
+          <h4>⚡ Speed Challenge (60 сек):</h4>
+          <div class="challenge-stats">
+            <span>Время: <span id="challenge-timer">60</span>с</span>
+            <span>Очки: <span id="challenge-score">0</span></span>
+          </div>
+          <button onclick="startSpeedChallenge()" id="start-challenge">Начать</button>
+          <div class="challenge-area" id="challenge-area" style="display: none;"></div>
+        </div>
+      </div>
+      
+      <div class="micro-navigation">
+        <button class="prev-micro" onclick="prevMicro()">← Назад</button>
+        <button class="next-micro" onclick="nextMicro()">Далее →</button>
+      </div>
+    </div>
+
+    <!-- 🔄 Микро-урок 6: Сопряженные числа -->
+    <div class="micro-lesson" data-micro="6" data-duration="4" data-type="concept">
+      <div class="micro-header">
+        <div class="micro-number">6/8</div>
+        <div class="micro-title">🔄 Сопряженные — близнецы</div>
+        <div class="micro-timer" id="timer-6">4:00</div>
+      </div>
+      
+      <div class="micro-content">
+        <div class="conjugate-visual">
+          <h3>Сопряженное число — это "отражение"</h3>
+          <div class="twin-comparison">
+            <div class="twin original">
+              <div class="twin-label">Оригинал</div>
+              <div class="twin-number">a + bi</div>
+            </div>
+            <div class="mirror-line">↔️</div>
+            <div class="twin conjugate">
+              <div class="twin-label">Сопряженное</div>
+              <div class="twin-number">a - bi</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="interactive-mirror">
+          <h4>🪞 Интерактивное зеркало:</h4>
+          <div class="mirror-demo">
+            <input type="number" id="mirror-a" placeholder="a" value="3">
+            <span> + </span>
+            <input type="number" id="mirror-b" placeholder="b" value="4">
+            <span>i</span>
+            <div class="mirror-result">
+              <span>Сопряженное: </span>
+              <span id="conjugate-result">3 - 4i</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pattern-discovery">
+          <h4>🔍 Открой закономерность:</h4>
+          <div class="pattern-examples">
+            <div class="pattern-row">
+              <span class="original">5 + 3i</span>
+              <span class="arrow">→</span>
+              <span class="conjugate">5 - 3i</span>
+            </div>
+            <div class="pattern-row">
+              <span class="original">-2 + 7i</span>
+              <span class="arrow">→</span>
+              <span class="conjugate">-2 - 7i</span>
+            </div>
+            <div class="pattern-row">
+              <span class="original">4 - i</span>
+              <span class="arrow">→</span>
+              <span class="conjugate">4 + i</span>
+            </div>
+          </div>
+          <div class="pattern-question">
+            <p>Какое правило ты заметил?</p>
+            <textarea id="pattern-insight" placeholder="Опиши закономерность..."></textarea>
+          </div>
+        </div>
+      </div>
+      
+      <div class="micro-navigation">
+        <button class="prev-micro" onclick="prevMicro()">← Назад</button>
+        <button class="next-micro" onclick="nextMicro()">Далее →</button>
+      </div>
+    </div>
+
+    <!-- 🎨 Микро-урок 7: Визуализация -->
+    <div class="micro-lesson" data-micro="7" data-duration="5" data-type="visualization">
+      <div class="micro-header">
+        <div class="micro-number">7/8</div>
+        <div class="micro-title">🎨 Видим числа на плоскости</div>
+        <div class="micro-timer" id="timer-7">5:00</div>
+      </div>
+      
+      <div class="micro-content">
+        <div class="plane-intro">
+          <h3>Комплексная плоскость — как координаты</h3>
+          <div class="plane-analogy">
+            <div class="analogy-item">
+              <span class="axis">x → действительная часть</span>
+            </div>
+            <div class="analogy-item">
+              <span class="axis">y → мнимая часть</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="interactive-plane">
+          <h4>🎮 Поставь точки на плоскость:</h4>
+          <div class="plane-container">
+            <canvas id="complex-plane" width="300" height="300"></canvas>
+            <div class="plane-controls">
+              <input type="number" id="point-real" placeholder="Re" step="0.1">
+              <input type="number" id="point-imag" placeholder="Im" step="0.1">
+              <button onclick="addPoint()">Добавить точку</button>
+              <button onclick="clearPlane()">Очистить</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="visualization-widget">
+          <h4>📊 Встроенная визуализация:</h4>
+          <div class="widget-container">
+            <iframe src="../../../assets/widgets/complex/c_algebric/complex-plane-demo.html" 
+                    width="100%" 
+                    height="300" 
+                    frameborder="0">
+            </iframe>
+          </div>
+        </div>
+      </div>
+      
+      <div class="micro-navigation">
+        <button class="prev-micro" onclick="prevMicro()">← Назад</button>
+        <button class="next-micro" onclick="nextMicro()">Далее →</button>
+      </div>
+    </div>
+
+    <!-- 🏆 Микро-урок 8: Финальный челлендж -->
+    <div class="micro-lesson" data-micro="8" data-duration="7" data-type="challenge">
+      <div class="micro-header">
+        <div class="micro-number">8/8</div>
+        <div class="micro-title">🏆 Финальный босс</div>
+        <div class="micro-timer" id="timer-8">7:00</div>
+      </div>
+      
+      <div class="micro-content">
+        <div class="boss-challenge">
+          <h3>🎮 Покажи мастерство!</h3>
+          <div class="challenge-progress">
+            <div class="challenge-bar">
+              <div class="challenge-fill" style="width: 0%"></div>
+            </div>
+            <span id="challenge-progress-text">0/5 заданий</span>
+          </div>
+        </div>
+
+        <div class="final-problems" id="final-problems">
+          <!-- Задачи будут генерироваться JavaScript -->
+        </div>
+
+        <div class="achievement-unlock" id="achievement-unlock" style="display: none;">
+          <h3>🎉 Поздравляем!</h3>
+          <div class="unlocked-badges">
+            <!-- Разблокированные достижения -->
+          </div>
+          <div class="final-stats">
+            <div class="stat">
+              <span class="stat-label">Время:</span>
+              <span class="stat-value" id="total-time">--:--</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">Точность:</span>
+              <span class="stat-value" id="accuracy">--%</span>
+            </div>
+            <div class="stat">
+              <span class="stat-label">XP получено:</span>
+              <span class="stat-value" id="total-xp">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="micro-navigation">
+        <button class="prev-micro" onclick="prevMicro()">← Назад</button>
+        <button class="finish-lesson" onclick="finishLesson()">Завершить урок 🎉</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 💬 Помощник-чатбот -->
+  <div class="ai-assistant" id="ai-assistant">
+    <div class="assistant-toggle" onclick="toggleAssistant()">
+      💭
+    </div>
+    <div class="assistant-chat" id="assistant-chat" style="display: none;">
+      <div class="chat-header">
+        <span>Помощник</span>
+        <button onclick="toggleAssistant()">×</button>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="assistant-message">
+          Привет! Я твой ИИ-помощник. Спрашивай, если что-то непонятно! 🤖
+        </div>
+      </div>
+      <div class="chat-input">
+        <input type="text" id="chat-input" placeholder="Задай вопрос...">
+        <button onclick="sendMessage()">📤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔄 Быстрая навигация -->
+  <div class="quick-nav" id="quick-nav">
+    <div class="nav-dots">
+      <div class="nav-dot active" onclick="goToMicro(1)"></div>
+      <div class="nav-dot" onclick="goToMicro(2)"></div>
+      <div class="nav-dot" onclick="goToMicro(3)"></div>
+      <div class="nav-dot" onclick="goToMicro(4)"></div>
+      <div class="nav-dot" onclick="goToMicro(5)"></div>
+      <div class="nav-dot" onclick="goToMicro(6)"></div>
+      <div class="nav-dot" onclick="goToMicro(7)"></div>
+      <div class="nav-dot" onclick="goToMicro(8)"></div>
+    </div>
+  </div>
+
+  <!-- 📱 Мобильная навигация -->
+  <div class="mobile-nav-footer">
+    <button class="mobile-nav-btn" onclick="prevMicro()">
+      ← Назад
+    </button>
+    <div class="mobile-progress">
+      <span id="mobile-progress-text">1/8</span>
+    </div>
+    <button class="mobile-nav-btn" onclick="nextMicro()">
+      Далее →
+    </button>
+  </div>
+
+</div>
+
+<!-- 🎯 Современный JavaScript для интерактивности -->
+<script>
+class ModernLessonManager {
+  constructor() {
+    this.currentMicro = 1;
+    this.totalMicros = 8;
+    this.userXP = 0;
+    this.startTime = Date.now();
+    this.achievements = [];
+    this.timers = {};
+    this.focusMode = false;
+    
+    this.initializeLesson();
+  }
+
+  initializeLesson() {
+    this.updateProgress();
+    this.startTimer(1);
+    this.initializeSwipeDetection();
+    this.initializeDragDrop();
+    this.unlockAchievement('starter');
+  }
+
+  nextMicro() {
+    if (this.currentMicro < this.totalMicros) {
+      this.completeMicro(this.currentMicro);
+      this.currentMicro++;
+      this.showMicro(this.currentMicro);
+      this.updateProgress();
+      this.startTimer(this.currentMicro);
+    }
+  }
+
+  prevMicro() {
+    if (this.currentMicro > 1) {
+      this.currentMicro--;
+      this.showMicro(this.currentMicro);
+      this.updateProgress();
+      this.startTimer(this.currentMicro);
+    }
+  }
+
+  goToMicro(microNumber) {
+    this.currentMicro = microNumber;
+    this.showMicro(microNumber);
+    this.updateProgress();
+    this.startTimer(microNumber);
+  }
+
+  showMicro(microNumber) {
+    // Скрыть все микро-уроки
+    document.querySelectorAll('.micro-lesson').forEach(lesson => {
+      lesson.classList.remove('active');
+    });
+    
+    // Показать текущий
+    const currentLesson = document.querySelector(`[data-micro="${microNumber}"]`);
+    if (currentLesson) {
+      currentLesson.classList.add('active');
+    }
+
+    // Обновить навигационные точки
+    document.querySelectorAll('.nav-dot').forEach((dot, index) => {
+      dot.classList.toggle('active', index + 1 === microNumber);
+      dot.classList.toggle('completed', index + 1 < microNumber);
+    });
+  }
+
+  completeMicro(microNumber) {
+    // Добавить XP
+    this.addXP(10);
+    
+    // Проверить достижения
+    const completedCount = microNumber;
+    if (completedCount === 3) this.unlockAchievement('explorer');
+    if (completedCount === 6) this.unlockAchievement('master');
+    
+    // Анимация завершения
+    this.showCompletionAnimation(microNumber);
+  }
+
+  addXP(amount) {
+    this.userXP += amount;
+    document.getElementById('current-xp').textContent = this.userXP;
+    
+    // Анимация XP
+    this.animateXPGain(amount);
+  }
+
+  unlockAchievement(achievementId) {
+    if (!this.achievements.includes(achievementId)) {
+      this.achievements.push(achievementId);
+      const badge = document.getElementById(`badge-${achievementId}`);
+      if (badge) {
+        badge.classList.remove('locked');
+        badge.classList.add('unlocked');
+        this.showAchievementNotification(achievementId);
+      }
+    }
+  }
+
+  updateProgress() {
+    const progress = (this.currentMicro / this.totalMicros) * 100;
+    document.getElementById('main-progress').style.width = `${progress}%`;
+    document.getElementById('progress-percentage').textContent = `${Math.round(progress)}`;
+    document.getElementById('mobile-progress-text').textContent = `${this.currentMicro}/${this.totalMicros}`;
+  }
+
+  startTimer(microNumber) {
+    // Остановить предыдущие таймеры
+    Object.values(this.timers).forEach(timer => clearInterval(timer));
+    
+    const timerElement = document.getElementById(`timer-${microNumber}`);
+    if (!timerElement) return;
+    
+    const microLesson = document.querySelector(`[data-micro="${microNumber}"]`);
+    const duration = parseInt(microLesson.dataset.duration) * 60; // в секундах
+    let timeLeft = duration;
+    
+    this.timers[microNumber] = setInterval(() => {
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+      
+      if (timeLeft <= 0) {
+        clearInterval(this.timers[microNumber]);
+        this.showTimeUpNotification();
+      }
+      timeLeft--;
+    }, 1000);
+  }
+
+  // Интерактивные элементы
+  calculateSum() {
+    const a1 = parseFloat(document.getElementById('a1').value) || 0;
+    const b1 = parseFloat(document.getElementById('b1').value) || 0;
+    const a2 = parseFloat(document.getElementById('a2').value) || 0;
+    const b2 = parseFloat(document.getElementById('b2').value) || 0;
+    
+    const realSum = a1 + a2;
+    const imagSum = b1 + b2;
+    
+    document.getElementById('calc-result').innerHTML = `
+      <div class="result-animation">
+        ${realSum} ${imagSum >= 0 ? '+' : ''} ${imagSum}i
+      </div>
+    `;
+    
+    document.getElementById('steps-demo').style.display = 'block';
+    this.addXP(5);
+  }
+
+  generateProblem() {
+    const a = Math.floor(Math.random() * 21) - 10; // -10 to 10
+    const b = Math.floor(Math.random() * 21) - 10;
+    const c = Math.floor(Math.random() * 21) - 10;
+    const d = Math.floor(Math.random() * 21) - 10;
+    
+    const problemText = `(${a} ${b >= 0 ? '+' : ''} ${b}i) - (${c} ${d >= 0 ? '+' : ''} ${d}i)`;
+    document.getElementById('generated-problem').textContent = problemText;
+    
+    // Сохранить правильный ответ
+    this.currentAnswer = `${a - c} ${(b - d) >= 0 ? '+' : ''} ${b - d}i`;
+  }
+
+  checkSolution() {
+    const userAnswer = document.getElementById('solution-input').value.trim();
+    const feedback = document.getElementById('feedback');
+    
+    if (userAnswer === this.currentAnswer) {
+      feedback.innerHTML = '✅ Правильно! +15 XP';
+      feedback.className = 'feedback correct';
+      this.addXP(15);
+    } else {
+      feedback.innerHTML = `❌ Неверно. Правильный ответ: ${this.currentAnswer}`;
+      feedback.className = 'feedback incorrect';
+    }
+  }
+
+  // Swipe detection для мобильных
+  initializeSwipeDetection() {
+    let startX = 0;
+    let startY = 0;
+    
+    document.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    });
+    
+    document.addEventListener('touchend', (e) => {
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      
+      const deltaX = endX - startX;
+      const deltaY = endY - startY;
+      
+      // Проверить, что это горизонтальный swipe
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+        if (deltaX > 0) {
+          this.prevMicro(); // Swipe right = назад
+        } else {
+          this.nextMicro(); // Swipe left = вперед
+        }
+      }
+    });
+  }
+
+  // Drag & Drop функциональность
+  initializeDragDrop() {
+    const draggables = document.querySelectorAll('.draggable');
+    const dropZone = document.querySelector('.drop-zone');
+    
+    draggables.forEach(draggable => {
+      draggable.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', draggable.dataset.value);
+      });
+    });
+    
+    if (dropZone) {
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+      });
+      
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('drag-over');
+      });
+      
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const data = e.dataTransfer.getData('text/plain');
+        if (data === 'i²') {
+          dropZone.textContent = 'i² = -1 ✅';
+          dropZone.classList.add('correct');
+          this.addXP(10);
+        }
+      });
+    }
+  }
+
+  // Фокус-режим
+  toggleFocusMode() {
+    this.focusMode = !this.focusMode;
+    document.body.classList.toggle('focus-mode', this.focusMode);
+    
+    if (this.focusMode) {
+      // Скрыть отвлекающие элементы
+      document.getElementById('achievement-panel').style.display = 'none';
+      document.getElementById('ai-assistant').style.display = 'none';
+    } else {
+      document.getElementById('achievement-panel').style.display = 'block';
+      document.getElementById('ai-assistant').style.display = 'block';
+    }
+  }
+
+  // Уведомления и анимации
+  showAchievementNotification(achievementId) {
+    const notification = document.createElement('div');
+    notification.className = 'achievement-notification';
+    notification.innerHTML = `
+      <div class="achievement-icon">🏆</div>
+      <div class="achievement-text">Достижение разблокировано!</div>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.remove();
+    }, 3000);
+  }
+
+  animateXPGain(amount) {
+    const xpElement = document.getElementById('current-xp');
+    xpElement.style.transform = 'scale(1.2)';
+    xpElement.style.color = '#00ff00';
+    
+    setTimeout(() => {
+      xpElement.style.transform = 'scale(1)';
+      xpElement.style.color = '';
+    }, 500);
+  }
+
+  showCompletionAnimation(microNumber) {
+    const completedDot = document.querySelector(`.nav-dot:nth-child(${microNumber})`);
+    if (completedDot) {
+      completedDot.classList.add('completed-animation');
+      setTimeout(() => {
+        completedDot.classList.remove('completed-animation');
+      }, 1000);
+    }
+  }
+
+  finishLesson() {
+    const totalTime = Math.floor((Date.now() - this.startTime) / 1000);
+    const minutes = Math.floor(totalTime / 60);
+    const seconds = totalTime % 60;
+    
+    document.getElementById('total-time').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    document.getElementById('total-xp').textContent = this.userXP;
+    document.getElementById('achievement-unlock').style.display = 'block';
+    
+    // Проверить speed achievement
+    if (totalTime < 20 * 60) { // Менее 20 минут
+      this.unlockAchievement('speed');
+    }
+  }
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+  window.modernLesson = new ModernLessonManager();
+});
+
+// Дополнительные глобальные функции
+function nextMicro() { window.modernLesson.nextMicro(); }
+function prevMicro() { window.modernLesson.prevMicro(); }
+function goToMicro(n) { window.modernLesson.goToMicro(n); }
+function calculateSum() { window.modernLesson.calculateSum(); }
+function generateProblem() { window.modernLesson.generateProblem(); }
+function checkSolution() { window.modernLesson.checkSolution(); }
+function toggleFocusMode() { window.modernLesson.toggleFocusMode(); }
+function finishLesson() { window.modernLesson.finishLesson(); }
+
+// Простой AI помощник (mock)
+function toggleAssistant() {
+  const chat = document.getElementById('assistant-chat');
+  chat.style.display = chat.style.display === 'none' ? 'block' : 'none';
+}
+
+function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const messages = document.getElementById('chat-messages');
+  
+  if (input.value.trim()) {
+    // Добавить сообщение пользователя
+    const userMsg = document.createElement('div');
+    userMsg.className = 'user-message';
+    userMsg.textContent = input.value;
+    messages.appendChild(userMsg);
+    
+    // Простой auto-ответ
+    setTimeout(() => {
+      const botMsg = document.createElement('div');
+      botMsg.className = 'assistant-message';
+      botMsg.textContent = 'Понятно! Попробуй еще раз внимательно изучить пример. Если нужна помощь с конкретным шагом, скажи какой именно! 🤓';
+      messages.appendChild(botMsg);
+      messages.scrollTop = messages.scrollHeight;
+    }, 1000);
+    
+    input.value = '';
+    messages.scrollTop = messages.scrollHeight;
+  }
+}
+</script>
+
+<!-- CSS загружается из отдельного файла -->
+<link rel="stylesheet" href="../../../styles/modern-lesson.css">

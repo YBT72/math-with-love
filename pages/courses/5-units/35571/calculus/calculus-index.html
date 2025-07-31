@@ -1,0 +1,155 @@
+<!-- Calculus topics index page for 35571 -->
+<div class="topic-index-page">
+  <!-- Breadcrumb navigation -->
+  <nav class="breadcrumb">
+    <a href="#" onclick="window.pageLoader.loadPage('home')" class="breadcrumb-link">בית</a>
+    <span class="breadcrumb-separator">←</span>
+    <a href="#" onclick="window.pageLoader.loadPage('courses/5-units/5-units-index')" class="breadcrumb-link">5 יח״ל</a>
+    <span class="breadcrumb-separator">←</span>
+    <a href="#" onclick="window.pageLoader.loadPage('courses/5-units/35571/35571-index')" class="breadcrumb-link">שאלון 35571</a>
+    <span class="breadcrumb-separator">←</span>
+    <span class="breadcrumb-current">חדו״א</span>
+  </nav>
+
+  <!-- Topic header -->
+  <div class="topic-header-section">
+    <div class="topic-title">
+      <h1>📈 חדו״א</h1>
+      <div class="topic-subtitle">שאלון 35571 - מתמטיקה 5 יחידות לימוד</div>
+    </div>
+    
+    <div class="topic-progress">
+      <div class="progress-info">
+        <span class="status-badge developing">🚧 בפיתוח</span>
+        <small>0 מתוך 6 נושאי משנה מוכנים</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subtopics grid -->
+  <div class="subtopics-grid">
+    <div class="subtopic-category">
+      <h2 class="category-title">פונקציות טריגונומטריות</h2>
+      <div class="category-topics">
+        <div class="topic-card coming-soon" onclick="showComingSoon()">
+          <div class="topic-header">
+            <h3>פונקציות קוסינוס</h3>
+            <span class="topic-status">🔜 בקרוב</span>
+          </div>
+          <div class="topic-content">
+            <p>נגזרות ואינטגרלים של פונקציות cos(x)</p>
+            <div class="topic-meta">
+              <span class="lessons-count">5 שיעורים מתוכננים</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="topic-card coming-soon" onclick="showComingSoon()">
+          <div class="topic-header">
+            <h3>פונקציות סינוס</h3>
+            <span class="topic-status">🔜 בקרוב</span>
+          </div>
+          <div class="topic-content">
+            <p>נגזרות ואינטגרלים של פונקציות sin(x)</p>
+            <div class="topic-meta">
+              <span class="lessons-count">5 שיעורים מתוכננים</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="topic-card coming-soon" onclick="showComingSoon()">
+          <div class="topic-header">
+            <h3>פונקציות טנגנס</h3>
+            <span class="topic-status">🔜 בקרוב</span>
+          </div>
+          <div class="topic-content">
+            <p>נגזרות ואינטגרלים של פונקציות tan(x)</p>
+            <div class="topic-meta">
+              <span class="lessons-count">4 שיעורים מתוכננים</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subtopic-category">
+      <h2 class="category-title">פונקציות אלגבריות</h2>
+      <div class="category-topics">
+        <div class="topic-card coming-soon" onclick="showComingSoon()">
+          <div class="topic-header">
+            <h3>פונקציות פולינום</h3>
+            <span class="topic-status">🔜 בקרוב</span>
+          </div>
+          <div class="topic-content">
+            <p>נגזרות ואינטגרלים של פולינומים</p>
+            <div class="topic-meta">
+              <span class="lessons-count">6 שיעורים מתוכננים</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="topic-card coming-soon" onclick="showComingSoon()">
+          <div class="topic-header">
+            <h3>פונקציות רציונליות</h3>
+            <span class="topic-status">🔜 בקרוב</span>
+          </div>
+          <div class="topic-content">
+            <p>נגזרות ואינטגרלים של פונקציות רציונליות</p>
+            <div class="topic-meta">
+              <span class="lessons-count">4 שיעורים מתוכננים</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="topic-card coming-soon" onclick="showComingSoon()">
+          <div class="topic-header">
+            <h3>פונקציות שורש</h3>
+            <span class="topic-status">🔜 בקרוב</span>
+          </div>
+          <div class="topic-content">
+            <p>נגזרות ואינטגרלים של פונקציות שורש</p>
+            <div class="topic-meta">
+              <span class="lessons-count">3 שיעורים מתוכננים</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Coming soon modal -->
+  <div id="coming-soon-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3>🚧 בקרוב!</h3>
+      <p>התוכן לנושא זה נמצא בפיתוח ויהיה זמין בקרוב.</p>
+      <p>בינתיים, אנא בדקו נושאים אחרים או חזרו אלינו בקרוב.</p>
+      <button onclick="hideComingSoon()" class="modal-button">הבנתי</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Show coming soon modal
+function showComingSoon() {
+  const modal = document.getElementById('coming-soon-modal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+// Hide coming soon modal
+function hideComingSoon() {
+  const modal = document.getElementById('coming-soon-modal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+  const modal = document.getElementById('coming-soon-modal');
+  if (event.target === modal) {
+    hideComingSoon();
+  }
+});
+</script>

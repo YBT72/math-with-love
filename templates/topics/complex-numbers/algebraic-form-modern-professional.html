@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>מספרים מרוכבים - למידה מודרנית</title>
+  
+  <!-- KaTeX CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  
+  <style>
+    /* ===== צבעים מקצועיים ורציניים ===== */
+    :root {
+      --primary: #1e40af;          /* כחול כהה מקצועי */
+      --secondary: #3b82f6;        /* כחול בינוני */
+      --accent: #1d4ed8;           /* כחול למיקוד */
+      --light-bg: #f1f5f9;         /* רקע בהיר עדין */
+      --card-bg: #ffffff;          /* רקע כרטיסים */
+      --text-primary: #1e293b;     /* טקסט ראשי */
+      --text-secondary: #475569;   /* טקסט משני */
+      --border: #cbd5e1;           /* גבולות */
+      --success: #0f766e;          /* ירוק מקצועי */
+      --warning: #b45309;          /* כתום מקצועי */
+      --hover: #e2e8f0;            /* רקע hover */
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--light-bg);
+      color: var(--text-primary);
+      direction: rtl;
+      line-height: 1.6;
+    }
+
+    /* ===== פס התקדמות עליון ===== */
+    .progress-header {
+      position: fixed;
+      top: 0;
+      right: 0;
+      left: 0;
+      background: var(--card-bg);
+      z-index: 1000;
+      padding: 8px 24px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .progress-bar-container {
+      background: var(--border);
+      height: 4px;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, var(--secondary), var(--primary));
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.5s ease;
+      width: 0%;
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    .lesson-points {
+      background: var(--success);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.7rem;
+    }
+
+    /* ===== תוכן ראשי ===== */
+    .modern-lesson {
+      margin-top: 70px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 20px;
+    }
+
+    /* ===== ניווט קומפקטי ===== */
+    .breadcrumb-modern {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 20px;
+      margin-bottom: 24px;
+      font-size: 0.875rem;
+    }
+
+    .breadcrumb-link-modern {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .breadcrumb-link-modern:hover {
+      color: var(--accent);
+    }
+
+    .breadcrumb-separator {
+      margin: 0 8px;
+      color: var(--text-secondary);
+    }
+
+    .breadcrumb-current {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    /* ===== כותרת מודרנית ===== */
+    .lesson-header-modern {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      color: white;
+      padding: 32px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .lesson-header-modern::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      animation: subtle-pulse 6s infinite;
+    }
+
+    @keyframes subtle-pulse {
+      0%, 100% { transform: scale(1); opacity: 0.3; }
+      50% { transform: scale(1.05); opacity: 0.1; }
+    }
+
+    .lesson-meta-modern {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .meta-badge {
+      background: rgba(255,255,255,0.15);
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      backdrop-filter: blur(10px);
+    }
+
+    .lesson-title-modern {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .lesson-subtitle-modern {
+      font-size: 1rem;
+      opacity: 0.9;
+      position: relative;
+      z-index: 2;
+      font-weight: 400;
+    }
+
+    /* ===== מיקרו-שיעורים ===== */
+    .micro-lessons {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .micro-lesson {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      transform: translateY(10px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      display: none;
+    }
+
+    .micro-lesson.active {
+      display: block;
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .micro-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .micro-number {
+      background: var(--primary);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.75rem;
+    }
+
+    .micro-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex-grow: 1;
+      text-align: center;
+    }
+
+    .micro-timer {
+      background: var(--light-bg);
+      color: var(--primary);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.75rem;
+      border: 1px solid var(--border);
+    }
+
+    /* ===== תוכן מיקרו-שיעורים ===== */
+    .concept-intro {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .concept-intro h3 {
+      color: var(--primary);
+      font-size: 1.375rem;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .concept-intro p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      margin-bottom: 16px;
+    }
+
+    .math-concept {
+      background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+      border: 2px solid var(--secondary);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 16px 0;
+      text-align: center;
+    }
+
+    .math-formula {
+      font-size: 1.5rem;
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 8px;
+      direction: ltr;
+      unicode-bidi: embed;
+      text-align: center;
+    }
+
+    .math-explanation {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    /* ===== אינטראקטיביות מקצועית ===== */
+    .interactive-section {
+      background: var(--hover);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 16px 0;
+    }
+
+    .quick-question {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .answer-options {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .answer-button {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      color: var(--text-primary);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+      font-size: 0.875rem;
+      direction: ltr;
+      unicode-bidi: embed;
+    }
+
+    .answer-button:hover {
+      border-color: var(--secondary);
+      background: var(--light-bg);
+    }
+
+    .answer-button.correct {
+      background: var(--success);
+      color: white;
+      border-color: var(--success);
+    }
+
+    .answer-button.selected {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* ===== ניווט בין שיעורים ===== */
+    .micro-navigation {
+      margin-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-button:hover {
+      background: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .nav-button:disabled {
+      background: var(--border);
+      color: var(--text-secondary);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .nav-button.secondary {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .nav-button.secondary:hover {
+      background: var(--hover);
+      color: var(--text-primary);
+    }
+
+    /* ===== הודעות ופידבק ===== */
+    .feedback {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: 500;
+      text-align: center;
+      display: none;
+    }
+
+    .feedback.success {
+      background: #ecfdf5;
+      color: var(--success);
+      border: 1px solid #a7f3d0;
+    }
+
+    .feedback.error {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+
+    /* ===== רספונסיביות ===== */
+    @media (max-width: 768px) {
+      .modern-lesson {
+        padding: 16px;
+      }
+      
+      .lesson-header-modern {
+        padding: 24px 20px;
+      }
+      
+      .lesson-title-modern {
+        font-size: 1.5rem;
+      }
+      
+      .micro-lesson {
+        padding: 20px;
+      }
+      
+      .micro-header {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+      }
+      
+      .answer-options {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .answer-button {
+        width: 100%;
+        max-width: 200px;
+      }
+    }
+
+    /* ===== כללי למתמטיקה - תמיד LTR ===== */
+    .katex, .katex-display, .math-formula,
+    span[id*="equation"], span[id*="unit"], span[id*="form"], span[id*="complex"],
+    span[id*="rule"], span[id*="example"], span[id*="summary"],
+    #intro-equation, #imaginary-unit, #complex-form, #example-complex,
+    #addition-rule, #addition-example, #summary-form, #summary-i,
+    p span[id*="equation"], p span[id*="unit"], p span[id*="complex"],
+    h4 span[id*="complex"], h4 span[id*="example"], h4 span[id*="addition"],
+    li span[id*="form"], li span[id*="summary"] {
+      direction: ltr !important;
+      unicode-bidi: embed !important;
+      display: inline-block !important;
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress-header">
+  <div class="progress-bar-container">
+    <div class="progress-fill" id="main-progress"></div>
+  </div>
+  <div class="progress-info">
+    <span id="progress-text">0% הושלם</span>
+    <span class="lesson-points" id="points-display">+0 נקודות</span>
+  </div>
+</div>
+
+<div class="modern-lesson">
+  
+  <!-- ניווט -->
+  <nav class="breadcrumb-modern">
+    <a href="#" onclick="window.pageLoader?.loadPage('courses/5-units/35572/35572-index')" class="breadcrumb-link-modern">← מספרים מרוכבים</a>
+    <span class="breadcrumb-separator">|</span>
+    <span class="breadcrumb-current">צורה אלגברית</span>
+  </nav>
+
+  <!-- כותרת -->
+  <div class="lesson-header-modern">
+    <div class="lesson-meta-modern">
+      <span class="meta-badge">בסיסי</span>
+      <span class="meta-badge">⏱️ 15 דק'</span>
+      <span class="meta-badge">🎯 4 מיקרו-שיעורים</span>
+    </div>
+    <h1 class="lesson-title-modern">צורה אלגברית</h1>
+    <p class="lesson-subtitle-modern">למידה מהירה ומדויקת של מספרים מרוכבים</p>
+  </div>
+
+  <!-- מיקרו-שיעורים -->
+  <div class="micro-lessons">
+    
+    <!-- מיקרו-שיעור 1: הכרות -->
+    <div class="micro-lesson active" data-micro="1">
+      <div class="micro-header">
+        <div class="micro-number">1/4</div>
+        <div class="micro-title">🎯 מבוא</div>
+        <div class="micro-timer" id="timer-1">3:00</div>
+      </div>
+      
+      <div class="concept-intro">
+        <h3>מה זה מספר מרוכב?</h3>
+        <p>בואו נתחיל עם המשוואה הפשוטה: <span id="intro-equation"></span></p>
+      </div>
+      
+      <div class="interactive-section">
+        <div class="quick-question">
+          <h4>האם למשוואה הזו יש פתרון?</h4>
+        </div>
+        <div class="answer-options">
+          <button class="answer-button" onclick="selectAnswer(this, false)">לא</button>
+          <button class="answer-button" onclick="selectAnswer(this, true)">כן, בעזרת מספרים מרוכבים</button>
+          <button class="answer-button" onclick="selectAnswer(this, false)">לא יודע</button>
+        </div>
+        <div class="feedback" id="feedback-1"></div>
+      </div>
+      
+      <div class="micro-navigation">
+        <button class="nav-button secondary" disabled>→ קודם</button>
+        <button class="nav-button" onclick="nextMicro()">הבא ←</button>
+      </div>
+    </div>
+
+    <!-- מיקרו-שיעור 2: הגדרה -->
+    <div class="micro-lesson" data-micro="2">
+      <div class="micro-header">
+        <div class="micro-number">2/4</div>
+        <div class="micro-title">📐 הגדרה</div>
+        <div class="micro-timer" id="timer-2">4:00</div>
+      </div>
+      
+      <div class="concept-intro">
+        <h3>היחידה המדומה i</h3>
+        <p>נגדיר: <span id="imaginary-unit"></span></p>
+      </div>
+      
+      <div class="math-concept">
+        <div class="math-formula" id="complex-form"></div>
+        <div class="math-explanation">
+          a = חלק ממשי, b = חלק מדומה, i = יחידה מדומה
+        </div>
+      </div>
+      
+      <div class="interactive-section">
+        <div class="quick-question">
+          <h4>במספר המרוכב <span id="example-complex"></span>, מה החלק הממשי?</h4>
+        </div>
+        <div class="answer-options">
+          <button class="answer-button" onclick="selectAnswer(this, false)">2</button>
+          <button class="answer-button" onclick="selectAnswer(this, true)">3</button>
+          <button class="answer-button" onclick="selectAnswer(this, false)">5</button>
+        </div>
+        <div class="feedback" id="feedback-2"></div>
+      </div>
+      
+      <div class="micro-navigation">
+        <button class="nav-button secondary" onclick="prevMicro()">→ קודם</button>
+        <button class="nav-button" onclick="nextMicro()">הבא ←</button>
+      </div>
+    </div>
+
+    <!-- מיקרו-שיעור 3: פעולות -->
+    <div class="micro-lesson" data-micro="3">
+      <div class="micro-header">
+        <div class="micro-number">3/4</div>
+        <div class="micro-title">➕ פעולות</div>
+        <div class="micro-timer" id="timer-3">4:00</div>
+      </div>
+      
+      <div class="concept-intro">
+        <h3>חיבור מספרים מרוכבים</h3>
+        <p>מחברים חלק ממשי עם חלק ממשי, מדומה עם מדומה</p>
+      </div>
+      
+      <div class="math-concept">
+        <div class="math-formula" id="addition-rule"></div>
+        <div class="math-explanation">כלל החיבור למספרים מרוכבים</div>
+      </div>
+      
+      <div class="interactive-section">
+        <div class="quick-question">
+          <h4>חשבו: <span id="addition-example"></span></h4>
+        </div>
+        <div class="answer-options">
+          <button class="answer-button" onclick="selectAnswer(this, false)">5 + 5i</button>
+          <button class="answer-button" onclick="selectAnswer(this, true)">6 + 2i</button>
+          <button class="answer-button" onclick="selectAnswer(this, false)">2 + 6i</button>
+        </div>
+        <div class="feedback" id="feedback-3"></div>
+      </div>
+      
+      <div class="micro-navigation">
+        <button class="nav-button secondary" onclick="prevMicro()">→ קודם</button>
+        <button class="nav-button" onclick="nextMicro()">הבא ←</button>
+      </div>
+    </div>
+
+    <!-- מיקרו-שיעור 4: סיכום -->
+    <div class="micro-lesson" data-micro="4">
+      <div class="micro-header">
+        <div class="micro-number">4/4</div>
+        <div class="micro-title">🎉 סיכום</div>
+        <div class="micro-timer" id="timer-4">4:00</div>
+      </div>
+      
+      <div class="concept-intro">
+        <h3>מעולה! סיימתם בהצלחה</h3>
+        <p>עכשיו אתם יודעים:</p>
+        <ul style="text-align: right; margin: 20px 0;">
+          <li>✓ מה זה מספר מרוכב</li>
+          <li>✓ הצורה <span id="summary-form"></span></li>
+          <li>✓ איך מחברים מספרים מרוכבים</li>
+          <li>✓ היחידה המדומה <span id="summary-i"></span></li>
+        </ul>
+      </div>
+      
+      <div style="text-align: center; background: #ecfdf5; padding: 20px; border-radius: 8px; border: 1px solid #a7f3d0;">
+        <h4 style="color: var(--success); margin-bottom: 8px;">🏆 השגתם 60 נקודות!</h4>
+        <p style="color: var(--success);">דרגה חדשה: מומחה צורה אלגברית</p>
+      </div>
+      
+      <div class="micro-navigation">
+        <button class="nav-button secondary" onclick="prevMicro()">→ קודם</button>
+        <button class="nav-button" onclick="completeLessons()">סיום ✓</button>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- KaTeX JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
+<script>
+  let currentMicro = 1;
+  let totalPoints = 0;
+  const totalMicros = 4;
+
+  // רנדור מתמטיקה
+  function renderMath() {
+    katex.render("x^2 = -1", document.getElementById("intro-equation"));
+    katex.render("i^2 = -1", document.getElementById("imaginary-unit"));
+    katex.render("z = a + bi", document.getElementById("complex-form"));
+    katex.render("z = 3 + 2i", document.getElementById("example-complex"));
+    katex.render("(a + bi) + (c + di) = (a + c) + (b + d)i", document.getElementById("addition-rule"));
+    katex.render("(2 + 3i) + (4 - i)", document.getElementById("addition-example"));
+    katex.render("a + bi", document.getElementById("summary-form"));
+    katex.render("i^2 = -1", document.getElementById("summary-i"));
+  }
+
+  // מעבר למיקרו הבא
+  function nextMicro() {
+    if (currentMicro < totalMicros) {
+      document.querySelector(`[data-micro="${currentMicro}"]`).classList.remove('active');
+      currentMicro++;
+      document.querySelector(`[data-micro="${currentMicro}"]`).classList.add('active');
+      updateProgress();
+      addPoints(15);
+    }
+  }
+
+  // מעבר למיקרו הקודם
+  function prevMicro() {
+    if (currentMicro > 1) {
+      document.querySelector(`[data-micro="${currentMicro}"]`).classList.remove('active');
+      currentMicro--;
+      document.querySelector(`[data-micro="${currentMicro}"]`).classList.add('active');
+      updateProgress();
+    }
+  }
+
+  // עדכון התקדמות
+  function updateProgress() {
+    const progress = (currentMicro / totalMicros) * 100;
+    document.getElementById('main-progress').style.width = progress + '%';
+    document.getElementById('progress-text').textContent = Math.round(progress) + '% הושלם';
+  }
+
+  // הוספת נקודות
+  function addPoints(points) {
+    totalPoints += points;
+    document.getElementById('points-display').textContent = `+${totalPoints} נקודות`;
+  }
+
+  // בחירת תשובה
+  function selectAnswer(button, isCorrect) {
+    const feedbackId = `feedback-${currentMicro}`;
+    const feedback = document.getElementById(feedbackId);
+    const allButtons = button.parentElement.querySelectorAll('.answer-button');
+    
+    // איפוס בחירות קודמות
+    allButtons.forEach(btn => {
+      btn.classList.remove('selected', 'correct');
+    });
+    
+    // סימון התשובה
+    button.classList.add('selected');
+    
+    if (isCorrect) {
+      button.classList.add('correct');
+      feedback.className = 'feedback success';
+      feedback.textContent = '✅ נכון מאוד! מעולה!';
+      feedback.style.display = 'block';
+      addPoints(10);
+    } else {
+      feedback.className = 'feedback error';
+      feedback.textContent = '❌ לא נכון. נסו שוב!';
+      feedback.style.display = 'block';
+    }
+  }
+
+  // סיום השיעורים
+  function completeLessons() {
+    alert('🎉 כל הכבוד! סיימתם בהצלחה את השיעור על צורה אלגברית של מספרים מרוכבים!');
+    // כאן אפשר להוסיף ניווט לשיעור הבא
+  }
+
+  // אתחול
+  window.onload = function() {
+    renderMath();
+    updateProgress();
+    
+    // טיימרים לכל מיקרו-שיעור
+    startTimer(1, 3 * 60);
+  };
+
+  // פונקציית טיימר
+  function startTimer(microNum, seconds) {
+    const timerElement = document.getElementById(`timer-${microNum}`);
+    if (!timerElement) return;
+    
+    const interval = setInterval(() => {
+      const minutes = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      timerElement.textContent = `${minutes}:${secs.toString().padStart(2, '0')}`;
+      
+      if (seconds <= 0) {
+        clearInterval(interval);
+        timerElement.textContent = '⏰ זמן!';
+      }
+      seconds--;
+    }, 1000);
+  }
+</script>
+
+</body>
+</html>

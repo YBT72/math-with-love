@@ -1,0 +1,66 @@
+/*
+  math-styles.css
+  Universal CSS rules for mathematical content direction in RTL documents.
+  This ensures all mathematical formulas and expressions are displayed LTR.
+*/
+
+/* ===== Universal Math LTR Rules ===== */
+.katex, .katex-display, .katex-html,
+.math-display, .math-inline, .math-formula, .math-concept,
+.math-display-integrated, .math-concept-integrated,
+span[id*="equation"], span[id*="formula"], span[id*="math"],
+span[id*="complex"], span[id*="addition"], span[id*="multiplication"],
+span[id*="exercise"], span[id*="example"], span[id*="solution"],
+span[id*="step"], span[id*="final"], span[id*="summary"],
+span[id*="unit"], span[id*="form"], span[id*="rule"],
+span[id*="squared"], span[id*="reminder"], span[id*="detailed"],
+span[id*="hw"], span[id*="sol"], span[id*="answer"] {
+  direction: ltr !important;
+  unicode-bidi: embed !important;
+  display: inline-block !important;
+}
+
+/* ===== Math in different contexts ===== */
+h1 span.math-inline, h2 span.math-inline, h3 span.math-inline, 
+h4 span.math-inline, h5 span.math-inline, h6 span.math-inline,
+p span.math-inline, li span.math-inline, div span.math-inline,
+strong span.math-inline, em span.math-inline,
+.quick-question-integrated span[id*="addition"],
+.quick-question-integrated span[id*="exercise"],
+.quick-question-integrated span[id*="equation"] {
+  direction: ltr !important;
+  unicode-bidi: embed !important;
+  display: inline-block !important;
+}
+
+/* ===== Block math elements ===== */
+.math-display, .math-display-integrated, .math-concept-integrated,
+.katex-display {
+  text-align: center !important;
+  direction: ltr !important;
+  unicode-bidi: embed !important;
+}
+
+/* ===== Example boxes and containers ===== */
+.example-box-integrated .math-display-integrated,
+.math-concept-integrated .katex,
+.formula-explanation span.math-inline {
+  direction: ltr !important;
+  unicode-bidi: embed !important;
+}
+
+/* ===== Answer buttons with mathematical content ===== */
+.answer-button, .answer-button-integrated,
+button[onclick*="selectAnswer"] {
+  direction: ltr !important;
+  unicode-bidi: embed !important;
+}
+
+/* ===== Additional mathematical contexts ===== */
+.interactive-section span[id*="math"],
+.question span[id*="equation"],
+.exercise span[id*="formula"] {
+  direction: ltr !important;
+  unicode-bidi: embed !important;
+  display: inline-block !important;
+}

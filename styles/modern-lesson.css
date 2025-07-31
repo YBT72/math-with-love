@@ -1,0 +1,1345 @@
+/* 
+==================================================
+🎮 СОВРЕМЕННЫЕ СТИЛИ - TikTok Generation Learning
+Для возраста: 16-18 лет
+Особенности: Яркие цвета, анимации, геймификация
+==================================================
+*/
+
+/* 🌈 Цветовая палитра для молодежи */
+:root {
+  --primary-color: #6366f1;
+  --secondary-color: #8b5cf6;
+  --accent-color: #06d6a0;
+  --warning-color: #ffd60a;
+  --danger-color: #ef476f;
+  --success-color: #00f5ff;
+  --bg-dark: #0f172a;
+  --bg-light: #f8fafc;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-accent: #ffffff;
+  --gradient-main: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --gradient-warning: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --shadow-neumorphism: 20px 20px 60px #d1d9e6, -20px -20px 60px #ffffff;
+}
+
+/* 🎯 Базовые стили */
+.modern-lesson-page {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 20px;
+  direction: ltr;
+  overflow-x: hidden;
+}
+
+/* 📊 Прогресс-бар урока */
+.lesson-progress-container {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  animation: slideInDown 0.8s ease;
+}
+
+.lesson-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--gradient-success);
+  border-radius: 10px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.progress-fill::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+  animation: shimmer 2s infinite;
+}
+
+.progress-text {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-accent);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.xp-indicator {
+  background: var(--gradient-warning);
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 700;
+  animation: pulse 2s infinite;
+}
+
+/* 🏆 Система достижений */
+.achievement-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 15px;
+  padding: 15px;
+  margin-bottom: 20px;
+  animation: slideInLeft 0.8s ease;
+}
+
+.achievement-badges {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  padding: 8px 15px;
+  border-radius: 25px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  background: var(--gradient-success);
+  color: white;
+  border: 2px solid transparent;
+}
+
+.badge.locked {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+  filter: grayscale(100%);
+}
+
+.badge.unlocked {
+  animation: bounceIn 0.8s ease;
+  box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+}
+
+.badge:hover:not(.locked) {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(79, 172, 254, 0.6);
+}
+
+/* 🍞 Современный breadcrumb */
+.modern-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  animation: slideInRight 0.8s ease;
+}
+
+.breadcrumb-back {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  color: var(--text-accent);
+  border-radius: 25px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.breadcrumb-back:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(-3px);
+}
+
+.current-lesson {
+  color: var(--text-accent);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* 📱 Мобильный header */
+.modern-lesson-header {
+  text-align: center;
+  margin-bottom: 30px;
+  animation: fadeInUp 1s ease;
+}
+
+.lesson-meta-compact {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.difficulty-badge {
+  background: var(--gradient-success);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.difficulty-badge.beginner {
+  background: var(--gradient-success);
+}
+
+.time-estimate {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  color: var(--text-accent);
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.focus-mode {
+  background: var(--gradient-warning);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.focus-mode:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(255, 214, 10, 0.4);
+}
+
+.lesson-title-modern {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 10px;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.lesson-subtitle-modern {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.1rem;
+  font-weight: 400;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* 🎮 Микро-уроки */
+.micro-lessons-container {
+  position: relative;
+  margin-bottom: 100px;
+}
+
+.micro-lesson {
+  display: none;
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 25px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.6s ease;
+}
+
+.micro-lesson.active {
+  display: block;
+  animation: slideInFromRight 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.micro-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.micro-number {
+  background: var(--gradient-main);
+  color: white;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.micro-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-accent);
+  flex-grow: 1;
+  text-align: center;
+}
+
+.micro-timer {
+  background: var(--glass-bg);
+  color: var(--text-accent);
+  padding: 8px 15px;
+  border-radius: 15px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Monaco', monospace;
+  border: 1px solid var(--glass-border);
+}
+
+/* 🎯 Контент микро-уроков */
+.micro-content {
+  color: var(--text-accent);
+  line-height: 1.6;
+}
+
+.hook-question {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.hook-question h3 {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+  color: var(--warning-color);
+}
+
+.hook-question p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+/* 📊 Быстрые опросы */
+.quick-poll {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.quick-poll h4 {
+  margin-bottom: 15px;
+  text-align: center;
+  color: var(--accent-color);
+}
+
+.poll-option {
+  display: block;
+  width: 100%;
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  color: var(--text-accent);
+  padding: 12px 20px;
+  margin: 8px 0;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+}
+
+.poll-option:hover {
+  background: var(--gradient-main);
+  border-color: transparent;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(102, 102, 241, 0.4);
+}
+
+.poll-option.selected {
+  background: var(--gradient-success);
+  border-color: transparent;
+  animation: pulse 0.6s ease;
+}
+
+/* 🎮 Интерактивные элементы */
+.interactive-demo {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.drag-drop-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.draggable {
+  background: var(--gradient-warning);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 15px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: grab;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.draggable:hover {
+  transform: rotate(5deg) scale(1.1);
+  box-shadow: 0 6px 20px rgba(255, 214, 10, 0.5);
+}
+
+.draggable:active {
+  cursor: grabbing;
+  transform: rotate(10deg) scale(0.95);
+}
+
+.drop-zone {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px dashed var(--glass-border);
+  border-radius: 15px;
+  padding: 20px 30px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-accent);
+  transition: all 0.3s ease;
+  min-width: 200px;
+}
+
+.drop-zone.drag-over {
+  border-color: var(--accent-color);
+  background: rgba(6, 214, 160, 0.1);
+  transform: scale(1.05);
+}
+
+.drop-zone.correct {
+  background: var(--gradient-success);
+  border-color: transparent;
+  color: white;
+  animation: bounceIn 0.8s ease;
+}
+
+/* 🔬 Анатомия числа */
+.number-anatomy {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.interactive-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin: 25px 0;
+  flex-wrap: wrap;
+}
+
+.number-part {
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  border-radius: 15px;
+  padding: 15px 20px;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.number-part:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 10px 30px rgba(102, 102, 241, 0.3);
+}
+
+.number-part.real {
+  border-color: var(--accent-color);
+}
+
+.number-part.imaginary {
+  border-color: var(--warning-color);
+}
+
+.number-part.unit {
+  border-color: var(--danger-color);
+}
+
+.part-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-accent);
+  margin-bottom: 5px;
+}
+
+.part-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.operator {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-accent);
+}
+
+/* 🔄 Карусель примеров */
+.examples-carousel {
+  margin: 30px 0;
+}
+
+.examples-container {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 20px 0;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.examples-container::-webkit-scrollbar {
+  display: none;
+}
+
+.example-card {
+  min-width: 200px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+  scroll-snap-align: center;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+  transform: scale(0.95);
+}
+
+.example-card.active {
+  opacity: 1;
+  transform: scale(1);
+  border-color: var(--accent-color);
+  box-shadow: 0 8px 25px rgba(6, 214, 160, 0.3);
+}
+
+.example-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-accent);
+  margin-bottom: 10px;
+}
+
+.example-breakdown {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.real-part, .imag-part {
+  background: var(--gradient-main);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.swipe-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.indicator.active {
+  background: var(--accent-color);
+  transform: scale(1.3);
+}
+
+/* ⚡ Быстрые викторины */
+.quick-quiz {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.quiz-options {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.quiz-option {
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  color: var(--text-accent);
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quiz-option:hover {
+  background: var(--gradient-main);
+  border-color: transparent;
+  transform: translateY(-2px);
+}
+
+.quiz-option.correct {
+  background: var(--gradient-success);
+  border-color: transparent;
+  animation: correctAnswer 0.8s ease;
+}
+
+.quiz-option.incorrect {
+  background: var(--gradient-warning);
+  border-color: transparent;
+  animation: incorrectAnswer 0.8s ease;
+}
+
+/* 🧮 Интерактивный калькулятор */
+.interactive-calculator {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 25px;
+  margin: 20px 0;
+}
+
+.calc-input {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-accent);
+}
+
+.input-group input {
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-accent);
+  width: 80px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(6, 214, 160, 0.2);
+  transform: scale(1.05);
+}
+
+.calc-operator {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--warning-color);
+}
+
+.calc-button {
+  background: var(--gradient-main);
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 10px;
+}
+
+.calc-button:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(102, 102, 241, 0.4);
+}
+
+.calc-result {
+  margin-top: 20px;
+  padding: 15px;
+  background: var(--gradient-success);
+  border-radius: 15px;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: white;
+  display: none;
+}
+
+.calc-result.show {
+  display: block;
+  animation: slideInUp 0.6s ease;
+}
+
+/* 🎮 Speed Challenge */
+.speed-challenge {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border-radius: 15px;
+  padding: 25px;
+  margin: 20px 0;
+  color: white;
+}
+
+.challenge-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+#start-challenge {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid white;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+#start-challenge:hover {
+  background: white;
+  color: #f5576c;
+  transform: scale(1.05);
+}
+
+/* 💬 AI помощник */
+.ai-assistant {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 1000;
+}
+
+.assistant-toggle {
+  width: 60px;
+  height: 60px;
+  background: var(--gradient-main);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 25px rgba(102, 102, 241, 0.4);
+  animation: pulse 2s infinite;
+}
+
+.assistant-toggle:hover {
+  transform: scale(1.1) rotate(15deg);
+  box-shadow: 0 12px 35px rgba(102, 102, 241, 0.6);
+}
+
+.assistant-chat {
+  position: absolute;
+  bottom: 80px;
+  right: 0;
+  width: 300px;
+  height: 400px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.chat-header {
+  background: var(--gradient-main);
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+}
+
+.chat-header button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.chat-messages {
+  height: 280px;
+  overflow-y: auto;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.assistant-message, .user-message {
+  padding: 10px 15px;
+  border-radius: 15px;
+  max-width: 80%;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.assistant-message {
+  background: var(--gradient-main);
+  color: white;
+  align-self: flex-start;
+}
+
+.user-message {
+  background: var(--glass-bg);
+  color: var(--text-accent);
+  align-self: flex-end;
+  border: 1px solid var(--glass-border);
+}
+
+.chat-input {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.chat-input input {
+  flex: 1;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 8px 15px;
+  color: var(--text-accent);
+  font-size: 14px;
+}
+
+.chat-input input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}
+
+.chat-input button {
+  background: var(--gradient-main);
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  margin-left: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* 🔄 Быстрая навигация */
+.quick-nav {
+  position: fixed;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  z-index: 100;
+}
+
+.nav-dots {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nav-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-dot.active {
+  background: var(--accent-color);
+  transform: scale(1.3);
+  box-shadow: 0 0 15px var(--accent-color);
+}
+
+.nav-dot.completed {
+  background: var(--success-color);
+  transform: scale(1.1);
+}
+
+.nav-dot:hover {
+  transform: scale(1.2);
+  background: var(--warning-color);
+}
+
+/* 📱 Мобильная навигация */
+.mobile-nav-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--glass-bg);
+  backdrop-filter: blur(15px);
+  border-top: 1px solid var(--glass-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  z-index: 200;
+}
+
+.mobile-nav-btn {
+  background: var(--gradient-main);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mobile-nav-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(102, 102, 241, 0.4);
+}
+
+.mobile-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.mobile-progress {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 15px;
+  padding: 8px 15px;
+  color: var(--text-accent);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* 🏆 Финальный челлендж */
+.boss-challenge {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.challenge-progress {
+  margin: 20px 0;
+}
+
+.challenge-bar {
+  width: 100%;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.challenge-fill {
+  height: 100%;
+  background: var(--gradient-success);
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+.achievement-unlock {
+  text-align: center;
+  padding: 30px;
+  background: var(--gradient-success);
+  border-radius: 20px;
+  color: white;
+}
+
+.final-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  font-size: 12px;
+  opacity: 0.8;
+  margin-bottom: 5px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* 🎯 Фокус-режим */
+.focus-mode .achievement-panel,
+.focus-mode .ai-assistant,
+.focus-mode .quick-nav {
+  display: none !important;
+}
+
+.focus-mode .modern-lesson-page {
+  background: var(--bg-dark);
+}
+
+.focus-mode .micro-lesson {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(100, 116, 139, 0.3);
+}
+
+/* 🎨 Анимации */
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes correctAnswer {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes incorrectAnswer {
+  0%, 20%, 40%, 60%, 80% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70% {
+    transform: translateX(-5px);
+  }
+  15%, 35%, 55%, 75% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 📱 Адаптивность */
+@media (max-width: 768px) {
+  .modern-lesson-page {
+    padding: 15px;
+  }
+  
+  .lesson-title-modern {
+    font-size: 2rem;
+  }
+  
+  .micro-lesson {
+    padding: 20px;
+  }
+  
+  .micro-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .input-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .examples-container {
+    padding: 10px 0;
+  }
+  
+  .assistant-chat {
+    width: 280px;
+    height: 350px;
+  }
+  
+  .quick-nav {
+    display: none;
+  }
+  
+  .interactive-number {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .lesson-meta-compact {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lesson-title-modern {
+    font-size: 1.5rem;
+  }
+  
+  .micro-lesson {
+    padding: 15px;
+  }
+  
+  .drag-drop-area {
+    flex-direction: column;
+  }
+  
+  .quiz-options {
+    flex-direction: column;
+  }
+  
+  .poll-option {
+    margin: 5px 0;
+  }
+}
+
+/* 🌟 Дополнительные эффекты */
+.completion-animation {
+  animation: bounceIn 0.8s ease;
+}
+
+.xp-gain-animation {
+  animation: slideInUp 0.6s ease;
+}
+
+.achievement-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--gradient-success);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+  animation: slideInRight 0.6s ease;
+  z-index: 1000;
+}
+
+.time-up-notification {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--gradient-warning);
+  color: white;
+  padding: 20px 30px;
+  border-radius: 20px;
+  text-align: center;
+  font-weight: 600;
+  box-shadow: 0 15px 40px rgba(255, 214, 10, 0.4);
+  animation: bounceIn 0.8s ease;
+  z-index: 1000;
+}
+
+/* 🎯 Состояния элементов */
+.understanding-check {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.check-btn {
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  color: var(--text-accent);
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.check-btn[data-level="got-it"]:hover {
+  background: var(--gradient-success);
+  border-color: transparent;
+}
+
+.check-btn[data-level="confused"]:hover {
+  background: var(--gradient-warning);
+  border-color: transparent;
+}
+
+/* 🎪 Специальные состояния */
+.micro-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.next-micro, .prev-micro, .finish-lesson {
+  background: var(--gradient-main);
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.next-micro:hover, .prev-micro:hover, .finish-lesson:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(102, 102, 241, 0.4);
+}
+
+.finish-lesson {
+  background: var(--gradient-success);
+  font-size: 18px;
+  padding: 15px 30px;
+}
+
+.finish-lesson:hover {
+  box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+}

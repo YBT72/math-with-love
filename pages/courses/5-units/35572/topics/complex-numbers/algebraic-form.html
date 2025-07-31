@@ -1,0 +1,636 @@
+<!-- 
+===========================================
+📚 שיעור: הצגה אלגברית של מספרים מרוכבים
+===========================================
+-->
+
+<div class="lesson-page">
+  <!-- 🍞 ניווט Breadcrumb -->
+  <nav class="breadcrumb">
+    <a href="#" onclick="window.pageLoader.loadPage('home')" class="breadcrumb-link">בית</a>
+    <span class="breadcrumb-separator">←</span>
+    <a href="#" onclick="window.pageLoader.loadPage('courses/5-units/5-units-index')" class="breadcrumb-link">5 יח״ל</a>
+    <span class="breadcrumb-separator">←</span>
+    <a href="#" onclick="window.pageLoader.loadPage('courses/5-units/35572/35572-index')" class="breadcrumb-link">שאלון 35572</a>
+    <span class="breadcrumb-separator">←</span>
+    <a href="#" onclick="window.pageLoader.loadPage('courses/5-units/35572/topics/complex-numbers/complex-index')" class="breadcrumb-link">מספרים מרוכבים</a>
+    <span class="breadcrumb-separator">←</span>
+    <span class="breadcrumb-current">הצגה אלגברית</span>
+  </nav>
+
+  <!-- 📝 כותרת השיעור -->
+  <div class="lesson-header">
+    <div class="lesson-title">
+      <h1>הצגה אלגברית של מספרים מרוכבים</h1>
+      <p class="lesson-subtitle">למידת מבנה המספר המרוכב a+bi ופעולות בסיסיות</p>
+    </div>
+    
+    <div class="lesson-meta">
+      <div class="meta-item">
+        <span class="meta-icon">⏱️</span>
+        <span class="meta-text">45 דקות</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-icon">📊</span>
+        <span class="meta-text">רמה: בסיסי</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-icon">🎯</span>
+        <span class="meta-text">4 מטרות לימוד</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔖 מערכת טאבים -->
+  <div class="lesson-tabs">
+    <div class="tab-navigation">
+      <button class="tab-button active" onclick="showTab('theory')" id="theory-tab">
+        📚 חלק א': תיאוריה ודוגמאות
+      </button>
+      <button class="tab-button" onclick="showTab('practice')" id="practice-tab">
+        💪 חלק ב': תרגול מונחה
+      </button>
+      <button class="tab-button" onclick="showTab('homework')" id="homework-tab">
+        🏠 חלק ג': שיעורי בית
+      </button>
+    </div>
+
+    <!-- 📚 טאב א': תיאוריה ודוגמאות -->
+    <div class="tab-content active" id="theory-content">
+      <div class="tab-section">
+        
+        <!-- 🎯 מטרות השיעור -->
+        <div class="section-card objectives">
+          <h2 class="section-title">🎯 מטרות השיעור</h2>
+          <div class="section-content">
+            <ul class="objectives-list">
+              <li>הבנת מבנה המספר המרוכב בצורה אלגברית a+bi</li>
+              <li>זיהוי החלק הממשי והחלק המדומה</li>
+              <li>ביצוע חיבור וחיסור של מספרים מרוכבים</li>
+              <li>הבנת המושג מספר מרוכב צמוד</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 📖 הקניית ידע -->
+        <div class="section-card theory">
+          <h2 class="section-title">📖 תיאוריה</h2>
+          <div class="section-content">
+            <div class="theory-block">
+              <h3>הגדרת המספר המרוכב</h3>
+              <p>מספר מרוכב הוא מספר מהצורה z = a + bi, כאשר:</p>
+              <ul>
+                <li>a הוא החלק הממשי (Real part)</li>
+                <li>b הוא החלק המדומה (Imaginary part)</li>
+                <li>i הוא היחידה המדומה כאשר i² = -1</li>
+              </ul>
+              
+              <div class="formula-box">
+                <div class="formula-title">צורה כללית:</div>
+                <div class="formula">z = a + bi</div>
+              </div>
+            </div>
+
+            <div class="theory-block">
+              <h3>סימונים ומושגים בסיסיים</h3>
+              <p>עבור מספר מרוכב z = a + bi:</p>
+              <ul>
+                <li>Re(z) = a (החלק הממשי)</li>
+                <li>Im(z) = b (החלק המדומה)</li>
+                <li>הצמוד של z הוא z̄ = a - bi</li>
+              </ul>
+            </div>
+
+            <div class="theory-block">
+              <h3>פעולות חיבור וחיסור</h3>
+              <p>חיבור וחיסור מספרים מרוכבים מתבצע רכיב רכיב:</p>
+              
+              <div class="formula-box">
+                <div class="formula-title">חיבור:</div>
+                <div class="formula">(a + bi) + (c + di) = (a + c) + (b + d)i</div>
+              </div>
+
+              <div class="formula-box">
+                <div class="formula-title">חיסור:</div>
+                <div class="formula">(a + bi) - (c + di) = (a - c) + (b - d)i</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🔍 דוגמאות עם פתרון -->
+        <div class="section-card examples">
+          <h2 class="section-title">🔍 דוגמאות מפורטות</h2>
+          <div class="section-content">
+            
+            <!-- דוגמה ראשונה -->
+            <div class="example-box">
+              <h3 class="example-title">דוגמה 1: זיהוי חלקים</h3>
+              <div class="example-problem">
+                <strong>שאלה:</strong> עבור המספר המרוכב z = 3 - 5i, מצא את החלק הממשי, המדומה והצמוד.
+              </div>
+              <div class="example-solution">
+                <strong>פתרון:</strong>
+                <div class="solution-steps">
+                  <div class="step">
+                    <span class="step-number">1</span>
+                    <span class="step-content">זיהוי הצורה הכללית: z = a + bi כאשר a = 3 ו-b = -5</span>
+                  </div>
+                  <div class="step">
+                    <span class="step-number">2</span>
+                    <span class="step-content">החלק הממשי: Re(z) = 3</span>
+                  </div>
+                  <div class="step">
+                    <span class="step-number">3</span>
+                    <span class="step-content">החלק המדומה: Im(z) = -5</span>
+                  </div>
+                  <div class="step">
+                    <span class="step-number">4</span>
+                    <span class="step-content">המספר הצמוד: z̄ = 3 - (-5)i = 3 + 5i</span>
+                  </div>
+                </div>
+                <div class="final-answer">
+                  <strong>תשובה סופית:</strong> Re(z) = 3, Im(z) = -5, z̄ = 3 + 5i
+                </div>
+              </div>
+            </div>
+
+            <!-- דוגמה שנייה -->
+            <div class="example-box">
+              <h3 class="example-title">דוגמה 2: חיבור מספרים מרוכבים</h3>
+              <div class="example-problem">
+                <strong>שאלה:</strong> חשב: (2 + 3i) + (4 - 7i)
+              </div>
+              <div class="example-solution">
+                <strong>פתרון:</strong>
+                <div class="solution-steps">
+                  <div class="step">
+                    <span class="step-number">1</span>
+                    <span class="step-content">זיהוי הרכיבים: z₁ = 2 + 3i, z₂ = 4 - 7i</span>
+                  </div>
+                  <div class="step">
+                    <span class="step-number">2</span>
+                    <span class="step-content">חיבור החלקים הממשיים: 2 + 4 = 6</span>
+                  </div>
+                  <div class="step">
+                    <span class="step-number">3</span>
+                    <span class="step-content">חיבור החלקים המדומים: 3i + (-7i) = -4i</span>
+                  </div>
+                </div>
+                <div class="final-answer">
+                  <strong>תשובה סופית:</strong> 6 - 4i
+                </div>
+              </div>
+            </div>
+
+            <!-- דוגמה שלישית -->
+            <div class="example-box">
+              <h3 class="example-title">דוגמה 3: חיסור מספרים מרוכבים</h3>
+              <div class="example-problem">
+                <strong>שאלה:</strong> חשב: (5 - 2i) - (1 + 4i)
+              </div>
+              <div class="example-solution">
+                <strong>פתרון:</strong>
+                <div class="solution-steps">
+                  <div class="step">
+                    <span class="step-number">1</span>
+                    <span class="step-content">זיהוי הרכיבים: z₁ = 5 - 2i, z₂ = 1 + 4i</span>
+                  </div>
+                  <div class="step">
+                    <span class="step-number">2</span>
+                    <span class="step-content">חיסור החלקים הממשיים: 5 - 1 = 4</span>
+                  </div>
+                  <div class="step">
+                    <span class="step-number">3</span>
+                    <span class="step-content">חיסור החלקים המדומים: -2i - 4i = -6i</span>
+                  </div>
+                </div>
+                <div class="final-answer">
+                  <strong>תשובה סופית:</strong> 4 - 6i
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🎨 ויזואליזציה -->
+        <div class="section-card visualization">
+          <h2 class="section-title">🎨 ייצוג גרפי במישור המרוכב</h2>
+          <div class="section-content">
+            <div class="visualization-container">
+              <p class="visualization-description">המישור המרוכב מאפשר לנו לייצג מספרים מרוכבים כנקודות במישור, כאשר ציר X מייצג את החלק הממשי וציר Y את החלק המדומה.</p>
+              
+              <div class="visualization-frame">
+                <iframe src="assets/widgets/complex/c_algebric/complex-plane-demo.html" 
+                        width="100%" 
+                        height="400" 
+                        frameborder="0">
+                </iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 💡 טיפים חשובים -->
+        <div class="section-card tips">
+          <h2 class="section-title">💡 טיפים לזכירה</h2>
+          <div class="section-content">
+            <div class="tip-box">
+              <div class="tip-icon">🔑</div>
+              <div class="tip-content">זכור: i² = -1, i³ = -i, i⁴ = 1 (המחזוריות חוזרת כל 4 חזקות)</div>
+            </div>
+            <div class="tip-box">
+              <div class="tip-icon">⚠️</div>
+              <div class="tip-content">שגיאה נפוצה: החלק המדומה של 3 - 5i הוא -5 ולא -5i</div>
+            </div>
+            <div class="tip-box">
+              <div class="tip-icon">✨</div>
+              <div class="tip-content">טריק: לבדיקה מהירה, המכפלה z · z̄ תמיד נותנת מספר ממשי חיובי</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 💪 טאב ב': תרגול מונחה -->
+    <div class="tab-content" id="practice-content">
+      <div class="tab-section">
+        
+        <div class="section-card practice-intro">
+          <h2 class="section-title">💪 תרגילים מונחים</h2>
+          <div class="section-content">
+            <p class="practice-description">
+              תרגילים אלה יעזרו לך להתרגל על זיהוי רכיבי מספרים מרוכבים ופעולות בסיסיות. כל תרגיל כולל רמזים ופתרון מפורט.
+            </p>
+            <div class="practice-instructions">
+              <h4>הוראות:</h4>
+              <ul>
+                <li>נסה לפתור כל תרגיל בעצמך לפני הצגת הפתרון</li>
+                <li>השתמש בכפתור "רמז" אם אתה תקוע</li>
+                <li>הצג את הפתרון בהדרגה לבדיקה עצמית</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- תרגיל ראשון -->
+        <div class="section-card exercise">
+          <h3 class="exercise-title">תרגיל 1: זיהוי רכיבים</h3>
+          <div class="exercise-content">
+            
+            <div class="exercise-problem">
+              <strong>שאלה:</strong> עבור המספר המרוכב z = -4 + 7i, מצא את Re(z), Im(z) ו-z̄
+            </div>
+
+            <div class="exercise-tools">
+              <button class="hint-btn" onclick="toggleHint('ex1')">💡 רמז</button>
+              <button class="solution-btn" onclick="toggleSolution('ex1')">📝 הצג פתרון</button>
+              <button class="step-btn" onclick="showNextStep('ex1')">👣 צעד הבא</button>
+            </div>
+
+            <div class="hint-box" id="ex1-hint" style="display: none;">
+              <div class="hint-content">
+                <strong>רמז:</strong> השווה את z = -4 + 7i לצורה הכללית a + bi ואל תשכח שהצמוד מתקבל על ידי שינוי הסימן של החלק המדומה
+              </div>
+            </div>
+
+            <div class="solution-container" id="ex1-solution" style="display: none;">
+              <div class="solution-steps">
+                <div class="solution-step" data-step="1">
+                  <span class="step-number">1</span>
+                  <span class="step-content">השוואה לצורה הכללית: z = a + bi, כאשר a = -4 ו-b = 7</span>
+                </div>
+                <div class="solution-step" data-step="2">
+                  <span class="step-number">2</span>
+                  <span class="step-content">החלק הממשי: Re(z) = -4</span>
+                </div>
+                <div class="solution-step" data-step="3">
+                  <span class="step-number">3</span>
+                  <span class="step-content">החלק המדומה: Im(z) = 7</span>
+                </div>
+                <div class="solution-step" data-step="4">
+                  <span class="step-number">4</span>
+                  <span class="step-content">המספר הצמוד: z̄ = -4 - 7i</span>
+                </div>
+              </div>
+              <div class="final-answer">
+                <strong>תשובה סופית:</strong> Re(z) = -4, Im(z) = 7, z̄ = -4 - 7i
+              </div>
+            </div>
+
+            <div class="exercise-tips">
+              <strong>טיפ לתרגיל זה:</strong> שים לב שהחלק המדומה הוא המקדם של i, ללא ה-i עצמו
+            </div>
+          </div>
+        </div>
+
+        <!-- תרגיל שני -->
+        <div class="section-card exercise">
+          <h3 class="exercise-title">תרגיל 2: חיבור מספרים מרוכבים</h3>
+          <div class="exercise-content">
+            
+            <div class="exercise-problem">
+              <strong>שאלה:</strong> חשב: (-3 + 2i) + (5 - 8i)
+            </div>
+
+            <div class="exercise-tools">
+              <button class="hint-btn" onclick="toggleHint('ex2')">💡 רמז</button>
+              <button class="solution-btn" onclick="toggleSolution('ex2')">📝 הצג פתרון</button>
+              <button class="step-btn" onclick="showNextStep('ex2')">👣 צעד הבא</button>
+            </div>
+
+            <div class="hint-box" id="ex2-hint" style="display: none;">
+              <div class="hint-content">
+                <strong>רמז:</strong> חבר בנפרד את החלקים הממשיים ואת החלקים המדומים
+              </div>
+            </div>
+
+            <div class="solution-container" id="ex2-solution" style="display: none;">
+              <div class="solution-steps">
+                <div class="solution-step" data-step="1">
+                  <span class="step-number">1</span>
+                  <span class="step-content">זיהוי: z₁ = -3 + 2i, z₂ = 5 - 8i</span>
+                </div>
+                <div class="solution-step" data-step="2">
+                  <span class="step-number">2</span>
+                  <span class="step-content">חיבור החלקים הממשיים: -3 + 5 = 2</span>
+                </div>
+                <div class="solution-step" data-step="3">
+                  <span class="step-number">3</span>
+                  <span class="step-content">חיבור החלקים המדומים: 2i + (-8i) = -6i</span>
+                </div>
+              </div>
+              <div class="final-answer">
+                <strong>תשובה סופית:</strong> 2 - 6i
+              </div>
+            </div>
+
+            <div class="exercise-tips">
+              <strong>טיפ לתרגיל זה:</strong> שמור על הסדר: תמיד חלק ממשי + חלק מדומה
+            </div>
+          </div>
+        </div>
+
+        <!-- תרגיל שלישי -->
+        <div class="section-card exercise">
+          <h3 class="exercise-title">תרגיל 3: חיסור מספרים מרוכבים</h3>
+          <div class="exercise-content">
+            
+            <div class="exercise-problem">
+              <strong>שאלה:</strong> חשב: (6 - 3i) - (-2 + 5i)
+            </div>
+
+            <div class="exercise-tools">
+              <button class="hint-btn" onclick="toggleHint('ex3')">💡 רמז</button>
+              <button class="solution-btn" onclick="toggleSolution('ex3')">📝 הצג פתרון</button>
+              <button class="step-btn" onclick="showNextStep('ex3')">👣 צעד הבא</button>
+            </div>
+
+            <div class="hint-box" id="ex3-hint" style="display: none;">
+              <div class="hint-content">
+                <strong>רמז:</strong> שים לב לחיסור מספר שלילי! (-2 + 5i) פירושו לחסר -2 ולחסר +5i
+              </div>
+            </div>
+
+            <div class="solution-container" id="ex3-solution" style="display: none;">
+              <div class="solution-steps">
+                <div class="solution-step" data-step="1">
+                  <span class="step-number">1</span>
+                  <span class="step-content">פתיחת סוגריים: (6 - 3i) - (-2 + 5i) = 6 - 3i + 2 - 5i</span>
+                </div>
+                <div class="solution-step" data-step="2">
+                  <span class="step-number">2</span>
+                  <span class="step-content">חיסור החלקים הממשיים: 6 - (-2) = 6 + 2 = 8</span>
+                </div>
+                <div class="solution-step" data-step="3">
+                  <span class="step-number">3</span>
+                  <span class="step-content">חיסור החלקים המדומים: -3i - 5i = -8i</span>
+                </div>
+              </div>
+              <div class="final-answer">
+                <strong>תשובה סופית:</strong> 8 - 8i
+              </div>
+            </div>
+
+            <div class="exercise-tips">
+              <strong>טיפ לתרגיל זה:</strong> כשמחסרים מספר שלילי, זה כמו לחבר את ההפוך שלו
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 🏠 טאב ג': שיעורי בית -->
+    <div class="tab-content" id="homework-content">
+      <div class="tab-section">
+        
+        <div class="section-card homework-intro">
+          <h2 class="section-title">🏠 תרגילי שיעורי בית</h2>
+          <div class="section-content">
+            <p class="homework-description">
+              תרגילי הבית נועדו לחזק את ההבנה של המושגים שנלמדו ולהכין אתכם למבחן. פתרו בקצב שלכם ובדקו את התשובות.
+            </p>
+            <div class="homework-instructions">
+              <h4>הוראות להגשה:</h4>
+              <ul>
+                <li>פתרו את כל התרגילים במחברת בכתב יד ברור</li>
+                <li>הראו את כל שלבי הפתרון</li>
+                <li>בדקו את התשובות באמצעות הכפתורים למטה</li>
+                <li>מועד הגשה: השיעור הבא</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- רשימת תרגילי בית -->
+        <div class="section-card homework-list">
+          <h3 class="homework-section-title">📝 התרגילים</h3>
+          
+          <!-- תרגיל בית 1 -->
+          <div class="homework-exercise">
+            <div class="homework-header">
+              <h4 class="homework-title">תרגיל 1</h4>
+              <span class="homework-points">5 נקודות</span>
+            </div>
+            <div class="homework-problem">
+              עבור המספרים המרוכבים הבאים, מצא את החלק הממשי, החלק המדומה והמספר הצמוד:<br>
+              א) z₁ = 8 - 3i<br>
+              ב) z₂ = -5 + 12i<br>
+              ג) z₃ = 7i<br>
+              ד) z₄ = -9
+            </div>
+            <div class="homework-answer">
+              <button class="answer-toggle" onclick="toggleAnswer('hw1')">👁️ הצג תשובה</button>
+              <div class="answer-content" id="hw1-answer" style="display: none;">
+                <strong>תשובה:</strong><br>
+                א) Re(z₁) = 8, Im(z₁) = -3, z̄₁ = 8 + 3i<br>
+                ב) Re(z₂) = -5, Im(z₂) = 12, z̄₂ = -5 - 12i<br>
+                ג) Re(z₃) = 0, Im(z₃) = 7, z̄₃ = -7i<br>
+                ד) Re(z₄) = -9, Im(z₄) = 0, z̄₄ = -9
+              </div>
+            </div>
+          </div>
+
+          <!-- תרגיל בית 2 -->
+          <div class="homework-exercise">
+            <div class="homework-header">
+              <h4 class="homework-title">תרגיל 2</h4>
+              <span class="homework-points">8 נקודות</span>
+            </div>
+            <div class="homework-problem">
+              חשב את הביטויים הבאים:<br>
+              א) (3 + 4i) + (2 - 7i)<br>
+              ב) (-1 + 5i) + (6 + 3i)<br>
+              ג) (4 - 2i) - (1 + 8i)<br>
+              ד) (-3 - 6i) - (-5 + 2i)
+            </div>
+            <div class="homework-answer">
+              <button class="answer-toggle" onclick="toggleAnswer('hw2')">👁️ הצג תשובה</button>
+              <div class="answer-content" id="hw2-answer" style="display: none;">
+                <strong>תשובה:</strong><br>
+                א) 5 - 3i<br>
+                ב) 5 + 8i<br>
+                ג) 3 - 10i<br>
+                ד) 2 - 8i
+              </div>
+            </div>
+          </div>
+
+          <!-- תרגיל בית 3 -->
+          <div class="homework-exercise">
+            <div class="homework-header">
+              <h4 class="homework-title">תרגיל 3</h4>
+              <span class="homework-points">7 נקודות</span>
+            </div>
+            <div class="homework-problem">
+              נתון z = 2 - 3i. חשב:<br>
+              א) z + z̄<br>
+              ב) z - z̄<br>
+              ג) מה אתה יכול להסיק על סוג התוצאה בכל אחד מהסעיפים?
+            </div>
+            <div class="homework-answer">
+              <button class="answer-toggle" onclick="toggleAnswer('hw3')">👁️ הצג תשובה</button>
+              <div class="answer-content" id="hw3-answer" style="display: none;">
+                <strong>תשובה:</strong><br>
+                z̄ = 2 + 3i<br>
+                א) z + z̄ = (2 - 3i) + (2 + 3i) = 4<br>
+                ב) z - z̄ = (2 - 3i) - (2 + 3i) = -6i<br>
+                ג) z + z̄ תמיד נותן מספר ממשי, z - z̄ תמיד נותן מספר מדומה טהור
+              </div>
+            </div>
+          </div>
+
+          <!-- תרגיל בית 4 -->
+          <div class="homework-exercise">
+            <div class="homework-header">
+              <h4 class="homework-title">תרגיל 4 (אתגר)</h4>
+              <span class="homework-points">10 נקודות</span>
+            </div>
+            <div class="homework-problem">
+              מצא את כל הערכים של a ו-b (ממשיים) כך שיתקיים:<br>
+              (a + 2i) + (3 - bi) = 7 + 5i
+            </div>
+            <div class="homework-answer">
+              <button class="answer-toggle" onclick="toggleAnswer('hw4')">👁️ הצג תשובה</button>
+              <div class="answer-content" id="hw4-answer" style="display: none;">
+                <strong>תשובה:</strong><br>
+                (a + 2i) + (3 - bi) = (a + 3) + (2 - b)i = 7 + 5i<br>
+                השוואת החלקים: a + 3 = 7 ו- 2 - b = 5<br>
+                לכן: a = 4 ו- b = -3
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- משאבים נוספים -->
+        <div class="section-card resources">
+          <h3 class="resources-title">📚 משאבים נוספים</h3>
+          <div class="resources-content">
+            <ul class="resources-list">
+              <li><a href="https://he.wikipedia.org/wiki/מספר_מרוכב" target="_blank">ויקיפדיה - מספרים מרוכבים</a></li>
+              <li><a href="#" onclick="window.pageLoader.loadPage('courses/5-units/35572/topics/complex-numbers/complex-operations')">שיעור הבא: כפל וחילוק מספרים מרוכבים</a></li>
+              <li><a href="assets/widgets/complex/c_algebric/practice-game.html" target="_blank">משחק תרגול אינטראקטיבי</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔄 ניווט למעבר בין שיעורים -->
+  <div class="lesson-navigation">
+    <div class="nav-container">
+      <button class="nav-btn prev-lesson" onclick="window.pageLoader.loadPage('courses/5-units/35572/topics/complex-numbers/intro-to-complex')">
+        ← הקדמה למספרים מרוכבים
+      </button>
+      <button class="nav-btn next-lesson" onclick="window.pageLoader.loadPage('courses/5-units/35572/topics/complex-numbers/complex-operations')">
+        כפל וחילוק מספרים מרוכבים →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 🎯 JavaScript לפונקציונליות הטאבים -->
+<script>
+// מעבר בין טאבים
+function showTab(tabName) {
+  // הסתר את כל הטאבים
+  const tabContents = document.querySelectorAll('.tab-content');
+  const tabButtons = document.querySelectorAll('.tab-button');
+  
+  tabContents.forEach(content => content.classList.remove('active'));
+  tabButtons.forEach(button => button.classList.remove('active'));
+  
+  // הצג את הטאב הנבחר
+  document.getElementById(tabName + '-content').classList.add('active');
+  document.getElementById(tabName + '-tab').classList.add('active');
+}
+
+// הצגת רמזים
+function toggleHint(exerciseId) {
+  const hint = document.getElementById(exerciseId + '-hint');
+  hint.style.display = hint.style.display === 'none' ? 'block' : 'none';
+}
+
+// הצגת פתרון מלא
+function toggleSolution(exerciseId) {
+  const solution = document.getElementById(exerciseId + '-solution');
+  solution.style.display = solution.style.display === 'none' ? 'block' : 'none';
+}
+
+// הצגת צעד הבא בפתרון
+function showNextStep(exerciseId) {
+  const solution = document.getElementById(exerciseId + '-solution');
+  const steps = solution.querySelectorAll('.solution-step');
+  
+  // מצא את הצעד הבא שטרם הוצג
+  for (let step of steps) {
+    if (step.style.display === 'none' || step.style.display === '') {
+      step.style.display = 'flex';
+      break;
+    }
+  }
+  
+  // הצג את הקונטיינר אם הוא מוסתר
+  if (solution.style.display === 'none') {
+    solution.style.display = 'block';
+  }
+}
+
+// הצגת תשובות בתרגילי בית
+function toggleAnswer(homeworkId) {
+  const answer = document.getElementById(homeworkId + '-answer');
+  answer.style.display = answer.style.display === 'none' ? 'block' : 'none';
+}
+
+// אתחול - הסתר את כל הצעדים בהתחלה
+document.addEventListener('DOMContentLoaded', function() {
+  const allSteps = document.querySelectorAll('.solution-step');
+  allSteps.forEach(step => step.style.display = 'none');
+});
+</script>
+
+<!-- טעינת CSS ספציפי לשיעור -->
+<link rel="stylesheet" href="styles/lesson-template.css">

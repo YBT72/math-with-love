@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>מספרים מרוכבים - בדיקה פשוטה</title>
+  <!-- KaTeX CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      direction: rtl;
+    }
+    
+    .lesson-container {
+      background: #f8fafc;
+      padding: 30px;
+      border-radius: 12px;
+      margin: 20px 0;
+    }
+    
+    .math-display {
+      text-align: center;
+      margin: 20px 0;
+      font-size: 1.5em;
+      color: #1e40af;
+      direction: ltr;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      border: 2px solid #3b82f6;
+    }
+    
+    .button {
+      background: #1e40af;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      margin: 10px;
+      cursor: pointer;
+    }
+    
+    .button:hover {
+      background: #3b82f6;
+    }
+    
+    .answer-button {
+      background: #f1f5f9;
+      color: #1e40af;
+      border: 2px solid #3b82f6;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    
+    .answer-button:hover {
+      background: #dbeafe;
+    }
+    
+    .answer-button.correct {
+      background: #059669;
+      color: white;
+      border-color: #059669;
+    }
+    
+    .feedback {
+      margin: 15px 0;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: bold;
+      display: none;
+    }
+    
+    .feedback.success {
+      background: #ecfdf5;
+      color: #059669;
+      border: 2px solid #a7f3d0;
+    }
+    
+    .feedback.error {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 2px solid #fecaca;
+    }
+    
+    .step {
+      display: none;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 10px 0;
+      border: 1px solid #e5e7eb;
+    }
+    
+    .step.active {
+      display: block;
+    }
+    
+    .progress {
+      background: #e5e7eb;
+      height: 8px;
+      border-radius: 4px;
+      margin: 20px 0;
+    }
+    
+    .progress-fill {
+      background: #1e40af;
+      height: 100%;
+      border-radius: 4px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🎯 מספרים מרוכבים - צורה אלגברית</h1>
+
+<div class="progress">
+  <div class="progress-fill" id="progress"></div>
+</div>
+
+<p>התקדמות: <span id="progress-text">0%</span> | נקודות: <span id="points">0</span></p>
+
+<!-- שלב 1 -->
+<div class="step active" id="step1">
+  <div class="lesson-container">
+    <h2>שלב 1: הכרות עם המשוואה</h2>
+    <p>בואו נתחיל עם המשוואה הפשוטה:</p>
+    <div class="math-display" id="equation1">טוען...</div>
+    
+    <p>לדעתכם, האם למשוואה הזו יש פתרון?</p>
+    <div>
+      <button class="answer-button" onclick="checkAnswer(1, false)">לא, זה בלתי אפשרי</button>
+      <button class="answer-button" onclick="checkAnswer(1, true)">כן, עם מספרים מרוכבים</button>
+    </div>
+    <div class="feedback" id="feedback1"></div>
+    
+    <button class="button" onclick="nextStep()" id="next1" style="display:none;">הבא ←</button>
+  </div>
+</div>
+
+<!-- שלב 2 -->
+<div class="step" id="step2">
+  <div class="lesson-container">
+    <h2>שלב 2: היחידה המדומה</h2>
+    <p>נגדיר מספר מיוחד שנקרא "היחידה המדומה":</p>
+    <div class="math-display" id="equation2">טוען...</div>
+    
+    <p>עכשיו נוכל לכתוב כל מספר מרוכב כך:</p>
+    <div class="math-display" id="equation3">טוען...</div>
+    
+    <p>במספר המרוכב הבא, מה החלק הממשי?</p>
+    <div class="math-display" id="equation4">טוען...</div>
+    
+    <div>
+      <button class="answer-button" onclick="checkAnswer(2, false)">2</button>
+      <button class="answer-button" onclick="checkAnswer(2, true)">3</button>
+      <button class="answer-button" onclick="checkAnswer(2, false)">5</button>
+    </div>
+    <div class="feedback" id="feedback2"></div>
+    
+    <button class="button" onclick="nextStep()" id="next2" style="display:none;">הבא ←</button>
+    <button class="button" onclick="prevStep()">← קודם</button>
+  </div>
+</div>
+
+<!-- שלב 3 -->
+<div class="step" id="step3">
+  <div class="lesson-container">
+    <h2>שלב 3: חיבור מספרים מרוכבים</h2>
+    <p>חיבור מספרים מרוכבים הוא פשוט:</p>
+    <div class="math-display" id="equation5">טוען...</div>
+    
+    <p>דוגמה:</p>
+    <div class="math-display" id="equation6">טוען...</div>
+    
+    <p>עכשיו תחשבו:</p>
+    <div class="math-display" id="equation7">טוען...</div>
+    
+    <div>
+      <button class="answer-button" onclick="checkAnswer(3, false)">5 + 5i</button>
+      <button class="answer-button" onclick="checkAnswer(3, true)">6 + 2i</button>
+      <button class="answer-button" onclick="checkAnswer(3, false)">2 + 6i</button>
+    </div>
+    <div class="feedback" id="feedback3"></div>
+    
+    <button class="button" onclick="completLesson()" id="next3" style="display:none;">סיום מעולה! ✓</button>
+    <button class="button" onclick="prevStep()">← קודם</button>
+  </div>
+</div>
+
+<!-- KaTeX JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
+<script>
+let currentStep = 1;
+let totalPoints = 0;
+const totalSteps = 3;
+
+// אתחול
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🚀 Starting simple test...');
+  
+  // המתנה קצרה לטעינת KaTeX
+  setTimeout(() => {
+    renderAllMath();
+    updateProgress();
+  }, 100);
+});
+
+// רנדור כל הנוסחאות
+function renderAllMath() {
+  console.log('🧮 Rendering math...');
+  
+  try {
+    // בדיקה ש-KaTeX זמין
+    if (typeof katex === 'undefined') {
+      console.error('❌ KaTeX not loaded!');
+      return;
+    }
+    
+    // רנדור נוסחאות
+    katex.render("x^2 = -1", document.getElementById("equation1"));
+    katex.render("i^2 = -1", document.getElementById("equation2"));
+    katex.render("z = a + bi", document.getElementById("equation3"));
+    katex.render("z = 3 + 2i", document.getElementById("equation4"));
+    katex.render("(a + bi) + (c + di) = (a + c) + (b + d)i", document.getElementById("equation5"));
+    katex.render("(2 + 3i) + (4 - i) = 6 + 2i", document.getElementById("equation6"));
+    katex.render("(2 + 3i) + (4 - i) = ?", document.getElementById("equation7"));
+    
+    console.log('✅ Math rendered successfully');
+  } catch (e) {
+    console.error('❌ Error rendering math:', e);
+  }
+}
+
+// בדיקת תשובה
+function checkAnswer(step, isCorrect) {
+  console.log(`🔍 Checking answer for step ${step}: ${isCorrect}`);
+  
+  const feedback = document.getElementById(`feedback${step}`);
+  const nextButton = document.getElementById(`next${step}`);
+  
+  // איפוס כפתורים
+  const buttons = document.querySelectorAll(`#step${step} .answer-button`);
+  buttons.forEach(btn => {
+    btn.classList.remove('correct');
+    btn.style.background = '#f1f5f9';
+    btn.style.color = '#1e40af';
+  });
+  
+  // סימון הכפתור שנלחץ
+  event.target.classList.add('correct');
+  
+  if (isCorrect) {
+    feedback.className = 'feedback success';
+    feedback.textContent = '✅ נכון מאוד! מעולה!';
+    feedback.style.display = 'block';
+    nextButton.style.display = 'inline-block';
+    totalPoints += 10;
+    document.getElementById('points').textContent = totalPoints;
+  } else {
+    feedback.className = 'feedback error';
+    feedback.textContent = '❌ לא נכון. נסו שוב!';
+    feedback.style.display = 'block';
+  }
+}
+
+// מעבר לשלב הבא
+function nextStep() {
+  console.log(`🔄 Moving from step ${currentStep} to ${currentStep + 1}`);
+  
+  if (currentStep < totalSteps) {
+    document.getElementById(`step${currentStep}`).classList.remove('active');
+    currentStep++;
+    document.getElementById(`step${currentStep}`).classList.add('active');
+    updateProgress();
+    console.log(`✅ Moved to step ${currentStep}`);
+  }
+}
+
+// מעבר לשלב הקודם
+function prevStep() {
+  console.log(`🔄 Moving from step ${currentStep} to ${currentStep - 1}`);
+  
+  if (currentStep > 1) {
+    document.getElementById(`step${currentStep}`).classList.remove('active');
+    currentStep--;
+    document.getElementById(`step${currentStep}`).classList.add('active');
+    updateProgress();
+    console.log(`✅ Moved to step ${currentStep}`);
+  }
+}
+
+// עדכון התקדמות
+function updateProgress() {
+  const progress = (currentStep / totalSteps) * 100;
+  document.getElementById('progress').style.width = progress + '%';
+  document.getElementById('progress-text').textContent = Math.round(progress) + '%';
+}
+
+// סיום השיעור
+function completLesson() {
+  alert('🎉 כל הכבוד! סיימתם בהצלחה!\n\nהרווחתם ' + totalPoints + ' נקודות!');
+}
+
+// הוספת פונקציות לחלון הגלובלי
+window.checkAnswer = checkAnswer;
+window.nextStep = nextStep;
+window.prevStep = prevStep;
+window.completLesson = completLesson;
+
+</script>
+
+</body>
+</html>
