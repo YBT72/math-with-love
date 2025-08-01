@@ -271,8 +271,8 @@
             // Render mathematics
             renderMath();
             
-            // Не устанавливаем начальный padding-top здесь, 
-            // а позволим функции handleScroll делать это
+            // We don't set the initial padding-top here,
+            // instead let the handleScroll function handle it
             
             // Header scroll behavior with smooth transition based on scroll position
             const header = document.querySelector('.lesson-header');
@@ -297,29 +297,29 @@
             function handleScroll() {
                 const scrollPos = window.scrollY;
                 
-                // Всегда применяем плавное изменение, основанное на текущей позиции прокрутки
-                // Расчет соотношения, ограниченного 0..1
+                // Always apply smooth transitions based on current scroll position
+                // Calculate ratio bounded between 0..1
                 const ratio = Math.min(1, Math.max(0, scrollPos / maxScroll));
                 const superRatio = Math.min(1, Math.max(0, (scrollPos - maxScroll) / (superCompactScroll - maxScroll)));
                 
-                // Расчет текущих значений для всех анимируемых свойств
+                // Calculate current values for all animated properties
                 const currentPadding = initialPadding - (initialPadding - finalPadding) * ratio - (finalPadding - minimalPadding) * superRatio;
                 const currentTitleSize = initialTitleSize - (initialTitleSize - finalTitleSize) * ratio;
                 const currentOpacity = 1 - ratio;
                 const currentMargin = 20 * (1 - ratio);
                 
-                // Динамическое значение для дополнительного отступа
-                // В свернутом состоянии (ratio > 0) добавляем больше отступа (55px), в стандартном - минимальное значение (0px)
+                // Dynamic value for additional padding
+                // In collapsed state (ratio > 0) we add more padding (55px), in standard state - minimum value (0px)
                 const paddingTopValue = (ratio * 55);
                 
-                // Применяем рассчитанные значения
+                // Apply calculated values
                 header.style.padding = `${currentPadding}px 0`;
                 lessonTitle.style.fontSize = `${currentTitleSize}em`;
                 titleContainer.style.opacity = currentOpacity.toString();
                 lessonSubtitle.style.opacity = currentOpacity.toString();
                 lessonSubmenu.style.marginTop = `${currentMargin}px`;
                 
-                // Управляем видимостью элементов
+                // Manage element visibility
                 if (currentOpacity < 0.05) {
                     titleContainer.style.display = 'none';
                     lessonSubtitle.style.display = 'none';
@@ -328,13 +328,13 @@
                     lessonSubtitle.style.display = 'block';
                 }
                 
-                // Динамически обновляем padding-top для body, чтобы компенсировать изменение высоты заголовка
+                // Dynamically update padding-top for the body to compensate for header height changes
                 const headerHeight = header.offsetHeight;
-                // В развернутом состоянии используем 80% высоты заголовка, в свернутом - полную высоту + paddingTopValue
+                // In expanded state use 80% of header height, in collapsed state - full height + paddingTopValue
                 const baseHeight = ratio < 0.1 ? headerHeight * 0.8 : headerHeight;
                 document.body.style.paddingTop = `${baseHeight + paddingTopValue}px`;
                 
-                // Управляем тенью
+                // Manage shadow
                 if (scrollPos > 0) {
                     header.classList.add('shadow-on-scroll');
                 } else {
@@ -343,7 +343,7 @@
                 
                 }
             
-            // Используем requestAnimationFrame для плавного обновления
+            // Use requestAnimationFrame for smooth updates
             let ticking = false;
             window.addEventListener('scroll', function() {
                 if (!ticking) {
@@ -356,13 +356,13 @@
             });
             
             // Call once on load to set initial state
-            // Вызываем с достаточной задержкой, чтобы все элементы успели прогрузиться
+            // Call with sufficient delay to ensure all elements have loaded
             setTimeout(handleScroll, 50);
             
-            // Вызываем еще раз через более длительное время для страховки
+            // Call again after a longer delay as a safety measure
             setTimeout(handleScroll, 300);
             
-            // Обновляем padding при изменении размера окна
+            // Update padding when window is resized
             window.addEventListener('resize', function() {
                 handleScroll();
             });
