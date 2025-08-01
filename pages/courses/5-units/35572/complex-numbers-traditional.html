@@ -271,36 +271,101 @@
             // Render mathematics
             renderMath();
             
-            // Header scroll behavior
+            // Не устанавливаем начальный padding-top здесь, 
+            // а позволим функции handleScroll делать это
+            
+            // Header scroll behavior with smooth transition based on scroll position
             const header = document.querySelector('.lesson-header');
             const titleContainer = document.querySelector('.lesson-title-container');
+            const lessonTitle = document.querySelector('.lesson-title');
             const lessonSubtitle = document.querySelector('.lesson-subtitle');
             const lessonSubmenu = document.querySelector('.lesson-submenu');
-            const scrollThreshold = 100; // Scroll threshold in pixels
+            const navIcons = document.querySelector('.nav-icons');
+            const objectivesTrigger = document.querySelector('.objectives-trigger');
+            
+            const minScroll = 0;            // Start of transition
+            const maxScroll = 100;          // End of first transition (compact header)
+            const superCompactScroll = 150; // Start showing only menu icons
+            
+            const initialPadding = 40;      // Initial padding in px
+            const finalPadding = 10;        // Final padding in px
+            const minimalPadding = 5;       // Super compact padding in px
+            
+            const initialTitleSize = 2.5;   // Initial title font size in em
+            const finalTitleSize = 1.5;     // Final title font size in em
             
             function handleScroll() {
-                if (window.scrollY > scrollThreshold) {
-                    // Switch to compact mode
-                    header.classList.add('lesson-header-compact');
-                    // Hide title and subtitle but keep submenu visible
+                const scrollPos = window.scrollY;
+                
+                // Всегда применяем плавное изменение, основанное на текущей позиции прокрутки
+                // Расчет соотношения, ограниченного 0..1
+                const ratio = Math.min(1, Math.max(0, scrollPos / maxScroll));
+                const superRatio = Math.min(1, Math.max(0, (scrollPos - maxScroll) / (superCompactScroll - maxScroll)));
+                
+                // Расчет текущих значений для всех анимируемых свойств
+                const currentPadding = initialPadding - (initialPadding - finalPadding) * ratio - (finalPadding - minimalPadding) * superRatio;
+                const currentTitleSize = initialTitleSize - (initialTitleSize - finalTitleSize) * ratio;
+                const currentOpacity = 1 - ratio;
+                const currentMargin = 20 * (1 - ratio);
+                
+                // Динамическое значение для дополнительного отступа
+                // В свернутом состоянии (ratio > 0) добавляем больше отступа (55px), в стандартном - минимальное значение (0px)
+                const paddingTopValue = (ratio * 55);
+                
+                // Применяем рассчитанные значения
+                header.style.padding = `${currentPadding}px 0`;
+                lessonTitle.style.fontSize = `${currentTitleSize}em`;
+                titleContainer.style.opacity = currentOpacity.toString();
+                lessonSubtitle.style.opacity = currentOpacity.toString();
+                lessonSubmenu.style.marginTop = `${currentMargin}px`;
+                
+                // Управляем видимостью элементов
+                if (currentOpacity < 0.05) {
                     titleContainer.style.display = 'none';
                     lessonSubtitle.style.display = 'none';
-                    lessonSubmenu.style.marginTop = '0';
                 } else {
-                    // Back to full mode
-                    header.classList.remove('lesson-header-compact');
-                    // Show all elements
                     titleContainer.style.display = 'flex';
                     lessonSubtitle.style.display = 'block';
-                    lessonSubmenu.style.marginTop = '20px';
                 }
-            }
+                
+                // Динамически обновляем padding-top для body, чтобы компенсировать изменение высоты заголовка
+                const headerHeight = header.offsetHeight;
+                // В развернутом состоянии используем 80% высоты заголовка, в свернутом - полную высоту + paddingTopValue
+                const baseHeight = ratio < 0.1 ? headerHeight * 0.8 : headerHeight;
+                document.body.style.paddingTop = `${baseHeight + paddingTopValue}px`;
+                
+                // Управляем тенью
+                if (scrollPos > 0) {
+                    header.classList.add('shadow-on-scroll');
+                } else {
+                    header.classList.remove('shadow-on-scroll');
+                }
+                
+                }
             
-            // Add scroll event listener
-            window.addEventListener('scroll', handleScroll);
+            // Используем requestAnimationFrame для плавного обновления
+            let ticking = false;
+            window.addEventListener('scroll', function() {
+                if (!ticking) {
+                    window.requestAnimationFrame(function() {
+                        handleScroll();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
             
             // Call once on load to set initial state
-            handleScroll();
+            // Вызываем с достаточной задержкой, чтобы все элементы успели прогрузиться
+            setTimeout(handleScroll, 50);
+            
+            // Вызываем еще раз через более длительное время для страховки
+            setTimeout(handleScroll, 300);
+            
+            // Обновляем padding при изменении размера окна
+            window.addEventListener('resize', function() {
+                handleScroll();
+            });
             
             // Smooth scroll for navigation links
             document.querySelectorAll('.nav-icon[href^="#"]').forEach(anchor => {
