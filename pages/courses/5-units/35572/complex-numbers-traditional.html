@@ -58,6 +58,9 @@
                     <a href="#theory-section" class="nav-icon" title="תיאוריה ומושגי יסוד">
                         <img src="../../../../assets/icons/teach_icon_c_new.svg" alt="תיאוריה">
                     </a>
+                    <a href="#interactive-section" class="nav-icon" title="כלים אינטראקטיביים">
+                        <img src="../../../../assets/icons/gauss_visual.svg" alt="אינטראקטיבי">
+                    </a>
                     <a href="#practice-section" class="nav-icon" title="תרגול">
                         <img src="../../../../assets/icons/practice_icon_c.svg" alt="תרגול">
                     </a>
@@ -113,14 +116,7 @@
                     
                     <!-- הגדרת מספר מרוכב -->
                     <div class="math-definition">
-                        <div class="definition-header">
-                            <h3>הגדרת מספר מרוכב</h3>
-                            <!-- Widget icon with tooltip -->
-                            <div class="definition-widget-icon tooltip" onclick="openFullWidget('complex-definition')">
-                                <img src="/assets/icons/gauss_visual.svg" alt="ויזואליזציה">
-                                <span class="tooltip-text">כלי אינטראקטיבי: ייצוג במישור המרוכב</span>
-                            </div>
-                        </div>
+                        <h3>הגדרת מספר מרוכב</h3>
                         
                         <p>כל מספר מרוכב ניתן לכתיבה בצורה:</p>
                         <div class="math-ltr" id="complex-form-def"></div>
@@ -139,7 +135,24 @@
                 </div>
             </section>
             
-            <!-- חלק 2: תרגול -->
+            <!-- חלק 2: כלים אינטראקטיביים -->
+            <section class="lesson-section" id="interactive-section">
+                <h2 class="section-title">
+                    <img src="../../../../assets/icons/gauss_visual.svg" alt="אינטראקטיבי" class="section-title-icon">
+                    כלים אינטראקטיביים
+                </h2>
+                
+                <div class="widget-frame-container">
+                    <iframe 
+                        class="embedded-widget" 
+                        src="../../../../assets/widgets/complex/c_algebric/complex_intro.html" 
+                        title="מישור גאוס האינטראקטיבי"
+                        frameborder="0">
+                    </iframe>
+                </div>
+            </section>
+            
+            <!-- חלק 3: תרגול -->
             <section class="lesson-section" id="practice-section">
                 <h2 class="section-title">
                     <img src="../../../../assets/icons/practice_icon_c.svg" alt="תרגול" class="section-title-icon">
@@ -171,7 +184,7 @@
                 </div>
             </section>
             
-            <!-- חלק 3: משימות בית -->
+            <!-- חלק 4: משימות בית -->
             <section class="lesson-section" id="homework-section">
                 <h2 class="section-title">
                     <img src="../../../../assets/icons/hw_icon_c.svg" alt="משימות בית" class="section-title-icon">
@@ -228,14 +241,6 @@
             const modal = document.getElementById('objectivesModal');
             if (event.target === modal) {
                 modal.style.display = 'none';
-            }
-        }
-        
-        // Functions for widgets
-        function openFullWidget(widgetId) {
-            // Open polar widget
-            if (widgetId === 'complex-definition') {
-                window.open('../../../../assets/widgets/complex/c_polar/1_complex_intro_ap.html', '_blank', 'width=1000,height=700,scrollbars=yes');
             }
         }
         
