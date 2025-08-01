@@ -13,68 +13,70 @@
     
 </head>
 <body>
-    <div class="lesson-container">
-        <!-- Breadcrumb navigation -->
-        <nav class="breadcrumb">
-            <a href="#">בית</a>
-            <span class="breadcrumb-separator">←</span>
-            <a href="#">5 יח״ל</a>
-            <span class="breadcrumb-separator">←</span>
-            <a href="#">שאלון 35572</a>
-            <span class="breadcrumb-separator">←</span>
-            <span class="breadcrumb-current">יחידה 1</span>
-        </nav>
-        
-        <!-- Lesson header -->
-        <div class="lesson-header">
-            <!-- Title container with date and info -->
-            <div class="lesson-title-container">
-                <h1 class="lesson-title">יחידה 1</h1>
-                
-                <!-- Header info center -->
-                <div class="header-info">
-                    <span class="info-badge">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-left: 5px; vertical-align: middle;">
-                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                            <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2"/>
-                        </svg>
-                        90 דקות
-                    </span>
-                    <span class="info-badge">
-                        <img src="../../../../assets/icons/exam1_icon.svg" alt="שאלון" style="width: 16px; height: 16px; margin-left: 5px; vertical-align: middle; filter: brightness(0) invert(1);">
-                        שאלון 35572
-                    </span>
-                </div>
-                
-                <div class="lesson-date" id="current-date"></div>
+    <!-- Lesson header -->
+<div class="lesson-header">
+    <div class="lesson-container-wide">
+        <!-- Title container with date and info -->
+        <div class="lesson-title-container">
+            <h1 class="lesson-title">יחידה 1</h1>
+            
+            <!-- Header info center -->
+            <div class="header-info">
+                <span class="info-badge">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-left: 5px; vertical-align: middle;">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                        <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    90 דקות
+                </span>
+                <span class="info-badge">
+                    <img src="../../../../assets/icons/exam1_icon.svg" alt="שאלון" style="width: 16px; height: 16px; margin-left: 5px; vertical-align: middle; filter: brightness(0) invert(1);">
+                    שאלון 35572
+                </span>
             </div>
             
-            <p class="lesson-subtitle">מספרים מרוכבים - הצגה אלגברית</p>
-            
-            <!-- Submenu with navigation and objectives (swapped positions) -->
-            <div class="lesson-submenu">
-                <!-- Navigation icons on the left -->
-                <div class="nav-icons">
-                    <a href="#theory-section" class="nav-icon" title="תיאוריה ומושגי יסוד">
-                        <img src="../../../../assets/icons/teach_icon_c_new.svg" alt="תיאוריה">
-                    </a>
-                    <a href="#interactive-section" class="nav-icon" title="כלים אינטראקטיביים">
-                        <img src="../../../../assets/icons/gauss_visual.svg" alt="אינטראקטיבי">
-                    </a>
-                    <a href="#practice-section" class="nav-icon" title="תרגול">
-                        <img src="../../../../assets/icons/practice_icon_c.svg" alt="תרגול">
-                    </a>
-                    <a href="#homework-section" class="nav-icon" title="משימות בית">
-                        <img src="../../../../assets/icons/hw_icon_c.svg" alt="משימות בית">
-                    </a>
-                </div>
-                
-                <!-- Lesson objectives button on the right -->
-                <button class="objectives-trigger" onclick="openObjectivesModal()" title="מטרות השיעור">
-                    <img src="../../../../assets/icons/lamp_icon_c.svg" alt="מטרות">
-                </button>
-            </div>
+            <div class="lesson-date" id="current-date"></div>
         </div>
+        
+        <p class="lesson-subtitle">מספרים מרוכבים - הצגה אלגברית</p>
+            
+        <!-- Submenu with navigation and objectives (swapped positions) -->
+        <div class="lesson-submenu">
+            <!-- Navigation icons on the left -->
+            <div class="nav-icons">
+                <a href="#theory-section" class="nav-icon" title="תיאוריה ומושגי יסוד">
+                    <img src="../../../../assets/icons/teach_icon_c_new.svg" alt="תיאוריה">
+                </a>
+                <a href="#interactive-section" class="nav-icon" title="כלים אינטראקטיביים">
+                    <img src="../../../../assets/icons/gauss_visual.svg" alt="אינטראקטיבי">
+                </a>
+                <a href="#practice-section" class="nav-icon" title="תרגול">
+                    <img src="../../../../assets/icons/practice_icon_c.svg" alt="תרגול">
+                </a>
+                <a href="#homework-section" class="nav-icon" title="משימות בית">
+                    <img src="../../../../assets/icons/hw_icon_c.svg" alt="משימות בית">
+                </a>
+            </div>
+            
+            <!-- Lesson objectives button on the right -->
+            <button class="objectives-trigger" onclick="openObjectivesModal()" title="מטרות השיעור">
+                <img src="../../../../assets/icons/lamp_icon_c.svg" alt="מטרות">
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="lesson-container">
+    <!-- Breadcrumb navigation -->
+    <nav class="breadcrumb">
+        <a href="#">בית</a>
+        <span class="breadcrumb-separator">←</span>
+        <a href="#">5 יח״ל</a>
+        <span class="breadcrumb-separator">←</span>
+        <a href="#">שאלון 35572</a>
+        <span class="breadcrumb-separator">←</span>
+        <span class="breadcrumb-current">יחידה 1</span>
+    </nav>
         
         <!-- Modal window for objectives -->
         <div id="objectivesModal" class="objectives-modal">
@@ -95,10 +97,10 @@
         </div>
         
         <!-- תוכן השיעור -->
-        <div class="lesson-content">
-            
-            <!-- חלק 1: תיאוריה ומושגי יסוד -->
-            <section class="lesson-section" id="theory-section">
+    <div class="lesson-content">
+        
+        <!-- חלק 1: תיאוריה ומושגי יסוד -->
+        <section class="lesson-section" id="theory-section">
                 <h2 class="section-title">
                     <img src="../../../../assets/icons/teach_icon_c_new.svg" alt="תיאוריה" class="section-title-icon">
                     תיאוריה ומושגי יסוד

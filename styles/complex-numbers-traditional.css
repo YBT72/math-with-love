@@ -28,18 +28,25 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: var(--color-surface);
     margin: 0;
-    padding: 20px;
+    padding: 0;
     direction: rtl;
     color: var(--color-text);
 }
 
 .lesson-container {
-    max-width: 1200px;
-    margin: 0 auto;
+    width: 100%;
+    margin: 0;
     background: var(--color-white);
-    border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     overflow: hidden;
+    border-radius: 0;
+}
+
+.lesson-container-wide {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 30px;
 }
 
 /* Breadcrumb navigation */
@@ -67,10 +74,13 @@ body {
 
 /* Lesson header */
 .lesson-header {
-    padding: 40px 30px;
-    background: linear-gradient(135deg, var(--color-math-primary), var(--color-math-secondary));
+    padding: 40px 0;
+    background: var(--color-math-secondary);
     color: var(--color-white);
     position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
 }
 
 /* Title container with date and info */
