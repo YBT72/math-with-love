@@ -35,6 +35,8 @@
                 </span>
             </div>
             
+            <!-- Removed breadcrumbs for compact header - they will not appear in compact mode -->
+            
             <div class="lesson-date" id="current-date"></div>
         </div>
         
@@ -67,16 +69,6 @@
 </div>
 
 <div class="lesson-container">
-    <!-- Breadcrumb navigation -->
-    <nav class="breadcrumb">
-        <a href="#">בית</a>
-        <span class="breadcrumb-separator">←</span>
-        <a href="#">5 יח״ל</a>
-        <span class="breadcrumb-separator">←</span>
-        <a href="#">שאלון 35572</a>
-        <span class="breadcrumb-separator">←</span>
-        <span class="breadcrumb-current">יחידה 1</span>
-    </nav>
         
         <!-- Modal window for objectives -->
         <div id="objectivesModal" class="objectives-modal">
@@ -278,6 +270,37 @@
             
             // Render mathematics
             renderMath();
+            
+            // Header scroll behavior
+            const header = document.querySelector('.lesson-header');
+            const titleContainer = document.querySelector('.lesson-title-container');
+            const lessonSubtitle = document.querySelector('.lesson-subtitle');
+            const lessonSubmenu = document.querySelector('.lesson-submenu');
+            const scrollThreshold = 100; // Scroll threshold in pixels
+            
+            function handleScroll() {
+                if (window.scrollY > scrollThreshold) {
+                    // Switch to compact mode
+                    header.classList.add('lesson-header-compact');
+                    // Hide title and subtitle but keep submenu visible
+                    titleContainer.style.display = 'none';
+                    lessonSubtitle.style.display = 'none';
+                    lessonSubmenu.style.marginTop = '0';
+                } else {
+                    // Back to full mode
+                    header.classList.remove('lesson-header-compact');
+                    // Show all elements
+                    titleContainer.style.display = 'flex';
+                    lessonSubtitle.style.display = 'block';
+                    lessonSubmenu.style.marginTop = '20px';
+                }
+            }
+            
+            // Add scroll event listener
+            window.addEventListener('scroll', handleScroll);
+            
+            // Call once on load to set initial state
+            handleScroll();
             
             // Smooth scroll for navigation links
             document.querySelectorAll('.nav-icon[href^="#"]').forEach(anchor => {

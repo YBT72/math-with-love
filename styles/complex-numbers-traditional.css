@@ -31,6 +31,7 @@ body {
     padding: 0;
     direction: rtl;
     color: var(--color-text);
+    padding-top: 140px; /* Space for fixed header - adjusted for compact header */
 }
 
 .lesson-container {
@@ -56,6 +57,12 @@ body {
     border-bottom: 1px solid var(--color-border);
 }
 
+/* Breadcrumbs in compact header */
+.breadcrumbs-compact {
+    display: none; /* Initially hidden */
+    margin-left: auto;
+}
+
 .breadcrumb a {
     color: var(--color-math-primary);
     text-decoration: none;
@@ -77,9 +84,22 @@ body {
     padding: 40px 0;
     background: var(--color-math-secondary);
     color: var(--color-white);
-    position: relative;
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     box-sizing: border-box;
+    margin: 0;
+    z-index: 1000;
+    transition: all 0.3s ease-in-out;
+}
+
+.lesson-header-compact {
+    padding: 10px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.lesson-header-compact .lesson-submenu {
     margin: 0;
 }
 
@@ -137,6 +157,14 @@ body {
     align-items: center;
     justify-content: space-between;
     margin-top: 20px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Special styling for submenu in compact header */
+.lesson-header-compact .lesson-submenu {
+    justify-content: space-between; /* Keep the original layout */
+    padding: 0;
+    margin: 0;
 }
 
 /* Lesson objectives trigger button */
@@ -277,6 +305,7 @@ body {
 /* Lesson content */
 .lesson-content {
     padding: 25px 30px;
+    margin-top: 160px; /* Adjust based on the header height */
 }
 
 /* Lesson sections */
