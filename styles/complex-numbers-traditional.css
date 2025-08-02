@@ -318,7 +318,7 @@ body {
 
 /* Adding special style for the first section to prevent it from sticking to the top */
 .lesson-section:first-child {
-    margin-top: 20px;
+    margin-top: 10px;
 }
 
 .section-title {
