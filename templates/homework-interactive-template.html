@@ -1223,7 +1223,7 @@
             top: 0;
             left: 0;
             right: 0;
-            background-color: var(--color-accent, #3366cc); /* Use color from main site */
+            background-color: var(--white, #ffffff); /* Inverted: white background */
             box-shadow: 0 2px 10px var(--black-transparent-10);
             z-index: 1000;
             height: var(--height-header, 50px); /* Reduce height from 80px to 50px */
@@ -1248,7 +1248,7 @@
         }
         
         .header-separator {
-            color: var(--white-transparent-60);
+            color: var(--black-transparent-60, #666666); /* Inverted: dark separator */
             margin: 0 0.8rem 0 0.8rem; /* Standard 0.8rem margin on both sides */
             font-size: 1.2rem;
             margin-top: -2px; /* Align with other elements */
@@ -1269,7 +1269,7 @@
             justify-content: center;
             background: none;
             border: none;
-            color: var(--white);
+            color: var(--black, #333333); /* Inverted: dark color */
             cursor: pointer;
             transition: color 0.3s, transform 0.2s;
             padding: 0;
@@ -1301,7 +1301,7 @@
         
         nav a {
             text-decoration: none;
-            color: var(--white);
+            color: var(--black, #333333); /* Inverted: dark text */
             font-weight: 500;
             padding: 4px 8px; /* Reduce internal padding */
             transition: color 0.3s;
@@ -1311,7 +1311,7 @@
         }
         
         nav a:hover {
-            color: var(--color-white-opacity-20, var(--white-transparent-80));
+            color: var(--color-accent, #3366cc); /* Inverted: blue on hover */
         }
         
         nav a.active {
@@ -1507,7 +1507,7 @@
             background: none;
             border: none;
             cursor: pointer;
-            color: var(--white);
+            color: var(--black, #333333); /* Inverted: dark color */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1518,7 +1518,7 @@
         }
         
         .search-icon-btn:hover {
-            color: var(--search-hover);
+            color: var(--color-accent, #3366cc); /* Inverted: blue on hover */
             transform: scale(1.1);
         }
         
@@ -1547,12 +1547,12 @@
             justify-content: center;
             height: 36px;
             width: 36px;
-            color: var(--white);
+            color: var(--black, #333333); /* Inverted: dark color */
             transition: color 0.3s;
         }
         
         .search-icon-btn:hover {
-            color: var(--white-transparent-70);
+            color: var(--color-accent, #3366cc); /* Inverted: blue on hover */
         }
         
         .lesson-header {
