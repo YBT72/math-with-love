@@ -2,8 +2,9 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta nam        <!-- Lesson content -->
-    <div class="lesson-content">"viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>יחידה 1</title>
     
     <!-- KaTeX CSS -->
@@ -747,8 +748,8 @@
                 const currentMargin = 20 * (1 - ratio);
                 
                 // Dynamic value for additional padding
-                // In collapsed state (ratio > 0) we add more padding (55px), in standard state - minimum value (0px)
-                const paddingTopValue = (ratio * 55);
+                // In collapsed state (ratio > 0) we add more padding (40px), in standard state - minimum value (0px)
+                const paddingTopValue = (ratio * 40);
                 
                 // Apply calculated values
                 header.style.padding = `${currentPadding}px 0`;
@@ -768,8 +769,8 @@
                 
                 // Dynamically update padding-top for the body to compensate for header height changes
                 const headerHeight = header.offsetHeight;
-                // In expanded state use 80% of header height, in collapsed state - full height + paddingTopValue
-                const baseHeight = ratio < 0.1 ? headerHeight * 0.8 : headerHeight;
+                // In expanded state use 85% of header height, in collapsed state - full height + paddingTopValue
+                const baseHeight = ratio < 0.1 ? headerHeight * 0.85 : headerHeight + 10;
                 document.body.style.paddingTop = `${baseHeight + paddingTopValue}px`;
                 
                 // Manage shadow
@@ -779,7 +780,7 @@
                     header.classList.remove('shadow-on-scroll');
                 }
                 
-                }
+            }
             
             // Use requestAnimationFrame for smooth updates
             let ticking = false;
