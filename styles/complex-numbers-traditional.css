@@ -31,7 +31,8 @@ body {
     padding: 0;
     direction: rtl;
     color: var(--color-text);
-    padding-top: 140px; /* Space for fixed header - adjusted for compact header */
+    /* padding-top будет установлен динамически с помощью JavaScript */
+    transition: padding-top 0.1s ease;
 }
 
 .lesson-container {
@@ -41,6 +42,7 @@ body {
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     overflow: hidden;
     border-radius: 0;
+    padding-top: 30px; /* Увеличен отступ сверху для контейнера */
 }
 
 .lesson-container-wide {
@@ -81,7 +83,6 @@ body {
 
 /* Lesson header */
 .lesson-header {
-    padding: 40px 0;
     background: var(--color-math-secondary);
     color: var(--color-white);
     position: fixed;
@@ -91,11 +92,10 @@ body {
     box-sizing: border-box;
     margin: 0;
     z-index: 1000;
-    transition: all 0.3s ease-in-out;
+    transition: all 0s linear; /* Изменено для мгновенного отслеживания скролла */
 }
 
-.lesson-header-compact {
-    padding: 10px 0;
+.shadow-on-scroll {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -109,12 +109,14 @@ body {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 10px;
+    transition: opacity 0s linear;
 }
 
 .lesson-title {
     font-size: 2.5em;
     margin: 0;
     font-weight: 700;
+    transition: font-size 0s linear;
 }
 
 /* Header info section */
@@ -137,6 +139,7 @@ body {
     font-size: 1.2em;
     margin: 0 0 20px 0;
     opacity: 0.9;
+    transition: opacity 0s linear;
 }
 
 /* Lesson date in header */
@@ -157,7 +160,7 @@ body {
     align-items: center;
     justify-content: space-between;
     margin-top: 20px;
-    transition: all 0.3s ease-in-out;
+    transition: margin-top 0s linear;
 }
 
 /* Special styling for submenu in compact header */
@@ -304,8 +307,8 @@ body {
 
 /* Lesson content */
 .lesson-content {
-    padding: 25px 30px;
-    margin-top: 160px; /* Adjust based on the header height */
+    padding: 20px 30px 25px 30px; /* Восстановлен верхний отступ для контента */
+    margin-top: 0; /* Margin удален, так как padding-top в body достаточен */
 }
 
 /* Lesson sections */
@@ -313,10 +316,16 @@ body {
     margin-bottom: 40px;
 }
 
+/* Добавляем специальный стиль для первой секции, чтобы она не прижималась к верху */
+.lesson-section:first-child {
+    margin-top: 20px;
+}
+
 .section-title {
     font-size: 1.8em;
     color: var(--color-math-primary);
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    margin-top: 10px; /* Увеличили отступ сверху для лучшей видимости заголовка */
     padding-bottom: 10px;
     border-bottom: 2px solid var(--color-math-primary);
 }
