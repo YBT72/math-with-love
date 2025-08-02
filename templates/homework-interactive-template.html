@@ -104,6 +104,7 @@
             margin: 10px 0 40px; /* Minimal margin after collapsed header */
             position: relative;
             overflow: hidden;
+            margin-top: 10px; /* Reduced by half for tighter spacing */
         }
         
         /* Decorative gradient background */
@@ -700,7 +701,7 @@
     
     <!-- Breadcrumbs right under the main menu -->
     <div class="lesson-breadcrumbs">
-        <a href="#">קורסים</a> / <a href="#">מספרים מרוכבים</a> / <span>שיעור 2: פעולות במספרים מרוכבים</span>
+        <a href="#">קורסים</a> ← <a href="#">מספרים מרוכבים</a> ← <span>שיעור 2: פעולות במספרים מרוכבים</span>
     </div>
     
     <!-- Lesson menu - blue bar with 5 icons -->
@@ -1306,7 +1307,7 @@
             transition: color 0.3s;
             display: block;
             font-family: var(--font-primary);
-            font-size: 0.9rem; /* Slightly reduce font size */
+            font-size: 1.1rem; /* Returned to optimal size */
         }
         
         nav a:hover {
@@ -1330,12 +1331,17 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0.5rem 0; /* Remove horizontal padding, keep only vertical */
-            height: 50px; /* Fixed height, comparable to main menu */
+            padding: 0; /* Remove padding to allow proper centering */
+            height: 50px; /* Test with original height */
             width: 100vw; /* From edge to edge of screen */
             margin-left: calc(-50vw + 50%); /* Go beyond container boundaries */
             margin-right: calc(-50vw + 50%);
             box-sizing: border-box;
+            position: fixed; /* Fix position to stay below header */
+            top: var(--height-header, 50px); /* Position directly below main header */
+            left: 0;
+            right: 0;
+            z-index: 998; /* Below main header but above content */
         }
         
         /* Container for lesson menu content, similar to site-menu */
@@ -1405,6 +1411,8 @@
             text-align: right;
             background-color: var(--breadcrumb-bg);
             border-bottom: 1px solid var(--border-light);
+            margin-top: calc(var(--height-header, 50px) + 50px); /* Push content below both fixed menus */
+            padding-right: 1rem; /* Right margin identical to upper menu rows */
         }
         
         .lesson-breadcrumbs a {
