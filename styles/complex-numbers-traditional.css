@@ -31,7 +31,7 @@ body {
     padding: 0;
     direction: rtl;
     color: var(--color-text);
-    /* padding-top будет установлен динамически с помощью JavaScript */
+    /* padding-top will be set dynamically with JavaScript */
     transition: padding-top 0.1s ease;
 }
 
@@ -42,7 +42,7 @@ body {
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     overflow: hidden;
     border-radius: 0;
-    padding-top: 30px; /* Увеличен отступ сверху для контейнера */
+    padding-top: 30px; /* Increased top padding for container */
 }
 
 .lesson-container-wide {
@@ -92,7 +92,7 @@ body {
     box-sizing: border-box;
     margin: 0;
     z-index: 1000;
-    transition: all 0s linear; /* Изменено для мгновенного отслеживания скролла */
+    transition: all 0s linear; /* Changed for instant scroll tracking */
 }
 
 .shadow-on-scroll {
@@ -307,8 +307,8 @@ body {
 
 /* Lesson content */
 .lesson-content {
-    padding: 20px 30px 25px 30px; /* Восстановлен верхний отступ для контента */
-    margin-top: 0; /* Margin удален, так как padding-top в body достаточен */
+    padding: 20px 30px 25px 30px; /* Restored top padding for content */
+    margin-top: 0; /* Margin removed because padding-top in body is sufficient */
 }
 
 /* Lesson sections */
@@ -316,7 +316,7 @@ body {
     margin-bottom: 40px;
 }
 
-/* Добавляем специальный стиль для первой секции, чтобы она не прижималась к верху */
+/* Adding special style for the first section to prevent it from sticking to the top */
 .lesson-section:first-child {
     margin-top: 20px;
 }
@@ -325,7 +325,7 @@ body {
     font-size: 1.8em;
     color: var(--color-math-primary);
     margin-bottom: 15px;
-    margin-top: 10px; /* Увеличили отступ сверху для лучшей видимости заголовка */
+    margin-top: 10px; /* Increased top margin for better heading visibility */
     padding-bottom: 10px;
     border-bottom: 2px solid var(--color-math-primary);
 }
