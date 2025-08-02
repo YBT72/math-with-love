@@ -187,28 +187,52 @@
                 
                 <div class="homework-example">
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                        <div>
+                        <div class="homework-game-item" onclick="openGameModal('complex-identification')">
                             <h4>
                                 <img src="../../../../assets/icons/game_icon.svg" alt="משחק" class="homework-icon">
                                 משחק זיהוי מספרים מרוכבים
                             </h4>
                             <p>זיהוי החלק הממשי והמדומה במספרים מרוכבים שונים.</p>
+                            <div class="play-icon-container">
+                                <img src="../../../../assets/icons/play_icon.svg" alt="שחק" class="play-icon">
+                            </div>
                         </div>
                         
-                        <div>
+                        <div class="homework-game-item" onclick="openGameModal('complex-operations')">
                             <h4>
                                 <img src="../../../../assets/icons/idea_icon.svg" alt="חידות" class="homework-icon">
                                 חידות חיבור וכפל
                             </h4>
                             <p>חידות מתמטיות הכוללות פעולות על מספרים מרוכבים.</p>
+                            <div class="play-icon-container">
+                                <img src="../../../../assets/icons/play_icon.svg" alt="שחק" class="play-icon">
+                            </div>
                         </div>
                         
-                        <div>
+                        <div class="homework-game-item" onclick="openGameModal('complex-plane')">
                             <h4>
                                 <img src="../../../../assets/icons/gauss_visual.svg" alt="סימולטור" class="homework-icon">
                                 סימולטור המישור המרוכב
                             </h4>
                             <p>חקר התנהגות מספרים מרוכבים במישור הקרטזי.</p>
+                            <div class="play-icon-container">
+                                <img src="../../../../assets/icons/play_icon.svg" alt="שחק" class="play-icon">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Game modal window -->
+                <div id="gameModal" class="game-modal">
+                    <div class="game-modal-content">
+                        <span class="modal-close" onclick="closeGameModal()">&times;</span>
+                        <h2 id="gameModalTitle">משחק</h2>
+                        <div id="gameContainer">
+                            <!-- Game content will be loaded here dynamically -->
+                        </div>
+                        <div class="game-controls">
+                            <button id="restartGameBtn" onclick="restartGame()">התחל מחדש</button>
+                            <span id="gameScore">ניקוד: 0</span>
                         </div>
                     </div>
                 </div>
@@ -219,6 +243,103 @@
     <!-- KaTeX JavaScript -->
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" integrity="sha384-cpW21h6RZv/phavutF+AuVYrr+dA8xD9zs6FwLpaCct6O9ctzYFfFr4dgmgccOTx" crossorigin="anonymous"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"></script>
+    
+    <style>
+        /* Game related styles */
+        .homework-game-item {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .homework-game-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .play-icon-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .play-icon {
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            filter: invert(43%) sepia(72%) saturate(1748%) hue-rotate(187deg) brightness(98%) contrast(94%); /* Make icon blue */
+        }
+        
+        .play-icon:hover {
+            transform: scale(1.2);
+        }
+        
+        .game-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+        }
+        
+        .game-modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 800px;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+        }
+        
+        #gameContainer {
+            min-height: 400px;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background: #f8f8f8;
+            position: relative;
+        }
+        
+        .game-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+        
+        #gameScore {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--primary-color, #3498db);
+        }
+        
+        #restartGameBtn {
+            background: var(--primary-color, #3498db);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        #restartGameBtn:hover {
+            background: var(--primary-color-dark, #2980b9);
+        }
+    </style>
     
     <script>
         // Functions for objectives modal window
@@ -232,10 +353,326 @@
         
         // Close modal when clicking outside
         window.onclick = function(event) {
-            const modal = document.getElementById('objectivesModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
+            const objectivesModal = document.getElementById('objectivesModal');
+            const gameModal = document.getElementById('gameModal');
+            
+            if (event.target === objectivesModal) {
+                objectivesModal.style.display = 'none';
             }
+            
+            if (event.target === gameModal) {
+                gameModal.style.display = 'none';
+            }
+        }
+        
+        // Game modal functions
+        function openGameModal(gameType) {
+            const modal = document.getElementById('gameModal');
+            const gameContainer = document.getElementById('gameContainer');
+            const gameTitle = document.getElementById('gameModalTitle');
+            
+            // Reset score
+            document.getElementById('gameScore').textContent = 'ניקוד: 0';
+            
+            // Set title and load game based on type
+            switch(gameType) {
+                case 'complex-identification':
+                    gameTitle.textContent = 'משחק זיהוי מספרים מרוכבים';
+                    loadComplexIdentificationGame();
+                    break;
+                case 'complex-operations':
+                    gameTitle.textContent = 'חידות חיבור וכפל';
+                    loadComplexOperationsGame();
+                    break;
+                case 'complex-plane':
+                    gameTitle.textContent = 'סימולטור המישור המרוכב';
+                    loadComplexPlaneSimulator();
+                    break;
+            }
+            
+            modal.style.display = 'block';
+        }
+        
+        function closeGameModal() {
+            document.getElementById('gameModal').style.display = 'none';
+        }
+        
+        function restartGame() {
+            // Get current game type and reload it
+            const gameTitle = document.getElementById('gameModalTitle').textContent;
+            
+            if (gameTitle === 'משחק זיהוי מספרים מרוכבים') {
+                loadComplexIdentificationGame();
+            } else if (gameTitle === 'חידות חיבור וכפל') {
+                loadComplexOperationsGame();
+            } else if (gameTitle === 'סימולטור המישור המרוכב') {
+                loadComplexPlaneSimulator();
+            }
+            
+            // Reset score
+            document.getElementById('gameScore').textContent = 'ניקוד: 0';
+        }
+        
+        // Game implementations
+        function loadComplexIdentificationGame() {
+            const gameContainer = document.getElementById('gameContainer');
+            let score = 0;
+            
+            const complexNumbers = [
+                { value: '3 + 4i', re: '3', im: '4' },
+                { value: '-2 + 5i', re: '-2', im: '5' },
+                { value: '7 - 2i', re: '7', im: '-2' },
+                { value: '-5 - 3i', re: '-5', im: '-3' },
+                { value: '0 + 6i', re: '0', im: '6' },
+                { value: '4 + 0i', re: '4', im: '0' },
+                { value: '-1 - i', re: '-1', im: '-1' },
+                { value: '2.5 + 3.5i', re: '2.5', im: '3.5' }
+            ];
+            
+            let currentIndex = Math.floor(Math.random() * complexNumbers.length);
+            
+            gameContainer.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <h3>זהה את החלק הממשי והמדומה של המספר המרוכב:</h3>
+                    <div style="font-size: 24px; margin: 20px; color: var(--primary-color);">
+                        <span id="complexNumber">${complexNumbers[currentIndex].value}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; max-width: 400px; margin: 0 auto;">
+                        <div style="flex: 1; margin-right: 10px;">
+                            <label for="realPart">החלק הממשי:</label>
+                            <input type="text" id="realPart" class="game-input" style="width: 100%; padding: 8px; margin-top: 5px;">
+                        </div>
+                        <div style="flex: 1; margin-left: 10px;">
+                            <label for="imaginaryPart">החלק המדומה:</label>
+                            <input type="text" id="imaginaryPart" class="game-input" style="width: 100%; padding: 8px; margin-top: 5px;">
+                        </div>
+                    </div>
+                    <button id="checkAnswerBtn" style="margin-top: 20px; padding: 10px 20px; background: var(--primary-color, #3498db); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">בדוק תשובה</button>
+                    <div id="feedbackMessage" style="margin-top: 15px; min-height: 50px;"></div>
+                </div>
+            `;
+            
+            // Add event listener to check answer
+            document.getElementById('checkAnswerBtn').addEventListener('click', function() {
+                const realInput = document.getElementById('realPart').value.trim();
+                const imaginaryInput = document.getElementById('imaginaryPart').value.trim();
+                const feedbackDiv = document.getElementById('feedbackMessage');
+                
+                if (realInput === complexNumbers[currentIndex].re && imaginaryInput === complexNumbers[currentIndex].im) {
+                    feedbackDiv.innerHTML = `<div style="color: green; font-weight: bold;">נכון! כל הכבוד!</div>`;
+                    score += 10;
+                    document.getElementById('gameScore').textContent = `ניקוד: ${score}`;
+                    
+                    // Move to next question
+                    setTimeout(() => {
+                        currentIndex = Math.floor(Math.random() * complexNumbers.length);
+                        document.getElementById('complexNumber').textContent = complexNumbers[currentIndex].value;
+                        document.getElementById('realPart').value = '';
+                        document.getElementById('imaginaryPart').value = '';
+                        feedbackDiv.innerHTML = '';
+                    }, 1500);
+                } else {
+                    feedbackDiv.innerHTML = `<div style="color: red;">לא נכון, נסה שוב.</div>`;
+                }
+            });
+        }
+        
+        function loadComplexOperationsGame() {
+            const gameContainer = document.getElementById('gameContainer');
+            let score = 0;
+            
+            const operations = [
+                { 
+                    question: 'חשב: (3 + 2i) + (4 - 5i) = ?',
+                    options: ['7 - 3i', '7 + 3i', '-1 - 3i', '7 - 7i'],
+                    correct: 0
+                },
+                { 
+                    question: 'חשב: (2 + 3i)(1 + i) = ?',
+                    options: ['5 + 5i', '2 + 3i', '-1 + 5i', '5 + 3i'],
+                    correct: 2
+                },
+                { 
+                    question: 'חשב: (4 - 2i) - (1 + 3i) = ?',
+                    options: ['3 + i', '5 - 5i', '3 - 5i', '3 - i'],
+                    correct: 2
+                },
+                { 
+                    question: 'חשב: (2i)(3i) = ?',
+                    options: ['5i', '6i', '6i²', '-6'],
+                    correct: 3
+                }
+            ];
+            
+            let currentIndex = Math.floor(Math.random() * operations.length);
+            
+            gameContainer.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <h3>פתור את התרגיל:</h3>
+                    <div style="font-size: 24px; margin: 20px; color: var(--primary-color);">
+                        <span id="operationQuestion">${operations[currentIndex].question}</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; max-width: 400px; margin: 0 auto; gap: 10px;">
+                        ${operations[currentIndex].options.map((option, index) => `
+                            <button class="answer-option" data-index="${index}" style="padding: 10px; text-align: start; background: #f0f0f0; border: 1px solid #ddd; border-radius: 5px; cursor: pointer;">
+                                ${option}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div id="operationFeedback" style="margin-top: 15px; min-height: 50px;"></div>
+                </div>
+            `;
+            
+            // Add event listeners to options
+            document.querySelectorAll('.answer-option').forEach(button => {
+                button.addEventListener('click', function() {
+                    const selectedIndex = parseInt(this.getAttribute('data-index'));
+                    const feedbackDiv = document.getElementById('operationFeedback');
+                    
+                    // Remove previous highlights
+                    document.querySelectorAll('.answer-option').forEach(btn => {
+                        btn.style.background = '#f0f0f0';
+                        btn.style.color = 'black';
+                    });
+                    
+                    // Highlight selected option
+                    this.style.background = '#e0e0e0';
+                    
+                    if (selectedIndex === operations[currentIndex].correct) {
+                        feedbackDiv.innerHTML = `<div style="color: green; font-weight: bold;">נכון! כל הכבוד!</div>`;
+                        score += 10;
+                        document.getElementById('gameScore').textContent = `ניקוד: ${score}`;
+                        
+                        // Move to next question
+                        setTimeout(() => {
+                            currentIndex = Math.floor(Math.random() * operations.length);
+                            gameContainer.innerHTML = `
+                                <div style="text-align: center; padding: 20px;">
+                                    <h3>פתור את התרגיל:</h3>
+                                    <div style="font-size: 24px; margin: 20px; color: var(--primary-color);">
+                                        <span id="operationQuestion">${operations[currentIndex].question}</span>
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; max-width: 400px; margin: 0 auto; gap: 10px;">
+                                        ${operations[currentIndex].options.map((option, index) => `
+                                            <button class="answer-option" data-index="${index}" style="padding: 10px; text-align: start; background: #f0f0f0; border: 1px solid #ddd; border-radius: 5px; cursor: pointer;">
+                                                ${option}
+                                            </button>
+                                        `).join('')}
+                                    </div>
+                                    <div id="operationFeedback" style="margin-top: 15px; min-height: 50px;"></div>
+                                </div>
+                            `;
+                            
+                            // Re-add event listeners
+                            document.querySelectorAll('.answer-option').forEach(button => {
+                                button.addEventListener('click', arguments.callee);
+                            });
+                        }, 1500);
+                    } else {
+                        feedbackDiv.innerHTML = `<div style="color: red;">לא נכון, נסה שוב.</div>`;
+                    }
+                });
+            });
+        }
+        
+        function loadComplexPlaneSimulator() {
+            const gameContainer = document.getElementById('gameContainer');
+            
+            gameContainer.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <h3>סימולטור המישור המרוכב</h3>
+                    <p>הזן מספר מרוכב והסימולטור יציג אותו במישור:</p>
+                    
+                    <div style="margin: 20px 0;">
+                        <label for="realPartSim">החלק הממשי:</label>
+                        <input type="number" id="realPartSim" value="3" style="width: 80px; padding: 8px; margin: 0 10px;">
+                        
+                        <label for="imaginaryPartSim">החלק המדומה:</label>
+                        <input type="number" id="imaginaryPartSim" value="4" style="width: 80px; padding: 8px; margin: 0 10px;">
+                        
+                        <button id="plotComplexBtn" style="background: var(--primary-color, #3498db); color: white; border: none; padding: 8px 15px; border-radius: 5px; margin: 0 10px; display: inline-block; cursor: pointer; font-weight: bold;">הצג במישור</button>
+                    </div>
+                    
+                    <div style="position: relative; width: 400px; height: 400px; margin: 0 auto; border: 1px solid #ccc; background: #f9f9f9;">
+                        <!-- Coordinate system -->
+                        <div style="position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: black;"></div>
+                        <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: black;"></div>
+                        
+                        <!-- Axis labels -->
+                        <div style="position: absolute; top: 5px; left: 50%; transform: translateX(-50%);">Im</div>
+                        <div style="position: absolute; bottom: 5px; right: 5px;">Re</div>
+                        
+                        <!-- Grid -->
+                        <div id="complexPlane" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+                        
+                        <!-- Point -->
+                        <div id="complexPoint" style="position: absolute; width: 10px; height: 10px; background: red; border-radius: 50%; transform: translate(-50%, -50%); display: none;"></div>
+                        
+                        <!-- Vector line -->
+                        <div id="complexVector" style="position: absolute; height: 2px; background: blue; transform-origin: left center; display: none;"></div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <div id="complexInfo" style="font-weight: bold;"></div>
+                        <div style="margin-top: 10px;">
+                            <label>
+                                <input type="checkbox" id="showModulusArg" checked> 
+                                הצג מודול וארגומנט
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Function to plot the complex number
+            function plotComplexNumber() {
+                const realPart = parseFloat(document.getElementById('realPartSim').value) || 0;
+                const imagPart = parseFloat(document.getElementById('imaginaryPartSim').value) || 0;
+                
+                const centerX = 200;
+                const centerY = 200;
+                const scale = 30; // pixels per unit
+                
+                const x = centerX + realPart * scale;
+                const y = centerY - imagPart * scale; // Reverse Y-axis
+                
+                const point = document.getElementById('complexPoint');
+                const vector = document.getElementById('complexVector');
+                const infoDiv = document.getElementById('complexInfo');
+                
+                // Calculate modulus and argument
+                const modulus = Math.sqrt(realPart * realPart + imagPart * imagPart);
+                const arg = Math.atan2(imagPart, realPart) * (180 / Math.PI);
+                
+                // Update point position
+                point.style.left = `${x}px`;
+                point.style.top = `${y}px`;
+                point.style.display = 'block';
+                
+                // Update vector
+                const vectorLength = modulus * scale;
+                vector.style.left = `${centerX}px`;
+                vector.style.top = `${centerY}px`;
+                vector.style.width = `${vectorLength}px`;
+                vector.style.transform = `rotate(${-arg}deg)`; // Negative because of Y-axis direction
+                vector.style.display = 'block';
+                
+                // Show info
+                let infoText = `z = ${realPart} + ${imagPart}i`;
+                
+                if (document.getElementById('showModulusArg').checked) {
+                    infoText += `<br>|z| = ${modulus.toFixed(2)}<br>arg(z) = ${arg.toFixed(2)}°`;
+                }
+                
+                infoDiv.innerHTML = infoText;
+            }
+            
+            // Add event listener for plot button
+            document.getElementById('plotComplexBtn').addEventListener('click', plotComplexNumber);
+            document.getElementById('showModulusArg').addEventListener('change', plotComplexNumber);
+            
+            // Plot initial complex number
+            plotComplexNumber();
         }
         
         // Math rendering function
