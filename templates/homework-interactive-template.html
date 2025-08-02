@@ -1248,7 +1248,7 @@
         }
         
         .header-separator {
-            color: var(--black-transparent-60, #666666); /* Inverted: dark separator */
+            color: var(--color-primary-dark, #1a4480); /* Dark blue separator */
             margin: 0 0.8rem 0 0.8rem; /* Standard 0.8rem margin on both sides */
             font-size: 1.2rem;
             margin-top: -2px; /* Align with other elements */
@@ -1269,7 +1269,7 @@
             justify-content: center;
             background: none;
             border: none;
-            color: var(--black, #333333); /* Inverted: dark color */
+            color: var(--color-primary-dark, #1a4480); /* Dark blue color */
             cursor: pointer;
             transition: color 0.3s, transform 0.2s;
             padding: 0;
@@ -1301,7 +1301,7 @@
         
         nav a {
             text-decoration: none;
-            color: var(--black, #333333); /* Inverted: dark text */
+            color: var(--color-primary-dark, #1a4480); /* Dark blue text */
             font-weight: 500;
             padding: 4px 8px; /* Reduce internal padding */
             transition: color 0.3s;
@@ -1311,7 +1311,7 @@
         }
         
         nav a:hover {
-            color: var(--color-accent, #3366cc); /* Inverted: blue on hover */
+            color: var(--color-accent, #3366cc); /* Blue on hover */
         }
         
         nav a.active {
@@ -1327,7 +1327,7 @@
         
         /* Lesson menu - blue bar with icons from edge to edge */
         .lesson-menu {
-            background-color: var(--lesson-menu-blue); /* Exact color as in original */
+            background-color: var(--color-primary-dark, #1a4480); /* Dark blue background matching first row text */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -1403,7 +1403,7 @@
         
         .lesson-breadcrumbs {
             font-size: 0.85rem;
-            color: var(--color-text-secondary);
+            color: var(--color-primary-dark, #1a4480); /* Dark blue color matching first row text */
             margin: 0;
             padding: 0.5rem 1rem;
             line-height: 1.4;
@@ -1416,14 +1416,19 @@
         }
         
         .lesson-breadcrumbs a {
-            color: var(--color-primary);
+            color: var(--color-primary-dark, #1a4480); /* Dark blue color matching first row text */
             text-decoration: none;
             transition: color 0.2s ease;
         }
         
         .lesson-breadcrumbs a:hover {
             text-decoration: underline;
-            color: var(--hw-accent);
+            color: var(--color-accent, #3366cc); /* Blue on hover */
+        }
+        
+        .lesson-breadcrumbs span {
+            font-weight: bold; /* Current page in bold */
+            color: var(--color-primary-dark, #1a4480); /* Dark blue color matching first row text */
         }
         
         /* Lesson objectives button in compact menu */
@@ -1507,7 +1512,7 @@
             background: none;
             border: none;
             cursor: pointer;
-            color: var(--black, #333333); /* Inverted: dark color */
+            color: var(--color-primary-dark, #1a4480); /* Dark blue color */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1518,7 +1523,7 @@
         }
         
         .search-icon-btn:hover {
-            color: var(--color-accent, #3366cc); /* Inverted: blue on hover */
+            color: var(--color-accent, #3366cc); /* Blue on hover */
             transform: scale(1.1);
         }
         
@@ -1547,12 +1552,12 @@
             justify-content: center;
             height: 36px;
             width: 36px;
-            color: var(--black, #333333); /* Inverted: dark color */
+            color: var(--color-primary-dark, #1a4480); /* Dark blue color */
             transition: color 0.3s;
         }
         
         .search-icon-btn:hover {
-            color: var(--color-accent, #3366cc); /* Inverted: blue on hover */
+            color: var(--color-accent, #3366cc); /* Blue on hover */
         }
         
         .lesson-header {
