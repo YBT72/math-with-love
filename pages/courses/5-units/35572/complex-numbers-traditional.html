@@ -2,9 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>יחידה 1</title>
     
     <!-- KaTeX CSS -->
@@ -93,7 +91,7 @@
         <!-- תוכן השיעור -->
     <div class="lesson-content">
         
-        <!-- Part 1: Theory and basic concepts -->
+        <!-- חלק 1: תיאוריה ומושגי יסוד -->
         <section class="lesson-section" id="theory-section">
                 <h2 class="section-title">
                     <img src="../../../../assets/icons/teach_icon_c_new.svg" alt="תיאוריה" class="section-title-icon">
@@ -101,7 +99,7 @@
                 </h2>
                 
                 <div class="definitions-container">
-                    <!-- Definition of imaginary unit -->
+                    <!-- הגדרת היחידה המדומה -->
                     <div class="math-definition">
                         <h3>הגדרת היחידה המדומה</h3>
                         <p><strong>יחידה מדומה</strong> (מסומנת i או ח"מ בעברית):</p>
@@ -110,7 +108,7 @@
                         <div class="math-ltr" id="i-squared"></div>
                     </div>
                     
-                    <!-- Definition of complex number -->
+                    <!-- הגדרת מספר מרוכב -->
                     <div class="math-definition">
                         <h3>הגדרת מספר מרוכב</h3>
                         
@@ -131,7 +129,7 @@
                 </div>
             </section>
             
-            <!-- Part 2: Interactive tools -->
+            <!-- חלק 2: כלים אינטראקטיביים -->
             <section class="lesson-section" id="interactive-section">
                 <h2 class="section-title">
                     <img src="../../../../assets/icons/gauss_visual.svg" alt="אינטראקטיבי" class="section-title-icon">
@@ -148,7 +146,7 @@
                 </div>
             </section>
             
-            <!-- Part 3: Practice -->
+            <!-- חלק 3: תרגול -->
             <section class="lesson-section" id="practice-section">
                 <h2 class="section-title">
                     <img src="../../../../assets/icons/practice_icon_c.svg" alt="תרגול" class="section-title-icon">
@@ -156,7 +154,7 @@
                 </h2>
                 
                 <div class="examples-container">
-                    <!-- Addition and subtraction -->
+                    <!-- חיבור וחיסור -->
                     <div class="math-example">
                         <h3>חיבור וחיסור</h3>
                         <p><strong>כלל:</strong> מחברים/מחסרים חלק ממשי עם חלק ממשי, חלק מדומה עם חלק מדומה.</p>
@@ -167,7 +165,7 @@
                         <div class="math-ltr" id="subtraction-example-1"></div>
                     </div>
                     
-                    <!-- Multiplication of complex numbers -->
+                    <!-- כפל מספרים מרוכבים -->
                     <div class="math-example">
                         <h3>כפל מספרים מרוכבים</h3>
                         <p><strong>כלל:</strong> משתמשים בכפל הפילוג ובזכירה ש:</p>
@@ -180,7 +178,7 @@
                 </div>
             </section>
             
-            <!-- Part 4: Homework -->
+            <!-- חלק 4: משימות בית -->
             <section class="lesson-section" id="homework-section">
                 <h2 class="section-title">
                     <img src="../../../../assets/icons/hw_icon_c.svg" alt="משימות בית" class="section-title-icon">
@@ -748,8 +746,8 @@
                 const currentMargin = 20 * (1 - ratio);
                 
                 // Dynamic value for additional padding
-                // In collapsed state (ratio > 0) we add more padding (40px), in standard state - minimum value (0px)
-                const paddingTopValue = (ratio * 40);
+                // In collapsed state (ratio > 0) we add more padding (55px), in standard state - minimum value (0px)
+                const paddingTopValue = (ratio * 55);
                 
                 // Apply calculated values
                 header.style.padding = `${currentPadding}px 0`;
@@ -769,8 +767,8 @@
                 
                 // Dynamically update padding-top for the body to compensate for header height changes
                 const headerHeight = header.offsetHeight;
-                // In expanded state use 85% of header height, in collapsed state - full height + paddingTopValue
-                const baseHeight = ratio < 0.1 ? headerHeight * 0.85 : headerHeight + 10;
+                // In expanded state use 80% of header height, in collapsed state - full height + paddingTopValue
+                const baseHeight = ratio < 0.1 ? headerHeight * 0.8 : headerHeight;
                 document.body.style.paddingTop = `${baseHeight + paddingTopValue}px`;
                 
                 // Manage shadow
@@ -780,7 +778,7 @@
                     header.classList.remove('shadow-on-scroll');
                 }
                 
-            }
+                }
             
             // Use requestAnimationFrame for smooth updates
             let ticking = false;

@@ -22,15 +22,6 @@
     --color-white-border: rgba(255,255,255,0.4);
     --color-tooltip-bg: #333333;
     --color-tooltip-text: #ffffff;
-    /* Shadow variables */
-    --shadow-light: rgba(0,0,0,0.1);
-    --shadow-medium: rgba(0,0,0,0.2);
-    /* Icon filter variables */
-    --filter-white: brightness(0) invert(1);
-    --filter-math-primary: brightness(0) saturate(100%) invert(25%) sepia(93%) saturate(1677%) hue-rotate(213deg) brightness(97%) contrast(91%);
-    --filter-math-primary-hover: brightness(0) saturate(100%) invert(35%) sepia(93%) saturate(1890%) hue-rotate(213deg) brightness(99%) contrast(89%);
-    --filter-section-title: invert(27%) sepia(98%) saturate(1694%) hue-rotate(213deg) brightness(96%) contrast(92%);
-    --filter-homework-icon: brightness(0) saturate(100%) invert(11%) sepia(8%) saturate(1670%) hue-rotate(181deg) brightness(97%) contrast(91%);
 }
 
 body {
@@ -40,7 +31,7 @@ body {
     padding: 0;
     direction: rtl;
     color: var(--color-text);
-    /* padding-top will be set dynamically with JavaScript */
+    /* padding-top будет установлен динамически с помощью JavaScript */
     transition: padding-top 0.1s ease;
 }
 
@@ -48,10 +39,10 @@ body {
     width: 100%;
     margin: 0;
     background: var(--color-white);
-    box-shadow: 0 4px 6px var(--shadow-light);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     overflow: hidden;
     border-radius: 0;
-    padding-top: 30px; /* Increased top padding for container */
+    padding-top: 30px; /* Увеличен отступ сверху для контейнера */
 }
 
 .lesson-container-wide {
@@ -101,11 +92,11 @@ body {
     box-sizing: border-box;
     margin: 0;
     z-index: 1000;
-    transition: all 0s linear; /* Changed for instant scroll tracking */
+    transition: all 0s linear; /* Изменено для мгновенного отслеживания скролла */
 }
 
 .shadow-on-scroll {
-    box-shadow: 0 2px 8px var(--shadow-medium);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .lesson-header-compact .lesson-submenu {
@@ -200,7 +191,7 @@ body {
 .objectives-trigger img {
     width: 32px;
     height: 32px;
-    filter: var(--filter-white);
+    filter: brightness(0) invert(1);
     transition: all 0.15s ease;
 }
 
@@ -233,7 +224,7 @@ body {
 .nav-icon img {
     width: 32px;
     height: 32px;
-    filter: var(--filter-white);
+    filter: brightness(0) invert(1);
     transition: all 0.15s ease;
 }
 
@@ -316,8 +307,8 @@ body {
 
 /* Lesson content */
 .lesson-content {
-    padding: 20px 30px 25px 30px; /* Restored top padding for content */
-    margin-top: 0; /* Margin removed because padding-top in body is sufficient */
+    padding: 20px 30px 25px 30px; /* Восстановлен верхний отступ для контента */
+    margin-top: 0; /* Margin удален, так как padding-top в body достаточен */
 }
 
 /* Lesson sections */
@@ -325,16 +316,16 @@ body {
     margin-bottom: 40px;
 }
 
-/* Adding special style for the first section to prevent it from sticking to the top */
+/* Добавляем специальный стиль для первой секции, чтобы она не прижималась к верху */
 .lesson-section:first-child {
-    margin-top: 10px;
+    margin-top: 20px;
 }
 
 .section-title {
     font-size: 1.8em;
     color: var(--color-math-primary);
     margin-bottom: 15px;
-    margin-top: 10px; /* Increased top margin for better heading visibility */
+    margin-top: 10px; /* Увеличили отступ сверху для лучшей видимости заголовка */
     padding-bottom: 10px;
     border-bottom: 2px solid var(--color-math-primary);
 }
@@ -477,7 +468,7 @@ body {
 }
 
 .inline-widget-close:hover {
-    background-color: var(--color-white-transparent);
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 .inline-widget-content {
@@ -532,7 +523,7 @@ body {
 .definition-widget-icon img {
     width: 100%;
     height: 100%;
-    filter: var(--filter-math-primary);
+    filter: brightness(0) saturate(100%) invert(25%) sepia(93%) saturate(1677%) hue-rotate(213deg) brightness(97%) contrast(91%);
 }
 
 .definition-widget-icon:hover {
@@ -540,7 +531,7 @@ body {
 }
 
 .definition-widget-icon:hover img {
-    filter: var(--filter-math-primary-hover);
+    filter: brightness(0) saturate(100%) invert(35%) sepia(93%) saturate(1890%) hue-rotate(213deg) brightness(99%) contrast(89%);
 }
 
 /* Tooltip */
@@ -685,8 +676,8 @@ body {
     width: 24px;
     height: 24px;
     flex-shrink: 0;
-    /* Uses math primary color */
-    filter: var(--filter-section-title);
+    /* Blue color #2563eb */
+    filter: invert(27%) sepia(98%) saturate(1694%) hue-rotate(213deg) brightness(96%) contrast(92%);
     vertical-align: middle;
     align-self: center;
 }
@@ -740,7 +731,7 @@ body {
 .homework-example .homework-icon {
     width: 20px;
     height: 20px;
-    filter: var(--filter-homework-icon);
+    filter: brightness(0) saturate(100%) invert(11%) sepia(8%) saturate(1670%) hue-rotate(181deg) brightness(97%) contrast(91%);
     flex-shrink: 0;
 }
 
@@ -792,7 +783,7 @@ body {
     background: var(--color-white);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 12px var(--shadow-light);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     border: 1px solid var(--color-border);
     margin-top: 20px;
     width: 100%;

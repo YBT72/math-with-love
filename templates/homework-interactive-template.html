@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>תבנית למשימות בית אינטראקטיביות</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Main styles from the main file will need to be connected -->
+    
+    <style>
+        /* Color variables */
+        :root {
+            /* Colors from the main site theme */
+            --primary-color: #4A39BD;
+            --secondary-color: #6244C5;
+            --accent-color: #9747FF;
+            --text-color: #2C2C2C;
+            --background-color: var(--white);
+            --light-bg: #F5F3FF;
+            
+            /* Lesson menu variables */
+            --color-primary: #4A39BD;
+            --color-primary-light: #F5F3FF;
+            --color-text-secondary: #6B7280;
+            --color-bg-light: #F9FAFB;
+            --color-border: #E5E7EB;
+            --font-primary: 'Rubik', 'Assistant', sans-serif;
+            
+            /* Homework colors */
+            --hw-primary: var(--primary-color);
+            --hw-primary-dark: #3A2B9F;
+            --hw-primary-light: #7367CF; 
+            --hw-secondary: var(--secondary-color);
+            --hw-accent: var(--accent-color);
+            --hw-accent-light: #B085FF;
+            --hw-bg: var(--light-bg);
+            --hw-paper: var(--background-color);
+            --hw-paper-transparent: rgba(255, 255, 255, 0.85);
+            --hw-text: var(--text-color);
+            --hw-text-light: #646464;
+            --hw-success: #4CAF50;
+            --hw-warning: #FFC107;
+            --hw-error: #F44336;
+            --hw-shadow: rgba(74, 57, 189, 0.15);
+            --hw-shadow-strong: rgba(74, 57, 189, 0.25);
+            --hw-shadow-light: rgba(74, 57, 189, 0.08);
+            --hw-gradient: linear-gradient(135deg, var(--hw-primary) 0%, var(--hw-accent) 100%);
+            
+            /* Additional color variables */
+            --white: #FFFFFF;
+            --white-transparent-20: rgba(255, 255, 255, 0.2);
+            --white-transparent-30: rgba(255, 255, 255, 0.3);
+            --white-transparent-50: rgba(255, 255, 255, 0.5);
+            --white-transparent-60: rgba(255, 255, 255, 0.6);
+            --white-transparent-70: rgba(255, 255, 255, 0.7);
+            --white-transparent-80: rgba(255, 255, 255, 0.8);
+            --white-transparent-85: rgba(255, 255, 255, 0.85);
+            --white-transparent-90: rgba(255, 255, 255, 0.9);
+            --black-transparent-05: rgba(0, 0, 0, 0.05);
+            --black-transparent-10: rgba(0, 0, 0, 0.1);
+            --light-gray: #E0E0E0;
+            --light-background: #FAFAFA;
+            --form-background: #f9f9f9;
+            --breadcrumb-bg: #f8f9fa;
+            --lesson-menu-blue: #1e40af;
+            --search-hover: #4ECDC4;
+            --border-light: #eaeaea;
+            --border-gray: #EEEEEE;
+            
+            /* Typography */
+            --font-primary: 'Rubik', 'Assistant', sans-serif;
+            --font-secondary: 'Assistant', sans-serif;
+            
+            /* Element sizes */
+            --height-header: 50px; /* Reduced header height */
+        }
+        
+        /* Basic text styles */
+        body {
+            font-family: var(--font-primary);
+            color: var(--hw-text);
+            line-height: 1.6;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-primary);
+            font-weight: 600;
+            margin-top: 0;
+        }
+        
+        p, ul, ol {
+            font-family: var(--font-secondary);
+            margin-bottom: 1rem;
+        }
+        
+        /* Main homework styles */
+        .homework-interactive {
+            background: var(--hw-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px var(--hw-shadow);
+            margin: 10px 0 40px; /* Minimal margin after collapsed header */
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Decorative gradient background */
+        .homework-interactive::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            background: var(--hw-gradient);
+            z-index: 0;
+            border-radius: 16px 16px 0 0;
+        }
+        
+        .homework-header {
+            position: relative;
+            z-index: 1;
+            padding: 30px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--white);
+        }
+        
+        .homework-title-container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .homework-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .homework-title img {
+            width: 32px;
+            height: 32px;
+            filter: brightness(0) invert(1);
+        }
+        
+        .homework-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .due-date {
+            font-weight: bold;
+            color: var(--white);
+            background-color: var(--white-transparent-20);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .separator {
+            margin: 0 0.2rem;
+            color: var(--white-transparent-50);
+        }
+        
+        .homework-progress-container {
+            width: 250px;
+            background-color: var(--white-transparent-30);
+            border-radius: 20px;
+            padding: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .progress-status {
+            display: flex;
+            justify-content: space-between;
+            color: var(--white);
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            border-radius: 10px;
+            background-color: var(--white);
+            width: 30%; /* Will be updated by JS */
+            transition: width 0.5s ease;
+        }
+        
+        .progress-grade {
+            margin-top: 5px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--white);
+            text-align: right;
+        }
+        
+        .grade-value {
+            font-weight: 700;
+        }
+        
+        .homework-content {
+            position: relative;
+            z-index: 1;
+            background: var(--hw-paper-transparent);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 0 20px 20px;
+            padding: 30px;
+            box-shadow: 0 5px 20px var(--hw-shadow-light);
+        }
+        
+        /* Exercise navigation */
+        .exercises-navigation {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            padding: 10px 0 20px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--hw-primary-light) var(--hw-bg);
+        }
+        
+        .exercises-navigation::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .exercises-navigation::-webkit-scrollbar-track {
+            background: var(--hw-bg);
+        }
+        
+        .exercises-navigation::-webkit-scrollbar-thumb {
+            background-color: var(--hw-primary-light);
+            border-radius: 6px;
+        }
+        
+        .exercise-nav-item {
+            min-width: 120px;
+            height: 70px;
+            flex-shrink: 0;
+            background: var(--white);
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 3px 10px var(--hw-shadow-light);
+            position: relative;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .exercise-nav-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px var(--hw-shadow);
+        }
+        
+        .exercise-nav-item.completed {
+            border-color: var(--hw-success);
+        }
+        
+        .exercise-nav-item.active {
+            border-color: var(--hw-primary);
+            box-shadow: 0 5px 15px var(--hw-shadow-strong);
+        }
+        
+        .exercise-nav-item.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .exercise-difficulty {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: var(--hw-primary-light);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .exercise-nav-item.difficult .exercise-difficulty {
+            background: var(--hw-warning);
+        }
+        
+        .exercise-nav-item.advanced .exercise-difficulty {
+            background: var(--hw-error);
+        }
+        
+        .exercise-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .exercise-name {
+            font-size: 13px;
+            text-align: center;
+        }
+        
+        .exercise-status {
+            position: absolute;
+            bottom: -5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--hw-success);
+            display: none;
+        }
+        
+        .exercise-nav-item.completed .exercise-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .exercise-status::before {
+            content: '✓';
+            color: var(--white);
+            font-size: 12px;
+        }
+        
+        /* Current exercise */
+        .current-exercise {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px var(--hw-shadow-light);
+        }
+        
+        .current-exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--hw-bg);
+        }
+        
+        .current-exercise-title {
+            font-size: 22px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--hw-primary-dark);
+        }
+        
+        .current-exercise-meta {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .difficulty-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            color: var(--hw-text-light);
+        }
+        
+        .difficulty-dots {
+            display: flex;
+            gap: 3px;
+        }
+        
+        .difficulty-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--hw-primary-light);
+        }
+        
+        .difficulty-dot.empty {
+            background-color: var(--light-gray);
+        }
+        
+        .points-indicator {
+            background: var(--hw-primary-light);
+            color: var(--white);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .exercise-content {
+            margin-bottom: 25px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .math-area {
+            background: var(--hw-bg);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+        }
+        
+        /* Game interface */
+        .game-interface {
+            border: 1px solid var(--hw-primary-light);
+            border-radius: 8px;
+            padding: 20px;
+            background: var(--light-background);
+            margin: 20px 0;
+        }
+        
+        .game-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        .game-score {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--hw-primary-dark);
+        }
+        
+        /* Buttons and actions */
+        .exercise-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .action-left {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-right {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .hw-button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+        }
+        
+        .hw-button.primary {
+            background: var(--hw-primary);
+            color: var(--white);
+        }
+        
+        .hw-button.primary:hover {
+            background: var(--hw-primary-dark);
+        }
+        
+        .hw-button.secondary {
+            background: var(--white);
+            color: var(--hw-primary);
+            border: 1px solid var(--hw-primary);
+        }
+        
+        .hw-button.secondary:hover {
+            background: var(--hw-bg);
+        }
+        
+        .hw-button.hint {
+            background: var(--hw-bg);
+            color: var(--hw-primary);
+            border: none;
+        }
+        
+        .hw-button.hint:hover {
+            background: var(--hw-primary-light);
+            color: var(--white);
+        }
+        
+        .hw-button.hint-icon {
+            background-color: var(--white-transparent-90);
+            color: var(--hw-primary);
+            border: 1px solid var(--hw-primary-light);
+            box-shadow: 0 2px 5px var(--black-transparent-10);
+            transition: all 0.2s ease;
+        }
+        
+        .hw-button.hint-icon:hover {
+            background-color: var(--hw-primary);
+            color: var(--white);
+            transform: scale(1.05);
+        }
+        
+        .hw-button svg {
+            width: 18px;
+            height: 18px;
+        }
+        
+        /* Form control styles */
+        .input-label {
+            font-family: 'Rubik', 'Assistant', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--hw-text);
+        }
+        
+        .select-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--hw-primary-light);
+            border-radius: 6px;
+            font-size: 16px;
+            background-color: var(--white);
+            font-family: 'Rubik', 'Assistant', sans-serif;
+            direction: ltr; /* For correct display of negative numbers */
+        }
+        
+        /* Hints panel */
+        .hints-panel {
+            background: var(--hw-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .hints-panel.active {
+            display: block;
+        }
+        
+        .hint-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .hint-number {
+            min-width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: var(--hw-primary);
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-top: 3px;
+        }
+        
+        .hint-content {
+            flex: 1;
+            font-size: 15px;
+        }
+        
+        .hint-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+        
+        /* Results and grading system */
+        .exercise-results {
+            background: var(--light-background);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px var(--hw-shadow-light);
+            display: none;
+        }
+        
+        .exercise-results.active {
+            display: block;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .results-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--hw-primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .results-score {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--hw-primary);
+        }
+        
+        .results-details {
+            margin: 15px 0;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-gray);
+        }
+        
+        .result-label {
+            color: var(--hw-text-light);
+        }
+        
+        .result-value {
+            font-weight: 500;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .homework-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+            
+            .homework-progress-container {
+                width: 100%;
+            }
+            
+            .current-exercise-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .exercise-actions {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .action-left, .action-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Imitation of two-level menu (site and lesson) -->
+    <div class="site-header">
+        <div class="site-menu">
+            <div class="header-right">
+                <div class="logo">
+                    <img src="../../../../assets/logo/logo_transp.png" alt="Math with Love" height="28">
+                </div>
+                <span class="header-separator">|</span>
+                <button id="menu-toggle">☰</button>
+                <nav>
+                    <ul class="main-nav">
+                        <li><a href="#" data-page="home" class="active">בית</a></li>
+                        <li><a href="#" data-page="courses">קורסים</a></li>
+                        <li><a href="#" data-page="about">אודות</a></li>
+                        <li><a href="#" data-page="contact">צור קשר</a></li>
+                    </ul>
+                </nav>
+            </div>
+            
+            <div class="header-left">
+                <button id="search-btn" class="search-icon-btn" aria-label="חיפוש">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Breadcrumbs right under the main menu -->
+    <div class="lesson-breadcrumbs">
+        <a href="#">קורסים</a> / <a href="#">מספרים מרוכבים</a> / <span>שיעור 2: פעולות במספרים מרוכבים</span>
+    </div>
+    
+    <!-- Lesson menu - blue bar with 5 icons -->
+    <div class="lesson-menu">
+        <div class="lesson-menu-container">
+            <div class="nav-icons-left">
+                <a href="#theory" class="lesson-menu-icon">
+                    <img src="../../../../assets/icons/teach_icon_c_new.svg" alt="תיאוריה">
+                </a>
+                <a href="#interactive" class="lesson-menu-icon">
+                    <img src="../../../../assets/icons/gauss_visual.svg" alt="כלי אינטראקטיבי">
+                </a>
+                <a href="#practice" class="lesson-menu-icon">
+                    <img src="../../../../assets/icons/practice_icon_c.svg" alt="תרגול">
+                </a>
+                <a href="#homework" class="lesson-menu-icon active">
+                    <img src="../../../../assets/icons/hw_icon_c.svg" alt="שיעורי בית">
+                </a>
+            </div>
+            <div class="nav-icons-right">
+                <a href="#teacher-hints" class="lesson-menu-icon">
+                    <img src="../../../../assets/icons/lamp_icon_c.svg" alt="רמזים למורה">
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- This template will be integrated into the main page -->
+    <div class="homework-interactive">
+        <!-- Gradient header with progress and additional deadline information -->
+        <div class="homework-header">
+            <div class="homework-title-container">
+                <h2 class="homework-title">
+                    <img src="../../../../assets/icons/hw_icon_c.svg" alt="משימות בית">
+                    משימות בית: פעולות במספרים מרוכבים
+                </h2>
+                <div class="homework-subtitle">
+                    <span class="due-date">תאריך הגשה: <span id="due-date"></span></span>
+                    <span class="separator">|</span>
+                    <span>השלם את כל המשימות וקבל ציון גבוה</span>
+                </div>
+            </div>
+            
+            <div class="homework-progress-container">
+                <div class="progress-status">
+                    <span>התקדמות</span>
+                    <span id="progress-percentage">30%</span>
+                </div>
+                <div class="progress-bar" style="width: 30%;"></div>
+                <div class="progress-grade">ציון: <span class="grade-value">76</span>/100</div>
+            </div>
+        </div>
+        
+        <!-- Main content with exercises -->
+        <div class="homework-content">
+            <!-- Horizontal exercise navigation -->
+            <div class="exercises-navigation">
+                <div class="exercise-nav-item active" data-exercise="1">
+                    <div class="exercise-difficulty">1</div>
+                    <img src="../../../../assets/icons/game_icon.svg" alt="משחק" class="exercise-icon">
+                    <div class="exercise-name">זיהוי מספרים</div>
+                    <div class="exercise-status"></div>
+                </div>
+                
+                <div class="exercise-nav-item" data-exercise="2">
+                    <div class="exercise-difficulty">1</div>
+                    <img src="../../../../assets/icons/idea_icon.svg" alt="חידות" class="exercise-icon">
+                    <div class="exercise-name">חיבור וחיסור</div>
+                    <div class="exercise-status"></div>
+                </div>
+                
+                <div class="exercise-nav-item difficult" data-exercise="3">
+                    <div class="exercise-difficulty">2</div>
+                    <img src="../../../../assets/icons/idea_icon.svg" alt="חידות" class="exercise-icon">
+                    <div class="exercise-name">כפל מרוכבים</div>
+                    <div class="exercise-status"></div>
+                </div>
+                
+                <div class="exercise-nav-item advanced locked" data-exercise="4">
+                    <div class="exercise-difficulty">3</div>
+                    <img src="../../../../assets/icons/puzzle_icon.svg" alt="פאזל" class="exercise-icon">
+                    <div class="exercise-name">חלוקה מרוכבת</div>
+                    <div class="exercise-status"></div>
+                </div>
+                
+                <div class="exercise-nav-item advanced locked" data-exercise="5">
+                    <div class="exercise-difficulty">3</div>
+                    <img src="../../../../assets/icons/simulator_icon.svg" alt="סימולטור" class="exercise-icon">
+                    <div class="exercise-name">מישור מרוכב</div>
+                    <div class="exercise-status"></div>
+                </div>
+            </div>
+            
+            <!-- Current exercise -->
+            <div class="current-exercise" id="exercise-1">
+                <div class="current-exercise-header">
+                    <h3 class="current-exercise-title">
+                        <img src="../../../../assets/icons/game_icon.svg" alt="משחק" style="width: 24px; height: 24px;">
+                        זיהוי מספרים מרוכבים
+                    </h3>
+                    
+                    <div class="current-exercise-meta">
+                        <div class="difficulty-indicator">
+                            <span>רמת קושי:</span>
+                            <div class="difficulty-dots">
+                                <div class="difficulty-dot"></div>
+                                <div class="difficulty-dot empty"></div>
+                                <div class="difficulty-dot empty"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="points-indicator">10 נק'</div>
+                    </div>
+                </div>
+                
+                <div class="exercise-content">
+                    <p>בתרגיל זה עליכם לזהות את החלק הממשי והחלק המדומה של מספרים מרוכבים שונים.</p>
+                    <p>לדוגמה, עבור המספר המרוכב <strong>5 + 2i</strong>:</p>
+                    <ul>
+                        <li>החלק הממשי הוא <strong>5</strong></li>
+                        <li>החלק המדומה הוא <strong>2</strong></li>
+                    </ul>
+                    
+                    <div class="math-area">
+                        <div class="katex-formula" id="complex-example"></div>
+                    </div>
+                    
+                    <p>יש לענות על 5 שאלות ברצף. כל תשובה נכונה מזכה ב-2 נקודות.</p>
+                </div>
+                
+                <!-- Game interface -->
+                <div class="game-interface">
+                    <div style="position: relative;">
+                        <!-- Hints button in the top left corner -->
+                        <button class="hw-button hint-icon" id="showHintsBtn" style="position: absolute; top: 10px; left: 10px; width: 36px; height: 36px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center;">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-4h2v2h-2zm0-10h2v8h-2z"/>
+                            </svg>
+                        </button>
+                        
+                        <div style="text-align: center;">
+                            <h3>זהה את החלק הממשי והמדומה של המספר המרוכב:</h3>
+                            
+                            <!-- KaTeX formula in LTR style -->
+                            <div class="formula-display">
+                                <span id="complexKaTeX"></span>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: space-between; max-width: 400px; margin: 0 auto;">
+                                <div style="flex: 1; margin-right: 10px;">
+                                    <label for="realPart" class="input-label">החלק הממשי:</label>
+                                    <div class="select-options" style="margin-top: 5px;">
+                                        <select id="realPart" class="select-control">
+                                            <option value="">בחר...</option>
+                                            <option value="-5">−5</option>
+                                            <option value="-4">−4</option>
+                                            <option value="-3">−3</option>
+                                            <option value="-2">−2</option>
+                                            <option value="-1">−1</option>
+                                            <option value="0">0</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div style="flex: 1; margin-left: 10px;">
+                                    <label for="imaginaryPart" class="input-label">החלק המדומה:</label>
+                                    <div class="select-options" style="margin-top: 5px;">
+                                        <select id="imaginaryPart" class="select-control">
+                                            <option value="">בחר...</option>
+                                            <option value="-5">−5</option>
+                                            <option value="-4">−4</option>
+                                            <option value="-3">−3</option>
+                                            <option value="-2">−2</option>
+                                            <option value="-1">−1</option>
+                                            <option value="0">0</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button id="checkAnswerBtn" class="hw-button primary" style="margin: 20px auto;">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                                </svg>
+                                בדוק תשובה
+                            </button>
+                            
+                            <div id="feedbackMessage" style="min-height: 50px; margin-top: 10px;"></div>
+                        </div>
+                        
+                        <div class="game-controls">
+                            <div>שאלה: <span id="questionCounter">1</span>/5</div>
+                            <div class="game-score">ניקוד: <span id="gameScore">0</span>/100</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action buttons -->
+                <div class="exercise-actions">
+                    <div class="action-left">
+                        <button class="hw-button secondary" onclick="resetExercise()">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                            </svg>
+                            התחל מחדש
+                        </button>
+                    </div>
+                    
+                    <div class="action-right">
+                        <button class="hw-button secondary" id="prevExerciseBtn" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                            </svg>
+                            הקודם
+                        </button>
+                        
+                        <button class="hw-button primary" id="nextExerciseBtn">
+                            הבא
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Hints panel -->
+                <div class="hints-panel" id="hintsPanel">
+                    <div class="hint-container">
+                        <div class="hint-number">1</div>
+                        <div class="hint-content">
+                            המספר המרוכב בצורה הסטנדרטית נכתב כ־a + bi, כאשר a הוא החלק הממשי ו־b הוא החלק המדומה.
+                        </div>
+                    </div>
+                    
+                    <div class="hint-container">
+                        <div class="hint-number">2</div>
+                        <div class="hint-content">
+                            החלק הממשי הוא המספר ללא i, והחלק המדומה הוא המקדם של i.
+                        </div>
+                    </div>
+                    
+                    <div class="hint-container">
+                        <div class="hint-number">3</div>
+                        <div class="hint-content">
+                            לדוגמה, במספר 3 + 4i, החלק הממשי הוא 3 והחלק המדומה הוא 4.
+                        </div>
+                    </div>
+                    
+                    <div class="hint-actions">
+                        <button class="hw-button secondary" id="closeHintsBtn">סגור</button>
+                    </div>
+                </div>
+                
+                <!-- Results (shown after completion) -->
+                <div class="exercise-results" id="exerciseResults">
+                    <div class="results-header">
+                        <div class="results-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v7h-2zm0 8h2v2h-2z"/>
+                            </svg>
+                            תוצאות התרגיל
+                        </div>
+                        <div class="results-score">80/100</div>
+                    </div>
+                    
+                    <div class="results-details">
+                        <div class="result-item">
+                            <div class="result-label">תשובות נכונות</div>
+                            <div class="result-value">4/5</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">זמן</div>
+                            <div class="result-value">2:15 דקות</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">שימוש בעזרה</div>
+                            <div class="result-value">1 פעמים</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">ציון סופי</div>
+                            <div class="result-value">80/100</div>
+                        </div>
+                    </div>
+                    
+                    <div class="hint-actions">
+                        <button class="hw-button secondary" onclick="resetExercise()">נסה שוב</button>
+                        <button class="hw-button primary" id="completeExerciseBtn">סיים ועבור לתרגיל הבא</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script>
+        // Formula rendering
+        document.addEventListener('DOMContentLoaded', function() {
+            // Render example
+            katex.render("z = a + bi", document.getElementById("complex-example"));
+            
+            // Render complex number in assignment
+            const complexNumber = "3 + 4i";
+            katex.render(complexNumber, document.getElementById("complexKaTeX"), {
+                displayMode: true,
+                throwOnError: false,
+                output: "html",
+                leqno: false,
+                fleqn: false,
+                trust: false
+            });
+            
+            // Setup interactive elements
+            document.getElementById('showHintsBtn').addEventListener('click', function() {
+                document.getElementById('hintsPanel').classList.toggle('active');
+            });
+            
+            document.getElementById('closeHintsBtn').addEventListener('click', function() {
+                document.getElementById('hintsPanel').classList.remove('active');
+            });
+            
+            // Setup exercise navigation
+            const navItems = document.querySelectorAll('.exercise-nav-item:not(.locked)');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Switch active element
+                    document.querySelector('.exercise-nav-item.active').classList.remove('active');
+                    this.classList.add('active');
+                    
+                    // In real application, corresponding exercise will be loaded here
+                    console.log('Переход к упражнению ' + this.getAttribute('data-exercise'));
+                });
+            });
+        });
+        
+        // Array of complex numbers for assignments
+        const complexNumbers = [
+            { complex: "3 + 4i", real: 3, imaginary: 4 },
+            { complex: "5 - 2i", real: 5, imaginary: -2 },
+            { complex: "-2 + 3i", real: -2, imaginary: 3 },
+            { complex: "-1 - 5i", real: -1, imaginary: -5 },
+            { complex: "4", real: 4, imaginary: 0 }
+        ];
+        
+        let currentQuestionIndex = 0;
+        let score = 0;
+        
+        // Answer checking function
+        function checkAnswer() {
+            const realSelect = document.getElementById('realPart');
+            const imaginarySelect = document.getElementById('imaginaryPart');
+            
+            const userReal = realSelect.value;
+            const userImaginary = imaginarySelect.value;
+            
+            if (!userReal || !userImaginary) {
+                showFeedback('נא למלא את כל השדות', 'warning');
+                return;
+            }
+            
+            const currentQuestion = complexNumbers[currentQuestionIndex];
+            const isCorrect = 
+                parseInt(userReal) === currentQuestion.real && 
+                parseInt(userImaginary) === currentQuestion.imaginary;
+            
+            if (isCorrect) {
+                score += 20; // 20 points per question (5 questions = 100 points total)
+                document.getElementById('gameScore').textContent = score.toString();
+                
+                showFeedback('נכון מאוד!', 'success');
+                
+                // Move to next question or show results
+                setTimeout(() => {
+                    currentQuestionIndex++;
+                    
+                    if (currentQuestionIndex < complexNumbers.length) {
+                        loadQuestion();
+                    } else {
+                        // Show results
+                        showResults();
+                    }
+                }, 1500);
+            } else {
+                showFeedback('לא נכון, נסה שוב', 'error');
+            }
+        }
+        
+        // Question loading
+        function loadQuestion() {
+            const currentQuestion = complexNumbers[currentQuestionIndex];
+            
+            // Update KaTeX formula
+            katex.render(currentQuestion.complex, document.getElementById("complexKaTeX"), {
+                displayMode: true,
+                throwOnError: false
+            });
+            
+            // Update question counter
+            document.getElementById('questionCounter').textContent = (currentQuestionIndex + 1).toString();
+            
+            // Clear selection
+            document.getElementById('realPart').value = '';
+            document.getElementById('imaginaryPart').value = '';
+            
+            // Clear message
+            document.getElementById('feedbackMessage').innerHTML = '';
+        }
+        
+        // Show results
+        function showResults() {
+            document.getElementById('exerciseResults').classList.add('active');
+            
+            // Update score in results
+            document.querySelector('.results-score').textContent = `${score}/100`;
+            
+            // Update result details
+            document.querySelector('.result-value:nth-child(2)').textContent = 
+                `${score/20}/${complexNumbers.length}`;
+                
+            document.querySelector('.result-item:last-child .result-value').textContent = 
+                `${score}/100`;
+        }
+        
+        // Show feedback message
+        function showFeedback(message, type) {
+            const feedbackElement = document.getElementById('feedbackMessage');
+            let icon = '';
+            let color = '';
+            
+            switch (type) {
+                case 'success':
+                    icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>';
+                    color = 'var(--hw-success)';
+                    break;
+                case 'error':
+                    icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
+                    color = 'var(--hw-error)';
+                    break;
+                case 'warning':
+                    icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M12 5.99L19.53 19H4.47L12 5.99M12 2L1 21h22L12 2zm1 14h-2v2h2v-2zm0-6h-2v4h2v-4z"/></svg>';
+                    color = 'var(--hw-warning)';
+                    break;
+            }
+            
+            feedbackElement.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; color: ${color}; padding: 10px;">
+                    ${icon}
+                    <span style="margin-right: 8px; font-weight: 500;">${message}</span>
+                </div>
+            `;
+        }
+        
+        // Exercise reset function
+        function resetExercise() {
+            // Reset variables
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            // Reset interface
+            document.getElementById('realPart').value = '';
+            document.getElementById('imaginaryPart').value = '';
+            document.getElementById('feedbackMessage').innerHTML = '';
+            document.getElementById('gameScore').textContent = '0';
+            document.getElementById('questionCounter').textContent = '1';
+            document.getElementById('exerciseResults').classList.remove('active');
+            
+            // Load first question
+            loadQuestion();
+        }
+        
+        // Initialize handler for check button
+        document.getElementById('checkAnswerBtn').addEventListener('click', checkAnswer);
+        
+        // Load first question on page load
+        loadQuestion();
+        
+        // Display current date and due date
+        function setDates() {
+            // Set current date in lesson header (if exists)
+            const currentDateElement = document.getElementById('current-date');
+            if (currentDateElement) {
+                const now = new Date();
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                currentDateElement.textContent = now.toLocaleDateString('he-IL', options);
+            }
+            
+            // Set due date (current date + 2 days)
+            const dueDateElement = document.getElementById('due-date');
+            if (dueDateElement) {
+                const today = new Date();
+                const dueDate = new Date(today);
+                dueDate.setDate(today.getDate() + 2); // Add 2 days
+                
+                // Date format DD/MM/YYYY (Israeli format)
+                const day = dueDate.getDate().toString().padStart(2, '0');
+                const month = (dueDate.getMonth() + 1).toString().padStart(2, '0');
+                const year = dueDate.getFullYear();
+                
+                dueDateElement.textContent = `${day}/${month}/${year}`;
+            }
+        }
+        
+        // Initialize dates on page load
+        window.addEventListener('DOMContentLoaded', setDates);
+    </script>
+    
+    <style>
+        /* Menu imitation styles in accordance with the main site */
+        .site-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--color-accent, #3366cc); /* Use color from main site */
+            box-shadow: 0 2px 10px var(--black-transparent-10);
+            z-index: 1000;
+            height: var(--height-header, 50px); /* Reduce height from 80px to 50px */
+        }
+        
+        .site-menu {
+            display: flex;
+            flex-direction: row;
+            align-items: center; /* Align all elements center vertically */
+            justify-content: space-between;
+            padding: 0;
+            height: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            margin-right: 0; /* Remove right margin from logo */
+            margin-left: 1rem; /* Left margin like search */
+        }
+        
+        .header-separator {
+            color: var(--white-transparent-60);
+            margin: 0 0.8rem 0 0.8rem; /* Standard 0.8rem margin on both sides */
+            font-size: 1.2rem;
+            margin-top: -2px; /* Align with other elements */
+        }
+        
+        /* Right part of header (navigation and hamburger) */
+        .header-right {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        /* Hamburger menu */
+        #menu-toggle {
+            font-size: 1.5rem; /* Reduce hamburger icon size */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: var(--white);
+            cursor: pointer;
+            transition: color 0.3s, transform 0.2s;
+            padding: 0;
+            margin-left: 0.8rem; /* Standard 0.8rem margin left */
+            margin-right: 0.8rem; /* Standard 0.8rem margin right */
+            margin-top: -2px; /* Lift hamburger up to align with header center */
+        }
+        
+        #menu-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Navigation */
+        .main-nav {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            gap: 0.8rem; /* Equal spacing between elements */
+        }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 0.8rem; /* Reduce spacing between menu elements */
+            margin: 0;
+            padding: 0;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: var(--white);
+            font-weight: 500;
+            padding: 4px 8px; /* Reduce internal padding */
+            transition: color 0.3s;
+            display: block;
+            font-family: var(--font-primary);
+            font-size: 0.9rem; /* Slightly reduce font size */
+        }
+        
+        nav a:hover {
+            color: var(--color-white-opacity-20, var(--white-transparent-80));
+        }
+        
+        nav a.active {
+            font-weight: bold;
+        }
+        
+        /* Styles for secondary menu (lesson menu) */
+        .lesson-container-wide {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        /* Lesson menu - blue bar with icons from edge to edge */
+        .lesson-menu {
+            background-color: var(--lesson-menu-blue); /* Exact color as in original */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0; /* Remove horizontal padding, keep only vertical */
+            height: 50px; /* Fixed height, comparable to main menu */
+            width: 100vw; /* From edge to edge of screen */
+            margin-left: calc(-50vw + 50%); /* Go beyond container boundaries */
+            margin-right: calc(-50vw + 50%);
+            box-sizing: border-box;
+        }
+        
+        /* Container for lesson menu content, similar to site-menu */
+        .lesson-menu-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1280px; /* Like main menu */
+            margin: 0 auto; /* Centering, like main menu */
+            padding: 0; /* Without additional padding */
+        }
+        
+        .nav-icons-left {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem; /* Increase spacing to first row size */
+            margin-left: 0.8rem; /* Exactly like first row elements */
+        }
+        
+        .nav-icons-right {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem; /* Increase spacing to first row size */
+            margin-right: 0.8rem; /* Exactly like first row elements */
+        }
+        
+        .lesson-menu-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 8px; /* Identical padding as in first menu row */
+            border-radius: 6px; /* Slightly reduce radius */
+            transition: all 0.15s ease;
+            text-decoration: none;
+        }
+        
+        .lesson-menu-icon:hover {
+            transform: translateY(-2px);
+        }
+        
+        .lesson-menu-icon.active img {
+            /* Active icon: increased size and shadow for highlighting */
+            width: 32px;
+            height: 32px;
+            filter: brightness(0) invert(1) drop-shadow(0 0 4px var(--white-transparent-80));
+        }
+        
+        .lesson-menu-icon img {
+            width: 28px; /* Slightly reduce icon size */
+            height: 28px;
+            filter: brightness(0) invert(1);
+            transition: all 0.15s ease;
+        }
+        
+        .lesson-menu-icon:hover img {
+            transform: scale(1.15);
+        }
+        
+        .lesson-breadcrumbs {
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+            margin: 0;
+            padding: 0.5rem 1rem;
+            line-height: 1.4;
+            direction: rtl;
+            text-align: right;
+            background-color: var(--breadcrumb-bg);
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .lesson-breadcrumbs a {
+            color: var(--color-primary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .lesson-breadcrumbs a:hover {
+            text-decoration: underline;
+            color: var(--hw-accent);
+        }
+        
+        /* Lesson objectives button in compact menu */
+        .objectives-trigger-compact {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            margin-left: auto; /* Push to right edge */
+            padding: 0;
+        }
+        
+        .objectives-trigger-compact:hover {
+            transform: translateY(-2px);
+        }
+        
+        .objectives-trigger-compact img {
+            width: 20px;
+            height: 20px;
+            filter: brightness(0) invert(1); /* Make icon white */
+            transition: all 0.15s ease;
+        }
+        
+        /* Material type navigation */
+        .lesson-nav {
+            display: flex;
+            overflow-x: auto;
+            background: var(--color-bg-light);
+            padding: 0.5rem 1rem;
+            border-top: 1px solid var(--color-border);
+            border-bottom: 1px solid var(--color-border);
+            white-space: nowrap;
+        }
+        
+        .lesson-tab {
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            color: var(--color-text-secondary);
+            font-weight: 500;
+            position: relative;
+            transition: all 0.15s ease;
+        }
+        
+        .lesson-tab:hover {
+            color: var(--color-primary);
+        }
+        
+        .lesson-tab.active {
+            color: var(--color-primary);
+        }
+        
+        .lesson-tab.active::after {
+            content: "";
+            position: absolute;
+            bottom: -0.5rem;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: var(--color-primary);
+        }
+        
+        .lesson-tab.current {
+            color: var(--color-primary);
+            font-weight: bold;
+        }
+        
+        /* Left part of header (search) */
+        .header-left {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            position: relative;
+            margin-left: 0; /* Remove margin as it's set on search button itself */
+        }
+        
+        /* Search button style */
+        .search-icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin-right: 1rem; /* Right margin, symmetrical to logo */
+            margin-top: -2px; /* Lift search icon like hamburger */
+            transition: color 0.3s, transform 0.2s;
+        }
+        
+        .search-icon-btn:hover {
+            color: var(--search-hover);
+            transform: scale(1.1);
+        }
+        
+        .search-box input {
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            background: transparent;
+            direction: rtl;
+            width: 100%;
+            color: var(--white);
+        }
+        
+        .search-box input::placeholder {
+            color: var(--white-transparent-70);
+        }
+        
+        .search-icon-btn {
+            position: absolute;
+            left: 6px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 36px;
+            width: 36px;
+            color: var(--white);
+            transition: color 0.3s;
+        }
+        
+        .search-icon-btn:hover {
+            color: var(--white-transparent-70);
+        }
+        
+        .lesson-header {
+            position: fixed;
+            top: var(--height-header, 50px); /* Обновляем в соответствии с новой высотой */
+            left: 0;
+            right: 0;
+            background-color: var(--white);
+            box-shadow: 0 2px 10px var(--black-transparent-05);
+            z-index: 999;
+            padding: 0 2rem;
+        }
+        
+        /* Стили lesson-breadcrumbs перенесены в основную секцию стилей */
+        
+        .lesson-nav {
+            display: flex;
+            gap: 10px;
+            padding: 5px 0;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        
+        .lesson-tab {
+            color: var(--hw-text);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 10px 15px;
+            position: relative;
+            transition: color 0.2s ease;
+        }
+        
+        .lesson-tab.active {
+            color: var(--hw-primary);
+        }
+        
+        .lesson-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: var(--hw-primary);
+            border-radius: 3px 3px 0 0;
+        }
+        
+        .lesson-tab.current {
+            color: var(--hw-primary);
+            font-weight: 700;
+        }
+        
+        .lesson-tab:hover {
+            color: var(--hw-primary);
+        }
+        
+        /* Адаптивная верстка для меню */
+        @media (max-width: 768px) {
+            .site-menu {
+                padding: 0 1rem;
+            }
+            
+            /* Адаптивность меню урока */
+            .lesson-title {
+                font-size: 1.5rem;
+            }
+            
+            .lesson-subtitle {
+                font-size: 1rem;
+            }
+            
+            .nav-icons-compact {
+                gap: 0.8rem;
+                justify-content: space-between;
+            }
+            
+            .nav-icon-compact img,
+            .objectives-trigger-compact img {
+                width: 18px;
+                height: 18px;
+            }
+            
+            .nav-icon img, 
+            .objectives-trigger img {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .lesson-header {
+                padding: 0 1rem;
+            }
+            
+            .main-nav {
+                gap: 0.8rem;
+            }
+            
+            .lesson-nav {
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+                padding: 5px 0;
+                scrollbar-width: none; /* Firefox */
+            }
+            
+            .lesson-nav::-webkit-scrollbar {
+                display: none; /* Chrome, Safari, Opera */
+            }
+            
+            /* Медиа-запрос для мобильных устройств */
+            @media (max-width: 768px) {
+                .main-nav {
+                    display: none; /* Скрываем навигацию на мобильных устройствах */
+                }
+                
+                .header-right {
+                    gap: 0.4rem; /* Уменьшаем отступы на мобильных устройствах */
+                }
+            }
+            
+            .lesson-tab {
+                padding: 8px 12px;
+            }
+        }
+        
+        /* Formula display container */
+        .formula-display {
+            font-size: 24px;
+            margin: 20px;
+            padding: 15px;
+            background: var(--form-background);
+            border-radius: 8px;
+            direction: ltr;
+            text-align: center;
+        }
+    </style>
+</body>
+</html>
