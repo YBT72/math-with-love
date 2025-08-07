@@ -147,9 +147,36 @@
             left: 0;
             width: 100%;
             height: 200px;
-            background: var(--hw-gradient);
+            background: linear-gradient(135deg, 
+                rgba(66, 165, 245, 0.95) 0%, 
+                rgba(76, 175, 80, 0.95) 50%,
+                rgba(26, 115, 232, 0.95) 100%);
             z-index: 0;
             border-radius: 16px 16px 0 0;
+            overflow: hidden;
+        }
+        
+        .homework-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                transparent 25%, 
+                rgba(255, 255, 255, 0.1) 25%,
+                rgba(255, 255, 255, 0.1) 50%,
+                transparent 50%,
+                transparent 75%,
+                rgba(255, 255, 255, 0.1) 75%);
+            background-size: 30px 30px;
+            animation: shine 8s linear infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
         
         .homework-header {
@@ -174,6 +201,9 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            color: var(--white);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
         }
         
         .homework-title img {
@@ -189,6 +219,8 @@
             flex-wrap: wrap;
             align-items: center;
             gap: 0.5rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+            color: var(--white);
         }
         
         .due-date {
@@ -293,6 +325,82 @@
             margin: 0 20px 20px;
             padding: 30px;
             box-shadow: 0 5px 20px var(--hw-shadow-light);
+        }
+        
+        /* Exercise progress beads in header */
+        .exercise-progress-beads {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: -10px 0 20px 0;
+            padding: 15px 0;
+            background: var(--white-transparent-30);
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .progress-bead {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--white-transparent-50);
+            color: var(--hw-primary-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        
+        .progress-bead:hover {
+            transform: scale(1.1);
+        }
+        
+        .progress-bead.completed {
+            background: var(--hw-success);
+            color: var(--white);
+            border-color: var(--white);
+        }
+        
+        .progress-bead.active {
+            background: var(--hw-primary);
+            color: var(--white);
+            border-color: var(--white);
+            transform: scale(1.15);
+            box-shadow: 0 0 15px var(--hw-primary);
+        }
+        
+        .progress-bead.due-soon {
+            background: var(--hw-error);
+            color: var(--white);
+            animation: pulse-bead 1.2s infinite alternate;
+        }
+        
+        .progress-bead.overdue {
+            background: #8B0000;
+            color: var(--white);
+            opacity: 0.7;
+        }
+        
+        .progress-bead.overdue::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 2px;
+            background: var(--white);
+            transform: rotate(45deg);
+        }
+        
+        @keyframes pulse-bead {
+            0% { 
+                box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.5);
+            }
+            100% { 
+                box-shadow: 0 0 0 8px rgba(244, 67, 54, 0);
+            }
         }
         
         /* Exercise navigation */
@@ -423,6 +531,40 @@
         .exercise-nav-item.locked:hover {
             transform: none;
             box-shadow: none;
+        }
+        
+        /* Due soon / overdue states */
+        .exercise-nav-item.due-soon {
+            background: var(--hw-error);
+            border-color: var(--hw-error);
+            animation: pulse-urgent 1.5s infinite alternate;
+        }
+        
+        .exercise-nav-item.due-soon .exercise-number {
+            color: var(--white);
+            font-weight: bold;
+        }
+        
+        .exercise-nav-item.overdue {
+            background: #8B0000;
+            border-color: #8B0000;
+            opacity: 0.8;
+        }
+        
+        .exercise-nav-item.overdue .exercise-number {
+            color: var(--white);
+            text-decoration: line-through;
+        }
+        
+        @keyframes pulse-urgent {
+            0% { 
+                box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.4);
+                transform: scale(1);
+            }
+            100% { 
+                box-shadow: 0 0 0 8px rgba(244, 67, 54, 0);
+                transform: scale(1.05);
+            }
         }
         
         .exercise-status {
@@ -1623,6 +1765,18 @@
                     <span class="separator">|</span>
                     <span>השלם את כל המשימות וקבל ציון גבוה</span>
                 </div>
+                
+                <!-- Exercise Progress Beads -->
+                <div class="exercise-progress-beads">
+                    <div class="progress-bead completed" data-exercise="1" title="תרגיל 1 - הושלם">1</div>
+                    <div class="progress-bead completed" data-exercise="2" title="תרגיל 2 - הושלם">2</div>
+                    <div class="progress-bead active" data-exercise="3" title="תרגיל 3 - פעיל">3</div>
+                    <div class="progress-bead due-soon" data-exercise="4" title="תרגיל 4 - מועד הגשה בקרוב">4</div>
+                    <div class="progress-bead" data-exercise="5" title="תרגיל 5 - לא זמין">5</div>
+                    <div class="progress-bead" data-exercise="6" title="תרגיל 6 - לא זמין">6</div>
+                    <div class="progress-bead overdue" data-exercise="7" title="תרגיל 7 - פוגת מועד">7</div>
+                    <div class="progress-bead" data-exercise="8" title="תרגיל 8 - לא זמין">8</div>
+                </div>
             </div>
             
             <div class="homework-progress-container homework-progress-compact">
@@ -1860,6 +2014,51 @@
     </style>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script>
+    // Exercise progress bead management
+    function initializeProgressBeads() {
+        const beads = document.querySelectorAll('.progress-bead');
+        const dueDate = new Date('2024-02-01'); // Example due date
+        const now = new Date();
+        const twoDaysFromNow = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+        
+        beads.forEach((bead, index) => {
+            const exerciseNum = index + 1;
+            
+            // Simulate exercise deadlines
+            const exerciseDeadline = new Date(dueDate.getTime() + exerciseNum * 24 * 60 * 60 * 1000);
+            
+            bead.addEventListener('click', () => {
+                if (!bead.classList.contains('completed') && !bead.classList.contains('overdue')) {
+                    scrollToExercise(exerciseNum);
+                }
+            });
+            
+            // Check deadline status
+            if (exerciseDeadline < now) {
+                bead.classList.add('overdue');
+                bead.classList.remove('due-soon', 'active');
+            } else if (exerciseDeadline < twoDaysFromNow) {
+                bead.classList.add('due-soon');
+                bead.classList.remove('active');
+            }
+        });
+    }
+    
+    function scrollToExercise(exerciseNum) {
+        const exerciseElement = document.querySelector(`[data-exercise="${exerciseNum}"]`);
+        if (exerciseElement) {
+            exerciseElement.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+    
+    function updateProgressBead(exerciseNum, status) {
+        const bead = document.querySelector(`.progress-bead[data-exercise="${exerciseNum}"]`);
+        if (bead) {
+            bead.classList.remove('active', 'completed', 'due-soon', 'overdue');
+            bead.classList.add(status);
+        }
+    }
+    
     // --- Чистый JS для обычных input ---
     var complexNumbers = [
         { complex: "3 + 4i", real: 3, imaginary: 4 },
@@ -1962,7 +2161,10 @@
             dueDateElement.textContent = now.toLocaleDateString('he-IL');
         }
     }
-    window.addEventListener('DOMContentLoaded', setDates);
+    window.addEventListener('DOMContentLoaded', function() {
+        setDates();
+        initializeProgressBeads();
+    });
     </script>
 </body>
 </html>
