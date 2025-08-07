@@ -29,6 +29,29 @@
             --color-border: #E5E7EB;
             --font-primary: 'Rubik', 'Assistant', sans-serif;
             
+            /* Additional homework variables */
+            --white: #ffffff;
+            --hw-shadow-light: rgba(0, 0, 0, 0.1);
+            --hw-shadow-medium: rgba(0, 0, 0, 0.15);
+            --hw-shadow-strong: rgba(0, 0, 0, 0.2);
+            --hw-primary: #7266d8;
+            --hw-primary-dark: #2d249c;
+            --hw-primary-light: #9c95e8;
+            --hw-text: #333;
+            --hw-text-light: #666;
+            --hw-bg: #f8f9fa;
+            --light-background: #fafbfc;
+            --light-gray: #e0e0e0;
+            --border-gray: #e6e6e6;
+            --color-accent: #5a7bff;
+            --white-transparent-90: rgba(255, 255, 255, 0.9);
+            --white-transparent-80: rgba(255, 255, 255, 0.8);
+            --white-transparent-70: rgba(255, 255, 255, 0.7);
+            --black-transparent-10: rgba(0, 0, 0, 0.1);
+            --black-transparent-05: rgba(0, 0, 0, 0.05);
+            --breadcrumb-panel-bg: #f0f4ff;
+            --height-header: 50px;
+            
             /* Homework colors */
             --hw-primary: var(--primary-color);
             --hw-primary-dark: #3A2B9F;
@@ -462,34 +485,135 @@
         .difficulty-indicator {
             display: flex;
             align-items: center;
-            gap: 5px;
-            font-size: 14px;
-            color: var(--hw-text-light);
+            gap: 10px;
+            justify-content: center;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+        
+        .difficulty-label {
+            color: #888;
+            font-size: 1.2rem;
         }
         
         .difficulty-dots {
-            display: flex;
-            gap: 3px;
+            display: inline-flex;
+            gap: 4px;
+            vertical-align: middle;
         }
         
         .difficulty-dot {
-            width: 8px;
-            height: 8px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            background-color: var(--hw-primary-light);
+            display: inline-block;
+            background: #7266d8;
         }
         
         .difficulty-dot.empty {
-            background-color: var(--light-gray);
+            background: #d8d8d8;
         }
         
         .points-indicator {
-            background: var(--hw-primary-light);
-            color: var(--white);
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
+            background: #7266d8;
+            color: #fff;
+            font-weight: bold;
+            border-radius: 24px;
+            padding: 6px 16px;
+            font-size: 1.35rem;
+            display: inline-block;
+            margin-left: 18px;
+            min-width: 70px;
+            text-align: center;
+        }
+        
+        .exercise-title-main {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-right: 18px;
+        }
+        
+        .exercise-title-main img {
+            width: 36px;
+            height: 36px;
+            margin-left: 6px;
+            display: block;
+            filter: invert(13%) sepia(41%) saturate(2092%) hue-rotate(212deg) brightness(90%) contrast(98%);
+        }
+        
+        .exercise-title-main span {
+            font-size: 1.35rem;
+            font-weight: bold;
+            color: #2d249c;
+            line-height: 1.1;
+        }
+        
+        .exercise-row-cards {
+            display: flex;
+            flex-direction: row;
+            gap: 32px;
+            align-items: stretch;
+            width: 100%;
+            margin-top: 32px;
+        }
+        
+        .exercise-description-card {
+            flex: 1 1 0;
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 2px 8px var(--hw-shadow-light);
+            padding: 14px 10px 8px 10px;
+            height: 100%;
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .exercise-game-card {
+            flex: 1 1 0;
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: 0 4px 16px 0 var(--hw-shadow-light);
+            padding: 2px 2px 0px 2px;
+            height: 100%;
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .exercise-description-content {
+            font-family: 'Assistant', sans-serif;
+            font-weight: 400;
+            color: #222;
+            font-size: 1.2rem;
+            line-height: 1.35;
+            letter-spacing: 0;
+        }
+        
+        .game-indicators {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            margin-bottom: 10px;
+            padding-left: 32px;
+            padding-right: 32px;
+            position: relative;
+            min-height: 36px;
+        }
+        
+        .question-counter {
+            font-family: 'Assistant', sans-serif;
+            font-weight: 400;
+            font-size: 1.2rem;
+            color: #222;
+            line-height: 1.35;
+            letter-spacing: 0;
+            margin-right: 0;
         }
         
         .exercise-content {
@@ -524,9 +648,42 @@
         }
         
         .game-score {
-            font-size: 18px;
-            font-weight: 500;
-            color: var(--hw-primary-dark);
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2rem;
+            color: #2d249c;
+            font-weight: bold;
+            background: #f8f8ff;
+            border-radius: 12px;
+            padding: 2px 18px;
+            box-shadow: 0 2px 8px rgba(114,102,216,0.07);
+        }
+        
+        .hint-icon-positioned {
+            position: absolute;
+            left: 14px;
+            top: 12px;
+            z-index: 2;
+            background: none;
+            border: none;
+            box-shadow: none;
+            padding: 0;
+            min-width: 0;
+            min-height: 0;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .pulse-icon {
+            width: 22px;
+            height: 22px;
+            display: block;
+            filter: drop-shadow(0 0 0.5px #7266d8) drop-shadow(0 0 1.5px #7266d8) brightness(0.7) saturate(2);
         }
         
         /* Buttons and actions */
@@ -627,12 +784,79 @@
             text-align: center;
         }
         
-        /* Form control styles */
+        .exercise-controls-panel {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            margin-top: 32px;
+            margin-bottom: 0;
+        }
+        
+        .exercise-input-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 32px;
+            margin-bottom: 24px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
         .input-label {
             font-family: var(--font-primary);
             font-size: 16px;
             font-weight: 500;
             color: var(--hw-text);
+            margin-bottom: 6px;
+        }
+        
+        .exercise-interaction-area {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 auto;
+            min-height: 0;
+            position: relative;
+        }
+        
+        .feedback-message {
+            min-height: 36px;
+            text-align: center;
+        }
+        
+        .control-buttons-area {
+            position: relative;
+            margin-top: auto;
+            min-height: 56px;
+            left: 0;
+            right: 0;
+        }
+        
+        .control-background {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 56px;
+            background: rgba(45,36,156,0.07);
+            border-radius: 0 0 16px 16px;
+            z-index: 0;
+        }
+        
+        .control-buttons-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 56px;
+            z-index: 1;
+            gap: 24px;
+            width: 100%;
+            padding: 0;
         }
         
         /* Hints panel */
@@ -1132,47 +1356,45 @@
             transition: all 0.15s ease;
         }
         
-        /* Material type navigation */
         .lesson-nav {
             display: flex;
-            overflow-x: auto;
-            background: var(--color-bg-light);
-            padding: 0.5rem 1rem;
-            border-top: 1px solid var(--color-border);
-            border-bottom: 1px solid var(--color-border);
-            white-space: nowrap;
+            gap: 10px;
+            padding: 5px 0;
+            max-width: 1280px;
+            margin: 0 auto;
         }
         
         .lesson-tab {
-            padding: 0.5rem 1rem;
+            color: var(--hw-text);
             text-decoration: none;
-            color: var(--color-text-secondary);
             font-weight: 500;
+            padding: 10px 15px;
             position: relative;
-            transition: all 0.15s ease;
-        }
-        
-        .lesson-tab:hover {
-            color: var(--color-primary);
+            transition: color 0.2s ease;
         }
         
         .lesson-tab.active {
-            color: var(--color-primary);
+            color: var(--hw-primary);
         }
         
         .lesson-tab.active::after {
-            content: "";
+            content: '';
             position: absolute;
-            bottom: -0.5rem;
+            bottom: 0;
             left: 0;
             right: 0;
             height: 3px;
-            background-color: var(--color-primary);
+            background-color: var(--hw-primary);
+            border-radius: 3px 3px 0 0;
         }
         
         .lesson-tab.current {
-            color: var(--color-primary);
-            font-weight: bold;
+            color: var(--hw-primary);
+            font-weight: 700;
+        }
+        
+        .lesson-tab:hover {
+            color: var(--hw-primary);
         }
         
         /* Left part of header (search) */
@@ -1218,25 +1440,6 @@
             color: var(--white-transparent-70);
         }
         
-        .search-icon-btn {
-            position: absolute;
-            left: 6px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 36px;
-            width: 36px;
-            color: var(--color-primary-dark); /* Dark blue color */
-            transition: color 0.3s;
-        }
-        
-        .search-icon-btn:hover {
-            color: var(--color-accent); /* Blue on hover */
-        }
-        
         .lesson-header {
             position: fixed;
             top: var(--height-header, 50px); /* Обновляем в соответствии с новой высотой */
@@ -1249,47 +1452,6 @@
         }
         
         /* Стили lesson-breadcrumbs перенесены в основную секцию стилей */
-        
-        .lesson-nav {
-            display: flex;
-            gap: 10px;
-            padding: 5px 0;
-            max-width: 1280px;
-            margin: 0 auto;
-        }
-        
-        .lesson-tab {
-            color: var(--hw-text);
-            text-decoration: none;
-            font-weight: 500;
-            padding: 10px 15px;
-            position: relative;
-            transition: color 0.2s ease;
-        }
-        
-        .lesson-tab.active {
-            color: var(--hw-primary);
-        }
-        
-        .lesson-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background-color: var(--hw-primary);
-            border-radius: 3px 3px 0 0;
-        }
-        
-        .lesson-tab.current {
-            color: var(--hw-primary);
-            font-weight: 700;
-        }
-        
-        .lesson-tab:hover {
-            color: var(--hw-primary);
-        }
         
         /* Адаптивная верстка для меню */
         @media (max-width: 768px) {
@@ -1484,29 +1646,29 @@
         <div class="homework-content">
             <div class="exercise-header-row" style="display: flex; flex-direction: row-reverse; direction: rtl; align-items: center; justify-content: space-between; margin-bottom: 24px;">
                 <!-- Левая часть: баллы -->
-                <span class="points-indicator" style="background: #7266d8; color: #fff; font-weight: bold; border-radius: 24px; padding: 6px 16px; font-size: 1.35rem; display: inline-block; margin-left: 18px; min-width: 70px; text-align: center;">10 נק'</span>
+                <span class="points-indicator">10 נק'</span>
                 <!-- Центр: уровень сложности -->
-                <span class="difficulty-meta" style="display: flex; align-items: center; gap: 10px; justify-content: center; flex: 1 1 auto; min-width: 0;">
-                    <span class="difficulty-label" style="color: #888; font-size: 1.2rem;">רמת קושי:</span>
-                    <span class="difficulty-dots" style="display: inline-flex; gap: 4px; vertical-align: middle;">
-                        <span style="width: 12px; height: 12px; background: #d8d8d8; border-radius: 50%; display: inline-block;"></span>
-                        <span style="width: 12px; height: 12px; background: #d8d8d8; border-radius: 50%; display: inline-block;"></span>
-                        <span style="width: 12px; height: 12px; background: #7266d8; border-radius: 50%; display: inline-block;"></span>
+                <span class="difficulty-indicator">
+                    <span class="difficulty-label">רמת קושי:</span>
+                    <span class="difficulty-dots">
+                        <span class="difficulty-dot empty"></span>
+                        <span class="difficulty-dot empty"></span>
+                        <span class="difficulty-dot"></span>
                     </span>
                 </span>
                 <!-- Правая часть: иконка и заголовок -->
-                <div class="exercise-title-main" style="display: flex; align-items: center; gap: 10px; margin-right: 18px;">
-                    <img src="../../../../assets/icons/game_icon.svg" alt="משחק" style="width: 36px; height: 36px; margin-left: 6px; display: block; filter: invert(13%) sepia(41%) saturate(2092%) hue-rotate(212deg) brightness(90%) contrast(98%);">
-                    <span style="font-size: 1.35rem; font-weight: bold; color: #2d249c; line-height: 1.1;">זיהוי מספרים מרוכבים</span>
+                <div class="exercise-title-main">
+                    <img src="../../../../assets/icons/game_icon.svg" alt="משחק">
+                    <span>זיהוי מספרים מרוכבים</span>
                 </div>
             </div>
 
             <!-- Две карточки в одну строку -->
-            <div class="exercise-row-cards" style="display: flex; flex-direction: row; gap: 32px; align-items: stretch; width: 100%; margin-top: 32px;">
+            <div class="exercise-row-cards">
                 
                 <!-- Левая карточка: описание -->
-                <div class="exercise-description-card" style="flex: 1 1 0; background: var(--white); border-radius: 16px; box-shadow: 0 2px 8px var(--hw-shadow-light); padding: 14px 10px 8px 10px; height: 100%; min-height: 320px; display: flex; flex-direction: column; justify-content: center;">
-                    <div style="font-family: 'Assistant', sans-serif; font-weight: 400; color: #222; font-size: 1.2rem; line-height: 1.35; letter-spacing: 0;">
+                <div class="exercise-description-card">
+                    <div class="exercise-description-content">
                         <p style="margin-bottom: 0.18rem;">בתרגיל זה עליכם לזהות את החלק הממשי (<strong style='font-weight:700;'>Re</strong>) והחלק המדומה (<strong style='font-weight:700;'>Im</strong>) של מספרים מרוכבים שונים.</p>
                         <p style="margin-bottom: 0.12rem;">לדוגמה, עבור המספר המרוכב <span style='font-weight:700;'>z = 5 + 2i</span>:</p>
                         <ul style="margin-bottom: 0.18rem; padding-right: 1.2em;">
@@ -1518,43 +1680,42 @@
                 </div>
 
                 <!-- Правая карточка: игровая часть -->
-                <div class="exercise-game-card" style="flex: 1 1 0; background: var(--white); border-radius: 16px; box-shadow: 0 4px 16px 0 var(--hw-shadow-light); padding: 2px 2px 0px 2px; height: 100%; min-height: 320px; display: flex; flex-direction: column; justify-content: center;">
-            <div class="game-indicators" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 10px; padding-left: 32px; padding-right: 32px; position: relative; min-height: 36px;">
+                <div class="exercise-game-card">
+            <div class="game-indicators">
                 <!-- Кнопка помощи: левый верхний угол -->
-                <button class="hw-button hint-icon" id="showHintsBtn" type="button" style="position: absolute; left: 14px; top: 12px; z-index: 2; background: none; border: none; box-shadow: none; padding: 0; min-width: 0; min-height: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                  <img src="../../../../assets/icons/tips_rtl_icon.svg" alt="רמז" class="pulse-icon" style="width: 22px; height: 22px; display: block; filter: drop-shadow(0 0 0.5px #7266d8) drop-shadow(0 0 1.5px #7266d8) brightness(0.7) saturate(2);">
+                <button class="hw-button hint-icon hint-icon-positioned" id="showHintsBtn" type="button">
+                  <img src="../../../../assets/icons/tips_rtl_icon.svg" alt="רמז" class="pulse-icon">
                 </button>
                 <!-- Счетчик вопроса: справа -->
-                <span class="question-counter" style="font-family: 'Assistant', sans-serif; font-weight: 400; font-size: 1.2rem; color: #222; line-height: 1.35; letter-spacing: 0; margin-right: 0;">שאלה: <span id="questionCounter">1</span>/5</span>
+                <span class="question-counter">שאלה: <span id="questionCounter">1</span>/5</span>
                 <!-- Баллы: по центру -->
-                <span class="game-score" style="position: absolute; left: 50%; transform: translateX(-50%); font-size: 1.2rem; color: #2d249c; font-weight: bold; background: #f8f8ff; border-radius: 12px; padding: 2px 18px; box-shadow: 0 2px 8px rgba(114,102,216,0.07);">ניקוד: <span id="gameScore">0</span>/100</span>
+                <span class="game-score">ניקוד: <span id="gameScore">0</span>/100</span>
             </div>
 
                     <!-- Упражнение с возможностью ответа -->
-                    <div style="display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; position: relative;">
+                    <div class="exercise-interaction-area">
                         <div>
                             <div class="formula-display" style="margin-bottom: 10px;">
                                 <span id="complexKaTeX" style="font-size: 1.5em; background: none; margin: 0; padding: 0;"></span>
                             </div>
-                            <div style="display: flex; flex-direction: row; justify-content: center; align-items: flex-end; gap: 32px; margin-bottom: 24px;">
-                                <div style="display: flex; flex-direction: column; align-items: center;">
-                                    <label for="imaginaryInput" class="input-label" style="margin-bottom: 6px;">Im(z)</label>
-                                    <input id="imaginaryInput" type="number" class="simple-number-input" style="width:64px;height:54px;font-size:2em;color:#000;font-weight:900;border-radius:14px;border:1px solid #b0b0b0;background:#f8f8f8;box-shadow:0 2px 8px rgba(0,0,0,0.10),0 0.5px 0 #b0b0b0 inset;text-align:center;outline:none;transition:border 0.2s,box-shadow 0.2s;direction:ltr;" autocomplete="off" inputmode="numeric" pattern="-?[0-9]*">
+                            <div class="exercise-input-container">
+                                <div class="input-group">
+                                    <label for="imaginaryInput" class="input-label">Im(z)</label>
+                                    <input id="imaginaryInput" type="number" class="simple-number-input" autocomplete="off" inputmode="numeric" pattern="-?[0-9]*">
                                 </div>
-                                <div style="display: flex; flex-direction: column; align-items: center;">
-                                    <label for="realInput" class="input-label" style="margin-bottom: 6px;">Re(z)</label>
-                                    <input id="realInput" type="number" class="simple-number-input" style="width:64px;height:54px;font-size:2em;color:#000;font-weight:900;border-radius:14px;border:1px solid #b0b0b0;background:#f8f8f8;box-shadow:0 2px 8px rgba(0,0,0,0.10),0 0.5px 0 #b0b0b0 inset;text-align:center;outline:none;transition:border 0.2s,box-shadow 0.2s;direction:ltr;" autocomplete="off" inputmode="numeric" pattern="-?[0-9]*">
+                                <div class="input-group">
+                                    <label for="realInput" class="input-label">Re(z)</label>
+                                    <input id="realInput" type="number" class="simple-number-input" autocomplete="off" inputmode="numeric" pattern="-?[0-9]*">
                                 </div>
                             </div>
                         </div>
                         <!-- Feedback message -->
-                        <div id="feedbackMessage" style="min-height: 36px; text-align: center;"></div>
-                        <!-- Help button теперь в левом верхнем углу, см. выше -->
+                        <div id="feedbackMessage" class="feedback-message"></div>
                     </div>
                     <!-- Check answer and repeat buttons at the very bottom -->
-                    <div style="position: relative; margin-top: auto; min-height: 56px; left: 0; right: 0;">
-                        <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 56px; background: rgba(45,36,156,0.07); border-radius: 0 0 16px 16px; z-index: 0;"></div>
-                        <div style="position: relative; display: flex; justify-content: center; align-items: flex-end; height: 56px; z-index: 1; gap: 24px; width: 100%; padding: 0;">
+                    <div class="control-buttons-area">
+                        <div class="control-background"></div>
+                        <div class="control-buttons-container">
                             <button class="hw-button secondary control-btn" id="restartExerciseBtn" type="button">
                                 <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='none' stroke='#7266d8' stroke-width='2' viewBox='0 0 24 24' style="margin-left:2px;"><path d='M2 12a10 10 0 1 0 3.29-7.29' /><polyline points='2 8 2 12 6 12' /></svg>
                                 עשה שוב
@@ -1568,7 +1729,7 @@
                 </div>
             </div>
             <!-- Панель управления под обеими карточками -->
-            <div class="exercise-controls-panel" style="display: flex; justify-content: center; gap: 18px; margin-top: 32px; margin-bottom: 0;">
+            <div class="exercise-controls-panel">
                 <button class="hw-button nav-btn" id="prevExerciseBtn" type="button">&#8594; קודם</button>
                 <button class="hw-button nav-btn" id="nextExerciseBtn" type="button">הבא &#8592;</button>
             </div>
@@ -1697,8 +1858,6 @@
       padding: 0 !important;
     }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script>
     // --- Чистый JS для обычных input ---
