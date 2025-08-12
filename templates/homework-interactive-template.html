@@ -41,7 +41,7 @@
             --hw-text-light: #666;
             --hw-bg: #f8f9fa;
             --light-background: #fafbfc;
-            --light-gray: #e0e0e0;
+            --light-gray: #F8F9FA;
             --border-gray: #e6e6e6;
             --color-accent: #5a7bff;
             --white-transparent-90: rgba(255, 255, 255, 0.9);
@@ -74,6 +74,7 @@
             --hw-gradient: linear-gradient(135deg, var(--hw-primary) 0%, var(--hw-accent) 100%);
             
             /* Additional color variables */
+            --border-color: #E5E7EB;
             --white: #FFFFFF;
             --white-transparent-15: rgba(255, 255, 255, 0.15);
             --white-transparent-20: rgba(255, 255, 255, 0.2);
@@ -110,7 +111,10 @@
             --height-header: 50px; /* Reduced header height */
         }
         
-        /* Basic text styles */
+    /* ===================== */
+    /* Main Menu Styles      */
+    /* ===================== */
+    /* Main site header, navigation, logo, and top-level menu */
         body {
             font-family: var(--font-primary);
             color: var(--hw-text);
@@ -128,7 +132,10 @@
             margin-bottom: 1rem;
         }
         
-        /* Main homework styles */
+    /* ===================== */
+    /* Lesson Menu Styles    */
+    /* ===================== */
+    /* Blue lesson menu bar, lesson navigation icons, compact menu */
         .homework-interactive {
             background: var(--hw-bg);
             border-radius: 16px;
@@ -139,30 +146,25 @@
             margin-top: 2rem; /* Standard margin equivalent to container side padding */
         }
         
-        /* Decorative gradient background */
+    /* ===================== */
+    /* Workspace Styles      */
+    /* ===================== */
+    /* Main interactive homework container, header, content area */
         .homework-interactive::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
+            top: 0; left: 0;
             width: 100%;
-            height: 200px;
-            background: linear-gradient(135deg, 
-                rgba(66, 165, 245, 0.95) 0%, 
-                rgba(76, 175, 80, 0.95) 50%,
-                rgba(26, 115, 232, 0.95) 100%);
-            z-index: 0;
+            height: 220px; /* Only header area */
+            background: linear-gradient(135deg, #4A39BD 0%, #9747FF 100%);
             border-radius: 16px 16px 0 0;
-            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
         }
         
         .homework-bg::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
             background: linear-gradient(45deg, 
                 transparent 25%, 
                 rgba(255, 255, 255, 0.1) 25%,
@@ -179,7 +181,8 @@
             100% { transform: translateX(100%); }
         }
         
-        .homework-header {
+    /* Homework header: title, subtitle, progress */
+    .homework-header {
             position: relative;
             z-index: 1;
             padding: 30px 40px;
@@ -226,7 +229,6 @@
         .due-date {
             font-weight: bold;
             color: var(--white);
-            background-color: var(--white-transparent-20);
             padding: 0.2rem 0.5rem;
             border-radius: 4px;
         }
@@ -309,13 +311,13 @@
         
         .deadline-mini {
             color: var(--hw-warning);
-            background: var(--white-transparent-15);
             padding: 2px 6px;
             border-radius: 6px;
             font-weight: 600;
         }
         
-        .homework-content {
+    /* Main content area: contains exercise cards */
+    .homework-content {
             position: relative;
             z-index: 1;
             background: var(--hw-paper-transparent);
@@ -330,20 +332,36 @@
         /* Exercise progress beads in header */
         .exercise-progress-beads {
             display: flex;
+            align-items: center;
             justify-content: center;
-            gap: 10px;
             margin: -10px 0 20px 0;
             padding: 15px 0;
-            background: var(--white-transparent-30);
+            background: none;
             border-radius: 12px;
             backdrop-filter: blur(5px);
+            position: relative;
+            gap: 22px;
         }
-        
+
+        .exercise-progress-beads::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 4px;
+            background: var(--white);
+            transform: translateY(-50%);
+            z-index: 1;
+            border-radius: 2px;
+        }
+
         .progress-bead {
+            position: relative;
             width: 34px;
             height: 34px;
             border-radius: 50%;
-            background: var(--white-transparent-50);
+            background: var(--white);
             color: var(--hw-primary-dark);
             display: flex;
             align-items: center;
@@ -351,24 +369,22 @@
             font-weight: bold;
             font-size: 14px;
             transition: all 0.3s ease;
-            border: 2px solid transparent;
             cursor: pointer;
+            z-index: 2;
+            border: none;
         }
         
+        /* удалён псевдоэлемент линии между бусинами */
+
         .progress-bead:hover {
             transform: scale(1.1);
         }
         
-        .progress-bead.completed {
-            background: var(--hw-success);
-            color: var(--white);
-            border-color: var(--white);
-        }
+        /* Place .progress-bead.completed after .progress-bead.overdue for correct override */
         
         .progress-bead.active {
             background: var(--hw-primary);
             color: var(--white);
-            border-color: var(--white);
             transform: scale(1.15);
             box-shadow: 0 0 15px var(--hw-primary);
         }
@@ -380,19 +396,17 @@
         }
         
         .progress-bead.overdue {
-            background: #8B0000;
-            color: var(--white);
-            opacity: 0.7;
+            background: #FF9800; /* soft orange */
+            color: #fff;
+            opacity: 1;
+        }
+
+        .progress-bead.completed {
+            background: #4CAF50 !important; /* solid green, force override */
+            color: #fff !important;
         }
         
-        .progress-bead.overdue::after {
-            content: '';
-            position: absolute;
-            width: 24px;
-            height: 2px;
-            background: var(--white);
-            transform: rotate(45deg);
-        }
+        /* .progress-bead.overdue::after { ... } removed: no strikethrough on overdue beads */
         
         @keyframes pulse-bead {
             0% { 
@@ -691,7 +705,11 @@
             line-height: 1.1;
         }
         
-        .exercise-row-cards {
+    /* ===================== */
+    /* Card Styles           */
+    /* ===================== */
+    /* Exercise description and game cards */
+    .exercise-row-cards {
             display: flex;
             flex-direction: row;
             gap: 32px;
@@ -700,33 +718,37 @@
             margin-top: 32px;
         }
         
-        .exercise-description-card {
+    /* Description card: left card with exercise description */
+    .exercise-description-card {
             flex: 1 1 0;
-            background: var(--white);
+            background: #FAFAFF;   /* Фоновый цвет карточки описания */
             border-radius: 16px;
-            box-shadow: 0 2px 8px var(--hw-shadow-light);
-            padding: 14px 10px 8px 10px;
+            border: 1px solid #D0D3E2;
+            box-shadow: 0 2px 8px rgba(114,102,216,0.10);
+            padding: 16px; /* 14px 10px 8px 10px; */
             height: 100%;
-            min-height: 320px;
+            min-height: 220px;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
         
-        .exercise-game-card {
+    /* Game card: right card with interactive part */
+    .exercise-game-card {
             flex: 1 1 0;
             background: var(--white);
             border-radius: 16px;
             box-shadow: 0 4px 16px 0 var(--hw-shadow-light);
-            padding: 2px 2px 0px 2px;
+            padding-bottom: 32px; /*2px 2px 0px 2px;*/
             height: 100%;
-            min-height: 320px;
+            min-height: 220px;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
         
-        .exercise-description-content {
+    /* Description card content */
+    .exercise-description-content {
             font-family: 'Assistant', sans-serif;
             font-weight: 400;
             color: #222;
@@ -735,7 +757,8 @@
             letter-spacing: 0;
         }
         
-        .game-indicators {
+    /* Game indicators: question counter, score, hint button */
+    .game-indicators {
             display: flex;
             flex-direction: row;
             align-items: center;
@@ -934,7 +957,8 @@
             margin-bottom: 0;
         }
         
-        .exercise-input-container {
+    /* Input fields for answers */
+    .exercise-input-container {
             display: flex;
             flex-direction: row;
             justify-content: center;
@@ -970,12 +994,11 @@
             text-align: center;
         }
         
-        .control-buttons-area {
-            position: relative;
-            margin-top: auto;
+    /* Control buttons below cards */
+    .control-buttons-area {
+            position: static;
+            margin-top: 16px;
             min-height: 56px;
-            left: 0;
-            right: 0;
         }
         
         .control-background {
@@ -1110,8 +1133,11 @@
             
             .homework-progress-container,
             .homework-progress-compact {
+                order: 2;
                 width: 100%;
-                max-width: 280px;
+                max-width: 320px;
+                align-self: center;
+                margin-top: -30px; /* поднять блок обратно в фиолетовую зону */
             }
             
             .progress-compact-header {
@@ -1177,10 +1203,27 @@
                 width: 100%;
                 justify-content: space-between;
             }
+            .exercise-row-cards {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .exercise-description-card,
+            .exercise-game-card {
+                min-width: 0;
+                width: 100%;
+                box-sizing: border-box;
+                padding: 14px;
+                margin: 0;
+            }
+            .homework-content {
+                padding: 10px;
+                margin: 0;
+            }
         }
     </style>
     <style>
-        /* Menu imitation styles in accordance with the main site */
+    /* ======= BEGIN: TOP TWO-ROW MENU STYLES ======= */
+    /* Menu imitation styles in accordance with the main site */
         .site-header {
             position: fixed;
             top: 0;
@@ -1665,6 +1708,7 @@
         
         /* Formula display container */
         .formula-display {
+
             font-size: 1.5em;
             margin: 0 0 18px 0;
             padding: 0;
@@ -1673,6 +1717,8 @@
             direction: ltr;
             text-align: center;
         }
+
+        /* ======= END: TOP TWO-ROW MENU STYLES ======= */
 
     </style>
 </head>
@@ -1758,42 +1804,28 @@
             <div class="homework-title-container">
                 <h2 class="homework-title">
                     <img src="../../../../assets/icons/hw_icon_c.svg" alt="משימות בית">
-                    משימות בית: פעולות במספרים מרוכבים
+                    פעולות במספרים מרוכבים
                 </h2>
                 <div class="homework-subtitle">
                     <span class="due-date">תאריך הגשה: <span id="due-date"></span></span>
                     <span class="separator">|</span>
-                    <span>השלם את כל המשימות וקבל ציון גבוה</span>
-                </div>
-                
-                <!-- Exercise Progress Beads -->
-                <div class="exercise-progress-beads">
-                    <div class="progress-bead completed" data-exercise="1" title="תרגיל 1 - הושלם">1</div>
-                    <div class="progress-bead completed" data-exercise="2" title="תרגיל 2 - הושלם">2</div>
-                    <div class="progress-bead active" data-exercise="3" title="תרגיל 3 - פעיל">3</div>
-                    <div class="progress-bead due-soon" data-exercise="4" title="תרגיל 4 - מועד הגשה בקרוב">4</div>
-                    <div class="progress-bead" data-exercise="5" title="תרגיל 5 - לא זמין">5</div>
-                    <div class="progress-bead" data-exercise="6" title="תרגיל 6 - לא זמין">6</div>
-                    <div class="progress-bead overdue" data-exercise="7" title="תרגיל 7 - פוגת מועד">7</div>
-                    <div class="progress-bead" data-exercise="8" title="תרגיל 8 - לא זמין">8</div>
-                </div>
-            </div>
-            
-            <div class="homework-progress-container homework-progress-compact">
-                <!-- Компактный однострочный прогресс -->
-                <div class="progress-compact-header">
-                    <span class="progress-percentage" id="progress-percentage">20%</span>
-                    <div class="progress-mini-bar">
-                        <div class="progress-mini-fill" style="width: 20%;"></div>
-                    </div>
-                    <span class="progress-grade">76</span>
-                </div>
-                
-                <div class="progress-compact-info">
-                    <span class="tasks-info">3/15 משימות</span>
                     <span class="deadline-mini">נותרו 2 ימים</span>
                 </div>
+                
             </div>
+            
+            <!-- Exercise Progress Beads -->
+            <div class="exercise-progress-beads">
+                <div class="progress-bead completed" data-exercise="1" title="תרגיל 1 - הושלם">1</div>
+                <div class="progress-bead completed" data-exercise="2" title="תרגיל 2 - הושלם">2</div>
+                <div class="progress-bead active" data-exercise="3" title="תרגיל 3 - פעיל">3</div>
+                <div class="progress-bead due-soon" data-exercise="4" title="תרגיל 4 - מועד הגשה בקרוב">4</div>
+                <div class="progress-bead" data-exercise="5" title="תרגיל 5 - לא זמין">5</div>
+                <div class="progress-bead" data-exercise="6" title="תרגיל 6 - לא זמין">6</div>
+                <div class="progress-bead overdue" data-exercise="7" title="תרגיל 7 - פוגת מועד">7</div>
+                <div class="progress-bead" data-exercise="8" title="תרגיל 8 - לא זמין">8</div>
+            </div>
+
         </div>
         
         <!-- Main content with exercises -->
@@ -2014,6 +2046,9 @@
     </style>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script>
+        // Initialize the first question
+        loadQuestion();
+
     // Exercise progress bead management
     function initializeProgressBeads() {
         const beads = document.querySelectorAll('.progress-bead');

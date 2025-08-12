@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homework Template (cleaned)</title>
+
+  <style>
+    /* =========================
+       Root variables (merged)
+       ========================= */
+    :root {
+      --white: #fff;
+
+      /* Theme */
+      --primary-color: #4A39BD;
+      --secondary-color: #6244C5;
+      --accent-color: #9747FF;
+      --text-color: #2C2C2C;
+      --background-color: var(--white);
+      --light-bg: #F5F3FF;
+
+      /* Header/Nav */
+      --active_menu-color: rgba(255, 255, 255, 0.8);
+      --color-primary-dark: #1a4480;
+      --color-accent: #3366cc;
+      --height-header: 50px;
+      --side-padding: clamp(1rem, 5vw, 48px);
+
+      /* Workspace */
+      --success-color: #2ECC40;
+      --error-color: #E74C3C;
+      --warning-color: #F39C12;
+      --text-light: #666;
+      --border-color: #E5E7EB;
+      --shadow: rgba(74, 57, 189, 0.15);
+      --border-radius: 16px;
+      --transition: all 0.3s ease;
+
+      /* Fonts */
+      --font-primary: 'Rubik', 'Assistant', sans-serif;
+      --font-secondary: 'Assistant', sans-serif;
+    }
+
+    /* =====================
+       Base typography
+       ===================== */
+    body {
+      font-family: var(--font-primary);
+      color: var(--text-color);
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      background: var(--light-bg);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-primary);
+      font-weight: 600;
+      margin-top: 0;
+    }
+    p, ul, ol {
+      font-family: var(--font-secondary);
+      margin-bottom: 1rem;
+    }
+
+    /* =====================
+       TOP TWO-ROW MENU
+       ===================== */
+    .site-header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: var(--white);
+      box-shadow: 0 2px 10px var(--black-transparent-10);
+      z-index: 1000;
+      height: var(--height-header);
+    }
+
+    .site-menu {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding-left: var(--side-padding);
+      padding-right: var(--side-padding);
+      height: 100%;
+      box-sizing: border-box;
+      position: relative;
+      width: 100%;
+    }
+    
+    .logo { display: flex; align-items: center; }
+
+    .header-separator {
+      color: var(--color-primary-dark);
+      margin: 0 0.8rem;
+      font-size: 1.2rem;
+      margin-top: -2px;
+    }
+
+    .breadcrumbs-icon,
+    #menu-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s;
+      padding: 0;
+      width: 20px;
+      height: 20px;
+      margin-left: 0.8rem;
+      margin-top: -2px;
+    }
+
+    .breadcrumbs-icon img,
+    #menu-toggle img {
+      width: 20px;
+      height: 20px;
+      filter: brightness(0) saturate(100%) invert(16%) sepia(77%) saturate(1686%) hue-rotate(213deg) brightness(94%) contrast(94%);
+      transition: filter 0.3s, transform 0.2s;
+    }
+
+    .breadcrumbs-icon:hover,
+    #menu-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    .breadcrumbs-icon:hover img,
+    #menu-toggle:hover img {
+      filter: brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(210deg) brightness(97%) contrast(85%);
+    }
+
+    .header-right { display: flex; align-items: center; flex-shrink: 0; }
+    .header-left { display: flex; align-items: center; flex-shrink: 0; position: relative; }
+
+    .header-center {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+    }
+
+    .main-nav, nav ul {
+      list-style: none;
+      display: flex;
+      gap: 0.8rem;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--color-primary-dark);
+      font-weight: 500;
+      padding: 4px 8px;
+      transition: color 0.3s;
+      display: block;
+      font-family: var(--font-primary);
+      font-size: 1.1rem;
+    }
+
+    nav a:hover { color: var(--color-accent); }
+
+    nav a.active { font-weight: bold; }
+
+    /* Secondary lesson menu (blue bar) */
+    .lesson-menu {
+      background-color: var(--color-primary-dark);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 50px;
+      width: 100%;
+      padding-left: var(--side-padding);
+      padding-right: var(--side-padding);
+      box-sizing: border-box;
+      position: fixed;
+      top: var(--height-header);
+      left: 0; right: 0;
+      z-index: 998;
+    }
+    .nav-icons-left,
+    .nav-icons-right {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .lesson-menu-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .lesson-menu-icon:hover { transform: translateY(-2px); }
+    .lesson-menu-icon img {
+      width: 28px;
+      height: 28px;
+      filter: brightness(0) invert(1);
+      transition: all 0.15s ease;
+    }
+
+    .lesson-menu-icon.active img {
+      width: 32px;
+      height: 32px;
+      filter: brightness(0) invert(1) drop-shadow(0 0 4px var(--active_menu-color));
+    }
+
+    .lesson-menu-icon:hover img { transform: scale(1.15); }
+
+    /* Breadcrumbs slide-down panel */
+    .breadcrumbs-panel {
+      position: fixed;
+      top: var(--height-header);
+      left: 0; right: 0;
+      background-color: var(--breadcrumb-panel-bg);
+      border-bottom: 2px solid var(--color-primary-dark);
+      box-shadow: 0 2px 10px var(--black-transparent-10);
+      z-index: 999;
+      transform: translateY(-100%);
+      transition: transform 0.3s ease-in-out;
+      overflow: hidden;
+    }
+
+    .breadcrumbs-panel.active { transform: translateY(0); }
+
+    .breadcrumbs-content {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0.5rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      direction: rtl;
+      text-align: right;
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+
+    .breadcrumb-link {
+      color: var(--color-primary-dark);
+      text-decoration: none;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      transition: color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .breadcrumb-link:hover {
+      color: var(--color-accent);
+      background-color: var(--white);
+    }
+
+    .breadcrumb-separator {
+      color: var(--color-primary-dark);
+      font-weight: bold;
+      margin: 0 0.3rem;
+    }
+
+    .breadcrumb-current {
+      font-weight: bold;
+      color: var(--color-primary-dark);
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+    }
+
+    /* Search box (always visible) */
+    .search-box-always {
+      display: flex;
+      flex-direction: row-reverse;
+      align-items: center;
+      background: #f5f5fa;
+      border-radius: 8px;
+      padding: 2px 10px;
+      border: 1px solid #d0d3e2;
+      margin-right: 1rem;
+    }
+
+    .search-box-always input {
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      background: transparent;
+      direction: rtl;
+      width: 120px;
+      color: #222;
+    }
+
+    .search-box-always input::placeholder { color: #aaa; }
+
+    .search-icon-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--color-primary-dark);
+      display: flex; align-items: center; justify-content: center;
+      padding: 0; margin-right: 0; margin-top: -2px;
+      transition: color 0.3s, transform 0.2s;
+    }
+
+    .search-icon-btn:hover { color: var(--color-accent); transform: scale(1.1); }
+
+
+    /* Lesson header wrapper (kept for compatibility) */
+    .lesson-header {
+      position: fixed;
+      top: var(--height-header);
+      left: 0; right: 0;
+      background-color: var(--white);
+      box-shadow: 0 2px 10px var(--black-transparent-05);
+      z-index: 999;
+      padding: 0 2rem;
+    }
+
+    /* =====================
+       Homework Workspace
+       ===================== */
+    .homework-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: var(--background-color);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      box-shadow: 0 10px 30px var(--shadow);
+    }
+
+    .homework-header {
+      margin-top: 100px;
+      background: linear-gradient(135deg, #4A39BD 0%, #9747FF 100%);
+      padding: 24px 32px 24px 32px;
+      color: var(--white);
+      border-top-right-radius: var(--border-radius);
+      border-top-left-radius: var(--border-radius);
+    }
+
+    .header-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .header-content {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    .homework-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .homework-title img,
+    .homework-title svg {
+      width: 28px;
+      height: 28px;
+      filter: brightness(0) invert(1);
+    }
+
+    .progress-simple {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .progress-bar {
+      width: 120px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: white;
+      border-radius: 4px;
+      transition: width 0.6s ease;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    }
+
+    .exercise-nav {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    /* Progress beads */
+    .progress-bead {
+      display: inline-flex;
+      align-items: center; justify-content: center;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: #f0f0fa;
+      color: #7266d8;
+      font-weight: bold;
+      font-size: 1.1em;
+      margin: 0 4px;
+      box-shadow: 0 2px 8px rgba(114,102,216,0.10);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
+      user-select: none;
+    }
+    .progress-bead.active {
+      background: #7266d8; color: #fff;
+      box-shadow: 0 4px 16px rgba(114,102,216,0.18);
+      transform: scale(1.12);
+    }
+
+    .progress-bead.due-soon {
+      background: #ffe066; color: #b8860b;
+      animation: pulse-bead 1.2s infinite alternate;
+    }
+
+    .progress-bead.overdue {
+      background: #e74c3c; color: #fff;
+      animation: pulse-urgent 1.2s infinite alternate;
+    }
+    .progress-bead.completed { background: #2ecc40; color: #fff; box-shadow: 0 2px 8px rgba(46,204,64,0.10); }
+
+    @keyframes pulse-bead {
+      from { box-shadow: 0 0 0 0 #ffe06655; }
+      to   { box-shadow: 0 0 0 8px #ffe06622; }
+    }
+    @keyframes pulse-urgent {
+      from { box-shadow: 0 0 0 0 #e74c3c55; }
+      to   { box-shadow: 0 0 0 10px #e74c3c22; }
+    }
+
+    .homework-content { padding: 32px; }
+
+    .exercise-header {
+        background: var(--background-color); /* совпадает с цветом фона сайта */
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px; /* вертикальные и горизонтальные отступы */
+        margin-top: 12px;   /* отступ от фиолетового блока */
+        border-radius: var(--border-radius);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05); /* лёгкая тень */
+    }
+
+    .exercise-info { display: flex; align-items: center; gap: 16px; }
+    .exercise-title-main {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 20px; font-weight: 600; color: var(--primary-color);
+    }
+
+    .exercise-meta { display: flex; align-items: center; gap: 20px; }
+    .difficulty-display { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-light); }
+    .difficulty-dots { display: flex; gap: 4px; }
+    .difficulty-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-color); }
+    .difficulty-dot.filled { background: var(--primary-color); }
+    .points-badge { background: var(--primary-color); color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+
+    .game-area {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    /* ==============
+       Responsive
+       ============== */
+    @media (max-width: 768px) {
+        .site-menu { padding-left: 1rem; padding-right: 1rem; }
+        .lesson-menu { padding-left: 1rem; padding-right: 1rem; }
+
+        .lesson-title { font-size: 1.5rem; }
+        .lesson-subtitle { font-size: 1rem; }
+
+        .nav-icons-compact { gap: 0.8rem; justify-content: space-between; }
+
+        .nav-icon-compact img,
+        .objectives-trigger-compact img { width: 18px; height: 18px; }
+        .nav-icon img, .objectives-trigger img { width: 20px; height: 20px; }
+
+        .header-row {
+            grid-template-columns: 1fr; /* Один столбец */
+            gap: 4px;                  /* Расстояние между заголовком и бусами */
+        }
+
+        .exercise-nav {
+            justify-content: center;    /* Центрируем бусы */
+            margin-top: 0px;
+            flex-wrap: wrap;            /* Чтобы на очень маленьких экранах переносились */
+        }
+
+        .lesson-header { padding: 0 1rem; }
+        .main-nav { display: none; }
+
+        .lesson-nav {
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            padding: 5px 0;
+            scrollbar-width: none;
+        }
+        .lesson-nav::-webkit-scrollbar { display: none; }
+        .lesson-tab { padding: 8px 12px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="site-menu">
+      <div class="header-right">
+        <div class="logo">
+          <img src="../../../../assets/logo/logo_transp.png" alt="Math with Love" height="28">
+        </div>
+        <span class="header-separator">|</span>
+        <button id="menu-toggle">
+          <img src="../../../../assets/icons/mmenu_icon_c.svg" alt="תפריט" width="20" height="20">
+        </button>
+        <button id="breadcrumbs-toggle" class="breadcrumbs-icon">
+          <img src="../../../../assets/icons/breadcrumbs_icon.svg" alt="ניווט" width="20" height="20">
+        </button>
+      </div>
+
+      <nav class="header-center">
+        <ul class="main-nav">
+          <li><a href="#" data-page="home" class="active">בית</a></li>
+          <li><a href="#" data-page="courses">קורסים</a></li>
+          <li><a href="#" data-page="about">אודות</a></li>
+          <li><a href="#" data-page="contact">צור קשר</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-left">
+        <div class="search-box-always">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" placeholder="חיפוש..." />
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="lesson-menu">
+    <div class="nav-icons-left">
+      <a href="#theory" class="lesson-menu-icon">
+        <img src="../../../../assets/icons/teach_icon_c_new.svg" alt="תיאוריה">
+      </a>
+      <a href="#interactive" class="lesson-menu-icon">
+        <img src="../../../../assets/icons/gauss_visual.svg" alt="כלי אינטראקטיבי">
+      </a>
+      <a href="#practice" class="lesson-menu-icon">
+        <img src="../../../../assets/icons/practice_icon_c.svg" alt="תרגול">
+      </a>
+      <a href="#homework" class="lesson-menu-icon active">
+        <img src="../../../../assets/icons/hw_icon_c.svg" alt="שיעורי בית">
+      </a>
+    </div>
+    <div class="nav-icons-right">
+      <a href="#teacher-hints" class="lesson-menu-icon">
+        <img src="../../../../assets/icons/lamp_icon_c.svg" alt="רמזים למורה">
+      </a>
+    </div>
+  </nav>
+
+  <main class="homework-interactive">
+    <section class="homework-header">
+      <div class="header-row">
+        <div class="header-content">
+          <h2 class="homework-title">
+            <img src="../../../../assets/icons/hw_icon_c.svg" alt="משימות בית">
+            פעולות במספרים מרוכבים
+          </h2>
+
+          <div class="homework-subtitle">
+            <span class="due-date">תאריך הגשה: <span id="due-date"></span></span>
+            <span class="separator">|</span>
+            <span class="deadline-mini">נותרו 2 ימים</span>
+          </div>
+
+        </div>
+
+        <div class="exercise-nav">
+          <div class="progress-bead completed" data-exercise="1" title="תרגיל 1 - הושלם">1</div>
+          <div class="progress-bead completed" data-exercise="2" title="תרגיל 2 - הושלם">2</div>
+          <div class="progress-bead active" data-exercise="3" title="תרגיל 3 - פעיל">3</div>
+          <div class="progress-bead due-soon" data-exercise="4" title="תרגיל 4 - מועד הגשה בקרוב">4</div>
+          <div class="progress-bead" data-exercise="5" title="תרגיל 5 - לא זמין">5</div>
+          <div class="progress-bead" data-exercise="6" title="תרגיל 6 - לא זמין">6</div>
+          <div class="progress-bead overdue" data-exercise="7" title="תרגיל 7 - פוגת מועד">7</div>
+          <div class="progress-bead" data-exercise="8" title="תרגיל 8 - לא זמין">8</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="exercise-header">
+        <div class="exercise-info">
+          <div class="exercise-title-main">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+            זיהוי מספרים מרוכבים
+          </div>
+        </div>
+        <div class="exercise-meta">
+          <div class="difficulty-display">
+            רמת קושי:
+            <div class="difficulty-dots">
+              <div class="difficulty-dot"></div>
+              <div class="difficulty-dot"></div>
+              <div class="difficulty-dot filled"></div>
+            </div>
+          </div>
+          <div class="points-badge">10 נק'</div>
+        </div>
+      </div>
+
+    <section class="homework-content">
+      <div class="exercise-row-cards">
+        <div class="exercise-description-card"></div>
+        <div class="exercise-game-card"></div>
+      </div>
+    </section>
+
+    <section class="homework-footer">
+      <div class="exercise-navigation">
+        <button class="nav-button" id="prevBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15,18 9,12 15,6"/>
+          </svg>
+          תרגיל קודם
+        </button>
+
+        <div style="text-align: center; color: var(--text-light);">
+          תרגיל 3 מתוך 8
+        </div>
+
+        <button class="nav-button" id="nextBtn">
+          תרגיל הבא
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9,18 15,12 9,6"/>
+          </svg>
+        </button>
+      </div>
+    </section>
+    
+    <script>
+      function setDates() {
+        var dueDateElement = document.getElementById('due-date');
+        if (dueDateElement) {
+          var now = new Date();
+          now.setDate(now.getDate() + 2);
+          dueDateElement.textContent = now.toLocaleDateString('he-IL');
+        }
+      }
+      window.addEventListener('DOMContentLoaded', function() {
+        setDates();
+        if (typeof initializeProgressBeads === 'function') {
+          initializeProgressBeads();
+        }
+      });
+    </script>
+  </main>
+</body>
+</html>

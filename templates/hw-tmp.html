@@ -4,18 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Homework Template</title>
-    
+
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+    <link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
     <!-- Add your styles and scripts here -->
     <style> 
-        /* ===================== */
-        /* Main Menu Styles      */
-        /* ===================== */
+        /* All comments below are in English only. Russian and Hebrew comments have been removed or translated. */
+
+        /* --- Main Menu Styles --- */
         /* Main site header, navigation, logo, and top-level menu */
 
-        /* =========================
-       Root variables (merged)
-       ========================= */
-
+        /* --- Root variables (merged) --- */
         /* Color variables */
         :root {
             --white: #fff;
@@ -26,17 +28,9 @@
             --text-color: #2C2C2C;
             --background-color: var(--white);
             --light-bg: #F5F3FF;
-
-            /* Navigation and header */
             --active_menu-color: rgba(255, 255, 255, 0.8);
             --color-primary-dark: #1a4480;
             --color-accent: #3366cc;
-
-            /* Element sizes */
-            --height-header: 50px;
-            --side-padding: clamp(1rem, 5vw, 48px);
-            
-            /* Workspace */
             --success-color: #2ECC40;
             --error-color: #E74C3C;
             --warning-color: #F39C12;
@@ -44,11 +38,38 @@
             --border-color: #E5E7EB;
             --shadow: rgba(74, 57, 189, 0.15);
             --border-radius: 16px;
+            --border-radius-sm: 8px;
+            --border-radius-lg: 32px;
             --transition: all 0.3s ease;
-
-            /* Fonts */
-            --font-primary: 'Rubik', 'Assistant', sans-serif;
-            --font-secondary: 'Assistant', sans-serif;
+            --bead-yellow: #ffe066;
+            --bead-yellow-dark: #b8860b;
+            --bead-green: #2ecc40;
+            --bead-red: #e74c3c;
+            --bead-blue: #7266d8;
+            --bead-shadow-yellow: rgba(255,224,102,0.18);
+            --bead-shadow-green: rgba(46,204,64,0.10);
+            --bead-shadow-blue: rgba(114,102,216,0.10);
+            --bead-shadow-red: rgba(231,76,60,0.10);
+            --btn-padding: 12px 24px;
+            --btn-radius: 8px;
+            --btn-min-width: 120px;
+            --input-radius: 8px;
+            --input-padding: 0.5em 1em;
+            --input-border: 2px solid var(--border-color);
+            --black: #000;
+            --black-transparent-10: rgba(0,0,0,0.10);
+            --black-transparent-05: rgba(0,0,0,0.05);
+            --white-transparent-70: rgba(255,255,255,0.7);
+            --hw-yellow: #ffeb3b;
+            --hw-yellow-shadow: rgba(255, 221, 51, 0.7);
+            --hw-yellow-shadow-fade: rgba(255, 221, 51, 0);
+            --hw-green: #2ecc40;
+            --hw-red: #e74c3c;
+            --hw-blue: #3366cc;
+            --hw-grey: #aaa;
+            --hw-dark: #222;
+            --hw-light: #f5f5fa;
+            --hw-border-grey: #d0d3e2;
         }
 
         /* ===================== */
@@ -135,11 +156,6 @@
         .breadcrumbs-icon:hover,
         #menu-toggle:hover {
             transform: scale(1.1);
-        }
-        
-        .breadcrumbs-icon:hover img,
-        #menu-toggle:hover img {
-            filter: brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(210deg) brightness(97%) contrast(85%); /* Blue color on hover */
         }
         
         /* Navigation in center */
@@ -361,15 +377,15 @@
             margin-left: 0;
         }
 
-        /* Всегда видимое поле поиска */
+        /* Always visible search box */
         .search-box-always {
             display: flex;
             flex-direction: row-reverse;
             align-items: center;
-            background: #f5f5fa;
+            background: var(--hw-light);
             border-radius: var(--border-radius);
             padding: 2px 10px;
-            border: 1px solid #d0d3e2;
+            border: 1px solid var(--hw-border-grey);
             margin-right: 1rem;
         }
 
@@ -380,10 +396,10 @@
             background: transparent;
             direction: rtl;
             width: 120px;
-            color: #222;
+            color: var(--hw-dark);
         }
 
-        .search-box-always input::placeholder { color: #aaa; }
+        .search-box-always input::placeholder { color: var(--hw-grey); }
 
         /* Search button style */
         .search-icon-btn {
@@ -417,7 +433,7 @@
         
         .lesson-header {
             position: fixed;
-            top: var(--height-header); /* Обновляем в соответствии с новой высотой */
+            top: var(--height-header); /* Update according to new height */
             left: 0; right: 0;
             background-color: var(--white);
             box-shadow: 0 2px 10px var(--black-transparent-05);
@@ -440,18 +456,18 @@
         /* Compact header */
         .homework-header {
             margin-top: 100px;
-            background: linear-gradient(135deg, #4A39BD 0%, #9747FF 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
             padding: 32px;
             color: var(--white);
             border-top-right-radius: var(--border-radius);
             border-top-left-radius: var(--border-radius);
         }
 
-        /* -- Блок настройки расположения элементов домашнего задания -- */
+        /* -- Block for adjusting the layout of homework elements -- */
         .header-row {
             display: grid;
             grid-template-columns: 1fr auto;
-            align-items: center; /* Центрирование по высоте */
+            align-items: center; /* Centering vertically */
         }
         
         .header-content {
@@ -479,7 +495,7 @@
             filter: brightness(0) invert(1);
         }
 
-        /* Упрощенный прогресс */
+        /* Simplified progress */
         .progress-simple {
             display: flex;
             align-items: center;
@@ -491,20 +507,20 @@
         .progress-bar {
             width: 120px;
             height: 8px;
-            background: rgba(255, 255, 255, 0.3);
+            background: var(--active_menu-color);
             border-radius: 4px;
             overflow: hidden;
         }
 
         .progress-fill {
             height: 100%;
-            background: white;
+            background: var(--white);
             border-radius: 4px;
             transition: width 0.6s ease;
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 8px var(--white-transparent-70);
         }
 
-        /* Упрощенная навигация по упражнениям */
+        /* Simplified navigation between exercises */
         .exercise-nav {
             display: flex;
             justify-content: center;
@@ -513,54 +529,62 @@
         }
 
         /* ====== Progress-bead styles ====== */
-        /* Main progress bead */
+        /* Progress bead styles for exercise navigation */
         .progress-bead {
-            display: inline-flex;
-            align-items: center; justify-content: center;
-            width: 32px; height: 32px;
-            border-radius: 50%;
-            background: #f0f0fa;
-            color: #7266d8;
-            font-weight: bold;
-            font-size: 1.1em;
-            margin: 0 4px;
-            box-shadow: 0 2px 8px rgba(114,102,216,0.10);
-            cursor: pointer;
-            transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
-            user-select: none;
+          /* Default bead style */
+          display: inline-flex;
+          align-items: center; justify-content: center;
+          width: 32px; height: 32px;
+          border-radius: 50%;
+          background: var(--bead-blue);
+          color: var(--bead-blue);
+          box-shadow: 0 2px 8px var(--bead-shadow-blue);
+          cursor: pointer;
+          transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
+          user-select: none;
         }
 
-        /* Active bead (current exercise number) */
+        /* The currently active bead (current exercise) */
         .progress-bead.active {
-            background: #7266d8; color: #fff;
-            box-shadow: 0 4px 16px rgba(114,102,216,0.18);
-            transform: scale(1.12);
+          background: var(--bead-yellow);
+          color: var(--bead-yellow-dark);
+          box-shadow: 0 4px 16px var(--bead-shadow-yellow);
+          transform: scale(1.12);
+          border: 2px solid var(--bead-yellow-dark);
+          z-index: 1;
         }
 
-        /* Due-soon bead */
+        /* Bead for exercises due soon */
         .progress-bead.due-soon {
-            background: #ffe066; color: #b8860b;
-            animation: pulse-bead 1.2s infinite alternate;
+          background: var(--bead-yellow);
+          color: var(--bead-yellow-dark);
+          animation: pulse-bead 1.2s infinite alternate;
         }
 
-        /* Overdue bead */
+        /* Bead for overdue exercises */
         .progress-bead.overdue {
-            background: #e74c3c; color: #fff;
-            animation: pulse-urgent 1.2s infinite alternate;
+          background: var(--bead-red);
+          color: var(--white);
+          animation: pulse-urgent 1.2s infinite alternate;
         }
 
-        /* Completed bead */
-        .progress-bead.completed { background: #2ecc40; color: #fff; box-shadow: 0 2px 8px rgba(46,204,64,0.10); }
+        /* Bead for completed exercises */
+        .progress-bead.completed {
+          background: var(--bead-green);
+          color: var(--white);
+          box-shadow: 0 2px 8px var(--bead-shadow-green);
+          /* No animation for completed beads */
+        }
 
-                /* Animation for due-soon */
+        /* Animation for due-soon */
         @keyframes pulse-bead {
-            from { box-shadow: 0 0 0 0 #ffe06655; }
-            to   { box-shadow: 0 0 0 8px #ffe06622; }
+            from { box-shadow: 0 0 0 0 var(--bead-yellow); }
+            to   { box-shadow: 0 0 0 8px var(--bead-shadow-yellow); }
         }
         /* Animation for overdue */
         @keyframes pulse-urgent {
-            from { box-shadow: 0 0 0 0 #e74c3c55; }
-            to   { box-shadow: 0 0 0 10px #e74c3c22; }
+            from { box-shadow: 0 0 0 0 var(--bead-red); }
+            to   { box-shadow: 0 0 0 10px var(--bead-shadow-red); }
         }
         /* ====== END: Progress-bead styles ====== */
 
@@ -592,7 +616,7 @@
         .difficulty-dots { display: flex; gap: 4px; }
         .difficulty-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-color); }
         .difficulty-dot.filled { background: var(--primary-color); }
-        .points-badge { background: var(--primary-color); color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+    .points-badge { background: var(--primary-color); color: var(--white); padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: 600; }
 
         .game-area {
         display: grid;
@@ -601,7 +625,7 @@
         margin-bottom: 24px;
         }
 
-        /* Карточки описания и игры */
+        /* Description and game cards */
         .description-card, .game-card {
             background: var(--background-color);
             border: 1px solid var(--border-color);
@@ -613,14 +637,14 @@
             background: var(--light-bg);
         }
 
-        /* Карточка задания для выполнения */
+        /* Task card for execution */
         .game-card {
             display: flex;
             flex-direction: column;
             min-height: 300px;
         }
 
-        /* Статус игры */
+        /* Game status */
         .game-status {
             display: flex;
             justify-content: space-between;
@@ -643,18 +667,18 @@
             color: var(--primary-color);
         }
 
-        /* Математическая формула */
+        /* Mathematical formula */
         .formula-display {
             text-align: center;
             margin: 20px 0;
             padding: 20px;
-            background: white;
+            background: var(--white);
             border-radius: 8px;
             border: 1px solid var(--border-color);
             direction: ltr;
         }
 
-        /* Поля ввода */
+        /* Input fields */
         .input-area {
             display: flex;
             justify-content: center;
@@ -677,33 +701,34 @@
         .number-input {
             width: 80px;
             height: 60px;
-            font-size: 24px;
-            font-weight: 700;
-            text-align: center;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            background: white;
-            color: var(--text-color);
-            transition: var(--transition);
+               font-size: 24px;
+               font-weight: 700;
+               text-align: center;
+               border: var(--input-border);
+               border-radius: var(--input-radius);
+               background: var(--white);
+               color: var(--text-color);
+               transition: var(--transition);
+               direction: ltr;
         }
 
         .number-input:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(74, 57, 189, 0.1);
+            box-shadow: 0 0 0 3px var(--shadow);
         }
 
         .number-input.correct {
             border-color: var(--success-color);
-            background: rgba(46, 204, 64, 0.1);
+            background: var(--bead-shadow-green);
         }
 
         .number-input.incorrect {
             border-color: var(--error-color);
-            background: rgba(231, 76, 60, 0.1);
+            background: var(--bead-shadow-red);
         }
 
-        /* Кнопки действий */
+        /* Action buttons */
         .action-buttons {
             display: flex;
             justify-content: center;
@@ -713,29 +738,57 @@
         }
 
         .btn {
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
+            padding: var(--btn-padding);
+            border-radius: var(--btn-radius);
+            min-width: var(--btn-min-width);
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            background: transparent;
             transition: var(--transition);
             display: flex;
             align-items: center;
             gap: 8px;
-            min-width: 120px;
-            justify-content: center;
-            background: transparent;
-            color: var(--primary-color);
-            border: 2px solid var(--primary-color);
         }
 
-        /* Иконка лампочки в tipBtn — всегда как текст кнопки */
+        /* Active button — transparent background, bold font, thicker border */
+        .btn:active, .btn.active {
+          background: transparent !important;
+          font-weight: bold;
+          border-width: 3px;
+        }
+
+        /* Check: red/green button, inversion of text and icon colors */
+        .btn.check-error {
+          border-color: var(--error-color) !important;
+          background: var(--error-color) !important;
+          color: var(--white) !important;
+          border-color: var(--error-color) !important;
+          background: var(--error-color) !important;
+          color: var(--white) !important;
+          font-weight: bold;
+          border-width: 3px;
+        }
+        .btn.check-success {
+          border-color: var(--success-color) !important;
+          background: var(--success-color) !important;
+          color: var(--white) !important;
+          border-color: var(--success-color) !important;
+          background: var(--success-color) !important;
+          color: var(--white) !important;
+          font-weight: bold;
+          border-width: 3px;
+        }
+        .btn.check-error svg, .btn.check-success svg {
+          stroke: var(--white) !important;
+          stroke: var(--white) !important;
+        }
+
+        /* Lamp icon in tipBtn - always matches button text color */
         .tip-icon {
             width: 1.2em;
             height: 1.2em;
             vertical-align: middle;
-            /* Цвет иконки через фильтр, как у lesson-menu-icon */
+            /* Icon color through filter, like lesson-menu-icon */
             filter: brightness(0) saturate(100%) invert(23%) sepia(41%) saturate(1112%) hue-rotate(217deg) brightness(90%) contrast(98%);
             transition: filter 0.15s;
         }
@@ -746,7 +799,7 @@
             color: var(--primary-color);
         }
         #tipBtn:hover {
-            color: var(--white);
+            color: var(--secondary-color) !important;
         }
         #tipBtn:disabled {
             color: var(--primary-color);
@@ -760,14 +813,20 @@
             transform: none !important;
         }
 
-        .btn:hover {
-            background: var(--secondary-color);
-            color: var(--white);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px var(--shadow);
+        .btn:hover, .btn:focus {
+          background: transparent !important;
+          border-width: 3px;
+          border-color: var(--secondary-color);
+          box-shadow: 0 0 8px 0 var(--secondary-color);
+          font-weight: bold;
+          color: var(--secondary-color);
+          outline: none;
+          transition: border-color 0.2s, box-shadow 0.2s, color 0.2s;
         }
-
-        /* Навигация между упражнениями */
+        .btn:hover .tip-icon, .btn:focus .tip-icon {
+          filter: brightness(0) saturate(100%) invert(23%) sepia(41%) saturate(1112%) hue-rotate(217deg) brightness(90%) contrast(98%) !important;
+        }
+        /* Navigation between exercises */
         .exercise-navigation {
             display: flex;
             justify-content: space-between;
@@ -794,14 +853,14 @@
             .nav-icon img, .objectives-trigger img { width: 20px; height: 20px; }
 
             .header-row {
-                grid-template-columns: 1fr; /* Один столбец */
-                gap: 4px;                  /* Расстояние между заголовком и бусами */
+                grid-template-columns: 1fr; /* One column */
+                gap: 4px;                  /* Space between title and beads */
             }
 
             .exercise-nav {
-                justify-content: center;    /* Центрируем бусы */
+                justify-content: center;    /* Center beads */
                 margin-top: 0px;
-                flex-wrap: wrap;            /* Чтобы на очень маленьких экранах переносились */
+                flex-wrap: wrap;            /* To wrap on very small screens */
             }
 
             .lesson-header { padding: 0 1rem; }
@@ -816,7 +875,62 @@
             }
             .lesson-nav::-webkit-scrollbar { display: none; }
             .lesson-tab { padding: 8px 12px; }
+
+            .game-area {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
         }
+
+        /* Shake animation for button */
+@keyframes shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+  100% { transform: translateX(0); }
+}
+.btn.shake {
+  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* Pulse animation for tip button */
+@keyframes pulse-yellow {
+    0% { box-shadow: 0 0 0 0 var(--hw-yellow-shadow); }
+    70% { box-shadow: 0 0 0 10px var(--hw-yellow-shadow-fade); }
+    100% { box-shadow: 0 0 0 0 var(--hw-yellow-shadow-fade); }
+    0% { box-shadow: 0 0 0 0 var(--hw-yellow-shadow); }
+    70% { box-shadow: 0 0 0 10px var(--hw-yellow-shadow-fade); }
+    100% { box-shadow: 0 0 0 0 var(--hw-yellow-shadow-fade); }
+}
+#tipBtn.pulse {
+  animation: pulse-yellow-strong 1s;
+    background: var(--hw-yellow) !important;
+    border-color: var(--hw-yellow) !important;
+  color: var(--primary-color) !important;
+}
+#tipBtn.pulse .tip-icon {
+  filter: brightness(0) saturate(100%) invert(23%) sepia(41%) saturate(1112%) hue-rotate(217deg) brightness(90%) contrast(98%) !important;
+}
+
+/* Pulse animation for checkmark */
+@keyframes pulse-green {
+    0% { transform: scale(1); filter: drop-shadow(0 0 0 var(--hw-green)); }
+    50% { transform: scale(1.25); filter: drop-shadow(0 0 8px var(--hw-green)); }
+    100% { transform: scale(1); filter: drop-shadow(0 0 0 var(--hw-green)); }
+}
+#checkBtn .checkmark.pulse {
+  animation: pulse-green 0.7s;
+}
+
+/* Artistic red X - now uses currentColor */
+#checkBtn .art-x {
+  stroke: currentColor;
+  stroke-width: 3;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px currentColor);
+}
   </style>
 
 </head>
@@ -979,30 +1093,30 @@
 
                         <!-- Статус игры -->
                         <div class="game-status">
-                            <div class="question-info">שאלה <span id="questionNum">1</span>/5</div>
+                            <div class="question-info">שאלה <span id="questionCounter">1</span>/5</div>
                             <div class="score-display">ניקוד: <span id="score">0</span></div>
                         </div>
 
                         <!-- Формула -->
                         <div class="formula-display">
-                            <div id="complexNumber" style="font-size: 2em;"></div>
+                            <span id="complexKaTeX" style="font-size: 1.5em; background: none; margin: 0; padding: 0;"></span>
                         </div>
 
                         <!-- Поля ввода -->
                         <div class="input-area">
                             <div class="input-group">
                                 <label for="imaginaryInput" class="input-label">Im(z)</label>
-                                <input type="number" id="imaginaryInput" class="number-input">
+                                <input id="imaginaryInput" type="number" class="number-input" autocomplete="off" inputmode="numeric" pattern="-?[0-9]*">
                             </div>
                             <div class="input-group">
                                 <label for="realInput" class="input-label">Re(z)</label>
-                                <input type="number" id="realInput" class="number-input">
+                                <input id="realInput" type="number" class="number-input" autocomplete="off" inputmode="numeric" pattern="-?[0-9]*">
                             </div>
                         </div>
 
                         <!-- Обратная связь -->
                         <div class="feedback-area">
-                            <div id="feedback" class="feedback-message"></div>
+                            <div id="feedbackMessage" class="feedback-message"></div>
                         </div>
 
                         <!-- Кнопки действий -->
@@ -1011,16 +1125,6 @@
                             <button class="btn" id="tipBtn">
                                 <img src="../../../../assets/icons/lamp_icon.svg" alt="רמז" class="tip-icon">
                                 רמז
-                            </button>
-
-                            <button class="btn" id="restartBtn">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-                                    <path d="M21 3v5h-5"/>
-                                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-                                    <path d="M3 21v-5h5"/>
-                                </svg>
-                                התחל מחדש
                             </button>
 
                             <button class="btn" id="checkBtn">
@@ -1060,7 +1164,69 @@
 
         </section>
 
+        <!-- KaTeX JS -->
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
         <script>
+            // Pure JS for regular input
+            var complexNumbers = [
+                { complex: "3 + 4i", real: 3, imaginary: 4 },
+                { complex: "5 - 2i", real: 5, imaginary: -2 },
+                { complex: "-2 + 3i", real: -2, imaginary: 3 },
+                { complex: "-1 - 5i", real: -1, imaginary: -5 },
+                { complex: "4", real: 4, imaginary: 0 }
+            ];
+            var currentQuestionIndex = 0;
+            var score = 0;
+
+            // Initialize the first question
+            loadQuestion();
+
+            // Exercise progress bead management
+            function initializeProgressBeads() {
+                const beads = document.querySelectorAll('.progress-bead');
+                const dueDate = new Date('2024-02-01'); // Example due date
+                const now = new Date();
+                const twoDaysFromNow = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+                
+                beads.forEach((bead, index) => {
+                    const exerciseNum = index + 1;
+                    
+                    // Simulate exercise deadlines
+                    const exerciseDeadline = new Date(dueDate.getTime() + exerciseNum * 24 * 60 * 60 * 1000);
+                    
+                    bead.addEventListener('click', () => {
+                        if (!bead.classList.contains('completed') && !bead.classList.contains('overdue')) {
+                            scrollToExercise(exerciseNum);
+                        }
+                    });
+                    
+                    // Check deadline status
+                    if (exerciseDeadline < now) {
+                        bead.classList.add('overdue');
+                        bead.classList.remove('due-soon', 'active');
+                    } else if (exerciseDeadline < twoDaysFromNow) {
+                        bead.classList.add('due-soon');
+                        bead.classList.remove('active');
+                    }
+                });
+            }
+
+            function scrollToExercise(exerciseNum) {
+                const exerciseElement = document.querySelector(`[data-exercise="${exerciseNum}"]`);
+                if (exerciseElement) {
+                    exerciseElement.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+            
+            function updateProgressBead(exerciseNum, status) {
+                const bead = document.querySelector(`.progress-bead[data-exercise="${exerciseNum}"]`);
+                if (bead) {
+                    bead.classList.remove('active', 'completed', 'due-soon', 'overdue');
+                    bead.classList.add(status);
+                }
+            }
+
+
             function setDates() {
                 var dueDateElement = document.getElementById('due-date');
                 if (dueDateElement) {
@@ -1072,10 +1238,150 @@
             window.addEventListener('DOMContentLoaded', function() {
                 setDates();
                 if (typeof initializeProgressBeads === 'function') {
-          initializeProgressBeads();
-        }
-      });
-    </script>
-  </main>
+                    initializeProgressBeads();
+                }
+                var checkBtn = document.getElementById('checkBtn');
+                if (checkBtn) {
+                    checkBtn.addEventListener('click', checkAnswer);
+                }
+            });
+
+            function checkAnswer() {
+                var userReal = Number(document.getElementById('realInput').value.trim());
+                var userImaginary = Number(document.getElementById('imaginaryInput').value.trim());
+                var checkBtn = document.getElementById('checkBtn');
+                var tipBtn = document.getElementById('tipBtn');
+                var checkSvg = checkBtn ? checkBtn.querySelector('svg') : null;
+                var currentQuestion = complexNumbers[currentQuestionIndex];
+                if (isNaN(userReal) || isNaN(userImaginary)) {
+                    showFeedback('נא למלא את כל השדות', 'warning');
+                    if (checkSvg) {
+                        checkSvg.innerHTML = '<polyline class="checkmark" points="20,6 9,17 4,12"/>';
+                        checkSvg.setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue('--bead-blue').trim());
+                    }
+                    if (checkBtn) {
+                        checkBtn.classList.remove('check-error', 'check-success');
+                    }
+                    return;
+                }
+                var isCorrect = (userReal === currentQuestion.real && userImaginary === currentQuestion.imaginary);
+                if (isCorrect) {
+                    score += 20;
+                    var scoreElem = document.getElementById('gameScore') || document.getElementById('score');
+                    if (scoreElem) scoreElem.textContent = score.toString();
+                    showFeedback('נכון מאוד!', 'success');
+                    if (checkSvg) {
+                        checkSvg.innerHTML = '<polyline class="checkmark pulse" points="20,6 9,17 4,12"/>';
+                        checkSvg.setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue('--white').trim());
+                    }
+                    if (checkBtn) {
+                        checkBtn.classList.remove('check-error');
+                        checkBtn.classList.add('check-success');
+                    }
+                    setTimeout(function() {
+                        if (checkSvg) {
+                            checkSvg.innerHTML = '<polyline class="checkmark" points="20,6 9,17 4,12"/>';
+                            checkSvg.setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue('--bead-blue').trim());
+                        }
+                        if (checkBtn) {
+                            checkBtn.classList.remove('check-success');
+                        }
+                        currentQuestionIndex++;
+                        if (currentQuestionIndex < complexNumbers.length) {
+                            loadQuestion();
+                        } else {
+                            showResults();
+                        }
+                    }, 1200);
+                } else {
+                    showFeedback('לא נכון, נסה שוב', 'error');
+                    if (checkSvg) {
+                        // X теперь цветом currentColor (цвет текста кнопки)
+                        checkSvg.innerHTML = '<g class="art-x"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></g>';
+                    }
+                    if (checkBtn) {
+                        checkBtn.classList.remove('check-success');
+                        checkBtn.classList.add('check-error', 'shake');
+                        setTimeout(function() {
+                            checkBtn.classList.remove('shake');
+                            checkBtn.classList.remove('check-error');
+                        }, 800);
+                    }
+                    if (tipBtn) {
+                        tipBtn.classList.add('pulse');
+                        setTimeout(function() {
+                            tipBtn.classList.remove('pulse');
+                        }, 1000);
+                    }
+                    setTimeout(function() {
+                        if (checkSvg) {
+                            checkSvg.innerHTML = '<polyline class="checkmark" points="20,6 9,17 4,12"/>';
+                            checkSvg.setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue('--bead-blue').trim());
+                        }
+                        document.getElementById('feedbackMessage').innerHTML = '';
+                    }, 1200);
+                }
+            }
+
+            function loadQuestion() {
+                var currentQuestion = complexNumbers[currentQuestionIndex];
+                katex.render(currentQuestion.complex, document.getElementById("complexKaTeX"), {
+                    displayMode: true,
+                    throwOnError: false
+                });
+                document.getElementById('questionCounter').textContent = (currentQuestionIndex + 1).toString();
+                document.getElementById('realInput').value = '';
+                document.getElementById('imaginaryInput').value = '';
+                document.getElementById('feedbackMessage').innerHTML = '';
+            }
+
+            function showResults() {
+                document.getElementById('exerciseResults').classList.add('active');
+                document.querySelector('.results-score').textContent = score + "/100";
+                document.querySelector('.result-value').textContent = (score/20) + "/" + complexNumbers.length;
+            }
+            function showFeedback(message, type) {
+                var feedbackElement = document.getElementById('feedbackMessage');
+                var color = '';
+                switch (type) {
+                        case 'success': color = 'var(--primary-color)'; break;
+                        case 'error': color = 'var(--error-color)'; break;
+                        case 'warning': color = 'var(--warning-color)'; break;
+                }
+                feedbackElement.innerHTML = '<div style="color:' + color + ';font-weight:bold;">' + message + '</div>';
+            }
+
+            // JS: Update bead classes dynamically based on current exercise and deadlines
+            // This function should be called whenever the current exercise changes
+            function updateProgressBeads(currentIndex, deadlines) {
+              // Get all beads
+              const beads = document.querySelectorAll('.progress-bead');
+              const now = new Date();
+              beads.forEach((bead, idx) => {
+                bead.classList.remove('active', 'completed', 'due-soon', 'overdue');
+                if (idx < currentIndex) {
+                  // Completed exercises
+                  bead.classList.add('completed');
+                } else if (idx === currentIndex) {
+                  // Current exercise
+                  bead.classList.add('active');
+                } else if (deadlines && deadlines[idx]) {
+                  // Check deadlines for due-soon or overdue
+                  const due = deadlines[idx];
+                  const twoDays = 2 * 24 * 60 * 60 * 1000;
+                  if (due < now) {
+                    bead.classList.add('overdue');
+                  } else if (due - now < twoDays) {
+                    bead.classList.add('due-soon');
+                  }
+                }
+                // All other beads remain default
+              });
+            }
+            // Example usage:
+            // updateProgressBeads(currentQuestionIndex, [date1, date2, ...]);
+        </script>
+    </main>
+    
 </body>
 </html>
