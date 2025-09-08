@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מישור גאוס אינטראקטיבי</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=David+Libre:wght@400;700&family=Tinos:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a'
+                        },
+                        secondary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e'
+                        },
+                        accent: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    
+    <style>
+        body {
+            font-family: 'David Libre', serif;
+            overflow-x: hidden;
+        }
+        
+        /* Special font for mathematical text */
+        .math-text {
+            font-family: 'Tinos', 'Times New Roman', serif !important;
+            direction: ltr;
+        }
+        
+        .complex-input {
+            direction: ltr;
+            text-align: center;
+            font-family: 'Tinos', 'Times New Roman', serif;
+            background-color: #dbeafe !important; /* Light blue background */
+            border-color: #3b82f6 !important; /* Blue border */
+            text-transform: none !important; /* Prevent automatic capitalization */
+        }
+        
+        .complex-input::placeholder {
+            color: #9ca3af;
+            font-size: 0.9em;
+        }
+        
+        .ltr-math {
+            direction: ltr !important;
+            unicode-bidi: embed;
+            font-family: 'Tinos', 'Times New Roman', serif !important;
+        }
+        
+        /* Button animation */
+        .button-clicked {
+            transform: scale(0.95);
+            transition: transform 0.1s ease-in-out;
+        }
+        
+        /* Center text in select dropdown */
+        #degree-selector {
+            text-align: center !important;
+            text-align-last: center !important;
+            height: 60px !important;
+            min-height: 60px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            font-family: 'David Libre', 'Tinos', 'Times New Roman', serif !important;
+        }
+        
+        #degree-selector option {
+            text-align: center !important;
+            height: 60px !important;
+            line-height: 60px !important;
+            font-family: 'David Libre', 'Tinos', 'Times New Roman', serif !important;
+        }
+        
+        /* Ensure consistent styling for equation powers */
+        #power-a, #power-b {
+            font-family: 'Tinos', 'Times New Roman', serif !important;
+            font-size: inherit !important;
+        }
+        
+        #power-a sup, #power-b sup {
+            font-size: 0.5em !important; /* Much smaller superscripts */
+            vertical-align: super !important;
+            font-weight: normal !important;
+        }
+        
+        /* Make indices subscript (lower than baseline) */
+        .result-index {
+            font-size: 0.6em !important;
+            vertical-align: sub !important;
+            font-weight: normal !important;
+        }
+        
+        /* Reduce equation font size by 20% */
+        #equation-display {
+            font-size: 1.5rem !important; /* Reduced from 1.875rem (text-3xl) by 20% = 1.5rem */
+        }
+        
+        /* Ensure equation display children also inherit smaller size */
+        #equation-display span, #equation-display input {
+            font-size: inherit !important;
+        }
+        
+        /* Style for the toggle switch */
+        .toggle-switch {
+            display: flex;
+            cursor: pointer;
+            border: 1px solid #cbd5e1; /* slate-300 */
+            border-radius: 0.75rem; /* rounded-xl */
+            overflow: hidden;
+            font-size: 0.875rem; /* text-sm */
+        }
+        .toggle-option {
+            padding: 0.5rem 0.75rem;
+            transition: background-color 0.2s ease-in-out;
+            color: #475569; /* slate-600 */
+        }
+        .toggle-option.active {
+            background-color: #334155; /* slate-700 */
+            color: white;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .responsive-gap { gap: 0.75rem; }
+        }
+        
+        @media (min-width: 1024px) {
+            .responsive-gap { gap: 1.25rem; }
+        }
+        
+        @media (min-width: 1536px) {
+            .responsive-gap { gap: 1.5rem; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 w-full min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- Main container for the layout -->
+    <div class="w-full max-w-6xl flex flex-col md:flex-row-reverse items-center justify-center gap-4 md:gap-8 flex-grow min-h-0">
+        
+        <!-- Canvas container (left side on desktop) -->
+        <div class="flex-1 w-full max-w-2xl">
+            <!-- Header over Canvas -->
+            <div class="text-center mb-2 flex-shrink-0">
+                <h1 class="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-slate-700">מישור גאוס אינטראקטיבי</h1>
+                <p class="text-slate-600 text-xs md:text-sm lg:text-base xl:text-lg">הזן מקדמים מרוכבים a, b, c ופתר את המשוואה az² + bz + c = 0</p>
+            </div>
+            <!-- Canvas -->
+            <div id="canvas-container" class="w-full bg-white rounded-xl shadow-lg p-2 flex items-center justify-center" style="aspect-ratio: 1.25 / 1; min-height: 250px; max-height: 70vh;">
+                <canvas id="complexCanvas" class="max-w-full max-h-full"></canvas>
+            </div>
+        </div>
+
+        <!-- Control panel (right side on desktop) -->
+        <div class="w-full max-w-md flex flex-col items-center justify-center gap-3 mt-2 md:mt-0">
+            
+            <!-- Title -->
+            <div class="text-xl font-semibold text-slate-700">פתרון משוואה</div>
+            
+            <!-- Degree Selector -->
+            <div class="w-full">
+                <select id="degree-selector" class="w-full px-3 py-2 border border-blue-300 rounded-md bg-blue-50 text-center text-2xl font-bold ltr-math">
+                    <option value="2">n=2 (ריבועית)</option>
+                    <option value="4">n=4 (דו ריבועית)</option>
+                    <option value="6">n=6 (דו ריבועית)</option>
+                </select>
+            </div>
+            
+            <!-- Quadratic Equation Form -->
+            <div class="w-full bg-blue-50 border border-blue-200 rounded-xl shadow-lg p-4">
+                <!-- Integrated equation with input fields -->
+                <div id="equation-display" class="math-text ltr-math font-bold text-blue-800 flex items-center justify-center flex-wrap gap-1">
+                    <span>(</span>
+                    <input type="text" id="param-a" class="complex-input w-14 px-1 py-1 border border-blue-300 rounded text-center font-bold" placeholder="a">
+                    <span>)</span><span id="power-a">z<sup>2</sup></span><span> + (</span>
+                    <input type="text" id="param-b" class="complex-input w-14 px-1 py-1 border border-blue-300 rounded text-center font-bold" placeholder="b">
+                    <span>)</span><span id="power-b">z</span><span> + (</span>
+                    <input type="text" id="param-c" class="complex-input w-14 px-1 py-1 border border-blue-300 rounded text-center font-bold" placeholder="c">
+                    <span>) = 0</span>
+                </div>
+            </div>
+            
+            <!-- Results Title -->
+            <div id="results-title" class="text-lg font-semibold text-green-700">שורשי המשוואה</div>
+            
+            <!-- Representation Toggle -->
+            <div id="representationSwitch" class="toggle-switch w-full mx-auto">
+                <span id="modeTrigonometric" class="toggle-option flex-1 text-center">טריגונומטרית</span>
+                <span id="modeAlgebraic" class="toggle-option flex-1 text-center active">אלגברית</span>
+            </div>
+            
+            <!-- Results Display -->
+            <div id="results-container" class="w-full bg-green-50 border border-green-200 rounded-xl shadow-lg p-4">
+                <div id="results-content" class="space-y-1">
+                    <!-- Results will be generated dynamically -->
+                </div>
+            </div>
+            
+            <!-- Solve Button -->
+            <button id="solve-btn" class="w-full bg-gradient-to-b from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 active:from-primary-700 active:to-primary-800 text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl active:shadow-md transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200">
+                פתור
+            </button>
+            
+        </div>
+    </div>
+
+<script>
+    // Complex number class
+    class Complex {
+        constructor(real, imag = 0) {
+            this.real = real;
+            this.imag = imag;
+        }
+        
+        add(other) {
+            return new Complex(this.real + other.real, this.imag + other.imag);
+        }
+        
+        subtract(other) {
+            return new Complex(this.real - other.real, this.imag - other.imag);
+        }
+        
+        multiply(other) {
+            const real = this.real * other.real - this.imag * other.imag;
+            const imag = this.real * other.imag + this.imag * other.real;
+            return new Complex(real, imag);
+        }
+        
+        divide(other) {
+            const denominator = other.real * other.real + other.imag * other.imag;
+            if (denominator === 0) throw new Error("Division by zero");
+            const real = (this.real * other.real + this.imag * other.imag) / denominator;
+            const imag = (this.imag * other.real - this.real * other.imag) / denominator;
+            return new Complex(real, imag);
+        }
+        
+        sqrt() {
+            const magnitude = Math.sqrt(this.real * this.real + this.imag * this.imag);
+            const angle = Math.atan2(this.imag, this.real);
+            
+            const sqrtMagnitude = Math.sqrt(magnitude);
+            const halfAngle = angle / 2;
+            
+            const real = sqrtMagnitude * Math.cos(halfAngle);
+            const imag = sqrtMagnitude * Math.sin(halfAngle);
+            
+            return new Complex(real, imag);
+        }
+        
+        toString() {
+            if (Math.abs(this.imag) < 1e-10) {
+                return this.real.toFixed(2);
+            } else if (Math.abs(this.real) < 1e-10) {
+                return `${this.imag.toFixed(2)}i`;
+            } else {
+                const sign = this.imag >= 0 ? '+' : '-';
+                return `${this.real.toFixed(2)} ${sign} ${Math.abs(this.imag).toFixed(2)}i`;
+            }
+        }
+        
+        toTrigonometric() {
+            const r = this.magnitude();
+            const theta = this.argument();
+            const thetaDegrees = (theta * 180 / Math.PI).toFixed(1);
+            return `${r.toFixed(2)} cis(${thetaDegrees}°)`;
+        }
+        
+        magnitude() {
+            return Math.sqrt(this.real * this.real + this.imag * this.imag);
+        }
+        
+        argument() {
+            return Math.atan2(this.imag, this.real);
+        }
+        
+        // Get nth root of complex number using De Moivre's formula
+        nthRoot(n) {
+            const magnitude = this.magnitude();
+            const angle = this.argument();
+            
+            const roots = [];
+            const rootMagnitude = Math.pow(magnitude, 1/n);
+            
+            for (let k = 0; k < n; k++) {
+                const rootAngle = (angle + 2 * Math.PI * k) / n;
+                const real = rootMagnitude * Math.cos(rootAngle);
+                const imag = rootMagnitude * Math.sin(rootAngle);
+                roots.push(new Complex(real, imag));
+            }
+            
+            return roots;
+        }
+        
+        // Power function for complex numbers
+        power(n) {
+            const magnitude = this.magnitude();
+            const angle = this.argument();
+            
+            const newMagnitude = Math.pow(magnitude, n);
+            const newAngle = angle * n;
+            
+            const real = newMagnitude * Math.cos(newAngle);
+            const imag = newMagnitude * Math.sin(newAngle);
+            
+            return new Complex(real, imag);
+        }
+    }
+    
+    // Parse complex number from string - enhanced version
+    function parseComplex(str) {
+        str = str.trim().replace(/\s/g, '').replace(/\*/g, '');
+        
+        if (str === '') return new Complex(0);
+        if (str === 'i' || str === 'I') return new Complex(0, 1);
+        if (str === '-i' || str === '-I') return new Complex(0, -1);
+        
+        // Handle pure real numbers
+        const realMatch = str.match(/^[-+]?([0-9]*\.?[0-9]+)$/);
+        if (realMatch) {
+            return new Complex(parseFloat(str));
+        }
+        
+        // Handle pure imaginary numbers (both i and I formats)
+        const imagMatch = str.match(/^[-+]?([0-9]*\.?[0-9]+)?[iI]$/);
+        if (imagMatch) {
+            const coefficient = imagMatch[1] ? parseFloat(imagMatch[1]) : 1;
+            return new Complex(0, str.startsWith('-') ? -coefficient : coefficient);
+        }
+        
+        // Handle complex numbers - multiple formats
+        // Format 1: a+bi or a-bi (supports both i and I)
+        let complexMatch = str.match(/^([-+]?[0-9]*\.?[0-9]+)([-+])([0-9]*\.?[0-9]+)?[iI]$/);
+        if (complexMatch) {
+            const real = parseFloat(complexMatch[1]);
+            const imagSign = complexMatch[2] === '-' ? -1 : 1;
+            const imagCoeff = complexMatch[3] ? parseFloat(complexMatch[3]) : 1;
+            return new Complex(real, imagSign * imagCoeff);
+        }
+        
+        // Format 2: bi+a or Bi+a (supports both i and I)
+        complexMatch = str.match(/^([-+]?[0-9]*\.?[0-9]+)?[iI]([-+])([0-9]*\.?[0-9]+)$/);
+        if (complexMatch) {
+            const imagCoeff = complexMatch[1] ? parseFloat(complexMatch[1]) : 1;
+            const realSign = complexMatch[2] === '-' ? -1 : 1;
+            const real = parseFloat(complexMatch[3]) * realSign;
+            const imag = str.startsWith('-') ? -imagCoeff : imagCoeff;
+            return new Complex(real, imag);
+        }
+        
+        // Format 3: a+i or a-i (supports both i and I)
+        complexMatch = str.match(/^([-+]?[0-9]*\.?[0-9]+)([-+])[iI]$/);
+        if (complexMatch) {
+            const real = parseFloat(complexMatch[1]);
+            const imagSign = complexMatch[2] === '-' ? -1 : 1;
+            return new Complex(real, imagSign);
+        }
+        
+        // Format 4: i+a or I+a (start with imaginary unit)
+        complexMatch = str.match(/^([-+]?[0-9]*\.?[0-9]+)?[iI]([-+])([0-9]*\.?[0-9]+)$/);
+        if (complexMatch) {
+            const imagCoeff = complexMatch[1] ? parseFloat(complexMatch[1]) : 1;
+            const realSign = complexMatch[2] === '-' ? -1 : 1;
+            const real = parseFloat(complexMatch[3]) * realSign;
+            const imag = str.startsWith('-') ? -imagCoeff : imagCoeff;
+            return new Complex(real, imag);
+        }
+        
+        throw new Error(`Invalid complex number format: ${str}`);
+    }
+    
+    // Solve quadratic equation: az² + bz + c = 0
+    function solveQuadraticEquation(a, b, c) {
+        // Calculate discriminant: b² - 4ac
+        const b_squared = b.multiply(b);
+        const four_ac = new Complex(4).multiply(a).multiply(c);
+        const discriminant = b_squared.subtract(four_ac);
+        
+        // Calculate sqrt of discriminant
+        const sqrt_discriminant = discriminant.sqrt();
+        const neg_sqrt_discriminant = new Complex(-sqrt_discriminant.real, -sqrt_discriminant.imag);
+        
+        // Calculate solutions: (-b ± √(b²-4ac)) / (2a)
+        const neg_b = new Complex(-b.real, -b.imag);
+        const two_a = new Complex(2).multiply(a);
+        
+        const z1 = neg_b.add(sqrt_discriminant).divide(two_a);
+        const z2 = neg_b.add(neg_sqrt_discriminant).divide(two_a);
+        
+        return [z1, z2];
+    }
+    
+    // Solve biquadratic equation: az⁴ + bz² + c = 0
+    function solveBiquadraticEquation(a, b, c) {
+        // Substitute w = z², so we get: aw² + bw + c = 0
+        const quadratic_solutions = solveQuadraticEquation(a, b, c);
+        
+        const solutions = [];
+        
+        // For each w, find z = ±√w
+        quadratic_solutions.forEach(w => {
+            const sqrt_roots = w.nthRoot(2);
+            solutions.push(...sqrt_roots);
+        });
+        
+        return solutions;
+    }
+    
+    // Solve sixth degree equation (as biquadratic): az⁶ + bz³ + c = 0
+    function solveSixthDegreeEquation(a, b, c) {
+        // Substitute w = z³, so we get: aw² + bw + c = 0
+        const quadratic_solutions = solveQuadraticEquation(a, b, c);
+        
+        const solutions = [];
+        
+        // For each w, find z = ∛w (cube roots)
+        quadratic_solutions.forEach(w => {
+            const cube_roots = w.nthRoot(3);
+            solutions.push(...cube_roots);
+        });
+        
+        return solutions;
+    }
+    
+    // Group symmetric pairs (z and -z)
+    function groupSymmetricPairs(solutions) {
+        const pairs = [];
+        const used = new Set();
+        const tolerance = 1e-6;
+        
+        for (let i = 0; i < solutions.length; i++) {
+            if (used.has(i)) continue;
+            
+            const z = solutions[i];
+            const group = [{ solution: z, index: i }];
+            used.add(i);
+            
+            // Look for symmetric counterpart (-z)
+            for (let j = i + 1; j < solutions.length; j++) {
+                if (used.has(j)) continue;
+                
+                const other = solutions[j];
+                const negZ = new Complex(-z.real, -z.imag);
+                
+                // Check if other is approximately equal to -z
+                if (Math.abs(other.real - negZ.real) < tolerance && 
+                    Math.abs(other.imag - negZ.imag) < tolerance) {
+                    group.push({ solution: other, index: j });
+                    used.add(j);
+                    break;
+                }
+            }
+            
+            pairs.push(group);
+        }
+        
+        return pairs;
+    }
+    
+    // Group solutions by radius for degree 6 equations
+    function groupByRadius(solutions) {
+        const tolerance = 1e-6;
+        const radiusGroups = [];
+        const used = new Set();
+        
+        for (let i = 0; i < solutions.length; i++) {
+            if (used.has(i)) continue;
+            
+            const solution1 = solutions[i];
+            const radius1 = solution1.magnitude();
+            const group = [{ solution: solution1, index: i }];
+            used.add(i);
+            
+            // Find other solutions with same radius
+            for (let j = i + 1; j < solutions.length; j++) {
+                if (used.has(j)) continue;
+                
+                const solution2 = solutions[j];
+                const radius2 = solution2.magnitude();
+                
+                // Check if radii are approximately equal
+                if (Math.abs(radius1 - radius2) < tolerance) {
+                    group.push({ solution: solution2, index: j });
+                    used.add(j);
+                }
+            }
+            
+            // Sort group by argument (angle) in ascending order
+            group.sort((a, b) => {
+                let angleA = a.solution.argument();
+                let angleB = b.solution.argument();
+                
+                // Normalize angles to [0, 2π)
+                if (angleA < 0) angleA += 2 * Math.PI;
+                if (angleB < 0) angleB += 2 * Math.PI;
+                
+                return angleA - angleB;
+            });
+            
+            radiusGroups.push(group);
+        }
+        
+        // Sort groups by radius (ascending)
+        radiusGroups.sort((a, b) => {
+            const radiusA = a[0].solution.magnitude();
+            const radiusB = b[0].solution.magnitude();
+            return radiusA - radiusB;
+        });
+        
+        return radiusGroups;
+    }
+    
+    // Get color for group index
+    function getGroupColor(groupIndex) {
+        const colors = [
+            { main: '#22c55e', dark: '#15803d', light: '#bbf7d0' }, // Green
+            { main: '#3b82f6', dark: '#1e40af', light: '#bfdbfe' }, // Blue
+            { main: '#f59e0b', dark: '#d97706', light: '#fef3c7' }, // Amber
+            { main: '#ef4444', dark: '#dc2626', light: '#fecaca' }, // Red
+            { main: '#8b5cf6', dark: '#7c3aed', light: '#ddd6fe' }, // Purple
+            { main: '#06b6d4', dark: '#0891b2', light: '#cffafe' }  // Cyan
+        ];
+        return colors[groupIndex % colors.length];
+    }
+    
+    // Update results display with grouped solutions
+    function displayGroupedResults() {
+        // Hide all result containers first
+        for (let i = 1; i <= 6; i++) {
+            const container = document.getElementById(`result-container-${i}`);
+            if (container) {
+                container.style.display = 'none';
+            }
+        }
+        
+        const degree = parseInt(document.getElementById('degree-selector').value);
+        const representationMode = document.getElementById('modeAlgebraic').classList.contains('active') ? 'algebraic' : 'trigonometric';
+        
+        // Display grouped results
+        solutionGroups.forEach((group, groupIndex) => {
+            const container = document.getElementById(`result-container-${groupIndex + 1}`);
+            if (!container) return;
+            
+            const color = getGroupColor(groupIndex);
+            container.style.display = 'block';
+            container.style.color = color.dark;
+            
+                if (degree === 6) {
+                    // For degree 6, display all solutions in the group vertically
+                    let groupHtml = '<div class="space-y-1">';
+                    group.forEach(item => {
+                        const valueText = representationMode === 'trigonometric' ? 
+                            item.solution.toTrigonometric() : item.solution.toString();
+                        groupHtml += `
+                            <div>
+                                <span class="text-green-600">z<sub class="result-index">${item.index + 1}</sub> = </span>
+                                <span style="color: ${color.dark}">${valueText}</span>
+                            </div>
+                        `;
+                    });
+                    groupHtml += '</div>';
+                    container.innerHTML = groupHtml;
+                } else if (group.length === 1) {
+                    // Single solution for degrees 2 and 4
+                    const item = group[0];
+                    const valueText = representationMode === 'trigonometric' ? 
+                        item.solution.toTrigonometric() : item.solution.toString();
+                    
+                    container.innerHTML = `
+                        <span class="text-green-600">z<sub class="result-index">${item.index + 1}</sub> = </span>
+                        <span style="color: ${color.dark}">${valueText}</span>
+                    `;
+                } else {
+                    // Symmetric pair for degrees 2 and 4
+                    const item1 = group[0];
+                    const item2 = group[1];
+                    const value1Text = representationMode === 'trigonometric' ? 
+                        item1.solution.toTrigonometric() : item1.solution.toString();
+                    const value2Text = representationMode === 'trigonometric' ? 
+                        item2.solution.toTrigonometric() : item2.solution.toString();
+                    
+                    // For degrees 2 and 4, display in horizontal layout
+                    container.innerHTML = `
+                        <div class="flex justify-center items-center gap-4">
+                            <div class="text-center">
+                                <span class="text-green-600">z<sub class="result-index">${item1.index + 1}</sub> = </span>
+                                <span style="color: ${color.dark}">${value1Text}</span>
+                            </div>
+                            <div class="text-center">
+                                <span class="text-green-600">z<sub class="result-index">${item2.index + 1}</sub> = </span>
+                                <span style="color: ${color.dark}">${value2Text}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+        });
+    }
+    
+    // Canvas setup and drawing
+    let canvas, ctx, scale = 40, centerX, centerY;
+    let solutions = [];
+    let solutionGroups = [];
+    let dynamicScale = false;
+    
+    function calculateOptimalScale() {
+        if (solutions.length === 0) return 40;
+        
+        let maxMagnitude = 0;
+        solutions.forEach(solution => {
+            const magnitude = Math.max(Math.abs(solution.real), Math.abs(solution.imag));
+            maxMagnitude = Math.max(maxMagnitude, magnitude);
+        });
+        
+        if (maxMagnitude === 0) return 40;
+        
+        // Use height for consistent scale calculation
+        const margin = 60; // Leave margin for labels and arrows
+        const availableSpace = (canvas.height - margin) / 2;
+        
+        return Math.max(20, Math.min(80, availableSpace / (maxMagnitude * 1.2)));
+    }
+    
+    function initCanvas() {
+        canvas = document.getElementById('complexCanvas');
+        ctx = canvas.getContext('2d');
+        resizeCanvas();
+        drawPlane();
+        window.addEventListener('resize', resizeCanvas);
+    }
+    
+    function resizeCanvas() {
+        const container = document.getElementById('canvas-container');
+        const rect = container.getBoundingClientRect();
+        
+        const maxWidth = rect.width - 16;
+        const maxHeight = rect.height - 16;
+        
+        let canvasWidth, canvasHeight;
+        if (window.innerWidth < 768) {
+            canvasWidth = Math.min(maxWidth, 400);
+            canvasHeight = Math.min(maxHeight, 300);
+        } else if (window.innerWidth < 1024) {
+            canvasWidth = Math.min(maxWidth, 600);
+            canvasHeight = Math.min(maxHeight, 400);
+        } else {
+            canvasWidth = Math.min(maxWidth, 800);
+            canvasHeight = Math.min(maxHeight, 500);
+        }
+        
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        canvas.style.width = `${canvasWidth}px`;
+        canvas.style.height = `${canvasHeight}px`;
+        
+        centerX = canvas.width / 2;
+        centerY = canvas.height / 2;
+        
+        // Update scale if we have solutions
+        if (dynamicScale && solutions.length > 0) {
+            scale = calculateOptimalScale();
+        } else {
+            // Use height to determine scale for consistent cell size
+            scale = canvas.height / 14;
+        }
+        
+        drawPlane();
+        drawSolutions();
+    }
+    
+    function drawPlane() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Grid - extend to canvas boundaries
+        ctx.strokeStyle = '#e5e7eb';
+        ctx.lineWidth = 0.5;
+        
+        // Calculate grid range to cover entire canvas
+        const minI = -Math.ceil(centerX / scale) - 1;
+        const maxI = Math.ceil((canvas.width - centerX) / scale) + 1;
+        
+        for (let i = minI; i <= maxI; i++) {
+            const x = centerX + i * scale;
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+            ctx.stroke();
+        }
+        
+        const minJ = -Math.ceil(centerY / scale) - 1;
+        const maxJ = Math.ceil((canvas.height - centerY) / scale) + 1;
+        
+        for (let i = minJ; i <= maxJ; i++) {
+            const y = centerY + i * scale;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
+        }
+        
+        // Axes
+        ctx.strokeStyle = '#374151';
+        ctx.lineWidth = 2;
+        
+        // Real axis
+        ctx.beginPath();
+        ctx.moveTo(0, centerY);
+        ctx.lineTo(canvas.width, centerY);
+        ctx.stroke();
+        
+        // Imaginary axis
+        ctx.beginPath();
+        ctx.moveTo(centerX, 0);
+        ctx.lineTo(centerX, canvas.height);
+        ctx.stroke();
+        
+        // Draw arrows on axes
+        const arrowSize = 8;
+        
+        // Real axis arrow (right direction)
+        ctx.fillStyle = '#374151';
+        ctx.beginPath();
+        ctx.moveTo(canvas.width - 5, centerY);
+        ctx.lineTo(canvas.width - 5 - arrowSize, centerY - arrowSize/2);
+        ctx.lineTo(canvas.width - 5 - arrowSize, centerY + arrowSize/2);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Imaginary axis arrow (up direction)
+        ctx.beginPath();
+        ctx.moveTo(centerX, 5);
+        ctx.lineTo(centerX - arrowSize/2, 5 + arrowSize);
+        ctx.lineTo(centerX + arrowSize/2, 5 + arrowSize);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Labels
+        ctx.fillStyle = '#374151';
+        ctx.font = 'bold 16px Tinos, "Times New Roman", Times, serif';
+        ctx.textAlign = 'center';
+        
+        // Real axis label - positioned with equal spacing after last number
+        const rePosition = centerX + 8 * scale; // Position at 8 on the axis (equal distance from 7)
+        if (rePosition < canvas.width - 30) {
+            ctx.fillText('Re', rePosition, centerY + 15);
+        } else {
+            ctx.fillText('Re', canvas.width - 25, centerY + 15);
+        }
+        
+        // Imaginary axis label - aligned with numbers on the right
+        const imPosition = centerY - 7 * scale; // Position at 7 on the axis
+        if (imPosition > 20) {
+            ctx.fillText('Im', centerX - 15, imPosition + 4);
+        } else {
+            ctx.fillText('Im', centerX - 15, 20);
+        }
+        
+        // Remove origin label (no "0")
+        
+        // Save context and set direction to LTR for drawing numbers
+        ctx.save();
+        ctx.direction = 'ltr';
+        ctx.font = 'bold 16px Tinos, "Times New Roman", Times, serif';
+        ctx.fillStyle = '#6b7280';
+        ctx.textAlign = 'center';
+        
+        // Real axis markers
+        for (let i = -10; i <= 10; i++) {
+            if (i === 0) continue;
+            const x = centerX + i * scale;
+            if (x > 20 && x < canvas.width - 20) {
+                if (i === 8) {
+                    ctx.fillText('Re', x, centerY + 15);
+                } else {
+                    ctx.fillText(i, x, centerY + 15);
+                }
+            }
+        }
+        
+        // Imaginary axis markers  
+        for (let i = -10; i <= 10; i++) {
+            if (i === 0) continue;
+            const y = centerY - i * scale;
+            if (y > 20 && y < canvas.height - 20) {
+                ctx.fillText(i.toString(), centerX - 15, y + 4);
+            }
+        }
+        
+        // Restore context after drawing numbers
+        ctx.restore();
+    }
+    
+    function drawSolutions() {
+        if (solutionGroups.length === 0) return;
+        
+        const representationMode = document.getElementById('modeAlgebraic').classList.contains('active') ? 'algebraic' : 'trigonometric';
+        
+        solutionGroups.forEach((group, groupIndex) => {
+            const color = getGroupColor(groupIndex);
+            
+            group.forEach((item, itemIndex) => {
+                const solution = item.solution;
+                const x = centerX + solution.real * scale;
+                const y = centerY - solution.imag * scale;
+                
+                // Check if point is within canvas bounds
+                if (x >= 10 && x <= canvas.width - 10 && y >= 10 && y <= canvas.height - 10) {
+                    
+                    if (representationMode === 'trigonometric') {
+                        // Draw radius vector
+                        ctx.strokeStyle = color.main;
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(centerX, centerY);
+                        ctx.lineTo(x, y);
+                        ctx.stroke();
+                        
+                        // Draw angle sector (semi-transparent)
+                        const radius = solution.magnitude() * scale;
+                        const angle = solution.argument();
+                        
+                        ctx.fillStyle = color.light + '40'; // Add transparency
+                        ctx.beginPath();
+                        ctx.moveTo(centerX, centerY);
+                        ctx.arc(centerX, centerY, Math.min(radius, 30), 0, -angle, angle < 0);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                    
+                    // Draw point with full fill, no border
+                    ctx.fillStyle = color.main;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 8, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    // Label with subscript index
+                    ctx.fillStyle = '#374151';
+                    ctx.font = 'bold 13px Tinos, "Times New Roman", Times, serif';
+                    ctx.textAlign = 'center';
+                    
+                    // Draw main "z" character
+                    ctx.fillText('z', x, y - 15);
+                    
+                    // Draw subscript index
+                    ctx.font = 'bold 8px Tinos, "Times New Roman", Times, serif';
+                    ctx.fillText((item.index + 1).toString(), x + 6, y - 10);
+                }
+            });
+        });
+    }
+    
+    // Solve equation based on selected degree
+    function solveEquation() {
+        // Button click animation
+        const button = document.getElementById('solve-btn');
+        button.classList.add('button-clicked');
+        setTimeout(() => button.classList.remove('button-clicked'), 100);
+        
+        try {
+            const aStr = document.getElementById('param-a').value || 'a';
+            const bStr = document.getElementById('param-b').value || 'b';
+            const cStr = document.getElementById('param-c').value || 'c';
+            
+            if (aStr === 'a' || bStr === 'b' || cStr === 'c') {
+                alert('אנא הזן ערכים עבור כל הפרמטרים');
+                return;
+            }
+            
+            const a = parseComplex(aStr);
+            const b = parseComplex(bStr);
+            const c = parseComplex(cStr);
+            
+            if (a.magnitude() < 1e-10) {
+                alert('הפרמטר a לא יכול להיות אפס');
+                return;
+            }
+            
+            // Get selected degree
+            const degree = parseInt(document.getElementById('degree-selector').value);
+            
+            // Solve based on degree
+            let equationSolutions = [];
+            
+            switch(degree) {
+                case 2:
+                    equationSolutions = solveQuadraticEquation(a, b, c);
+                    break;
+                case 4:
+                    equationSolutions = solveBiquadraticEquation(a, b, c);
+                    break;
+                case 6:
+                    equationSolutions = solveSixthDegreeEquation(a, b, c);
+                    break;
+                default:
+                    alert('מעלה לא נתמכת');
+                    return;
+            }
+            
+            // Store solutions and group them based on degree
+            solutions = equationSolutions;
+            
+            if (degree === 6) {
+                // For degree 6, group by radius and sort by argument
+                solutionGroups = groupByRadius(solutions);
+            } else {
+                // For degrees 2 and 4, group symmetric pairs
+                solutionGroups = groupSymmetricPairs(solutions);
+            }
+            
+            dynamicScale = true;
+            
+            // Recalculate scale based on solutions
+            scale = calculateOptimalScale();
+            
+            // Display grouped results
+            displayGroupedResults();
+            
+            // Draw solutions on canvas
+            drawPlane();
+            drawSolutions();
+            
+        } catch (error) {
+            alert('שגיאה בפירוש המספרים המרוכבים: ' + error.message);
+        }
+    }
+    
+    // Input field handling
+    function setupInputFields() {
+        const inputs = ['param-a', 'param-b', 'param-c'];
+        
+        inputs.forEach(id => {
+            const input = document.getElementById(id);
+            const defaultValue = id.split('-')[1]; // Extract 'a', 'b', or 'c'
+            
+            input.addEventListener('focus', function() {
+                if (this.value === defaultValue) {
+                    this.value = '';
+                }
+            });
+            
+            input.addEventListener('blur', function() {
+                if (this.value.trim() === '') {
+                    this.value = defaultValue;
+                }
+            });
+            
+            input.addEventListener('input', function() {
+                const displayElement = document.getElementById(`${id}-display`);
+                displayElement.textContent = this.value || defaultValue;
+            });
+        });
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        initCanvas();
+        setupInputFields();
+        
+        // Set default values
+        document.getElementById('param-a').value = 'a';
+        document.getElementById('param-b').value = 'b';
+        document.getElementById('param-c').value = 'c';
+        
+        // Solve button event
+        document.getElementById('solve-btn').addEventListener('click', solveEquation);
+        document.getElementById('degree-selector').addEventListener('change', updateEquation);
+        
+        // Toggle switch event handlers
+        document.getElementById('modeAlgebraic').addEventListener('click', function() {
+            if (!this.classList.contains('active')) {
+                this.classList.add('active');
+                document.getElementById('modeTrigonometric').classList.remove('active');
+                // Redraw solutions with new representation
+                if (solutionGroups.length > 0) {
+                    displayGroupedResults();
+                    drawPlane();
+                    drawSolutions();
+                }
+            }
+        });
+        
+        document.getElementById('modeTrigonometric').addEventListener('click', function() {
+            if (!this.classList.contains('active')) {
+                this.classList.add('active');
+                document.getElementById('modeAlgebraic').classList.remove('active');
+                // Redraw solutions with new representation
+                if (solutionGroups.length > 0) {
+                    displayGroupedResults();
+                    drawPlane();
+                    drawSolutions();
+                }
+            }
+        });
+        
+        // Update equation display based on selected degree
+        function updateEquation() {
+            const degree = parseInt(document.getElementById('degree-selector').value);
+            const powerA = document.getElementById('power-a');
+            const powerB = document.getElementById('power-b');
+            
+            switch(degree) {
+                case 2:
+                    powerA.innerHTML = 'z<sup>2</sup>';
+                    powerB.innerHTML = 'z';
+                    break;
+                case 4:
+                    powerA.innerHTML = 'z<sup>4</sup>';
+                    powerB.innerHTML = 'z<sup>2</sup>';
+                    break;
+                case 6:
+                    powerA.innerHTML = 'z<sup>6</sup>';
+                    powerB.innerHTML = 'z<sup>3</sup>';
+                    break;
+            }
+            
+            // Update results container
+            updateResultsContainer(degree);
+        }
+        
+        // Create dynamic results containers with grouped display
+        function updateResultsContainer(degree) {
+            const container = document.getElementById('results-content');
+            container.innerHTML = '';
+            
+            // Calculate font size based on number of results
+            let fontSize = 'text-lg'; // Default for 2 results
+            if (degree === 4) fontSize = 'text-base';
+            else if (degree === 6) fontSize = 'text-sm';
+            
+            // For degree 6, create a 2-column layout
+            if (degree === 6) {
+                container.className = 'grid grid-cols-2 gap-2';
+                
+                // Create 6 placeholder containers arranged in 2 columns
+                for (let i = 1; i <= degree; i++) {
+                    const resultDiv = document.createElement('div');
+                    resultDiv.id = `result-container-${i}`;
+                    resultDiv.className = `math-text ltr-math ${fontSize} font-bold text-green-800 text-center py-1`;
+                    resultDiv.style.display = 'none'; // Hidden until solutions are available
+                    container.appendChild(resultDiv);
+                }
+            } else {
+                // For degrees 2 and 4, use single column layout
+                container.className = 'space-y-1';
+                
+                // Create placeholder structure - will be filled when solutions are calculated
+                for (let i = 1; i <= degree; i++) {
+                    const resultDiv = document.createElement('div');
+                    resultDiv.id = `result-container-${i}`;
+                    resultDiv.className = `math-text ltr-math ${fontSize} font-bold text-green-800 text-center py-1`;
+                    resultDiv.style.display = 'none'; // Hidden until solutions are available
+                    container.appendChild(resultDiv);
+                }
+            }
+        }
+        
+        // Initialize on page load
+        updateEquation();
+        
+        // Enter key support
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                solveEquation();
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
