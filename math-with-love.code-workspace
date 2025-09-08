@@ -7,5 +7,7 @@
 			"path": "tmp"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "math-site"
+	}
 }
