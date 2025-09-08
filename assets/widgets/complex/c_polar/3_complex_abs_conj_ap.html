@@ -13,7 +13,7 @@
         body {
             /* Updated font for Hebrew text */
             font-family: 'David Libre', serif;
-            overflow: auto; /* Allow scrolling for more content */
+            overflow-x: hidden; /* Prevent horizontal scrolling only */
         }
         .math-text {
             /* Updated font for Mathematical text */
@@ -57,7 +57,7 @@
         /* END: Operation Button Styles */
     </style>
 </head>
-<body class="bg-slate-100 w-full h-screen flex flex-col items-center justify-center p-4">
+<body class="bg-slate-100 w-full min-h-screen flex flex-col items-center justify-start p-4">
 
     <div class="w-full max-w-5xl flex flex-col md:flex-row-reverse items-center justify-center gap-4 md:gap-8 flex-grow min-h-0">
         
@@ -68,7 +68,7 @@
                 <p class="text-slate-600 text-sm md:text-base">גרור את הנקודה הירוקה כדי לשנות את המספר המרוכב</p>
             </div>
             <!-- Rectangular Background Container -->
-            <div id="canvas-container" class="w-full bg-white rounded-xl shadow-lg p-2 flex items-center justify-center" style="aspect-ratio: 1.25 / 1;">
+            <div id="canvas-container" class="w-full bg-white rounded-xl shadow-lg p-2 flex items-center justify-center" style="aspect-ratio: 1.25 / 1; min-height: 250px; max-height: 70vh; min-height: 250px; max-height: 70vh;">
                 <canvas id="complexPlane"></canvas>
             </div>
         </div>
@@ -84,8 +84,8 @@
             <!-- START: Display Mode Toggle -->
             <div class="w-full flex justify-center my-2">
                 <div class="flex border border-slate-300 rounded-lg overflow-hidden w-full">
-                    <button id="polarBtn" class="flex-1 toggle-btn-inactive px-4 py-1 text-sm font-bold transition-colors">הצגה קוטבית</button>
-                    <button id="algebraicBtn" class="flex-1 toggle-btn-active px-4 py-1 text-sm font-bold transition-colors">הצגה אלגברית</button>
+                    <button id="polarBtn" class="flex-1 toggle-btn-inactive px-4 py-1 text-sm font-bold transition-colors whitespace-nowrap">קוטבית</button>
+                    <button id="algebraicBtn" class="flex-1 toggle-btn-active px-4 py-1 text-sm font-bold transition-colors whitespace-nowrap">אלגברית</button>
                 </div>
             </div>
             <!-- END: Display Mode Toggle -->

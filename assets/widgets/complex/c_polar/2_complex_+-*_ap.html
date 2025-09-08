@@ -9,7 +9,7 @@
     <style>
         body {
             font-family: 'David Libre', serif;
-            overflow: hidden; /* Prevent body scrolling */
+            overflow-x: hidden; /* Prevent horizontal scrolling only */
         }
         canvas {
             cursor: grab;
@@ -49,9 +49,16 @@
             pointer-events: none;
             cursor: not-allowed;
         }
+        /* Responsive canvas container */
+        @media (max-width: 768px) {
+            #canvas-container {
+                aspect-ratio: 1 / 1 !important; /* Square on mobile */
+                max-height: 60vh !important;
+            }
+        }
     </style>
 </head>
-<body class="bg-slate-100 w-full h-screen flex items-center justify-center p-4">
+<body class="bg-slate-100 w-full min-h-screen flex items-center justify-start p-4">
 
     <div class="w-full max-w-6xl flex flex-col md:flex-row-reverse items-center justify-center gap-4 md:gap-8">
         
@@ -63,7 +70,7 @@
                 <p class="text-slate-600 text-sm md:text-base">גרור את הנקודות z<sub>1</sub> ו-z<sub>2</sub> ובחר בפעולה הרצויה</p>
             </div>
             <!-- Canvas Container -->
-            <div id="canvas-container" class="w-full bg-white rounded-xl shadow-lg p-2 flex items-center justify-center" style="aspect-ratio: 1.25 / 1;">
+            <div id="canvas-container" class="w-full bg-white rounded-xl shadow-lg p-2 flex items-center justify-center" style="aspect-ratio: 1.25 / 1; min-height: 250px; max-height: 70vh;">
                 <canvas id="complexPlane"></canvas>
             </div>
         </div>
@@ -74,8 +81,8 @@
             
             <!-- Display Mode Toggle Switch -->
             <div id="display-switch-container" class="toggle-switch my-2">
-                <span id="polar-btn" class="toggle-option">הצגה קוטבית</span>
-                <span id="algebraic-btn" class="toggle-option active">הצגה אלגברית</span>
+                <span id="polar-btn" class="toggle-option">קוטבית</span>
+                <span id="algebraic-btn" class="toggle-option active">אלגברית</span>
             </div>
 
             <div id="z1_display" class="bg-blue-100 border border-blue-200 p-3 rounded-xl shadow-md text-xl text-blue-800 w-full text-center"></div>
@@ -622,7 +629,23 @@
                 canvas.height = parentHeight;
                 origin.x = canvas.width / 2;
                 origin.y = canvas.height / 2;
-                scale = canvas.width / 13; 
+                
+                // Enhanced adaptive scale based on screen size and canvas dimensions
+                const minDimension = Math.min(canvas.width, canvas.height);
+                const screenWidth = window.innerWidth;
+                
+                let baseScale;
+                if (screenWidth < 768) {
+                    baseScale = minDimension / 12;
+                } else if (screenWidth < 1024) {
+                    baseScale = minDimension / 11;
+                } else if (screenWidth < 1536) {
+                    baseScale = minDimension / 10;
+                } else {
+                    baseScale = minDimension / 9;
+                }
+                
+                scale = Math.max(15, Math.min(80, baseScale));
                 drawAll();
             }
         }
