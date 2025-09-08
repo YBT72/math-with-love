@@ -14,7 +14,7 @@
         /* General body styling */
         body {
             font-family: 'David Libre', serif;
-            overflow: hidden; /* Prevent body scrolling */
+            overflow-x: hidden; /* Prevent horizontal scrolling only */
         }
         /* Special font for mathematical text */
         .math-text {
@@ -37,22 +37,51 @@
             background-color: #e2e8f0; /* slate-200 */
             color: #475569; /* slate-600 */
         }
+        /* Responsive canvas container */
+        @media (max-width: 768px) {
+            #canvas-container {
+                aspect-ratio: 1 / 1 !important; /* Square on mobile */
+                max-height: 60vh !important;
+            }
+        }
+        
+        /* Responsive typography and spacing */
+        @media (min-width: 1024px) {
+            .responsive-text-xl { font-size: 1.25rem; }
+            .responsive-text-lg { font-size: 1.125rem; }
+            .responsive-text-base { font-size: 1rem; }
+            .responsive-gap { gap: 1rem; }
+        }
+        
+        @media (min-width: 1280px) {
+            .responsive-text-xl { font-size: 1.5rem; }
+            .responsive-text-lg { font-size: 1.25rem; }
+            .responsive-text-base { font-size: 1.125rem; }
+            .responsive-gap { gap: 1.25rem; }
+        }
+        
+        @media (min-width: 1536px) {
+            .responsive-text-xl { font-size: 1.75rem; }
+            .responsive-text-lg { font-size: 1.5rem; }
+            .responsive-text-base { font-size: 1.25rem; }
+            .responsive-gap { gap: 1.5rem; }
+        }
     </style>
 </head>
-<body class="bg-slate-100 w-full h-screen flex flex-col items-center justify-center p-4">
+<body class="bg-slate-100 w-full min-h-screen flex flex-col items-center justify-start p-4">
 
     <!-- Main container for the layout -->
-    <div class="w-full max-w-5xl flex flex-col md:flex-row-reverse items-center justify-center gap-4 md:gap-8 flex-grow min-h-0">
+    <div class="w-full max-w-5xl flex flex-col md:flex-row-reverse items-center justify-center gap-4 md:gap-8 flex-grow min-h-0 py-4">
         
         <!-- START: Wrapper for Canvas and its Title -->
         <div class="w-full max-w-4xl flex flex-col items-center">
              <div class="text-center mb-2 flex-shrink-0">
                 <!-- MODIFICATION (A): Changed h1 text color to text-slate-700 (asphalt gray) -->
-                <h1 class="text-2xl md:text-3xl font-bold text-slate-700">מישור גאוס האינטראקטיבי</h1>
-                <p class="text-slate-600 text-sm md:text-base">גרור את הנקודה הירוקה כדי לשנות את המספר המרוכב</p>
+                <h1 class="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-slate-700 responsive-text-xl">מישור גאוס האינטראקטיבי</h1>
+                <p class="text-slate-600 text-xs md:text-sm lg:text-base xl:text-lg responsive-text-base">גרור את הנקודה הירוקה כדי לשנות את המספר המרוכב</p>
             </div>
             <!-- Container for the canvas to maintain aspect ratio -->
-            <div id="canvas-container" class="w-full bg-white rounded-xl shadow-lg p-2 flex items-center justify-center" style="aspect-ratio: 1.25 / 1;">
+            <div id="canvas-container" class="w-full bg-white rounded-xl shadow-lg p-2 flex items-center justify-center" style="aspect-ratio: 1.25 / 1; min-height: 250px; max-height: 70vh;">
                 <canvas id="complexPlane"></canvas>
             </div>
         </div>
@@ -60,27 +89,27 @@
 
 
         <!-- START: Display & Controls Container -->
-        <div class="w-full max-w-xs flex flex-col items-center justify-center gap-4 mt-2 md:mt-0">
-             <h2 class="text-lg font-bold text-slate-600">מבוא למספרים מרוכבים</h2>
+        <div class="w-full max-w-xs lg:max-w-sm xl:max-w-md flex flex-col items-center justify-center gap-3 lg:gap-4 xl:gap-5 responsive-gap mt-2 md:mt-0">
+             <h2 class="text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-slate-600 responsive-text-lg">מבוא למספרים מרוכבים</h2>
              <!-- START: Display Mode Toggle -->
             <div class="w-full flex justify-center my-2">
                 <!-- MODIFICATION (B, C): Container is now full-width (w-full) to match the boxes below. Border is now 1px (border instead of border-2). -->
-                <div class="flex border border-slate-300 rounded-lg overflow-hidden w-full">
-                    <button id="polarBtn" class="toggle-btn-inactive px-4 py-1 text-sm font-bold transition-colors w-1/2">הצגה קוטבית</button>
-                    <button id="algebraicBtn" class="toggle-btn-active px-4 py-1 text-sm font-bold transition-colors w-1/2">הצגה אלגברית</button>
+                <div class="toggle-buttons-container flex border border-slate-300 rounded-lg overflow-hidden w-full">
+                    <button id="polarBtn" class="toggle-btn-inactive px-3 lg:px-4 py-1 lg:py-2 text-sm font-bold transition-colors w-1/2 whitespace-nowrap">קוטבית</button>
+                    <button id="algebraicBtn" class="toggle-btn-active px-3 lg:px-4 py-1 lg:py-2 text-sm font-bold transition-colors w-1/2 whitespace-nowrap">אלגברית</button>
                 </div>
             </div>
             <!-- END: Display Mode Toggle -->
              <!-- Main value display -->
-             <div id="valueDisplay" class="bg-green-100 border border-green-200 p-3 rounded-xl shadow-md text-2xl font-bold w-full text-center math-text">
+             <div id="valueDisplay" class="bg-green-100 border border-green-200 p-2 lg:p-3 xl:p-4 rounded-lg lg:rounded-xl shadow-md text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold w-full text-center math-text responsive-text-xl">
                 <!-- Content generated by JS -->
             </div>
              <!-- Real part display -->
-             <div id="realPartDisplay" class="bg-blue-100 border border-blue-200 p-3 rounded-xl shadow-md text-base text-blue-800 w-full text-center math-text">
+             <div id="realPartDisplay" class="bg-blue-100 border border-blue-200 p-2 lg:p-3 xl:p-4 rounded-lg lg:rounded-xl shadow-md text-sm md:text-base lg:text-lg xl:text-xl text-blue-800 w-full text-center math-text responsive-text-base">
                 <!-- Content generated by JS -->
             </div>
              <!-- Imaginary part display -->
-             <div id="imagPartDisplay" class="bg-red-100 border-red-200 p-3 rounded-xl shadow-md text-base text-red-800 w-full text-center math-text">
+             <div id="imagPartDisplay" class="bg-red-100 border-red-200 p-2 lg:p-3 xl:p-4 rounded-lg lg:rounded-xl shadow-md text-sm md:text-base lg:text-lg xl:text-xl text-red-800 w-full text-center math-text responsive-text-base">
                 <!-- Content generated by JS -->
             </div>
         </div>
@@ -492,8 +521,27 @@
                 
                 origin.x = canvas.width / 2;
                 origin.y = canvas.height / 2;
-                // Adjust scale based on width to maintain a consistent view
-                scale = canvas.width / 13; 
+                
+                // Enhanced adaptive scale based on screen size and canvas dimensions
+                const minDimension = Math.min(canvas.width, canvas.height);
+                const screenWidth = window.innerWidth;
+                
+                let baseScale;
+                if (screenWidth < 768) {
+                    // Mobile: smaller scale
+                    baseScale = minDimension / 12;
+                } else if (screenWidth < 1024) {
+                    // Tablet: medium scale
+                    baseScale = minDimension / 11;
+                } else if (screenWidth < 1536) {
+                    // Desktop: standard scale
+                    baseScale = minDimension / 10;
+                } else {
+                    // Large desktop: larger scale
+                    baseScale = minDimension / 9;
+                }
+                
+                scale = Math.max(15, Math.min(80, baseScale));
                 drawAll();
             }
         }
