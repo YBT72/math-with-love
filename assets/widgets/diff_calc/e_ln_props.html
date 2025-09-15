@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>פונקציות אקספוננציאליות ולוגריתמיות</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            direction: rtl;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+            direction: rtl;
+            min-height: 600px;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            height: 100%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            direction: rtl;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .controls h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            text-align: right;
+        }
+
+        .function-group {
+            margin-bottom: 25px;
+        }
+
+        .function-group h4 {
+            color: #34495e;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            text-align: right;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+            direction: rtl;
+        }
+
+        .checkbox-item:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-left: 10px;
+            margin-right: 0;
+            transform: scale(1.2);
+        }
+
+        .checkbox-item label {
+            cursor: pointer;
+            font-size: 1em;
+            user-select: none;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .graph-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #canvas {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            width: 100%;
+            flex: 1;
+            min-height: 500px;
+            cursor: grab;
+        }
+
+        #canvas:active {
+            cursor: grabbing;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                min-height: auto;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .controls {
+                height: auto;
+            }
+            
+            .graph-container {
+                height: auto;
+            }
+            
+            #canvas {
+                width: 100%;
+                height: 400px;
+                flex: none;
+            }
+        }
+
+        .asymptote-info {
+            margin-top: auto;
+            padding: 15px;
+            background: #e8f4f8;
+            border-right: 4px solid #3498db;
+            border-left: none;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #2c3e50;
+            direction: rtl;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .math-ltr {
+            direction: ltr !important;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 פונקציות אקספוננציאליות ולוגריתמיות</h1>
+            <p>חקירה אינטראקטיבית של תכונות הפונקציות</p>
+        </div>
+        
+        <div class="content">
+            <div class="controls">
+                <h3>בחירת פונקציות</h3>
+                
+                <div class="function-group">
+                    <h4>🔺 פונקציות אקספוננציאליות</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="exp_x" checked>
+                        <label for="exp_x" class="math-ltr">y = eˣ</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="exp_neg_x">
+                        <label for="exp_neg_x" class="math-ltr">y = e⁻ˣ</label>
+                    </div>
+                </div>
+                
+                <div class="function-group">
+                    <h4>📉 פונקציות לוגריתמיות</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="log_x">
+                        <label for="log_x" class="math-ltr">y = ln(x)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="log_neg_x">
+                        <label for="log_neg_x" class="math-ltr">y = ln(-x)</label>
+                    </div>
+                </div>
+                
+                <div class="asymptote-info">
+                    <strong>אסימפטוטות:</strong><br>
+                    • <span class="math-ltr">y = eˣ</span>: <span class="math-ltr">y = 0</span> כאשר <span class="math-ltr">x → -∞</span> (משמאל)<br>
+                    • <span class="math-ltr">y = e⁻ˣ</span>: <span class="math-ltr">y = 0</span> כאשר <span class="math-ltr">x → +∞</span> (מימין)<br>
+                    • <span class="math-ltr">y = ln(x)</span>: <span class="math-ltr">x = 0</span> כאשר <span class="math-ltr">x → 0+</span> (מימין לציר)<br>
+                    • <span class="math-ltr">y = ln(-x)</span>: <span class="math-ltr">x = 0</span> כאשר <span class="math-ltr">x → 0-</span> (משמאל לציר)<br><br>
+                    <small style="color: #666;">💡 השתמשו בגלגל העכבר לשינוי קנה המידה</small>
+                </div>
+            </div>
+            
+            <div class="graph-container">
+                <canvas id="canvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class FunctionGrapher {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.range = 7; // טווח ברירת מחדל 7x7
+                
+                this.setupCanvas();
+                this.setupEventListeners();
+                this.draw();
+            }
+            
+            setupCanvas() {
+                const rect = this.canvas.getBoundingClientRect();
+                
+                this.canvas.width = rect.width * 2;
+                this.canvas.height = rect.height * 2;
+                this.ctx.scale(2, 2);
+                
+                this.width = rect.width;
+                this.height = rect.height;
+                this.centerX = this.width / 2;
+                this.centerY = this.height / 2;
+                this.scale = Math.min(this.width, this.height) / (2 * this.range) * 0.8;
+            }
+            
+            setupEventListeners() {
+                const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                
+                checkboxes.forEach(cb => cb.addEventListener('change', () => this.draw()));
+                
+                // שינוי קנה מידה עם גלגל העכבר
+                this.canvas.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    
+                    const delta = e.deltaY > 0 ? 0.5 : -0.5;
+                    this.range = Math.max(1, Math.min(20, this.range + delta));
+                    
+                    // חישוב מחדש של קנה המידה
+                    this.scale = Math.min(this.width, this.height) / (2 * this.range) * 0.8;
+                    
+                    this.draw();
+                });
+                
+                window.addEventListener('resize', () => {
+                    this.setupCanvas();
+                    this.draw();
+                });
+            }
+            
+            clear() {
+                this.ctx.clearRect(0, 0, this.width, this.height);
+            }
+            
+            drawGrid() {
+                this.ctx.strokeStyle = '#e0e0e0';
+                this.ctx.lineWidth = 0.5;
+                
+                const maxX = Math.ceil(this.range);
+                const maxY = Math.ceil(this.range);
+                
+                // קווים אנכיים
+                for (let x = -maxX; x <= maxX; x++) {
+                    const pixelX = this.centerX + x * this.scale;
+                    if (pixelX >= 0 && pixelX <= this.width) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(pixelX, 0);
+                        this.ctx.lineTo(pixelX, this.height);
+                        this.ctx.stroke();
+                    }
+                }
+                
+                // קווים אופקיים
+                for (let y = -maxY; y <= maxY; y++) {
+                    const pixelY = this.centerY - y * this.scale;
+                    if (pixelY >= 0 && pixelY <= this.height) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(0, pixelY);
+                        this.ctx.lineTo(this.width, pixelY);
+                        this.ctx.stroke();
+                    }
+                }
+            }
+            
+            drawAxes() {
+                this.ctx.strokeStyle = '#333';
+                this.ctx.lineWidth = 2;
+                
+                // ציר X
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, this.centerY);
+                this.ctx.lineTo(this.width, this.centerY);
+                this.ctx.stroke();
+                
+                // חץ ציר X
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.width - 10, this.centerY - 5);
+                this.ctx.lineTo(this.width, this.centerY);
+                this.ctx.lineTo(this.width - 10, this.centerY + 5);
+                this.ctx.stroke();
+                
+                // ציר Y
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.centerX, 0);
+                this.ctx.lineTo(this.centerX, this.height);
+                this.ctx.stroke();
+                
+                // חץ ציר Y
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.centerX - 5, 10);
+                this.ctx.lineTo(this.centerX, 0);
+                this.ctx.lineTo(this.centerX + 5, 10);
+                this.ctx.stroke();
+                
+                // תוויות הצירים
+                this.ctx.fillStyle = '#333';
+                this.ctx.font = '14px Arial';
+                this.ctx.direction = 'ltr';
+                this.ctx.fillText('x', this.width - 20, this.centerY + 20);
+                this.ctx.fillText('y', this.centerX + 10, 15);
+            }
+            
+            drawNumbers() {
+                this.ctx.fillStyle = '#666';
+                this.ctx.font = '12px Arial';
+                this.ctx.direction = 'ltr';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'top';
+                
+                const maxX = Math.ceil(this.range);
+                const maxY = Math.ceil(this.range);
+                
+                // מספרים על ציר X
+                for (let x = -maxX; x <= maxX; x++) {
+                    if (x !== 0) {
+                        const pixelX = this.centerX + x * this.scale;
+                        if (pixelX >= 20 && pixelX <= this.width - 20) {
+                            this.ctx.fillText(x.toString(), pixelX, this.centerY + 5);
+                            
+                            // סימוני חלוקה
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(pixelX, this.centerY - 5);
+                            this.ctx.lineTo(pixelX, this.centerY + 5);
+                            this.ctx.strokeStyle = '#333';
+                            this.ctx.lineWidth = 1;
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+                
+                this.ctx.textAlign = 'right';
+                this.ctx.textBaseline = 'middle';
+                
+                // מספרים על ציר Y
+                for (let y = -maxY; y <= maxY; y++) {
+                    if (y !== 0) {
+                        const pixelY = this.centerY - y * this.scale;
+                        if (pixelY >= 20 && pixelY <= this.height - 20) {
+                            this.ctx.fillText(y.toString(), this.centerX - 10, pixelY);
+                            
+                            // סימוני חלוקה
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(this.centerX - 5, pixelY);
+                            this.ctx.lineTo(this.centerX + 5, pixelY);
+                            this.ctx.strokeStyle = '#333';
+                            this.ctx.lineWidth = 1;
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+            }
+            
+            drawFunction(func, color, lineWidth = 2) {
+                this.ctx.strokeStyle = color;
+                this.ctx.lineWidth = lineWidth;
+                this.ctx.beginPath();
+                
+                let started = false;
+                const step = this.range / 200;
+                const maxRange = this.range + 2;
+                
+                for (let x = -maxRange; x <= maxRange; x += step) {
+                    const y = func(x);
+                    
+                    if (isFinite(y) && Math.abs(y) < maxRange * 2) {
+                        const pixelX = this.centerX + x * this.scale;
+                        const pixelY = this.centerY - y * this.scale;
+                        
+                        if (pixelX >= -10 && pixelX <= this.width + 10 && 
+                            pixelY >= -10 && pixelY <= this.height + 10) {
+                            
+                            if (!started) {
+                                this.ctx.moveTo(pixelX, pixelY);
+                                started = true;
+                            } else {
+                                this.ctx.lineTo(pixelX, pixelY);
+                            }
+                        } else if (started) {
+                            break;
+                        }
+                    } else if (started) {
+                        this.ctx.stroke();
+                        this.ctx.beginPath();
+                        started = false;
+                    }
+                }
+                
+                if (started) {
+                    this.ctx.stroke();
+                }
+            }
+            
+            drawFunctionLabels() {
+                this.ctx.font = 'bold 14px Arial';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.direction = 'ltr';
+                
+                // y = eˣ - ימינה מנקודה (0,1)
+                if (document.getElementById('exp_x').checked) {
+                    const x = this.centerX + 35; // ימינה מהמרכז
+                    const y = this.centerY - this.scale; // ברמת y=1
+                    if (x < this.width - 30 && y > 30 && y < this.height - 30) {
+                        this.ctx.textAlign = 'center';
+                        this.ctx.fillStyle = '#8e44ad';
+                        this.ctx.fillText('y = eˣ', x, y);
+                    }
+                }
+                
+                // y = e⁻ˣ - שמאלה מנקודה (0,1) עם מינוס מוגדל
+                if (document.getElementById('exp_neg_x').checked) {
+                    const x = this.centerX - 35; // שמאלה מהמרכז
+                    const y = this.centerY - this.scale; // ברמת y=1
+                    if (x > 30 && y > 30 && y < this.height - 30) {
+                        this.ctx.textAlign = 'center';
+                        this.ctx.fillStyle = '#3498db';
+                        // ציור חלקי המשוואה בנפרד להגדלת המינוס
+                        this.ctx.fillText('y = e', x - 10, y);
+                        this.ctx.font = 'bold 16px Arial'; // הגדלת הפונט למינוס
+                        this.ctx.fillText('−', x + 10, y); // שימוש בקו ארוך במקום מקף
+                        this.ctx.font = 'bold 14px Arial'; // החזרת הגודל הרגיל
+                        this.ctx.fillText('ˣ', x + 20, y);
+                    }
+                }
+                
+                // y = ln(x) - מתחת לנקודה (1,0), תחילת הכתובית מתחת לנקודה
+                if (document.getElementById('log_x').checked) {
+                    const x = this.centerX + this.scale; // x=1
+                    const y = this.centerY + 25; // מתחת לציר X
+                    if (x < this.width - 50 && y < this.height - 30) {
+                        this.ctx.textAlign = 'left'; // תחילת הטקסט מתחת לנקודה
+                        this.ctx.fillStyle = '#2ecc71';
+                        this.ctx.fillText('y = ln(x)', x, y);
+                    }
+                }
+                
+                // y = ln(-x) - מתחת לנקודה (-1,0), סוף הכתובית מתחת לנקודה
+                if (document.getElementById('log_neg_x').checked) {
+                    const x = this.centerX - this.scale; // x=-1
+                    const y = this.centerY + 25; // מתחת לציר X
+                    if (x > 50 && y < this.height - 30) {
+                        this.ctx.textAlign = 'right'; // סוף הטקסט מתחת לנקודה
+                        this.ctx.fillStyle = '#f39c12';
+                        this.ctx.fillText('y = ln(−x)', x, y); // שימוש בקו ארוך
+                    }
+                }
+            }
+            
+            drawAsymptotes() {
+                this.ctx.strokeStyle = 'rgba(220, 20, 60, 0.9)';
+                this.ctx.lineWidth = 3;
+                this.ctx.setLineDash([10, 6]);
+                
+                // אסימפטוטה אופקית y = 0 לפונקציות אקספוננציאליות
+                if (document.getElementById('exp_x').checked) {
+                    // אסימפטוטה משמאל (x → -∞) - חצי ציר X שלילי
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, this.centerY);
+                    this.ctx.lineTo(this.centerX - 15, this.centerY);
+                    this.ctx.stroke();
+                    
+                    // כתובית אסימפטוטה מתחת באמצע החצי ציר השמאלי
+                    this.ctx.save();
+                    this.ctx.fillStyle = 'rgba(220, 20, 60, 1)';
+                    this.ctx.font = 'bold 14px Arial';
+                    this.ctx.direction = 'ltr';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'top';
+                    const midPointX = (this.centerX - 15) / 2;
+                    this.ctx.fillText('y = 0', midPointX, this.centerY + 8);
+                    this.ctx.restore();
+                }
+                
+                if (document.getElementById('exp_neg_x').checked) {
+                    // אסימפטוטה מימין (x → +∞) - חצי ציר X חיובי
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.centerX + 15, this.centerY);
+                    this.ctx.lineTo(this.width, this.centerY);
+                    this.ctx.stroke();
+                    
+                    // כתובית אסימפטוטה מתחת באמצע החצי ציר הימני
+                    this.ctx.save();
+                    this.ctx.fillStyle = 'rgba(220, 20, 60, 1)';
+                    this.ctx.font = 'bold 14px Arial';
+                    this.ctx.direction = 'ltr';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'top';
+                    const midPointX = this.centerX + 15 + (this.width - (this.centerX + 15)) / 2;
+                    this.ctx.fillText('y = 0', midPointX, this.centerY + 8);
+                    this.ctx.restore();
+                }
+                
+                // אסימפטוטה אנכית x = 0 לפונקציות לוגריתמיות
+                if (document.getElementById('log_x').checked) {
+                    // אסימפטוטה עבור ln(x) - כל ציר Y
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.centerX, 15);
+                    this.ctx.lineTo(this.centerX, this.height - 15);
+                    this.ctx.stroke();
+                    
+                    // כתובית אסימפטוטה משמאל (חצי מישור מנוגד לפונקציה)
+                    this.ctx.save();
+                    this.ctx.fillStyle = 'rgba(220, 20, 60, 1)';
+                    this.ctx.font = 'bold 14px Arial';
+                    this.ctx.direction = 'ltr';
+                    this.ctx.textAlign = 'right';
+                    this.ctx.textBaseline = 'middle';
+                    this.ctx.fillText('x = 0', this.centerX - 8, this.height / 2);
+                    this.ctx.restore();
+                }
+                
+                if (document.getElementById('log_neg_x').checked) {
+                    // אסימפטוטה עבור ln(-x) - כל ציר Y
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.centerX, 15);
+                    this.ctx.lineTo(this.centerX, this.height - 15);
+                    this.ctx.stroke();
+                    
+                    // כתובית אסימפטוטה מימין (חצי מישור מנוגד לפונקציה)
+                    this.ctx.save();
+                    this.ctx.fillStyle = 'rgba(220, 20, 60, 1)';
+                    this.ctx.font = 'bold 14px Arial';
+                    this.ctx.direction = 'ltr';
+                    this.ctx.textAlign = 'left';
+                    this.ctx.textBaseline = 'middle';
+                    this.ctx.fillText('x = 0', this.centerX + 8, this.height / 2);
+                    this.ctx.restore();
+                }
+                
+                this.ctx.setLineDash([]);
+            }
+            
+            draw() {
+                this.clear();
+                this.drawGrid();
+                this.drawAxes();
+                this.drawNumbers();
+                this.drawAsymptotes();
+                
+                if (document.getElementById('exp_x').checked) {
+                    this.drawFunction(x => Math.exp(x), '#8e44ad');
+                }
+                
+                if (document.getElementById('exp_neg_x').checked) {
+                    this.drawFunction(x => Math.exp(-x), '#3498db');
+                }
+                
+                if (document.getElementById('log_x').checked) {
+                    this.drawFunction(x => x > 0 ? Math.log(x) : NaN, '#2ecc71');
+                }
+                
+                if (document.getElementById('log_neg_x').checked) {
+                    this.drawFunction(x => x < 0 ? Math.log(-x) : NaN, '#f39c12');
+                }
+                
+                // ציור כתוביות הפונקציות בסוף
+                this.drawFunctionLabels();
+            }
+        }
+        
+        // הפעלת האפליקציה
+        window.addEventListener('load', () => {
+            new FunctionGrapher();
+        });
+    </script>
+</body>
+</html>
