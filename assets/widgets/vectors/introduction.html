@@ -303,20 +303,20 @@
                 
                 if (!depVector.hasIndependentStart) {
                     // Зависимый без независимого начала - двигается вместе с исходным
-                    depVector.startPoint.x = parentVector.startPoint.x;
-                    depVector.startPoint.y = parentVector.startPoint.y;
+                    // НО только если они действительно разделяют тот же объект точки
+                    if (depVector.startPoint === parentVector.startPoint) {
+                        // Точки уже связаны через общий объект - ничего не делаем
+                    } else {
+                        // Синхронизируем координаты
+                        depVector.startPoint.x = parentVector.startPoint.x;
+                        depVector.startPoint.y = parentVector.startPoint.y;
+                    }
                 } else {
-                    // Зависимый с независимым началом - пересчитываем позицию на новой прямой
-                    const newStartPosition = {
-                        x: parentVector.startPoint.x + parentDir.x * depVector.startPositionParameter,
-                        y: parentVector.startPoint.y + parentDir.y * depVector.startPositionParameter
-                    };
-                    
-                    depVector.startPoint.x = newStartPosition.x;
-                    depVector.startPoint.y = newStartPosition.y;
+                    // Зависимый с независимым началом - НЕ ТРОГАЕМ его начало!
+                    // Начало остается на своем месте
                 }
                 
-                // Пересчитываем конец с сохраненным коэффициентом
+                // Пересчитываем ТОЛЬКО конец с сохраненным коэффициентом
                 depVector.endPoint.x = depVector.startPoint.x + parentDir.x * coefficient;
                 depVector.endPoint.y = depVector.startPoint.y + parentDir.y * coefficient;
                 
@@ -344,13 +344,10 @@
         }
 
         function createDependentVector(parentVector, mousePos) {
-            // Используем существующие точки без создания новых
-            const startPoint = {
-                x: parentVector.startPoint.x,
-                y: parentVector.startPoint.y,
-                name: parentVector.startPoint.name  // Та же точка начала
-            };
+            // Начало зависимого вектора = ТОТ ЖЕ ОБЪЕКТ начала исходного вектора
+            const startPoint = parentVector.startPoint;  // Разделяем тот же объект точки!
             
+            // Конец зависимого вектора = проекция клика мыши на прямую исходного вектора
             const projectedPoint = projectPointOnLine(mousePos, parentVector.startPoint, parentVector.endPoint);
             const endPoint = {
                 x: projectedPoint.x,
@@ -362,14 +359,33 @@
             points.push(endPoint);
             pointCounter++; // Увеличиваем счетчик для следующих независимых точек
             
+            // Вычисляем параметр позиции КОНЦА зависимого вектора на прямой исходного
+            const parentDir = {
+                x: parentVector.endPoint.x - parentVector.startPoint.x,
+                y: parentVector.endPoint.y - parentVector.startPoint.y
+            };
+            const parentLengthSq = parentDir.x * parentDir.x + parentDir.y * parentDir.y;
+            
+            let endPositionParameter = 1; // По умолчанию в конце исходного вектора
+            if (parentLengthSq > 0) {
+                const toEnd = {
+                    x: endPoint.x - parentVector.startPoint.x,
+                    y: endPoint.y - parentVector.startPoint.y
+                };
+                endPositionParameter = (toEnd.x * parentDir.x + toEnd.y * parentDir.y) / parentLengthSq;
+            }
+            
+            // startPositionParameter = 0 (начало исходного вектора) - это правильно!
+            // НО сохраняем коэффициент как отношение длин для правильных обновлений
+            
             const dependentVector = {
                 startPoint: startPoint,
                 endPoint: endPoint,
                 parentVector: parentVector,
                 name: parentVector.name,
-                storedCoefficient: 1,
+                storedCoefficient: endPositionParameter,  // Используем параметр конца как коэффициент
                 hasIndependentStart: false,  // Флаг для отслеживания независимого начала
-                startPositionParameter: 0    // Параметр позиции начала на прямой (t=0 означает начало исходного вектора)
+                startPositionParameter: 0    // Начало всегда в начале исходного вектора при создании
             };
             
             vectors.push(dependentVector);
