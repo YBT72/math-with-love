@@ -1,18 +1,26 @@
-<!DOCTYPE html>
+<!DOCTYPE ht    <!-- Mathematical symbols using HTML entities and CSS -->
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name    </style>
-</head>
-<body class="bg-slate-100 w-full min-h-screen flex flex-col items-center justify-center p-4">
-
-    <div class="w-full max-w-5xl flex flex-col md:flex-row-reverse items-center justify-center gap-4 md:gap-8 flex-grow min-h-0">wport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>פעולות חשבון במישור גאוס</title>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts for typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.        /**
+         * Formats a complex number based on the current display mode (algebraic or polar).
+         * @param {{a: number, b: number}} p - The complex number.
+         * @param {boolean} [addPlusMinus=false] - Whether to prepend '±'.
+         * @returns {string} The formatted HTML string.
+         */
+        function formatComplex(p, addPlusMinus = false) {
+            if (displayMode === 'polar') {
+                const polarStr = toPolarHtml(p);
+                return addPlusMinus ? `±(${polarStr})` : polarStr;
+            }
+            return toAlgebraicHtml(p, addPlusMinus);
+        }gin>
     <link href="https://fonts.googleapis.com/css2?family=David+Libre:wght@400;700&display=swap" rel="stylesheet">
     <!-- KaTeX library for rendering mathematical formulas -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" xintegrity="sha384-n8MVd4RsNIU0KOVEMckDpbOc7ymOFAKfCcfdudfA1BErQoRvkDn4CIvQEfRIbMzp" crossorigin="anonymous">
@@ -21,7 +29,7 @@
         /* General body styling */
         body {
             font-family: 'David Libre', serif;
-            overflow-x: hidden; /* Prevent horizontal scrolling only */
+            overflow: hidden; /* Prevents scrollbars on the main body */
         }
         /* Canvas styling for cursor feedback */
         canvas {
@@ -63,15 +71,74 @@
             justify-content: center;
             width: 100%;
             white-space: nowrap; /* Prevent line breaks */
-            overflow-x: hidden; /* Prevent horizontal scrolling only */ /* Hide overflow */
+            overflow: hidden; /* Hide overflow */
         }
         #result-row {
             height: 58px; /* Fixed height for the result row */
             width: 100%;
         }
-        /* KaTeX specific styling */
-        .katex { font-size: 1.1em !important; }
-        .katex-display { margin: 0; }
+        /* Math display styling */
+        .math-display {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            direction: ltr;
+        }
+        
+        .math-subscript {
+            font-size: 0.75em;
+            vertical-align: sub;
+        }
+        
+        .math-superscript {
+            font-size: 0.75em;
+            vertical-align: super;
+        }
+        
+        /* Адаптивные стили */
+        @media (max-width: 768px) {
+            body {
+                padding: 0.5rem;
+            }
+            
+            .operation-btn {
+                height: 2.5rem;
+                font-size: 16px;
+                padding: 0.15rem;
+            }
+            
+            .result-box {
+                font-size: 0.85rem;
+                padding: 0.5rem;
+                height: auto;
+                min-height: 2.5rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem !important;
+            }
+            
+            h2 {
+                font-size: 1rem !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .operation-btn {
+                height: 2.25rem;
+                font-size: 14px;
+            }
+            
+            .result-box {
+                font-size: 0.8rem;
+                padding: 0.4rem;
+                min-height: 2.25rem;
+            }
+            
+            /* Улучшение для малых экранов */
+            .grid {
+                gap: 0.25rem;
+            }
+        }
         
         .unary-result-box {
             white-space: nowrap;
@@ -95,25 +162,25 @@
         }
     </style>
 </head>
-<body class="bg-slate-100 w-full min-h-screen flex flex-col items-center justify-center p-4">
+<body class="bg-slate-100 w-full h-screen flex flex-col items-center justify-center p-4">
 
-    <div class="w-full max-w-6xl flex flex-col md:flex-row-reverse md:items-center justify-center gap-4 md:gap-8 min-h-0">
+    <div class="w-full max-w-7xl flex flex-col lg:flex-row-reverse items-start justify-center gap-3 md:gap-6 lg:gap-8 flex-grow min-h-0 px-2 md:px-4">
         
         <!-- Container for Title and Canvas -->
-        <div class="flex flex-col items-center w-full max-w-4xl">
+        <div class="flex flex-col items-center w-full lg:max-w-none lg:flex-1">
             <div class="text-center mb-2 flex-shrink-0">
                 <h1 class="text-2xl md:text-3xl font-bold text-slate-700">מישור גאוס האינטראקטיבי</h1>
                 <p class="text-slate-600 text-sm md:text-base">גרור את הנקודות z<sub>1</sub> ו-z<sub>2</sub> ובחר בפעולה הרצויה</p>
             </div>
 
             <!-- Canvas Container -->
-            <div id="canvas-container" class="w-full bg-white rounded-xl shadow-lg p-2 flex items-center justify-center" style="aspect-ratio: 1.25 / 1; min-height: 250px; max-height: 70vh;">
+            <div id="canvas-container" class="w-full bg-white rounded-xl shadow-lg p-2 flex items-center justify-center" style="aspect-ratio: 1.2 / 1; min-height: 280px; max-height: min(70vh, 500px);">
                 <canvas id="complexPlane"></canvas>
             </div>
         </div>
 
         <!-- Display & Controls Container -->
-        <div class="w-full max-w-sm flex flex-col items-center justify-center gap-3 md:mt-0">
+        <div class="w-full lg:max-w-sm lg:w-80 xl:w-96 flex flex-col items-center justify-start gap-2 md:gap-3">
             
             <h2 class="text-lg font-bold text-slate-700 text-center">פעולות חשבון עם מספרים מרוכבים</h2>
             <div id="info-title" class="text-center text-slate-600 text-base font-bold"></div>
@@ -121,8 +188,8 @@
             <!-- Display Mode Segmented Control -->
             <div class="w-full flex justify-center">
                 <div class="flex border border-slate-300 rounded-lg overflow-hidden w-full">
-                    <button id="polar-btn" class="w-1/2 text-center toggle-btn-inactive px-4 py-1 text-sm font-bold transition-colors whitespace-nowrap">קוטבית</button>
-                    <button id="algebraic-btn" class="w-1/2 text-center toggle-btn-active px-4 py-1 text-sm font-bold transition-colors whitespace-nowrap">אלגברית</button>
+                    <button id="polar-btn" class="w-1/2 text-center toggle-btn-inactive px-4 py-1 text-sm font-bold transition-colors">הצגה קוטבית</button>
+                    <button id="algebraic-btn" class="w-1/2 text-center toggle-btn-active px-4 py-1 text-sm font-bold transition-colors">הצגה אלגברית</button>
                 </div>
             </div>
 
@@ -221,30 +288,25 @@
         let absValue1 = null;
         let absValue2 = null;
 
-        // --- KaTeX Rendering ---
+        // --- HTML Math Rendering ---
         /**
-         * Renders a LaTeX string into a specified DOM element using KaTeX.
+         * Renders HTML content into a specified DOM element.
          * @param {HTMLElement} element - The DOM element to render into.
-         * @param {string} latexString - The LaTeX string to render.
-         * @param {string} [baseFontSize='0.9rem'] - The base font size for the rendered math.
+         * @param {string} htmlContent - The HTML content to render.
+         * @param {string} [baseFontSize='0.9rem'] - The base font size.
          */
-        function renderMath(element, latexString, baseFontSize = '0.9rem') {
-             element.style.fontSize = baseFontSize;
-            try {
-                katex.render(latexString, element, { throwOnError: false, displayMode: false });
-            } catch (e) {
-                element.textContent = "Error";
-                console.error(e);
-            }
-        }
-
-        /**
+        function renderMath(element, htmlContent, baseFontSize = '0.9rem') {
+            element.style.fontSize = baseFontSize;
+            element.innerHTML = htmlContent;
+        }        /**
          * Renders the mathematical symbols on the unary operation buttons.
          */
         function renderButtons() {
-            renderMath(buttons.sqrt, "\\mathbf{\\sqrt{\\phantom{z}}}");
-            renderMath(buttons.conjugate, "\\mathbf{\\overline{z}}");
-            renderMath(buttons.abs, "\\mathbf{|z|}");
+            // Обычный текст вместо KaTeX для кнопок sqrt, conjugate, abs
+            buttons.sqrt.innerText = '√z';
+            buttons.sqrt.dir = 'ltr';
+            buttons.conjugate.innerText = 'z̅';
+            buttons.abs.innerText = '|z|';
         }
 
         // --- Coordinate Conversion ---
@@ -467,12 +529,12 @@
         }
         
         /**
-         * Formats a complex number into an algebraic LaTeX string (a + bi).
+         * Formats a complex number into an algebraic HTML string (a + bi).
          * @param {{a: number, b: number}} p - The complex number.
          * @param {boolean} [addPlusMinus=false] - Whether to prepend '±'.
-         * @returns {string} The formatted LaTeX string.
+         * @returns {string} The formatted HTML string.
          */
-        function toAlgebraicLatex(p, addPlusMinus = false) {
+        function toAlgebraicHtml(p, addPlusMinus = false) {
             if (!p) return "";
             const epsilon = 1e-9;
             let a = p.a, b = p.b;
@@ -496,15 +558,15 @@
                 result = realPart || imagPart;
             }
             
-            return addPlusMinus ? `\\pm(${result})` : result;
+            return addPlusMinus ? `±(${result})` : result;
         }
 
         /**
-         * Formats a complex number into a polar LaTeX string (r cis(θ)).
+         * Formats a complex number into a polar HTML string (r cis(θ)).
          * @param {{a: number, b: number}} p - The complex number.
-         * @returns {string} The formatted LaTeX string.
+         * @returns {string} The formatted HTML string.
          */
-        function toPolarLatex(p) {
+        function toPolarHtml(p) {
             if (!p) return "";
             const epsilon = 1e-9;
             if (Math.abs(p.a) < epsilon && Math.abs(p.b) < epsilon) return '0';
@@ -512,7 +574,7 @@
             const r = Math.hypot(p.a, p.b);
             const thetaDegrees = Math.atan2(p.b, p.a) * (180 / Math.PI);
             
-            return `${r.toFixed(1)} \\text{ cis}(${thetaDegrees.toFixed(1)}^\\circ)`;
+            return `${r.toFixed(1)} cis(${thetaDegrees.toFixed(1)}°)`;
         }
 
         /**
@@ -533,9 +595,31 @@
          * Updates all calculations and display elements based on the current state.
          */
         function updateDisplay() {
-            // Update displays for z1 and z2
-            renderMath(z1Display, `z_1 = ${formatComplex(point1)}`, '1rem');
-            renderMath(z2Display, `z_2 = ${formatComplex(point2)}`, '1rem');
+            // Update displays for z1 and z2 (без KaTeX)
+            function formatComplexPlain(p) {
+                if (!p) return "";
+                const epsilon = 1e-9;
+                let a = p.a, b = p.b;
+                if (Math.abs(a) < epsilon) a = 0;
+                if (Math.abs(b) < epsilon) b = 0;
+                if (a === 0 && b === 0) return '0';
+                let realPart = a !== 0 ? a.toFixed(1) : '';
+                let imagPart = '';
+                if (b !== 0) {
+                    if (Math.abs(b - 1) < epsilon) imagPart = 'i';
+                    else if (Math.abs(b + 1) < epsilon) imagPart = '-i';
+                    else imagPart = `${b.toFixed(1)}i`;
+                }
+                let result;
+                if (realPart && imagPart) {
+                    result = b > 0 ? `${realPart} + ${imagPart}` : `${realPart} - ${imagPart.substring(1)}`;
+                } else {
+                    result = realPart || imagPart;
+                }
+                return result;
+            }
+            z1Display.innerText = `z₁ = ${formatComplexPlain(point1)}`;
+            z2Display.innerText = `z₂ = ${formatComplexPlain(point2)}`;
 
             const isBinary = BINARY_OPS.includes(currentOperation);
             const isUnary = UNARY_OPS.includes(currentOperation);
@@ -578,12 +662,63 @@
                 if (error) {
                     binaryResultDisplay.innerHTML = `<span class="text-red-600 font-bold">שגיאה: חילוק באפס</span>`;
                 } else {
-                    renderMath(binaryResultDisplay, `z = z_1 ${currentOperation === 'add' ? '+' : currentOperation === 'subtract' ? '-' : currentOperation === 'multiply' ? '\\times' : '\\div'} z_2 = ${formatComplex(resultPoint)}`);
+                    function formatComplexPlain(p) {
+                        if (!p) return "";
+                        const epsilon = 1e-9;
+                        let a = p.a, b = p.b;
+                        if (Math.abs(a) < epsilon) a = 0;
+                        if (Math.abs(b) < epsilon) b = 0;
+                        if (a === 0 && b === 0) return '0';
+                        let realPart = a !== 0 ? a.toFixed(1) : '';
+                        let imagPart = '';
+                        if (b !== 0) {
+                            if (Math.abs(b - 1) < epsilon) imagPart = 'i';
+                            else if (Math.abs(b + 1) < epsilon) imagPart = '-i';
+                            else imagPart = `${b.toFixed(1)}i`;
+                        }
+                        let result;
+                        if (realPart && imagPart) {
+                            result = b > 0 ? `${realPart} + ${imagPart}` : `${realPart} - ${imagPart.substring(1)}`;
+                        } else {
+                            result = realPart || imagPart;
+                        }
+                        return result;
+                    }
+                    let opSign = '';
+                    switch (currentOperation) {
+                        case 'add': opSign = '+'; break;
+                        case 'subtract': opSign = '-'; break;
+                        case 'multiply': opSign = '×'; break;
+                        case 'divide': opSign = '÷'; break;
+                    }
+                    binaryResultDisplay.innerText = `z = z₁ ${opSign} z₂ = ${formatComplexPlain(resultPoint)}`;
                 }
             } 
             // Perform unary operations
             else if (isUnary) {
                 let res1, res2;
+                function formatComplexPlain(p, addPlusMinus = false) {
+                    if (!p) return "";
+                    const epsilon = 1e-9;
+                    let a = p.a, b = p.b;
+                    if (Math.abs(a) < epsilon) a = 0;
+                    if (Math.abs(b) < epsilon) b = 0;
+                    if (a === 0 && b === 0) return '0';
+                    let realPart = a !== 0 ? a.toFixed(1) : '';
+                    let imagPart = '';
+                    if (b !== 0) {
+                        if (Math.abs(b - 1) < epsilon) imagPart = 'i';
+                        else if (Math.abs(b + 1) < epsilon) imagPart = '-i';
+                        else imagPart = `${b.toFixed(1)}i`;
+                    }
+                    let result;
+                    if (realPart && imagPart) {
+                        result = b > 0 ? `${realPart} + ${imagPart}` : `${realPart} - ${imagPart.substring(1)}`;
+                    } else {
+                        result = realPart || imagPart;
+                    }
+                    return addPlusMinus ? `±(${result})` : result;
+                }
                 switch(currentOperation) {
                     case 'sqrt':
                         // Calculate principal square root and its negative for z1
@@ -596,8 +731,8 @@
                         res2 = { a: Math.sqrt(r2) * Math.cos(phi2 / 2), b: Math.sqrt(r2) * Math.sin(phi2 / 2) };
                         unaryResults2.push(res2, {a: -res2.a, b: -res2.b});
 
-                        renderMath(unaryResult1Display, `\\sqrt{z_1} = ${formatComplex(res1, true)}`);
-                        renderMath(unaryResult2Display, `\\sqrt{z_2} = ${formatComplex(res2, true)}`);
+                        unaryResult1Display.innerText = `√z₁ = ${formatComplexPlain(res1, true)}`;
+                        unaryResult2Display.innerText = `√z₂ = ${formatComplexPlain(res2, true)}`;
                         break;
                     case 'conjugate':
                         res1 = { a: point1.a, b: -point1.b };
@@ -605,15 +740,15 @@
                         res2 = { a: point2.a, b: -point2.b };
                         unaryResults2.push(res2);
 
-                        renderMath(unaryResult1Display, `\\overline{z_1} = ${formatComplex(res1)}`);
-                        renderMath(unaryResult2Display, `\\overline{z_2} = ${formatComplex(res2)}`);
+                        unaryResult1Display.innerText = `z̅₁ = ${formatComplexPlain(res1)}`;
+                        unaryResult2Display.innerText = `z̅₂ = ${formatComplexPlain(res2)}`;
                         break;
                     case 'abs':
                         absValue1 = Math.hypot(point1.a, point1.b);
                         absValue2 = Math.hypot(point2.a, point2.b);
                         
-                        renderMath(unaryResult1Display, `|z_1| = ${absValue1.toFixed(1)}`);
-                        renderMath(unaryResult2Display, `|z_2| = ${absValue2.toFixed(1)}`);
+                        unaryResult1Display.innerText = `|z₁| = ${absValue1.toFixed(1)}`;
+                        unaryResult2Display.innerText = `|z₂| = ${absValue2.toFixed(1)}`;
                         break;
                 }
             }
@@ -851,4 +986,3 @@
     </script>
 </body>
 </html>
-

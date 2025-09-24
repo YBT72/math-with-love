@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>פונקציות אקספוננציאליות ולוגריתמיות - אינטראקטיבי</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            direction: rtl;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+            direction: rtl;
+            min-height: 600px;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            height: 100%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            direction: rtl;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .controls h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            text-align: right;
+        }
+
+        .function-group {
+            margin-bottom: 25px;
+        }
+
+        .function-group h4 {
+            color: #34495e;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            text-align: right;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+            direction: rtl;
+        }
+
+        .checkbox-item:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-left: 10px;
+            margin-right: 0;
+            transform: scale(1.2);
+        }
+
+        .checkbox-item label {
+            cursor: pointer;
+            font-size: 1em;
+            user-select: none;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .graph-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #canvas {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            width: 100%;
+            flex: 1;
+            min-height: 500px;
+            cursor: grab;
+        }
+
+        #canvas:active {
+            cursor: grabbing;
+        }
+
+        .instructions {
+            background: #e8f5e8;
+            border: 2px solid #27ae60;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-weight: bold;
+            text-align: center;
+            direction: rtl;
+        }
+
+        .reset-button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 15px;
+            transition: background-color 0.3s;
+        }
+
+        .reset-button:hover {
+            background: #c0392b;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                min-height: auto;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .controls {
+                height: auto;
+            }
+            
+            .graph-container {
+                height: auto;
+            }
+            
+            #canvas {
+                width: 100%;
+                height: 400px;
+                flex: none;
+            }
+        }
+
+        .asymptote-info {
+            margin-top: auto;
+            padding: 15px;
+            background: #e8f4f8;
+            border-right: 4px solid #3498db;
+            border-left: none;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #2c3e50;
+            direction: rtl;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .math-ltr {
+            direction: ltr !important;
+            display: inline-block;
+        }
+
+        .transform-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 0.85em;
+            text-align: right;
+            direction: rtl;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 פונקציות אקספוננציאליות ולוגריתמיות</h1>
+            <p>חקירה אינטראקטיבית עם יכולת גרירה וטרנספורמציות</p>
+        </div>
+        
+        <div class="content">
+            <div class="controls">
+                <div class="instructions">
+                    🖱️ גררו את הפונקציות לחקור טרנספורמציות!
+                </div>
+                
+                <button class="reset-button" onclick="grapher.resetTransforms()">
+                    🔄 איפוס כל הטרנספורמציות
+                </button>
+                
+                <div class="transform-info" id="transformInfo">
+                    טרנספורמציות פעילות: ללא
+                </div>
+
+                <h3>בחירת פונקציות</h3>
+                
+                <div class="function-group">
+                    <h4>🔺 פונקציות אקספוננציאליות</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="exp_x" checked>
+                        <label for="exp_x" class="math-ltr">y = eˣ</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="exp_neg_x">
+                        <label for="exp_neg_x" class="math-ltr">y = e⁻ˣ</label>
+                    </div>
+                </div>
+                
+                <div class="function-group">
+                    <h4>📉 פונקציות לוגריתמיות</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="log_x">
+                        <label for="log_x" class="math-ltr">y = ln(x)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="log_neg_x">
+                        <label for="log_neg_x" class="math-ltr">y = ln(-x)</label>
+                    </div>
+                </div>
+                
+                <div class="asymptote-info">
+                    <strong>אסימפטוטות:</strong><br>
+                    • <span class="math-ltr">y = eˣ</span>: <span class="math-ltr">y = 0</span> כאשר <span class="math-ltr">x → -∞</span><br>
+                    • <span class="math-ltr">y = e⁻ˣ</span>: <span class="math-ltr">y = 0</span> כאשר <span class="math-ltr">x → +∞</span><br>
+                    • <span class="math-ltr">y = ln(x)</span>: <span class="math-ltr">x = 0</span> כאשר <span class="math-ltr">x → 0+</span><br>
+                    • <span class="math-ltr">y = ln(-x)</span>: <span class="math-ltr">x = 0</span> כאשר <span class="math-ltr">x → 0-</span><br><br>
+                    <small style="color: #666;">💡 גלגל עכבר: שינוי קנה מידה<br>🖱️ לחיצה וגרירה: הזזת פונקציות</small>
+                </div>
+            </div>
+            
+            <div class="graph-container">
+                <canvas id="canvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class FunctionGrapher {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.range = 7;
+                
+                // טרנספורמציות לכל פונקציה
+                this.transforms = {
+                    exp_x: { h: 0, k: 0 },
+                    exp_neg_x: { h: 0, k: 0 },
+                    log_x: { h: 0, k: 0 },
+                    log_neg_x: { h: 0, k: 0 }
+                };
+                
+                this.activeFunction = null;
+                this.isDragging = false;
+                this.lastMousePos = { x: 0, y: 0 };
+                this.dragThreshold = 30; // רדיוס זיהוי לגרירה (увеличен для лучшего захвата)
+                
+                this.setupCanvas();
+                this.setupEventListeners();
+                this.updateTransformInfo();
+                this.draw();
+            }
+            
+            setupCanvas() {
+                const rect = this.canvas.getBoundingClientRect();
+                
+                this.canvas.width = rect.width * 2;
+                this.canvas.height = rect.height * 2;
+                this.ctx.scale(2, 2);
+                
+                this.width = rect.width;
+                this.height = rect.height;
+                this.centerX = this.width / 2;
+                this.centerY = this.height / 2;
+                this.scale = Math.min(this.width, this.height) / (2 * this.range) * 0.8;
+            }
+            
+            setupEventListeners() {
+                const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(cb => cb.addEventListener('change', () => this.draw()));
+                
+                this.canvas.addEventListener('mousedown', (e) => this.onMouseDown(e));
+                this.canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
+                this.canvas.addEventListener('mouseup', (e) => this.onMouseUp(e));
+                this.canvas.addEventListener('mouseleave', (e) => this.onMouseUp(e));
+                
+                this.canvas.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const delta = e.deltaY > 0 ? 0.5 : -0.5;
+                    this.range = Math.max(1, Math.min(20, this.range + delta));
+                    this.scale = Math.min(this.width, this.height) / (2 * this.range) * 0.8;
+                    this.draw();
+                });
+                
+                window.addEventListener('resize', () => {
+                    this.setupCanvas();
+                    this.draw();
+                });
+            }
+            
+            // המרת קואורדינטות מיקסל לגרף
+            pixelToGraph(pixelX, pixelY) {
+                return {
+                    x: (pixelX - this.centerX) / this.scale,
+                    y: -(pixelY - this.centerY) / this.scale
+                };
+            }
+            
+            // המרת קואורדינטות מגרף לפיקסל
+            graphToPixel(graphX, graphY) {
+                return {
+                    x: this.centerX + graphX * this.scale,
+                    y: this.centerY - graphY * this.scale
+                };
+            }
+            
+            // חישוב נקודה על הפונקציה עבור x נתון
+            getPointOnFunction(funcId, x) {
+                const func = this.getFunctionById(funcId);
+                if (!func) return null;
+                
+                const y = func(x);
+                return isFinite(y) ? { x, y } : null;
+            }
+            
+            // קבלת הפונקציה לפי ID
+            getFunctionById(funcId) {
+                switch(funcId) {
+                    case 'exp_x': 
+                        return this.getTransformedFunction(x => Math.exp(x), funcId);
+                    case 'exp_neg_x': 
+                        return this.getTransformedFunction(x => Math.exp(-x), funcId);
+                    case 'log_x': 
+                        return this.getTransformedFunction(x => x > 0 ? Math.log(x) : NaN, funcId);
+                    case 'log_neg_x': 
+                        return this.getTransformedFunction(x => x < 0 ? Math.log(-x) : NaN, funcId);
+                    default: 
+                        return null;
+                }
+            }
+            
+            // מציאת הפונקציה הקרובה ביותר לנקודה
+            findNearestFunction(mouseGraphPos) {
+                const activeFunctions = [
+                    { id: 'exp_x', checked: document.getElementById('exp_x').checked },
+                    { id: 'exp_neg_x', checked: document.getElementById('exp_neg_x').checked },
+                    { id: 'log_x', checked: document.getElementById('log_x').checked },
+                    { id: 'log_neg_x', checked: document.getElementById('log_neg_x').checked }
+                ].filter(f => f.checked);
+                
+                let nearestFunction = null;
+                let minDistance = this.dragThreshold / this.scale;
+                
+                for (const funcInfo of activeFunctions) {
+                    const point = this.getPointOnFunction(funcInfo.id, mouseGraphPos.x);
+                    if (point) {
+                        const distance = Math.abs(point.y - mouseGraphPos.y);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            nearestFunction = funcInfo.id;
+                        }
+                    }
+                }
+                
+                return nearestFunction;
+            }
+            
+            onMouseDown(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const pixelPos = {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+                
+                const mouseGraphPos = this.pixelToGraph(pixelPos.x, pixelPos.y);
+                this.activeFunction = this.findNearestFunction(mouseGraphPos);
+                
+
+                
+                if (this.activeFunction) {
+                    this.isDragging = true;
+                    this.lastMousePos = pixelPos;
+                    this.canvas.style.cursor = 'grabbing';
+                    this.draw(); // ציור מחדש עם הדגשת הפונקציה הפעילה
+                }
+            }
+            
+            onMouseMove(e) {
+                if (!this.isDragging || !this.activeFunction) return;
+                
+                const rect = this.canvas.getBoundingClientRect();
+                const currentPixelPos = {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+                
+                // חישוב השינוי בפיקסלים והמרה לקואורדינטות גרף
+                const pixelDelta = {
+                    x: currentPixelPos.x - this.lastMousePos.x,
+                    y: currentPixelPos.y - this.lastMousePos.y
+                };
+                
+                const graphDelta = {
+                    h: pixelDelta.x / this.scale,   // Прямое соответствие: мышь вправо = график вправо
+                    k: -pixelDelta.y / this.scale   // Инверсия только для Y (пиксели вниз = математика вверх)
+                };
+                
+                // עדכון הטרנספורמציה
+                this.transforms[this.activeFunction].h += graphDelta.h;
+                this.transforms[this.activeFunction].k += graphDelta.k;
+                
+                this.lastMousePos = currentPixelPos;
+                this.updateTransformInfo();
+                this.draw();
+            }
+            
+            onMouseUp(e) {
+                this.isDragging = false;
+                this.activeFunction = null;
+                this.canvas.style.cursor = 'grab';
+                this.draw();
+            }
+            
+            // עדכון מידע הטרנספורמציות
+            updateTransformInfo() {
+                const info = document.getElementById('transformInfo');
+                const activeTransforms = [];
+                
+                for (const [funcId, transform] of Object.entries(this.transforms)) {
+                    if (Math.abs(transform.h) > 0.05 || Math.abs(transform.k) > 0.05) {
+                        const h = Math.round(transform.h * 100) / 100;
+                        const k = Math.round(transform.k * 100) / 100;
+                        
+                        let formula = '';
+                        
+                        // Создаем красивые математические формулы
+                        switch(funcId) {
+                            case 'exp_x':
+                                if (Math.abs(h) > 0.05 && Math.abs(k) > 0.05) {
+                                    formula = `y = e<sup>(x${h > 0 ? '−' : '+'}${Math.abs(h)})</sup>${k >= 0 ? '+' : ''}${k}`;
+                                } else if (Math.abs(h) > 0.05) {
+                                    formula = `y = e<sup>(x${h > 0 ? '−' : '+'}${Math.abs(h)})</sup>`;
+                                } else if (Math.abs(k) > 0.05) {
+                                    formula = `y = e<sup>x</sup>${k >= 0 ? '+' : ''}${k}`;
+                                }
+                                break;
+                            case 'exp_neg_x':
+                                if (Math.abs(h) > 0.05 && Math.abs(k) > 0.05) {
+                                    formula = `y = e<sup>−(x${h > 0 ? '−' : '+'}${Math.abs(h)})</sup>${k >= 0 ? '+' : ''}${k}`;
+                                } else if (Math.abs(h) > 0.05) {
+                                    formula = `y = e<sup>−(x${h > 0 ? '−' : '+'}${Math.abs(h)})</sup>`;
+                                } else if (Math.abs(k) > 0.05) {
+                                    formula = `y = e<sup>−x</sup>${k >= 0 ? '+' : ''}${k}`;
+                                }
+                                break;
+                            case 'log_x':
+                                if (Math.abs(h) > 0.05 && Math.abs(k) > 0.05) {
+                                    formula = `y = ln(x${h > 0 ? '−' : '+'}${Math.abs(h)})${k >= 0 ? '+' : ''}${k}`;
+                                } else if (Math.abs(h) > 0.05) {
+                                    formula = `y = ln(x${h > 0 ? '−' : '+'}${Math.abs(h)})`;
+                                } else if (Math.abs(k) > 0.05) {
+                                    formula = `y = ln(x)${k >= 0 ? '+' : ''}${k}`;
+                                }
+                                break;
+                            case 'log_neg_x':
+                                if (Math.abs(h) > 0.05 && Math.abs(k) > 0.05) {
+                                    formula = `y = ln(−(x${h > 0 ? '−' : '+'}${Math.abs(h)}))${k >= 0 ? '+' : ''}${k}`;
+                                } else if (Math.abs(h) > 0.05) {
+                                    formula = `y = ln(−(x${h > 0 ? '−' : '+'}${Math.abs(h)}))`;
+                                } else if (Math.abs(k) > 0.05) {
+                                    formula = `y = ln(−x)${k >= 0 ? '+' : ''}${k}`;
+                                }
+                                break;
+                        }
+                        
+                        if (formula) {
+                            activeTransforms.push(`<span class="math-ltr">${formula}</span>`);
+                        }
+                    }
+                }
+                
+                if (activeTransforms.length === 0) {
+                    info.textContent = 'טרנספורמציות פעילות: ללא';
+                } else {
+                    info.innerHTML = 'טרנספורמציות פעילות:<br>' + activeTransforms.join('<br>');
+                }
+            }
+            
+            // איפוס כל הטרנספורמציות
+            resetTransforms() {
+                for (const funcId in this.transforms) {
+                    this.transforms[funcId] = { h: 0, k: 0 };
+                }
+                this.updateTransformInfo();
+                this.draw();
+            }
+            
+            getTransformedFunction(baseFunc, funcId) {
+                const t = this.transforms[funcId];
+                return (x) => {
+                    // Применяем горизонтальный сдвиг h: f(x-h)
+                    const transformedX = x - t.h;
+                    // Вычисляем базовую функцию
+                    const result = baseFunc(transformedX);
+                    // Применяем вертикальный сдвиг k: f(x-h) + k
+                    return result + t.k;
+                };
+            }
+            
+            clear() {
+                this.ctx.clearRect(0, 0, this.width, this.height);
+            }
+            
+            drawGrid() {
+                this.ctx.strokeStyle = '#e0e0e0';
+                this.ctx.lineWidth = 0.5;
+                
+                const maxX = Math.ceil(this.range);
+                const maxY = Math.ceil(this.range);
+                
+                // קווים אנכיים
+                for (let x = -maxX; x <= maxX; x++) {
+                    const pixelX = this.centerX + x * this.scale;
+                    if (pixelX >= 0 && pixelX <= this.width) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(pixelX, 0);
+                        this.ctx.lineTo(pixelX, this.height);
+                        this.ctx.stroke();
+                    }
+                }
+                
+                // קווים אופקיים
+                for (let y = -maxY; y <= maxY; y++) {
+                    const pixelY = this.centerY - y * this.scale;
+                    if (pixelY >= 0 && pixelY <= this.height) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(0, pixelY);
+                        this.ctx.lineTo(this.width, pixelY);
+                        this.ctx.stroke();
+                    }
+                }
+            }
+            
+            drawAxes() {
+                this.ctx.strokeStyle = '#333';
+                this.ctx.lineWidth = 2;
+                
+                // ציר X
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, this.centerY);
+                this.ctx.lineTo(this.width, this.centerY);
+                this.ctx.stroke();
+                
+                // חץ ציר X
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.width - 10, this.centerY - 5);
+                this.ctx.lineTo(this.width, this.centerY);
+                this.ctx.lineTo(this.width - 10, this.centerY + 5);
+                this.ctx.stroke();
+                
+                // ציר Y
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.centerX, 0);
+                this.ctx.lineTo(this.centerX, this.height);
+                this.ctx.stroke();
+                
+                // חץ ציר Y
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.centerX - 5, 10);
+                this.ctx.lineTo(this.centerX, 0);
+                this.ctx.lineTo(this.centerX + 5, 10);
+                this.ctx.stroke();
+                
+                // תוויות הצירים
+                this.ctx.fillStyle = '#333';
+                this.ctx.font = '14px Arial';
+                this.ctx.direction = 'ltr';
+                this.ctx.fillText('x', this.width - 20, this.centerY + 20);
+                this.ctx.fillText('y', this.centerX + 10, 15);
+            }
+            
+            drawNumbers() {
+                this.ctx.fillStyle = '#666';
+                this.ctx.font = '12px Arial';
+                this.ctx.direction = 'ltr';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'top';
+                
+                const maxX = Math.ceil(this.range);
+                const maxY = Math.ceil(this.range);
+                
+                // מספרים על ציר X
+                for (let x = -maxX; x <= maxX; x++) {
+                    if (x !== 0) {
+                        const pixelX = this.centerX + x * this.scale;
+                        if (pixelX >= 20 && pixelX <= this.width - 20) {
+                            this.ctx.fillText(x.toString(), pixelX, this.centerY + 5);
+                            
+                            // סימוני חלוקה
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(pixelX, this.centerY - 5);
+                            this.ctx.lineTo(pixelX, this.centerY + 5);
+                            this.ctx.strokeStyle = '#333';
+                            this.ctx.lineWidth = 1;
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+                
+                this.ctx.textAlign = 'right';
+                this.ctx.textBaseline = 'middle';
+                
+                // מספרים על ציר Y
+                for (let y = -maxY; y <= maxY; y++) {
+                    if (y !== 0) {
+                        const pixelY = this.centerY - y * this.scale;
+                        if (pixelY >= 20 && pixelY <= this.height - 20) {
+                            this.ctx.fillText(y.toString(), this.centerX - 10, pixelY);
+                            
+                            // סימוני חלוקה
+                            this.ctx.beginPath();
+                            this.ctx.moveTo(this.centerX - 5, pixelY);
+                            this.ctx.lineTo(this.centerX + 5, pixelY);
+                            this.ctx.strokeStyle = '#333';
+                            this.ctx.lineWidth = 1;
+                            this.ctx.stroke();
+                        }
+                    }
+                }
+            }
+            
+            drawFunction(func, color, lineWidth = 2) {
+                this.ctx.strokeStyle = color;
+                this.ctx.lineWidth = lineWidth;
+                this.ctx.beginPath();
+                
+                let started = false;
+                const step = this.range / 200;
+                const maxRange = this.range + 2;
+                
+                for (let x = -maxRange; x <= maxRange; x += step) {
+                    const y = func(x);
+                    
+                    if (isFinite(y) && Math.abs(y) < maxRange * 2) {
+                        const pixelX = this.centerX + x * this.scale;
+                        const pixelY = this.centerY - y * this.scale;
+                        
+                        if (pixelX >= -10 && pixelX <= this.width + 10 && 
+                            pixelY >= -10 && pixelY <= this.height + 10) {
+                            
+                            if (!started) {
+                                this.ctx.moveTo(pixelX, pixelY);
+                                started = true;
+                            } else {
+                                this.ctx.lineTo(pixelX, pixelY);
+                            }
+                        } else if (started) {
+                            break;
+                        }
+                    } else if (started) {
+                        this.ctx.stroke();
+                        this.ctx.beginPath();
+                        started = false;
+                    }
+                }
+                
+                if (started) {
+                    this.ctx.stroke();
+                }
+            }
+            
+            drawFunctionLabels() {
+                this.ctx.font = 'bold 14px Arial';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.direction = 'ltr';
+                
+                // y = eˣ
+                if (document.getElementById('exp_x').checked) {
+                    const t = this.transforms.exp_x;
+                    // Ярлык следует за точкой (1+h, e+k) на функции
+                    const labelGraphX = 1 + t.h;
+                    const labelGraphY = Math.exp(1) + t.k;
+                    const x = this.centerX + labelGraphX * this.scale;
+                    const y = this.centerY - labelGraphY * this.scale;
+                    if (x < this.width - 30 && y > 30 && y < this.height - 30) {
+                        this.ctx.textAlign = 'center';
+                        this.ctx.fillStyle = this.activeFunction === 'exp_x' ? '#000' : '#8e44ad';
+                        
+                        // Показываем трансформированную формулу в математическом виде с настоящими степенями
+                        if (Math.abs(t.h) > 0.05 || Math.abs(t.k) > 0.05) {
+                            const h = Math.round(t.h * 100) / 100;
+                            const k = Math.round(t.k * 100) / 100;
+                            
+                            // Рисуем основу формулы
+                            this.ctx.font = 'bold 14px Arial';
+                            let baseText = 'y = e';
+                            let baseWidth = this.ctx.measureText(baseText).width;
+                            this.ctx.fillText(baseText, x - baseWidth/2, y);
+                            
+                            // Рисуем показатель степени меньшим шрифтом и выше
+                            this.ctx.font = 'bold 10px Arial';
+                            let superscript = '';
+                            if (Math.abs(h) > 0.05) {
+                                superscript = `(x${h > 0 ? '−' : '+'}${Math.abs(h)})`;
+                            } else {
+                                superscript = 'x';
+                            }
+                            this.ctx.fillText(superscript, x - baseWidth/2 + baseWidth, y - 6);
+                            
+                            // Рисуем вертикальный сдвиг
+                            if (Math.abs(k) > 0.05) {
+                                this.ctx.font = 'bold 14px Arial';
+                                let kText = `${k >= 0 ? '+' : ''}${k}`;
+                                let superWidth = this.ctx.measureText(superscript).width;
+                                this.ctx.fillText(kText, x - baseWidth/2 + baseWidth + superWidth * 0.8, y);
+                            }
+                        } else {
+                            this.ctx.fillText('y = eˣ', x, y);
+                        }
+                    }
+                }
+                
+                // y = e⁻ˣ
+                if (document.getElementById('exp_neg_x').checked) {
+                    const t = this.transforms.exp_neg_x;
+                    // Ярлык следует за точкой (-1+h, e+k) на функции
+                    const labelGraphX = -1 + t.h;
+                    const labelGraphY = Math.exp(1) + t.k;
+                    const x = this.centerX + labelGraphX * this.scale;
+                    const y = this.centerY - labelGraphY * this.scale;
+                    if (x > 30 && y > 30 && y < this.height - 30) {
+                        this.ctx.textAlign = 'center';
+                        this.ctx.fillStyle = this.activeFunction === 'exp_neg_x' ? '#000' : '#3498db';
+                        
+                        // Показываем трансформированную формулу с настоящими степенями
+                        if (Math.abs(t.h) > 0.05 || Math.abs(t.k) > 0.05) {
+                            const h = Math.round(t.h * 100) / 100;
+                            const k = Math.round(t.k * 100) / 100;
+                            
+                            // Рисуем основу формулы
+                            this.ctx.font = 'bold 14px Arial';
+                            let baseText = 'y = e';
+                            let baseWidth = this.ctx.measureText(baseText).width;
+                            this.ctx.fillText(baseText, x - baseWidth/2, y);
+                            
+                            // Рисуем показатель степени меньшим шрифтом и выше
+                            this.ctx.font = 'bold 10px Arial';
+                            let superscript = '';
+                            if (Math.abs(h) > 0.05) {
+                                superscript = `−(x${h > 0 ? '−' : '+'}${Math.abs(h)})`;
+                            } else {
+                                superscript = '−x';
+                            }
+                            this.ctx.fillText(superscript, x - baseWidth/2 + baseWidth, y - 6);
+                            
+                            // Рисуем вертикальный сдвиг
+                            if (Math.abs(k) > 0.05) {
+                                this.ctx.font = 'bold 14px Arial';
+                                let kText = `${k >= 0 ? '+' : ''}${k}`;
+                                let superWidth = this.ctx.measureText(superscript).width;
+                                this.ctx.fillText(kText, x - baseWidth/2 + baseWidth + superWidth * 0.8, y);
+                            }
+                        } else {
+                            this.ctx.fillText('y = e⁻ˣ', x, y);
+                        }
+                    }
+                }
+                
+                // y = ln(x)
+                if (document.getElementById('log_x').checked) {
+                    const t = this.transforms.log_x;
+                    // Ярлык следует за точкой (e+h, 1+k) на функции
+                    const labelGraphX = Math.E + t.h;
+                    const labelGraphY = 1 + t.k;
+                    const x = this.centerX + labelGraphX * this.scale;
+                    const y = this.centerY - labelGraphY * this.scale;
+                    if (x < this.width - 50 && y < this.height - 30) {
+                        this.ctx.textAlign = 'left';
+                        this.ctx.fillStyle = this.activeFunction === 'log_x' ? '#000' : '#2ecc71';
+                        
+                        let label = 'y = ln(x)';
+                        if (Math.abs(t.h) > 0.05 || Math.abs(t.k) > 0.05) {
+                            const h = Math.round(t.h * 100) / 100;
+                            const k = Math.round(t.k * 100) / 100;
+                            
+                            if (Math.abs(h) > 0.05 && Math.abs(k) > 0.05) {
+                                label = `y = ln(x${h > 0 ? '−' : '+'}${Math.abs(h)})${k >= 0 ? '+' : ''}${k}`;
+                            } else if (Math.abs(h) > 0.05) {
+                                label = `y = ln(x${h > 0 ? '−' : '+'}${Math.abs(h)})`;
+                            } else if (Math.abs(k) > 0.05) {
+                                label = `y = ln(x)${k >= 0 ? '+' : ''}${k}`;
+                            }
+                        }
+                        
+                        this.ctx.fillText(label, x, y);
+                    }
+                }
+                
+                // y = ln(-x)
+                if (document.getElementById('log_neg_x').checked) {
+                    const t = this.transforms.log_neg_x;
+                    // Ярлык следует за точкой (-e+h, 1+k) на функции
+                    const labelGraphX = -Math.E + t.h;
+                    const labelGraphY = 1 + t.k;
+                    const x = this.centerX + labelGraphX * this.scale;
+                    const y = this.centerY - labelGraphY * this.scale;
+                    if (x > 50 && y < this.height - 30) {
+                        this.ctx.textAlign = 'right';
+                        this.ctx.fillStyle = this.activeFunction === 'log_neg_x' ? '#000' : '#f39c12';
+                        
+                        let label = 'y = ln(−x)';
+                        if (Math.abs(t.h) > 0.05 || Math.abs(t.k) > 0.05) {
+                            const h = Math.round(t.h * 100) / 100;
+                            const k = Math.round(t.k * 100) / 100;
+                            
+                            if (Math.abs(h) > 0.05 && Math.abs(k) > 0.05) {
+                                label = `y = ln(−(x${h > 0 ? '−' : '+'}${Math.abs(h)}))${k >= 0 ? '+' : ''}${k}`;
+                            } else if (Math.abs(h) > 0.05) {
+                                label = `y = ln(−(x${h > 0 ? '−' : '+'}${Math.abs(h)}))`;
+                            } else if (Math.abs(k) > 0.05) {
+                                label = `y = ln(−x)${k >= 0 ? '+' : ''}${k}`;
+                            }
+                        }
+                        
+                        this.ctx.fillText(label, x, y);
+                    }
+                }
+            }
+            
+            drawAsymptotes() {
+                this.ctx.strokeStyle = 'rgba(220, 20, 60, 0.7)';
+                this.ctx.lineWidth = 2;
+                this.ctx.setLineDash([8, 4]);
+                
+                // אסימפטוטות אופקיות עבור פונקציות אקספוננציאליות
+                if (document.getElementById('exp_x').checked) {
+                    const k = this.transforms.exp_x.k;
+                    const asymptoteY = this.centerY - k * this.scale;
+                    
+                    if (asymptoteY >= 0 && asymptoteY <= this.height) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(0, asymptoteY);
+                        this.ctx.lineTo(this.centerX - 15, asymptoteY);
+                        this.ctx.stroke();
+                        
+                        // תווית אסימפטוטה
+                        this.ctx.save();
+                        this.ctx.fillStyle = 'rgba(220, 20, 60, 1)';
+                        this.ctx.font = 'bold 12px Arial';
+                        this.ctx.direction = 'ltr';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'top';
+                        const midPointX = (this.centerX - 15) / 2;
+                        const asymptoteValue = Math.round(k * 100) / 100;
+                        this.ctx.fillText(`y = ${asymptoteValue}`, midPointX, asymptoteY + 5);
+                        this.ctx.restore();
+                    }
+                }
+                
+                if (document.getElementById('exp_neg_x').checked) {
+                    const k = this.transforms.exp_neg_x.k;
+                    const asymptoteY = this.centerY - k * this.scale;
+                    
+                    if (asymptoteY >= 0 && asymptoteY <= this.height) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(this.centerX + 15, asymptoteY);
+                        this.ctx.lineTo(this.width, asymptoteY);
+                        this.ctx.stroke();
+                        
+                        // תווית אסימפטוטה
+                        this.ctx.save();
+                        this.ctx.fillStyle = 'rgba(220, 20, 60, 1)';
+                        this.ctx.font = 'bold 12px Arial';
+                        this.ctx.direction = 'ltr';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.textBaseline = 'top';
+                        const midPointX = this.centerX + 15 + (this.width - (this.centerX + 15)) / 2;
+                        const asymptoteValue = Math.round(k * 100) / 100;
+                        this.ctx.fillText(`y = ${asymptoteValue}`, midPointX, asymptoteY + 5);
+                        this.ctx.restore();
+                    }
+                }
+                
+                // אסימפטוטות אנכיות עבור פונקציות לוגריתמיות
+                if (document.getElementById('log_x').checked) {
+                    const h = this.transforms.log_x.h;
+                    const asymptoteX = this.centerX + h * this.scale;
+                    
+                    if (asymptoteX >= 0 && asymptoteX <= this.width) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(asymptoteX, 15);
+                        this.ctx.lineTo(asymptoteX, this.height - 15);
+                        this.ctx.stroke();
+                        
+                        // תווית אסימפטוטה
+                        this.ctx.save();
+                        this.ctx.fillStyle = 'rgba(220, 20, 60, 1)';
+                        this.ctx.font = 'bold 12px Arial';
+                        this.ctx.direction = 'ltr';
+                        this.ctx.textAlign = 'right';
+                        this.ctx.textBaseline = 'bottom';
+                        const asymptoteValue = Math.round(h * 100) / 100;
+                        this.ctx.fillText(`x = ${asymptoteValue}`, asymptoteX - 5, this.centerY - 10);
+                        this.ctx.restore();
+                    }
+                }
+                
+                if (document.getElementById('log_neg_x').checked) {
+                    const h = this.transforms.log_neg_x.h;
+                    const asymptoteX = this.centerX + h * this.scale;
+                    
+                    if (asymptoteX >= 0 && asymptoteX <= this.width) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(asymptoteX, 15);
+                        this.ctx.lineTo(asymptoteX, this.height - 15);
+                        this.ctx.stroke();
+                        
+                        // תווית אסימפטוטה
+                        this.ctx.save();
+                        this.ctx.fillStyle = 'rgba(220, 20, 60, 1)';
+                        this.ctx.font = 'bold 12px Arial';
+                        this.ctx.direction = 'ltr';
+                        this.ctx.textAlign = 'left';
+                        this.ctx.textBaseline = 'bottom';
+                        const asymptoteValue = Math.round(h * 100) / 100;
+                        this.ctx.fillText(`x = ${asymptoteValue}`, asymptoteX + 5, this.centerY - 10);
+                        this.ctx.restore();
+                    }
+                }
+                
+                this.ctx.setLineDash([]);
+            }
+            
+            drawSymmetryAxes() {
+                // Ось симметрии y = x для обратных функций e^x и ln(x)
+                if (document.getElementById('exp_x').checked && document.getElementById('log_x').checked) {
+                    const t1 = this.transforms.exp_x;
+                    const t2 = this.transforms.log_x;
+                    
+                    this.ctx.strokeStyle = 'rgba(128, 128, 128, 0.6)';
+                    this.ctx.lineWidth = 1;
+                    this.ctx.setLineDash([5, 5]);
+                    
+                    // Ось симметрии смещается вместе с функциями: y = x - h + k
+                    const h = (t1.h + t2.h) / 2;
+                    const k = (t1.k + t2.k) / 2;
+                    
+                    const range = this.range + 1;
+                    // Точки на линии y = x - h + k
+                    const x1 = -range;
+                    const y1 = x1 - h + k;
+                    const x2 = range;
+                    const y2 = x2 - h + k;
+                    
+                    const startX = this.centerX + x1 * this.scale;
+                    const startY = this.centerY - y1 * this.scale;
+                    const endX = this.centerX + x2 * this.scale;
+                    const endY = this.centerY - y2 * this.scale;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(startX, startY);
+                    this.ctx.lineTo(endX, endY);
+                    this.ctx.stroke();
+                }
+                
+                // Ось симметрии y = -x для обратных функций e^(-x) и ln(-x)
+                if (document.getElementById('exp_neg_x').checked && document.getElementById('log_neg_x').checked) {
+                    const t1 = this.transforms.exp_neg_x;
+                    const t2 = this.transforms.log_neg_x;
+                    
+                    this.ctx.strokeStyle = 'rgba(128, 128, 128, 0.6)';
+                    this.ctx.lineWidth = 1;
+                    this.ctx.setLineDash([5, 5]);
+                    
+                    // Ось симметрии смещается вместе с функциями: y = -x + h + k
+                    const h = (t1.h + t2.h) / 2;
+                    const k = (t1.k + t2.k) / 2;
+                    
+                    const range = this.range + 1;
+                    // Точки на линии y = -x + h + k
+                    const x1 = -range;
+                    const y1 = -x1 + h + k;
+                    const x2 = range;
+                    const y2 = -x2 + h + k;
+                    
+                    const startX = this.centerX + x1 * this.scale;
+                    const startY = this.centerY - y1 * this.scale;
+                    const endX = this.centerX + x2 * this.scale;
+                    const endY = this.centerY - y2 * this.scale;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(startX, startY);
+                    this.ctx.lineTo(endX, endY);
+                    this.ctx.stroke();
+                }
+                
+                this.ctx.setLineDash([]);
+            }
+            
+            draw() {
+                this.clear();
+                this.drawGrid();
+                this.drawAxes();
+                this.drawNumbers();
+                this.drawAsymptotes();
+                this.drawSymmetryAxes();
+                
+                // ציור הפונקציות עם הדגשה של הפונקציה הפעילה
+                if (document.getElementById('exp_x').checked) {
+                    const baseFunc = x => Math.exp(x);
+                    const transformedFunc = this.getTransformedFunction(baseFunc, 'exp_x');
+                    const lineWidth = this.activeFunction === 'exp_x' ? 4 : 2;
+                    this.drawFunction(transformedFunc, '#8e44ad', lineWidth);
+                }
+                
+                if (document.getElementById('exp_neg_x').checked) {
+                    const baseFunc = x => Math.exp(-x);
+                    const transformedFunc = this.getTransformedFunction(baseFunc, 'exp_neg_x');
+                    const lineWidth = this.activeFunction === 'exp_neg_x' ? 4 : 2;
+                    this.drawFunction(transformedFunc, '#3498db', lineWidth);
+                }
+                
+                if (document.getElementById('log_x').checked) {
+                    const baseFunc = x => x > 0 ? Math.log(x) : NaN;
+                    const transformedFunc = this.getTransformedFunction(baseFunc, 'log_x');
+                    const lineWidth = this.activeFunction === 'log_x' ? 4 : 2;
+                    this.drawFunction(transformedFunc, '#2ecc71', lineWidth);
+                }
+                
+                if (document.getElementById('log_neg_x').checked) {
+                    const baseFunc = x => x < 0 ? Math.log(-x) : NaN;
+                    const transformedFunc = this.getTransformedFunction(baseFunc, 'log_neg_x');
+                    const lineWidth = this.activeFunction === 'log_neg_x' ? 4 : 2;
+                    this.drawFunction(transformedFunc, '#f39c12', lineWidth);
+                }
+                
+                // ציור תוויות הפונקציות
+                this.drawFunctionLabels();
+            }
+        }
+        
+        // משתנה גלובלי לגישה חיצונית
+        let grapher;
+        
+        // הפעלת האפליקציה
+        window.addEventListener('load', () => {
+            grapher = new FunctionGrapher();
+        });
+    </script>
+</body>
+</html>

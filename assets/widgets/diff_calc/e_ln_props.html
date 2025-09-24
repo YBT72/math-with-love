@@ -221,6 +221,12 @@
                     • <span class="math-ltr">y = e⁻ˣ</span>: <span class="math-ltr">y = 0</span> כאשר <span class="math-ltr">x → +∞</span> (מימין)<br>
                     • <span class="math-ltr">y = ln(x)</span>: <span class="math-ltr">x = 0</span> כאשר <span class="math-ltr">x → 0+</span> (מימין לציר)<br>
                     • <span class="math-ltr">y = ln(-x)</span>: <span class="math-ltr">x = 0</span> כאשר <span class="math-ltr">x → 0-</span> (משמאל לציר)<br><br>
+                    
+                    <strong>🔄 סימטריה אוטומטית:</strong><br>
+                    • <span class="math-ltr">eˣ + ln(x)</span>: ציר הסימטריה <span class="math-ltr">y = x</span><br>
+                    • <span class="math-ltr">e⁻ˣ + ln(-x)</span>: ציר הסימטריה <span class="math-ltr">y = -x</span><br>
+                    • כאשר נבחרות כל הפונקציות - שני צירי הסימטריה יוצגו יחד<br><br>
+                    
                     <small style="color: #666;">💡 השתמשו בגלגל העכבר לשינוי קנה המידה</small>
                 </div>
             </div>
@@ -498,6 +504,90 @@
                 }
             }
             
+            drawSymmetryAxis() {
+                // בדיקה אם נבחרו פונקציות הפוכות
+                const expXSelected = document.getElementById('exp_x').checked;
+                const logXSelected = document.getElementById('log_x').checked;
+                const expNegXSelected = document.getElementById('exp_neg_x').checked;
+                const logNegXSelected = document.getElementById('log_neg_x').checked;
+                
+                // קביעת אילו צירי סימטריה להציג
+                const showPositiveAxis = expXSelected && logXSelected; // y = x
+                const showNegativeAxis = expNegXSelected && logNegXSelected; // y = -x
+                
+                if (!showPositiveAxis && !showNegativeAxis) {
+                    return;
+                }
+                
+                this.ctx.strokeStyle = 'rgba(128, 128, 128, 0.8)';
+                this.ctx.lineWidth = 2;
+                this.ctx.setLineDash([8, 4]);
+                
+                const maxRange = this.range * 1.2;
+                
+                // ציור ציר y = x אם נדרש
+                if (showPositiveAxis) {
+                    const startX = this.centerX - maxRange * this.scale;
+                    const startY = this.centerY + maxRange * this.scale;
+                    const endX = this.centerX + maxRange * this.scale;
+                    const endY = this.centerY - maxRange * this.scale;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(Math.max(0, startX), Math.min(this.height, startY));
+                    this.ctx.lineTo(Math.min(this.width, endX), Math.max(0, endY));
+                    this.ctx.stroke();
+                    
+                    // כתובית y = x
+                    this.ctx.save();
+                    this.ctx.fillStyle = 'rgba(128, 128, 128, 1)';
+                    this.ctx.font = 'bold 14px Arial';
+                    this.ctx.direction = 'ltr';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'bottom';
+                    
+                    const labelX = this.centerX + this.scale * 2;
+                    const labelY = this.centerY - this.scale * 2 - 5;
+                    
+                    if (labelX < this.width - 30 && labelY > 30) {
+                        this.ctx.fillText('y = x', labelX, labelY);
+                    }
+                    
+                    this.ctx.restore();
+                }
+                
+                // ציור ציר y = -x אם נדרש
+                if (showNegativeAxis) {
+                    const startX = this.centerX - maxRange * this.scale;
+                    const startY = this.centerY - maxRange * this.scale;
+                    const endX = this.centerX + maxRange * this.scale;
+                    const endY = this.centerY + maxRange * this.scale;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(Math.max(0, startX), Math.max(0, startY));
+                    this.ctx.lineTo(Math.min(this.width, endX), Math.min(this.height, endY));
+                    this.ctx.stroke();
+                    
+                    // כתובית y = -x
+                    this.ctx.save();
+                    this.ctx.fillStyle = 'rgba(128, 128, 128, 1)';
+                    this.ctx.font = 'bold 14px Arial';
+                    this.ctx.direction = 'ltr';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'top';
+                    
+                    const labelX = this.centerX + this.scale * 2;
+                    const labelY = this.centerY + this.scale * 2 + 5;
+                    
+                    if (labelX < this.width - 30 && labelY < this.height - 30) {
+                        this.ctx.fillText('y = −x', labelX, labelY);
+                    }
+                    
+                    this.ctx.restore();
+                }
+                
+                this.ctx.setLineDash([]);
+            }
+            
             drawAsymptotes() {
                 this.ctx.strokeStyle = 'rgba(220, 20, 60, 0.9)';
                 this.ctx.lineWidth = 3;
@@ -587,6 +677,7 @@
                 this.drawGrid();
                 this.drawAxes();
                 this.drawNumbers();
+                this.drawSymmetryAxis();
                 this.drawAsymptotes();
                 
                 if (document.getElementById('exp_x').checked) {
