@@ -302,6 +302,57 @@
             transform: translateY(0);
         }
 
+        .clear-operation-button {
+            width: 100%;
+            padding: 8px 16px;
+            background-color: #f97316;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .clear-operation-button:hover {
+            background-color: #ea580c;
+        }
+
+        .clear-operation-button:active {
+            transform: translateY(1px);
+        }
+
+        .verify-button {
+            width: 100%;
+            padding: 10px 16px;
+            margin-bottom: 8px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #059669;
+            color: white;
+            display: none; /* По умолчанию скрыта */
+        }
+
+        .verify-button:disabled {
+            background-color: #d1d5db;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .verify-button:not(:disabled):hover {
+            background-color: #047857;
+            transform: translateY(-1px);
+        }
+
+        .verify-button:not(:disabled):active {
+            transform: translateY(0);
+        }
+
         /* Информационная панель с векторами */
         .vectors-info {
             margin-top: 20px;
@@ -436,6 +487,12 @@
                 <button id="subtractVectorsBtn" class="operation-button" disabled>
                     <span style="text-decoration: underline;">a</span> - <span style="text-decoration: underline;">b</span>
                 </button>
+                <button id="verifyResultBtn" class="verify-button" disabled>
+                    Проверка ответа
+                </button>
+                <button id="clearOperationBtn" class="clear-operation-button">
+                    Очистить результат
+                </button>
             </div>
             
             <div class="checkbox-container">
@@ -485,7 +542,9 @@
         const methodLabel = document.getElementById('methodLabel');
         const addVectorsBtn = document.getElementById('addVectorsBtn');
         const subtractVectorsBtn = document.getElementById('subtractVectorsBtn');
+        const verifyResultBtn = document.getElementById('verifyResultBtn');
         const selectedVectorsInfo = document.getElementById('selectedVectorsInfo');
+        const clearOperationBtn = document.getElementById('clearOperationBtn');
         
         let vectors = [];
         let points = [];
@@ -502,6 +561,22 @@
         // Переменные для операций с векторами
         let selectedVectors = []; // Массив выбранных векторов (максимум 2)
         let isTriangleMethod = true; // true = треугольник, false = параллелограмм
+        
+        // Переменные для анимации операций
+        let isAnimating = false;
+        let animationStartTime = 0;
+        let animationDuration = 2000; // 2 секунды на этап
+        let currentAnimationStep = 0;
+        let operationVectors = []; // Векторы, созданные в процессе операции
+        let operationLines = []; // Пунктирные линии для геометрических фигур
+        let animationFrameId = null;
+        
+        // Переменные для сравнения методов
+        let lastOperation = null; // {type: 'addition'/'subtraction', vectors: [v1, v2], methods: []}
+        let resultVectors = []; // Результирующие векторы обоих методов
+        let previousResult = []; // Предыдущий результат для сравнения методов
+        let isBlinking = false;
+        let blinkCount = 0;
 
         // Цвета
         const VECTOR_COLOR = '#4B5563';
@@ -518,6 +593,16 @@
             vectors = [];
             points = [];
             selectedVectors = [];
+            operationVectors = [];
+            operationLines = [];
+            
+            // Останавливаем анимацию
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            isAnimating = false;
+            currentAnimationStep = 0;
             
             // Сбрасываем состояние
             isDrawing = false;
@@ -558,8 +643,10 @@
 
         function toggleVectorSelection(vector, isShiftPressed) {
             if (!isShiftPressed) {
-                // Без Shift - обычное выделение одного вектора
+                // Без Shift - обычное выделение одного вектора (очищаем выбор для операций)
                 selectedVector = vector;
+                // НЕ очищаем selectedVectors - позволяем пользователю выбирать без сброса
+                draw(); // Перерисовываем для обновления подсветки
                 return;
             }
             
@@ -581,6 +668,504 @@
             
             updateSelectedVectorsInfo();
             updateOperationButtons();
+            draw(); // Перерисовываем для обновления подсветки
+        }
+
+        // Функции для анимированных операций
+        function clearOperationResults() {
+            // Удаляем векторы операций
+            operationVectors.forEach(vector => {
+                vectors = vectors.filter(v => v !== vector);
+                // Удаляем точки операций из общего массива
+                if (vector.startPoint && vector.startPoint.isOperationPoint) {
+                    points = points.filter(p => p !== vector.startPoint);
+                }
+                if (vector.endPoint && vector.endPoint.isOperationPoint) {
+                    points = points.filter(p => p !== vector.endPoint);
+                }
+            });
+            
+            operationVectors = [];
+            operationLines = [];
+            resultVectors = [];
+            lastOperation = null;
+            previousResult = [];
+            
+            // Останавливаем анимацию если идет
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            isAnimating = false;
+            isBlinking = false;
+            blinkCount = 0;
+            currentAnimationStep = 0;
+            
+            updateVectorsList();
+            draw();
+        }
+
+        function updateVerifyButton() {
+            const canVerify = lastOperation && 
+                            lastOperation.methods.length >= 1 && 
+                            resultVectors.length >= 1 &&
+                            previousResult.length > 0 &&
+                            !isAnimating;
+            verifyResultBtn.disabled = !canVerify;
+            
+            if (canVerify) {
+                verifyResultBtn.style.display = 'inline-block';
+            } else {
+                verifyResultBtn.style.display = 'none';
+            }
+        }
+
+        function createOperationVector(startX, startY, endX, endY, name, startName = null, endName = null, isResult = false) {
+            const startPoint = {
+                x: startX,
+                y: startY,
+                name: startName || (name + '_start'),
+                isOperationPoint: true
+            };
+            
+            let endPoint;
+            if (endName === null) {
+                // Не создаем новую точку - используем временные координаты без добавления в points
+                endPoint = {
+                    x: endX,
+                    y: endY,
+                    name: null, // Нет имени для временной точки
+                    isOperationPoint: false // Не является настоящей точкой
+                };
+            } else {
+                endPoint = {
+                    x: endX,
+                    y: endY,
+                    name: endName,
+                    isOperationPoint: true
+                };
+                // Добавляем только реальные точки с именами
+                points.push(endPoint);
+            }
+            
+            points.push(startPoint);
+            
+            const vector = {
+                startPoint: startPoint,
+                endPoint: endPoint,
+                name: name,
+                isOperationVector: true,
+                isResultVector: isResult,
+                parentVector: null // Операционные векторы независимы
+            };
+            
+            vectors.push(vector);
+            operationVectors.push(vector);
+            
+            return vector;
+        }
+
+        function animateVectorMovement(vector, targetStartX, targetStartY, targetEndX, targetEndY, duration, callback) {
+            const startTime = Date.now();
+            const initialStartX = vector.startPoint.x;
+            const initialStartY = vector.startPoint.y;
+            const initialEndX = vector.endPoint.x;
+            const initialEndY = vector.endPoint.y;
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Плавная интерполяция (easing)
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                
+                vector.startPoint.x = initialStartX + (targetStartX - initialStartX) * easeProgress;
+                vector.startPoint.y = initialStartY + (targetStartY - initialStartY) * easeProgress;
+                vector.endPoint.x = initialEndX + (targetEndX - initialEndX) * easeProgress;
+                vector.endPoint.y = initialEndY + (targetEndY - initialEndY) * easeProgress;
+                
+                draw();
+                
+                if (progress < 1) {
+                    animationFrameId = requestAnimationFrame(animate);
+                } else {
+                    if (callback) callback();
+                }
+            }
+            
+            animate();
+        }
+
+        function drawDashedLine(x1, y1, x2, y2, dashLength = 5) {
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const dashCount = Math.floor(distance / (dashLength * 2));
+            
+            ctx.setLineDash([dashLength, dashLength]);
+            ctx.strokeStyle = '#9CA3AF';
+            ctx.lineWidth = 1;
+            
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+            
+            ctx.setLineDash([]); // Сбрасываем пунктир
+        }
+
+        function drawOperationLines() {
+            operationLines.forEach(line => {
+                drawDashedLine(line.x1, line.y1, line.x2, line.y2);
+            });
+        }
+
+        function performVectorAddition(vector1, vector2, method, clearPrevious = true) {
+            if (isAnimating) return;
+            
+            // Проверяем, выполняется ли та же операция другим методом
+            const sameOperation = lastOperation && 
+                                lastOperation.type === 'add' &&
+                                lastOperation.vectorA === vector1 &&
+                                lastOperation.vectorB === vector2;
+            
+            if (!sameOperation || clearPrevious) {
+                // Новая операция - очищаем предыдущие результаты
+                if (clearPrevious) clearOperationResults();
+                lastOperation = {
+                    type: 'add',
+                    vectorA: vector1,
+                    vectorB: vector2,
+                    methods: []
+                };
+            }
+            
+            isAnimating = true;
+            currentAnimationStep = 0;
+            
+            // Этап 1: Копируем второй вектор
+            const copiedVector = createOperationVector(
+                vector2.startPoint.x, vector2.startPoint.y,
+                vector2.endPoint.x, vector2.endPoint.y,
+                vector2.name + "'",
+                vector2.startPoint.name + "'",
+                vector2.endPoint.name + "'"
+            );
+            
+            draw();
+            
+            setTimeout(() => {
+                // Этап 2: Перемещаем скопированный вектор
+                const targetStartX = method === 'triangle' ? vector1.endPoint.x : vector1.startPoint.x;
+                const targetStartY = method === 'triangle' ? vector1.endPoint.y : vector1.startPoint.y;
+                const targetEndX = targetStartX + (vector2.endPoint.x - vector2.startPoint.x);
+                const targetEndY = targetStartY + (vector2.endPoint.y - vector2.startPoint.y);
+                
+                // Обновляем имя начальной точки после перемещения
+                const newStartName = method === 'triangle' ? vector1.endPoint.name : vector1.startPoint.name;
+                
+                animateVectorMovement(copiedVector, targetStartX, targetStartY, targetEndX, targetEndY, animationDuration, () => {
+                    // Обновляем имя точки начала после перемещения
+                    copiedVector.startPoint.name = newStartName;
+                    
+                    setTimeout(() => {
+                        // Этап 3: Строим геометрическую фигуру
+                        buildGeometricShape(vector1, copiedVector, method, () => {
+                            setTimeout(() => {
+                                // Этап 4: Строим результирующий вектор
+                                buildResultVector(vector1, copiedVector, method, 'addition');
+                            }, 500);
+                        });
+                    }, 500);
+                });
+            }, 1000);
+        }
+
+        function performVectorSubtraction(vector1, vector2, method, clearPrevious = true) {
+            if (isAnimating) return;
+            
+            // Проверяем, выполняется ли та же операция другим методом
+            const sameOperation = lastOperation && 
+                                lastOperation.type === 'subtract' &&
+                                lastOperation.vectorA === vector1 &&
+                                lastOperation.vectorB === vector2;
+            
+            if (!sameOperation || clearPrevious) {
+                // Новая операция - очищаем предыдущие результаты
+                if (clearPrevious) clearOperationResults();
+                lastOperation = {
+                    type: 'subtract',
+                    vectorA: vector1,
+                    vectorB: vector2,
+                    methods: []
+                };
+            }
+            
+            isAnimating = true;
+            currentAnimationStep = 0;
+            
+            // Этап 1: Создаем обращенный второй вектор (-b)
+            const minusVector = createOperationVector(
+                vector2.startPoint.x, vector2.startPoint.y,
+                vector2.startPoint.x - (vector2.endPoint.x - vector2.startPoint.x),
+                vector2.startPoint.y - (vector2.endPoint.y - vector2.startPoint.y),
+                '-' + vector2.name,
+                vector2.endPoint.name + "'",  // Начало -b = конец b
+                vector2.startPoint.name + "'"  // Конец -b = начало b
+            );
+            
+            draw();
+            
+            setTimeout(() => {
+                // Этап 2: Перемещаем -b к первому вектору
+                const targetStartX = method === 'triangle' ? vector1.endPoint.x : vector1.startPoint.x;
+                const targetStartY = method === 'triangle' ? vector1.endPoint.y : vector1.startPoint.y;
+                const targetEndX = targetStartX + (minusVector.endPoint.x - minusVector.startPoint.x);
+                const targetEndY = targetStartY + (minusVector.endPoint.y - minusVector.startPoint.y);
+                
+                const newStartName = method === 'triangle' ? vector1.endPoint.name : vector1.startPoint.name;
+                
+                animateVectorMovement(minusVector, targetStartX, targetStartY, targetEndX, targetEndY, animationDuration, () => {
+                    minusVector.startPoint.name = newStartName;
+                    
+                    setTimeout(() => {
+                        // Этап 3: Строим геометрическую фигуру
+                        buildGeometricShape(vector1, minusVector, method, () => {
+                            setTimeout(() => {
+                                // Этап 4: Строим результирующий вектор
+                                buildResultVector(vector1, minusVector, method, 'subtraction');
+                            }, 500);
+                        });
+                    }, 500);
+                });
+            }, 1000);
+        }
+
+        function buildGeometricShape(vector1, vector2, method, callback) {
+            if (method === 'triangle') {
+                // Для треугольника добавляем только одну замыкающую линию
+                operationLines.push({
+                    x1: vector1.startPoint.x,
+                    y1: vector1.startPoint.y,
+                    x2: vector2.endPoint.x,
+                    y2: vector2.endPoint.y
+                });
+            } else {
+                // Для параллелограмма строим недостающие стороны
+                // 1. Линия от конца первого вектора параллельно второму вектору
+                const side1EndX = vector1.endPoint.x + (vector2.endPoint.x - vector2.startPoint.x);
+                const side1EndY = vector1.endPoint.y + (vector2.endPoint.y - vector2.startPoint.y);
+                
+                operationLines.push({
+                    x1: vector1.endPoint.x,
+                    y1: vector1.endPoint.y,
+                    x2: side1EndX,
+                    y2: side1EndY
+                });
+                
+                // 2. Линия от конца второго вектора параллельно первому вектору
+                const side2EndX = vector2.endPoint.x + (vector1.endPoint.x - vector1.startPoint.x);
+                const side2EndY = vector2.endPoint.y + (vector1.endPoint.y - vector1.startPoint.y);
+                
+                operationLines.push({
+                    x1: vector2.endPoint.x,
+                    y1: vector2.endPoint.y,
+                    x2: side2EndX,
+                    y2: side2EndY
+                });
+            }
+            
+            draw();
+            if (callback) callback();
+        }
+
+        function buildResultVector(vector1, vector2, method, operation) {
+            const resultStart = vector1.startPoint;
+            
+            // Правильная логика для конечной точки результирующего вектора
+            let resultEnd;
+            if (method === 'triangle') {
+                // Для треугольника: результат идет от начала первого до конца второго
+                resultEnd = vector2.endPoint;
+            } else {
+                // Для параллелограмма: результат идет по диагонали
+                // Диагональ параллелограмма идет к противоположному углу
+                // Противоположный угол = конец второго вектора + направление первого вектора
+                const diagonalEndX = vector2.endPoint.x + (vector1.endPoint.x - vector1.startPoint.x);
+                const diagonalEndY = vector2.endPoint.y + (vector1.endPoint.y - vector1.startPoint.y);
+                
+                // Используем существующую точку если она есть, или создаем временную
+                resultEnd = {
+                    x: diagonalEndX,
+                    y: diagonalEndY
+                };
+            }
+            
+            // Простое именование результирующего вектора - следующая буква алфавита
+            const resultName = getNextVectorName();
+            
+            // Для конечной точки результирующего вектора тоже нужно имя
+            const resultEndName = method === 'triangle' ? null : getNextPointName(); // Для параллелограмма создаем новую точку
+            
+            // Создаем результирующий вектор с правильной конечной точкой
+            const resultVector = createOperationVector(
+                resultStart.x, resultStart.y,
+                resultEnd.x, resultEnd.y,
+                resultName,
+                resultStart.name,
+                resultEndName, // Передаем имя для конечной точки
+                true // Это результирующий вектор
+            );
+            
+            // Анимируем появление результирующего вектора
+            const originalEndX = resultVector.endPoint.x;
+            const originalEndY = resultVector.endPoint.y;
+            
+            // Начинаем с нулевой длины
+            const tempEndX = resultVector.startPoint.x;
+            const tempEndY = resultVector.startPoint.y;
+            
+            // Создаем временную конечную точку для анимации
+            const tempEndPoint = {
+                x: tempEndX,
+                y: tempEndY,
+                name: 'temp_end',
+                isOperationPoint: true
+            };
+            
+            const originalEndPoint = resultVector.endPoint;
+            resultVector.endPoint = tempEndPoint;
+            
+            animateVectorMovement(resultVector, 
+                resultVector.startPoint.x, resultVector.startPoint.y,
+                originalEndX, originalEndY, 
+                animationDuration, () => {
+                    // Восстанавливаем правильную конечную точку
+                    resultVector.endPoint = originalEndPoint;
+                    // Удаляем временную точку
+                    points = points.filter(p => p !== tempEndPoint);
+                    
+                    isAnimating = false;
+                    
+                    // Сохраняем информацию о выполненной операции
+                    if (lastOperation) {
+                        if (!lastOperation.methods.includes(method)) {
+                            lastOperation.methods.push(method);
+                        }
+                        if (!resultVectors.includes(resultVector)) {
+                            resultVectors.push(resultVector);
+                        }
+                        
+                        // Если это второй метод - запускаем мигание
+                        if (lastOperation.methods.length === 2 && resultVectors.length === 2) {
+                            startBlinking(resultVector);
+                        }
+                    }
+                    
+                    updateVectorsList();
+                    updateVerifyButton();
+                    draw();
+                }
+            );
+        }
+
+        function startBlinking(newResultVector) {
+            isBlinking = true;
+            blinkCount = 0;
+            
+            function blink() {
+                if (blinkCount >= 6) { // 3 полных мигания
+                    isBlinking = false;
+                    return;
+                }
+                
+                blinkCount++;
+                
+                // Меняем цвет результирующих векторов на красный и обратно
+                resultVectors.forEach(vector => {
+                    vector.isBlinking = (blinkCount % 2 === 1);
+                });
+                
+                draw();
+                
+                setTimeout(blink, 300); // Мигание каждые 300мс
+            }
+            
+            blink();
+        }
+
+        function performVerification() {
+            if (!lastOperation || resultVectors.length !== 2) return;
+            
+            const [result1, result2] = resultVectors;
+            
+            // Проверяем, совпадают ли векторы уже
+            const distance = Math.sqrt(
+                Math.pow(result1.startPoint.x - result2.startPoint.x, 2) +
+                Math.pow(result1.startPoint.y - result2.startPoint.y, 2) +
+                Math.pow(result1.endPoint.x - result2.endPoint.x, 2) +
+                Math.pow(result1.endPoint.y - result2.endPoint.y, 2)
+            );
+            
+            if (distance < 5) {
+                // Векторы уже совмещены - просто подсвечиваем
+                resultVectors.forEach(vector => {
+                    vector.isHighlighted = true;
+                });
+                draw();
+                
+                setTimeout(() => {
+                    resultVectors.forEach(vector => {
+                        vector.isHighlighted = false;
+                    });
+                    draw();
+                }, 2000);
+                
+                return;
+            }
+            
+            // Создаем копии и анимируем совмещение
+            const copy1 = createOperationVector(
+                result1.startPoint.x, result1.startPoint.y,
+                result1.endPoint.x, result1.endPoint.y,
+                result1.name + '₁',
+                result1.startPoint.name + '₁',
+                result1.endPoint.name + '₁',
+                true
+            );
+            
+            const copy2 = createOperationVector(
+                result2.startPoint.x, result2.startPoint.y,
+                result2.endPoint.x, result2.endPoint.y,
+                result2.name + '₂',
+                result2.startPoint.name + '₂',
+                result2.endPoint.name + '₂',
+                true
+            );
+            
+            copy1.isVerificationCopy = true;
+            copy2.isVerificationCopy = true;
+            
+            draw();
+            
+            // Анимируем перемещение второй копии к первой
+            const targetStartX = copy1.startPoint.x;
+            const targetStartY = copy1.startPoint.y;
+            const targetEndX = copy1.endPoint.x;
+            const targetEndY = copy1.endPoint.y;
+            
+            animateVectorMovement(copy2, targetStartX, targetStartY, targetEndX, targetEndY, animationDuration, () => {
+                // После совмещения подсвечиваем
+                copy1.isHighlighted = true;
+                copy2.isHighlighted = true;
+                draw();
+                
+                setTimeout(() => {
+                    copy1.isHighlighted = false;
+                    copy2.isHighlighted = false;
+                    draw();
+                }, 2000);
+            });
         }
 
         function resizeCanvas() {
@@ -1003,24 +1588,75 @@
             const isDependent = vector.parentVector !== undefined;
             const isSelected = vector === selectedVector;
             const isSelectedForOperation = selectedVectors.includes(vector);
+            const isOperationVector = vector.isOperationVector;
+            const isResultVector = vector.isResultVector;
+            const isBlinking = vector.isBlinking;
+            const isHighlighted = vector.isHighlighted;
+            const isVerificationCopy = vector.isVerificationCopy;
             
-            ctx.strokeStyle = isDependent ? DEPENDENT_VECTOR_COLOR : VECTOR_COLOR;
-            ctx.fillStyle = isDependent ? DEPENDENT_VECTOR_COLOR : VECTOR_COLOR;
-            ctx.lineWidth = isDependent ? 4 : 2;
+            let strokeStyle, fillStyle;
             
-            // Подсветка для выбранного вектора
+            if (isHighlighted) {
+                // Подсвеченные векторы - ярко-желтые
+                strokeStyle = '#F59E0B';
+                fillStyle = '#F59E0B';
+                ctx.lineWidth = 5;
+            } else if (isBlinking) {
+                // Мигающие векторы - красные
+                strokeStyle = '#DC2626';
+                fillStyle = '#DC2626';
+                ctx.lineWidth = 4;
+            } else if (isVerificationCopy) {
+                // Копии для проверки - оранжевые
+                strokeStyle = '#F97316';
+                fillStyle = '#F97316';
+                ctx.lineWidth = 3;
+            } else if (isResultVector) {
+                // Результирующий вектор - фиолетовый для сложения, сиреневый для вычитания
+                if (vector.name && vector.name.includes('+')) {
+                    strokeStyle = '#8B5CF6'; // Фиолетовый
+                    fillStyle = '#8B5CF6';
+                } else {
+                    strokeStyle = '#A78BFA'; // Сиреневый
+                    fillStyle = '#A78BFA';
+                }
+                ctx.lineWidth = 4;
+            } else if (isOperationVector) {
+                // Операционные векторы (копии) - серые
+                strokeStyle = '#6B7280';
+                fillStyle = '#6B7280';
+                ctx.lineWidth = 2;
+            } else if (isSelectedForOperation) {
+                // Выбранные для операций - первый синий, второй зеленый
+                const vectorIndex = selectedVectors.indexOf(vector);
+                if (vectorIndex === 0) {
+                    strokeStyle = '#3B82F6'; // Синий для первого вектора
+                    fillStyle = '#3B82F6';
+                } else {
+                    strokeStyle = '#10B981'; // Зеленый для второго вектора
+                    fillStyle = '#10B981';
+                }
+                ctx.lineWidth = 3;
+            } else if (isDependent) {
+                strokeStyle = DEPENDENT_VECTOR_COLOR;
+                fillStyle = DEPENDENT_VECTOR_COLOR;
+                ctx.lineWidth = 4;
+            } else {
+                strokeStyle = VECTOR_COLOR;
+                fillStyle = VECTOR_COLOR;
+                ctx.lineWidth = 2;
+            }
+            
+            ctx.strokeStyle = strokeStyle;
+            ctx.fillStyle = fillStyle;
+            
+            // Подсветка для выбранного вектора или специальных состояний
             if (isSelected) {
                 ctx.shadowColor = '#3B82F6';
                 ctx.shadowBlur = 10;
-            }
-            
-            // Особая подсветка для векторов, выбранных для операций
-            if (isSelectedForOperation) {
-                ctx.strokeStyle = '#059669'; // Зеленый цвет для выбранных векторов
-                ctx.fillStyle = '#059669';
-                ctx.lineWidth = 3;
-                ctx.shadowColor = '#059669';
-                ctx.shadowBlur = 8;
+            } else if (isSelectedForOperation || isResultVector || isHighlighted || isBlinking) {
+                ctx.shadowColor = strokeStyle;
+                ctx.shadowBlur = isHighlighted ? 15 : 8;
             }
 
             ctx.beginPath();
@@ -1147,6 +1783,9 @@
             ctx.textAlign = 'left'; // Явно устанавливаем выравнивание
 
             points.forEach(point => {
+                // Пропускаем точки без имен (временные точки)
+                if (!point.name) return;
+                
                 let labelText = point.name;
                 
                 // Добавляем координаты если показаны оси
@@ -1397,6 +2036,9 @@
             vectors.forEach(vector => {
                 drawVectorLine(vector);
             });
+            
+            // Рисуем пунктирные линии операций
+            drawOperationLines();
             
             vectors.forEach(vector => {
                 drawVector(vector);
@@ -1737,27 +2379,73 @@
         showLinesCheckbox.addEventListener('change', draw);
         vectorNamingCheckbox.addEventListener('change', draw);
         clearCanvasBtn.addEventListener('click', clearCanvas);
+        clearOperationBtn.addEventListener('click', clearOperationResults);
 
         // Переключатель метода построения
         methodSwitch.addEventListener('change', (e) => {
-            isTriangleMethod = !e.target.checked;
-            methodLabel.textContent = isTriangleMethod ? 'Треугольник' : 'Параллелограмм';
+            toggleMethod();
         });
 
-        // Кнопки операций (пока заглушки)
+        function toggleMethod() {
+            if (lastOperation && resultVectors.length > 0) {
+                // Если есть результат предыдущей операции, выполняем её альтернативным методом
+                
+                // Сохраняем текущий результат
+                previousResult = [...resultVectors];
+                
+                // Переключаем метод
+                isTriangleMethod = !isTriangleMethod;
+                
+                // Обновляем метку
+                methodLabel.textContent = isTriangleMethod ? 'Треугольник' : 'Параллелограмм';
+                
+                // Выполняем ту же операцию альтернативным методом
+                if (lastOperation.type === 'add') {
+                    const method = isTriangleMethod ? 'triangle' : 'parallelogram';
+                    performVectorAddition(lastOperation.vectorA, lastOperation.vectorB, method, false);
+                } else if (lastOperation.type === 'subtract') {
+                    const method = isTriangleMethod ? 'triangle' : 'parallelogram';
+                    performVectorSubtraction(lastOperation.vectorA, lastOperation.vectorB, method, false);
+                }
+                
+                // Делаем новый результат мигающим
+                setTimeout(() => {
+                    startBlinking(resultVectors);
+                }, 100);
+                
+                // Показываем кнопку проверки
+                const verifyBtn = document.getElementById('verifyResultBtn');
+                if (verifyBtn) {
+                    verifyBtn.style.display = 'inline-block';
+                }
+            } else {
+                // Обычное переключение метода без операции
+                isTriangleMethod = !isTriangleMethod;
+                methodLabel.textContent = isTriangleMethod ? 'Треугольник' : 'Параллелограмм';
+                updateOperationButtons();
+            }
+        }
+
+        // Кнопки операций
         addVectorsBtn.addEventListener('click', () => {
-            if (selectedVectors.length === 2) {
-                console.log(`Сложение векторов ${selectedVectors[0].name} и ${selectedVectors[1].name} методом: ${isTriangleMethod ? 'треугольник' : 'параллелограмм'}`);
-                // Здесь будет анимированное выполнение операции
+            if (selectedVectors.length === 2 && !isAnimating) {
+                const method = isTriangleMethod ? 'triangle' : 'parallelogram';
+                performVectorAddition(selectedVectors[0], selectedVectors[1], method);
             }
         });
 
         subtractVectorsBtn.addEventListener('click', () => {
-            if (selectedVectors.length === 2) {
-                console.log(`Вычитание векторов ${selectedVectors[0].name} - ${selectedVectors[1].name} методом: ${isTriangleMethod ? 'треугольник' : 'параллелограмм'}`);
-                // Здесь будет анимированное выполнение операции
+            if (selectedVectors.length === 2 && !isAnimating) {
+                const method = isTriangleMethod ? 'triangle' : 'parallelogram';
+                performVectorSubtraction(selectedVectors[0], selectedVectors[1], method);
             }
         });
+
+        // Кнопка проверки результатов
+        const verifyBtn = document.getElementById('verifyResults');
+        if (verifyBtn) {
+            verifyBtn.addEventListener('click', performVerification);
+        }
 
         window.addEventListener('resize', resizeCanvas);
 
