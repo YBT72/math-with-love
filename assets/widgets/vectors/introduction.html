@@ -167,6 +167,113 @@
             background-color: #fef2f2;
         }
 
+        /* Кнопка очистки */
+        .clear-button {
+            width: 100%;
+            padding: 12px 20px;
+            background-color: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 15px;
+        }
+
+        .clear-button:hover {
+            background-color: #b91c1c;
+        }
+
+        .clear-button:active {
+            transform: translateY(1px);
+        }
+
+        /* Информационная панель с векторами */
+        .vectors-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(249, 250, 251, 0.8);
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .vectors-info-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #374151;
+        }
+
+        .vector-item {
+            margin-bottom: 12px;
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .vector-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+            position: relative;
+        }
+
+        .vector-name-arrow {
+            position: relative;
+        }
+
+        .vector-name-arrow::after {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #1f2937;
+        }
+
+        .vector-name-arrow::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            right: -2px;
+            width: 0;
+            height: 0;
+            border-left: 4px solid #1f2937;
+            border-top: 2px solid transparent;
+            border-bottom: 2px solid transparent;
+        }
+
+        .vector-name-underline {
+            text-decoration: underline;
+            text-decoration-thickness: 2px;
+        }
+
+        .vector-formula {
+            font-family: 'STIX Two Math', 'Times New Roman', serif;
+            color: #4b5563;
+            font-size: 0.8rem;
+        }
+
+        .vector-coordinates {
+            color: #059669;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .no-vectors {
+            color: #9ca3af;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+
         /* Мобильные устройства - блоки в столбец */
         @media (max-width: 768px) {
             .container {
@@ -195,6 +302,11 @@
             </div>
             
             <div class="checkbox-container">
+                <input type="checkbox" id="showAxes">
+                <label for="showAxes">Показать координатные оси</label>
+            </div>
+            
+            <div class="checkbox-container">
                 <input type="checkbox" id="showLines">
                 <label for="showLines">Показать прямые векторов</label>
             </div>
@@ -206,6 +318,16 @@
                 </label>
                 <div id="vectorNamingLabel" class="switch-label"></div>
             </div>
+            
+            <button id="clearCanvas" class="clear-button">Очистить канвас</button>
+            
+            <!-- Информационная панель с векторами -->
+            <div class="vectors-info">
+                <div class="vectors-info-title">Векторы</div>
+                <div id="vectorsList">
+                    <div class="no-vectors">Нет построенных векторов</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -213,8 +335,10 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const showGridCheckbox = document.getElementById('showGrid');
+        const showAxesCheckbox = document.getElementById('showAxes');
         const showLinesCheckbox = document.getElementById('showLines');
         const vectorNamingCheckbox = document.getElementById('vectorNaming');
+        const clearCanvasBtn = document.getElementById('clearCanvas');
         
         let vectors = [];
         let points = [];
@@ -233,8 +357,34 @@
         const DEPENDENT_VECTOR_COLOR = '#9CA3AF';
         const LINE_COLOR = '#9CA3AF';
         const GRID_COLOR = '#E5E7EB';
+        const AXIS_COLOR = '#6B7280';
+        const AXIS_LABEL_COLOR = '#374151';
         const LABEL_COLOR = '#374151';
         const GRID_SIZE = 20;
+
+        function clearCanvas() {
+            // Очищаем все массивы
+            vectors = [];
+            points = [];
+            
+            // Сбрасываем состояние
+            isDrawing = false;
+            dragMode = null;
+            activeVector = null;
+            selectedVector = null;
+            dragOffset = { x: 0, y: 0 };
+            vectorCounter = 0;
+            pointCounter = 0;
+            
+            // Скрываем контекстное меню если оно открыто
+            hideContextMenu();
+            
+            // Обновляем список векторов
+            updateVectorsList();
+            
+            // Перерисовываем пустой канвас
+            draw();
+        }
 
         function resizeCanvas() {
             const rect = canvas.getBoundingClientRect();
@@ -294,33 +444,61 @@
         function updateDependentVectors(parentVector) {
             const dependentVectors = vectors.filter(v => v.parentVector === parentVector);
             dependentVectors.forEach(depVector => {
-                const coefficient = depVector.storedCoefficient || calculateCoefficient(depVector, parentVector);
-                
-                const parentDir = {
-                    x: parentVector.endPoint.x - parentVector.startPoint.x,
-                    y: parentVector.endPoint.y - parentVector.startPoint.y
-                };
-                
                 if (!depVector.hasIndependentStart) {
-                    // Зависимый без независимого начала - двигается вместе с исходным
-                    // НО только если они действительно разделяют тот же объект точки
-                    if (depVector.startPoint === parentVector.startPoint) {
-                        // Точки уже связаны через общий объект - ничего не делаем
-                    } else {
-                        // Синхронизируем координаты
+                    // Зависимый без независимого начала - работает как обычно
+                    const coefficient = depVector.storedCoefficient || calculateCoefficient(depVector, parentVector);
+                    
+                    const parentDir = {
+                        x: parentVector.endPoint.x - parentVector.startPoint.x,
+                        y: parentVector.endPoint.y - parentVector.startPoint.y
+                    };
+                    
+                    // Синхронизируем координаты начала с исходным вектором
+                    if (depVector.startPoint !== parentVector.startPoint) {
                         depVector.startPoint.x = parentVector.startPoint.x;
                         depVector.startPoint.y = parentVector.startPoint.y;
                     }
+                    
+                    // Пересчитываем конец с сохраненным коэффициентом
+                    depVector.endPoint.x = depVector.startPoint.x + parentDir.x * coefficient;
+                    depVector.endPoint.y = depVector.startPoint.y + parentDir.y * coefficient;
+                    
+                    depVector.storedCoefficient = coefficient;
                 } else {
-                    // Зависимый с независимым началом - НЕ ТРОГАЕМ его начало!
-                    // Начало остается на своем месте
+                    // Зависимый с независимым началом - сохраняем длину, но поворачиваем направление
+                    
+                    // Сохраняем текущую длину зависимого вектора
+                    const currentVectorDir = {
+                        x: depVector.endPoint.x - depVector.startPoint.x,
+                        y: depVector.endPoint.y - depVector.startPoint.y
+                    };
+                    const currentLength = Math.sqrt(currentVectorDir.x * currentVectorDir.x + currentVectorDir.y * currentVectorDir.y);
+                    
+                    // Получаем новое направление исходного вектора
+                    const parentDir = {
+                        x: parentVector.endPoint.x - parentVector.startPoint.x,
+                        y: parentVector.endPoint.y - parentVector.startPoint.y
+                    };
+                    const parentLength = Math.sqrt(parentDir.x * parentDir.x + parentDir.y * parentDir.y);
+                    
+                    if (parentLength > 0 && currentLength > 0) {
+                        // Определяем знак (направление) зависимого вектора
+                        const sign = (depVector.storedCoefficient >= 0) ? 1 : -1;
+                        
+                        // Нормализуем направление исходного вектора
+                        const normalizedParentDir = {
+                            x: parentDir.x / parentLength,
+                            y: parentDir.y / parentLength
+                        };
+                        
+                        // Устанавливаем новый конец с сохраненной длиной и правильным направлением
+                        depVector.endPoint.x = depVector.startPoint.x + normalizedParentDir.x * currentLength * sign;
+                        depVector.endPoint.y = depVector.startPoint.y + normalizedParentDir.y * currentLength * sign;
+                        
+                        // Обновляем коэффициент на основе новой длины
+                        depVector.storedCoefficient = (currentLength / parentLength) * sign;
+                    }
                 }
-                
-                // Пересчитываем ТОЛЬКО конец с сохраненным коэффициентом
-                depVector.endPoint.x = depVector.startPoint.x + parentDir.x * coefficient;
-                depVector.endPoint.y = depVector.startPoint.y + parentDir.y * coefficient;
-                
-                depVector.storedCoefficient = coefficient;
             });
         }
 
@@ -459,6 +637,113 @@
             }
         }
 
+        function drawAxes() {
+            if (!showAxesCheckbox.checked) return;
+            
+            // Сохраняем текущие настройки контекста
+            const savedTextAlign = ctx.textAlign;
+            const savedFillStyle = ctx.fillStyle;
+            const savedFont = ctx.font;
+            const savedStrokeStyle = ctx.strokeStyle;
+            const savedLineWidth = ctx.lineWidth;
+            
+            // Находим ближайшее к центру пересечение сетки для начала координат
+            const centerX = Math.round(canvas.width / 2 / GRID_SIZE) * GRID_SIZE;
+            const centerY = Math.round(canvas.height / 2 / GRID_SIZE) * GRID_SIZE;
+            
+            ctx.strokeStyle = AXIS_COLOR;
+            ctx.lineWidth = 2;
+            
+            // Ось X (горизонтальная)
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.stroke();
+            
+            // Стрелка на оси X
+            const arrowSize = 8;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - arrowSize, centerY - arrowSize/2);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.lineTo(canvas.width - arrowSize, centerY + arrowSize/2);
+            ctx.strokeStyle = AXIS_COLOR;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Ось Y (вертикальная)
+            ctx.beginPath();
+            ctx.moveTo(centerX, canvas.height);
+            ctx.lineTo(centerX, 0);
+            ctx.stroke();
+            
+            // Стрелка на оси Y
+            ctx.beginPath();
+            ctx.moveTo(centerX - arrowSize/2, arrowSize);
+            ctx.lineTo(centerX, 0);
+            ctx.lineTo(centerX + arrowSize/2, arrowSize);
+            ctx.stroke();
+            
+            // Подписи осей
+            ctx.fillStyle = AXIS_LABEL_COLOR;
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('x', canvas.width - 20, centerY - 10);
+            ctx.fillText('y', centerX + 10, 20);
+            
+            // Числовые метки через каждые 2 единицы (40 пикселей)
+            ctx.font = '12px Arial';
+            ctx.fillStyle = AXIS_LABEL_COLOR;
+            
+            // Метки на оси X
+            for (let i = -20; i <= 20; i += 2) {
+                if (i === 0) continue; // Пропускаем центр
+                const x = centerX + i * GRID_SIZE;
+                if (x > 0 && x < canvas.width) {
+                    // Риска
+                    ctx.beginPath();
+                    ctx.moveTo(x, centerY - 5);
+                    ctx.lineTo(x, centerY + 5);
+                    ctx.strokeStyle = AXIS_COLOR;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    
+                    // Число
+                    ctx.textAlign = 'center';
+                    ctx.fillText(i.toString(), x, centerY + 20);
+                }
+            }
+            
+            // Метки на оси Y
+            for (let i = -20; i <= 20; i += 2) {
+                if (i === 0) continue; // Пропускаем центр
+                const y = centerY - i * GRID_SIZE; // Инвертируем Y для математической системы координат
+                if (y > 0 && y < canvas.height) {
+                    // Риска
+                    ctx.beginPath();
+                    ctx.moveTo(centerX - 5, y);
+                    ctx.lineTo(centerX + 5, y);
+                    ctx.strokeStyle = AXIS_COLOR;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    
+                    // Число
+                    ctx.textAlign = 'right';
+                    ctx.fillText(i.toString(), centerX - 10, y + 4);
+                }
+            }
+            
+            // Подпись центра координат
+            ctx.textAlign = 'right';
+            ctx.fillText('0', centerX - 10, centerY + 15);
+            
+            // Восстанавливаем все настройки контекста
+            ctx.textAlign = savedTextAlign;
+            ctx.fillStyle = savedFillStyle;
+            ctx.font = savedFont;
+            ctx.strokeStyle = savedStrokeStyle;
+            ctx.lineWidth = savedLineWidth;
+        }
+
         function drawVectorLine(vector) {
             if (!showLinesCheckbox.checked) return;
             
@@ -570,20 +855,23 @@
             
             if (arrowOnlyOverLetters) {
                 // Находим буквы (последние символы без цифр и знаков)
-                const match = text.match(/([A-Z']+)$/); // Буквы и апострофы в конце
+                const match = text.match(/([A-Z']+)(?=\(|$)/); // Буквы до скобки с координатами или до конца
                 if (match) {
                     const lettersOnly = match[1];
                     arrowWidth = ctx.measureText(lettersOnly).width;
                     // Смещаем начало стрелки к позиции букв
-                    const coefficientWidth = ctx.measureText(text.replace(/[A-Z']+$/, '')).width;
+                    const coefficientPart = text.replace(/[A-Z']+(?=\(|$).*/, '').replace(/[A-Z']+$/, '');
+                    const coefficientWidth = ctx.measureText(coefficientPart).width;
                     arrowX = x + coefficientWidth;
                 } else {
-                    // Если не нашли буквы, рисуем над всем текстом
-                    arrowWidth = ctx.measureText(text).width;
+                    // Если не нашли буквы, рисуем над всем текстом до скобок
+                    const textBeforeCoords = text.split('(')[0];
+                    arrowWidth = ctx.measureText(textBeforeCoords).width;
                 }
             } else {
-                // Стрелка над всем текстом
-                arrowWidth = ctx.measureText(text).width;
+                // Стрелка над всем текстом до координат
+                const textBeforeCoords = text.split('(')[0];
+                arrowWidth = ctx.measureText(textBeforeCoords).width;
             }
             
             const arrowY = y - 20;
@@ -615,15 +903,24 @@
             let underlineX = x;
             
             if (underlineOnlyLetter) {
-                // Подчеркиваем только букву (последний символ)
-                const letterOnly = text.slice(-1); // Берем последний символ (букву)
-                underlineWidth = ctx.measureText(letterOnly).width;
-                // Смещаем начало подчеркивания к позиции буквы
-                const coefficientWidth = ctx.measureText(text.slice(0, -1)).width;
-                underlineX = x + coefficientWidth;
+                // Подчеркиваем только буквы в конце (до координат)
+                const match = text.match(/([a-zA-Z]+)(?=\(|$)/);
+                if (match) {
+                    const lettersOnly = match[1];
+                    underlineWidth = ctx.measureText(lettersOnly).width;
+                    // Смещаем начало подчеркивания к позиции букв
+                    const coefficientPart = text.replace(/[a-zA-Z]+(?=\(|$).*/, '').replace(/[a-zA-Z]+$/, '');
+                    const coefficientWidth = ctx.measureText(coefficientPart).width;
+                    underlineX = x + coefficientWidth;
+                } else {
+                    // Если не нашли буквы, подчеркиваем весь текст до скобок
+                    const textBeforeCoords = text.split('(')[0];
+                    underlineWidth = ctx.measureText(textBeforeCoords).width;
+                }
             } else {
-                // Подчеркиваем весь текст
-                underlineWidth = ctx.measureText(text).width;
+                // Подчеркиваем весь текст до координат
+                const textBeforeCoords = text.split('(')[0];
+                underlineWidth = ctx.measureText(textBeforeCoords).width;
             }
             
             const underlineY = y + 3;
@@ -640,9 +937,25 @@
         function drawLabels() {
             ctx.fillStyle = LABEL_COLOR;
             ctx.font = 'bold 16px "STIX Two Math", "Times New Roman", serif';
+            ctx.textAlign = 'left'; // Явно устанавливаем выравнивание
 
             points.forEach(point => {
-                ctx.fillText(point.name, point.x + 8, point.y - 8);
+                let labelText = point.name;
+                
+                // Добавляем координаты если показаны оси
+                if (showAxesCheckbox.checked) {
+                    // Находим центр координатной системы
+                    const centerX = Math.round(canvas.width / 2 / GRID_SIZE) * GRID_SIZE;
+                    const centerY = Math.round(canvas.height / 2 / GRID_SIZE) * GRID_SIZE;
+                    
+                    // Вычисляем координаты точки относительно центра координатной системы
+                    const coordX = Math.round((point.x - centerX) / GRID_SIZE * 10) / 10; // Округляем до 1 знака после запятой
+                    const coordY = Math.round((centerY - point.y) / GRID_SIZE * 10) / 10; // Инвертируем Y для математической системы
+                    
+                    labelText = `${point.name}(${coordX}; ${coordY})`;
+                }
+                
+                ctx.fillText(labelText, point.x + 8, point.y - 8);
             });
 
             vectors.forEach(vector => {
@@ -673,10 +986,17 @@
                         } else {
                             displayText = roundedCoeff + vectorPoints;
                         }
+                        
+                        // Добавляем координаты если показаны оси
+                        if (showAxesCheckbox.checked) {
+                            const coords = getVectorCoordinates(vector);
+                            displayText += `(${coords.x}; ${coords.y})`;
+                        }
+                        
                         ctx.fillText(displayText, labelX, labelY);
                         drawVectorArrow(displayText, labelX, labelY, true); // Стрелка только над буквами
                     } else {
-                        // Однобуквенный формат с коэффициентом
+                        // Однобуквенный формат с коэффициентом и подчеркиванием
                         if (roundedCoeff === 1) {
                             displayText = vector.parentVector.name;
                         } else if (roundedCoeff === -1) {
@@ -685,27 +1005,187 @@
                             displayText = roundedCoeff + vector.parentVector.name;
                         }
                         
+                        // Добавляем координаты если показаны оси
+                        if (showAxesCheckbox.checked) {
+                            const coords = getVectorCoordinates(vector);
+                            displayText += `(${coords.x}; ${coords.y})`;
+                        }
+                        
                         ctx.fillText(displayText, labelX, labelY);
                         // Подчеркиваем только букву, НЕ коэффициент
                         drawVectorUnderline(displayText, labelX, labelY, true);
                     }
                 } else {
                     if (vectorNamingCheckbox.checked) {
+                        // Двубуквенный формат со стрелкой
                         displayText = vector.startPoint.name + vector.endPoint.name;
+                        
+                        // Добавляем координаты если показаны оси
+                        if (showAxesCheckbox.checked) {
+                            const coords = getVectorCoordinates(vector);
+                            displayText += `(${coords.x}; ${coords.y})`;
+                        }
+                        
                         ctx.fillText(displayText, labelX, labelY);
                         drawVectorArrow(displayText, labelX, labelY);
                     } else {
+                        // Однобуквенный формат с подчеркиванием
                         displayText = vector.name;
+                        
+                        // Добавляем координаты если показаны оси
+                        if (showAxesCheckbox.checked) {
+                            const coords = getVectorCoordinates(vector);
+                            displayText += `(${coords.x}; ${coords.y})`;
+                        }
+                        
                         ctx.fillText(displayText, labelX, labelY);
                         drawVectorUnderline(displayText, labelX, labelY);
                     }
                 }
             });
+            
+            // Обновляем список векторов на панели
+            updateVectorsList();
+        }
+
+        function getVectorCoordinates(vector) {
+            // Находим центр координатной системы
+            const centerX = Math.round(canvas.width / 2 / GRID_SIZE) * GRID_SIZE;
+            const centerY = Math.round(canvas.height / 2 / GRID_SIZE) * GRID_SIZE;
+            
+            // Вычисляем координаты вектора
+            const dx = vector.endPoint.x - vector.startPoint.x;
+            const dy = vector.endPoint.y - vector.startPoint.y;
+            
+            // Переводим в единицы координатной системы
+            const coordX = Math.round(dx / GRID_SIZE * 10) / 10;
+            const coordY = Math.round(-dy / GRID_SIZE * 10) / 10; // Инвертируем Y
+            
+            return { x: coordX, y: coordY };
+        }
+
+        function getPointCoordinates(point) {
+            // Находим центр координатной системы
+            const centerX = Math.round(canvas.width / 2 / GRID_SIZE) * GRID_SIZE;
+            const centerY = Math.round(canvas.height / 2 / GRID_SIZE) * GRID_SIZE;
+            
+            // Вычисляем координаты точки относительно центра
+            const coordX = Math.round((point.x - centerX) / GRID_SIZE * 10) / 10;
+            const coordY = Math.round((centerY - point.y) / GRID_SIZE * 10) / 10;
+            
+            return { x: coordX, y: coordY };
+        }
+
+        function updateVectorsList() {
+            const vectorsList = document.getElementById('vectorsList');
+            
+            if (vectors.length === 0) {
+                vectorsList.innerHTML = '<div class="no-vectors">Нет построенных векторов</div>';
+                return;
+            }
+            
+            let html = '';
+            vectors.forEach((vector, index) => {
+                const coords = getVectorCoordinates(vector);
+                const startCoords = getPointCoordinates(vector.startPoint);
+                const endCoords = getPointCoordinates(vector.endPoint);
+                
+                let vectorName = '';
+                let katexVectorName = '';
+                
+                // Определяем название вектора без коэффициентов
+                if (vectorNamingCheckbox.checked) {
+                    vectorName = vector.startPoint.name + vector.endPoint.name;
+                    katexVectorName = `\\overrightarrow{${vectorName}}`;
+                } else {
+                    vectorName = vector.name;
+                    katexVectorName = `\\underline{${vectorName}}`;
+                }
+                
+                // Особые названия для зависимых векторов
+                if (vector.parentVector) {
+                    const coefficient = calculateCoefficient(vector, vector.parentVector);
+                    const roundedCoeff = Math.round(coefficient * 10) / 10;
+                    
+                    let coefficientPart = '';
+                    if (roundedCoeff === 1) {
+                        coefficientPart = '';
+                    } else if (roundedCoeff === -1) {
+                        coefficientPart = '-';
+                    } else {
+                        coefficientPart = roundedCoeff.toString();
+                    }
+                    
+                    if (vectorNamingCheckbox.checked) {
+                        const vectorPoints = vector.startPoint.name + vector.endPoint.name;
+                        katexVectorName = `${coefficientPart}\\overrightarrow{${vectorPoints}}`;
+                        vectorName = coefficientPart + vectorPoints;
+                    } else {
+                        katexVectorName = `${coefficientPart}\\underline{${vector.parentVector.name}}`;
+                        vectorName = coefficientPart + vector.parentVector.name;
+                    }
+                }
+                
+                // Функция для правильного форматирования координат в формуле
+                const formatCoordinate = (endCoord, startCoord) => {
+                    if (startCoord >= 0) {
+                        return `${endCoord} - ${startCoord}`;
+                    } else {
+                        return `${endCoord} + ${Math.abs(startCoord)}`;
+                    }
+                };
+                
+                // Создаем уникальные ID для каждого KaTeX элемента
+                const vectorTitleId = `vector-title-${index}`;
+                const vectorFormulaId = `vector-formula-${index}`;
+                const vectorCoordsId = `vector-coords-${index}`;
+                
+                html += `
+                    <div class="vector-item">
+                        <div class="vector-name">Вектор <span id="${vectorTitleId}"></span></div>
+                        <div class="vector-formula">
+                            <span id="${vectorFormulaId}"></span>
+                        </div>
+                        <div class="vector-coordinates"><span id="${vectorCoordsId}"></span></div>
+                    </div>
+                `;
+                
+                // Рендерим KaTeX после добавления HTML
+                setTimeout(() => {
+                    try {
+                        // Название вектора
+                        katex.render(katexVectorName, document.getElementById(vectorTitleId), {
+                            throwOnError: false
+                        });
+                        
+                        // Формула расчета
+                        const formulaLatex = `${katexVectorName} = (${formatCoordinate(endCoords.x, startCoords.x)}; ${formatCoordinate(endCoords.y, startCoords.y)})`;
+                        katex.render(formulaLatex, document.getElementById(vectorFormulaId), {
+                            throwOnError: false
+                        });
+                        
+                        // Итоговые координаты
+                        const coordsLatex = `${katexVectorName} = (${coords.x}; ${coords.y})`;
+                        katex.render(coordsLatex, document.getElementById(vectorCoordsId), {
+                            throwOnError: false
+                        });
+                    } catch (e) {
+                        console.warn('KaTeX rendering error:', e);
+                        // Fallback к обычному тексту если KaTeX не работает
+                        document.getElementById(vectorTitleId).textContent = vectorName;
+                        document.getElementById(vectorFormulaId).textContent = `${vectorName} = (${formatCoordinate(endCoords.x, startCoords.x)}; ${formatCoordinate(endCoords.y, startCoords.y)})`;
+                        document.getElementById(vectorCoordsId).textContent = `${vectorName} = (${coords.x}; ${coords.y})`;
+                    }
+                }, 0);
+            });
+            
+            vectorsList.innerHTML = html;
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawGrid();
+            drawAxes();
             
             vectors.forEach(vector => {
                 drawVectorLine(vector);
@@ -848,86 +1328,151 @@
                 activeVector.endPoint.y = mousePos.y;
                 draw();
             } else if (dragMode && activeVector) {
-                if (activeVector.parentVector && (dragMode === 'end' || dragMode === 'start')) {
-                    // При любом движении начальной точки зависимого вектора создаем независимую точку
-                    if (!activeVector.hasIndependentStart && dragMode === 'start') {
-                        // Вычисляем параметр текущей позиции на прямой исходного вектора
-                        const parentDir = {
-                            x: activeVector.parentVector.endPoint.x - activeVector.parentVector.startPoint.x,
-                            y: activeVector.parentVector.endPoint.y - activeVector.parentVector.startPoint.y
-                        };
-                        const parentLengthSq = parentDir.x * parentDir.x + parentDir.y * parentDir.y;
-                        
-                        if (parentLengthSq > 0) {
-                            const toStart = {
-                                x: activeVector.startPoint.x - activeVector.parentVector.startPoint.x,
-                                y: activeVector.startPoint.y - activeVector.parentVector.startPoint.y
+                if (activeVector.parentVector) {
+                    // Обработка зависимых векторов
+                    if (activeVector.hasIndependentStart) {
+                        // Для отсоединенных зависимых векторов
+                        if (dragMode === 'start' || dragMode === 'end') {
+                            // РАЗРЕШАЕМ движение концов, но ТОЛЬКО вдоль направления исходного вектора
+                            const parentDir = {
+                                x: activeVector.parentVector.endPoint.x - activeVector.parentVector.startPoint.x,
+                                y: activeVector.parentVector.endPoint.y - activeVector.parentVector.startPoint.y
                             };
-                            activeVector.startPositionParameter = (toStart.x * parentDir.x + toStart.y * parentDir.y) / parentLengthSq;
+                            const parentLength = Math.sqrt(parentDir.x * parentDir.x + parentDir.y * parentDir.y);
+                            
+                            if (parentLength > 0) {
+                                // Нормализуем направление исходного вектора
+                                const normalizedDir = {
+                                    x: parentDir.x / parentLength,
+                                    y: parentDir.y / parentLength
+                                };
+                                
+                                // Вычисляем вектор от текущей позиции точки до позиции мыши
+                                const currentPoint = (dragMode === 'start') ? activeVector.startPoint : activeVector.endPoint;
+                                const dx = mousePos.x - currentPoint.x;
+                                const dy = mousePos.y - currentPoint.y;
+                                
+                                // Проецируем движение мыши на направление исходного вектора
+                                const projectedDistance = dx * normalizedDir.x + dy * normalizedDir.y;
+                                
+                                // Перемещаем точку только вдоль направления исходного вектора
+                                if (dragMode === 'start') {
+                                    activeVector.startPoint.x += projectedDistance * normalizedDir.x;
+                                    activeVector.startPoint.y += projectedDistance * normalizedDir.y;
+                                } else {
+                                    activeVector.endPoint.x += projectedDistance * normalizedDir.x;
+                                    activeVector.endPoint.y += projectedDistance * normalizedDir.y;
+                                }
+                            }
+                        } else if (dragMode === 'move') {
+                            // Разрешаем только параллельный перенос
+                            const parentDir = {
+                                x: activeVector.parentVector.endPoint.x - activeVector.parentVector.startPoint.x,
+                                y: activeVector.parentVector.endPoint.y - activeVector.parentVector.startPoint.y
+                            };
+                            const parentLength = Math.sqrt(parentDir.x * parentDir.x + parentDir.y * parentDir.y);
+                            
+                            if (parentLength > 0) {
+                                const normalizedDir = {
+                                    x: parentDir.x / parentLength,
+                                    y: parentDir.y / parentLength
+                                };
+                                
+                                const dx = mousePos.x - dragOffset.x - activeVector.startPoint.x;
+                                const dy = mousePos.y - dragOffset.y - activeVector.startPoint.y;
+                                
+                                // Проекция смещения на направление исходного вектора
+                                const projectedDistance = dx * normalizedDir.x + dy * normalizedDir.y;
+                                
+                                // Применяем только проекцию (параллельный перенос)
+                                const moveX = projectedDistance * normalizedDir.x;
+                                const moveY = projectedDistance * normalizedDir.y;
+                                
+                                activeVector.startPoint.x += moveX;
+                                activeVector.startPoint.y += moveY;
+                                activeVector.endPoint.x += moveX;
+                                activeVector.endPoint.y += moveY;
+                            }
                         }
-                        
-                        activeVector.startPoint = {
-                            x: activeVector.startPoint.x,
-                            y: activeVector.startPoint.y,
-                            name: activeVector.startPoint.name + "'"
-                        };
-                        points.push(activeVector.startPoint);
-                        activeVector.hasIndependentStart = true;
-                    }
-                    
-                    const projectedPoint = projectPointOnLine(mousePos, 
-                        activeVector.parentVector.startPoint, 
-                        activeVector.parentVector.endPoint);
-                    
-                    if (dragMode === 'start') {
-                        activeVector.startPoint.x = projectedPoint.x;
-                        activeVector.startPoint.y = projectedPoint.y;
                     } else {
-                        activeVector.endPoint.x = projectedPoint.x;
-                        activeVector.endPoint.y = projectedPoint.y;
-                    }
-                    
-                    activeVector.storedCoefficient = calculateCoefficient(activeVector, activeVector.parentVector);
-                } else if (activeVector.parentVector && dragMode === 'move') {
-                    // При перемещении зависимого вектора целиком создаем независимую точку начала
-                    if (!activeVector.hasIndependentStart) {
-                        // Сохраняем параметр позиции на прямой (t=0 в начале исходного вектора)
-                        activeVector.startPositionParameter = 0;
-                        
-                        activeVector.startPoint = {
-                            x: activeVector.startPoint.x,
-                            y: activeVector.startPoint.y,
-                            name: activeVector.startPoint.name + "'"
-                        };
-                        points.push(activeVector.startPoint);
-                        activeVector.hasIndependentStart = true;
-                    }
-                    
-                    // Параллельный сдвиг - сохраняем направление и длину
-                    const dx = mousePos.x - dragOffset.x - activeVector.startPoint.x;
-                    const dy = mousePos.y - dragOffset.y - activeVector.startPoint.y;
-                    
-                    // Проецируем сдвиг на направление исходного вектора
-                    const parentDir = {
-                        x: activeVector.parentVector.endPoint.x - activeVector.parentVector.startPoint.x,
-                        y: activeVector.parentVector.endPoint.y - activeVector.parentVector.startPoint.y
-                    };
-                    const parentLengthSq = parentDir.x * parentDir.x + parentDir.y * parentDir.y;
-                    
-                    if (parentLengthSq > 0) {
-                        // Проекция смещения на направление исходного вектора
-                        const projectedShift = (dx * parentDir.x + dy * parentDir.y) / parentLengthSq;
-                        
-                        // Обновляем параметр позиции
-                        activeVector.startPositionParameter += projectedShift;
-                        
-                        // Применяем смещение
-                        activeVector.startPoint.x += parentDir.x * projectedShift;
-                        activeVector.startPoint.y += parentDir.y * projectedShift;
-                        activeVector.endPoint.x += parentDir.x * projectedShift;
-                        activeVector.endPoint.y += parentDir.y * projectedShift;
+                        // Для присоединенных зависимых векторов - обычная логика по прямой
+                        if (dragMode === 'end' || dragMode === 'start') {
+                            // При движении точек зависимого вектора создаем независимую точку начала
+                            if (!activeVector.hasIndependentStart && dragMode === 'start') {
+                                const parentDir = {
+                                    x: activeVector.parentVector.endPoint.x - activeVector.parentVector.startPoint.x,
+                                    y: activeVector.parentVector.endPoint.y - activeVector.parentVector.startPoint.y
+                                };
+                                const parentLengthSq = parentDir.x * parentDir.x + parentDir.y * parentDir.y;
+                                
+                                if (parentLengthSq > 0) {
+                                    const toStart = {
+                                        x: activeVector.startPoint.x - activeVector.parentVector.startPoint.x,
+                                        y: activeVector.startPoint.y - activeVector.parentVector.startPoint.y
+                                    };
+                                    activeVector.startPositionParameter = (toStart.x * parentDir.x + toStart.y * parentDir.y) / parentLengthSq;
+                                }
+                                
+                                activeVector.startPoint = {
+                                    x: activeVector.startPoint.x,
+                                    y: activeVector.startPoint.y,
+                                    name: activeVector.startPoint.name + "'"
+                                };
+                                points.push(activeVector.startPoint);
+                                activeVector.hasIndependentStart = true;
+                            }
+                            
+                            const projectedPoint = projectPointOnLine(mousePos, 
+                                activeVector.parentVector.startPoint, 
+                                activeVector.parentVector.endPoint);
+                            
+                            if (dragMode === 'start') {
+                                activeVector.startPoint.x = projectedPoint.x;
+                                activeVector.startPoint.y = projectedPoint.y;
+                            } else {
+                                activeVector.endPoint.x = projectedPoint.x;
+                                activeVector.endPoint.y = projectedPoint.y;
+                            }
+                            
+                            activeVector.storedCoefficient = calculateCoefficient(activeVector, activeVector.parentVector);
+                        } else if (dragMode === 'move') {
+                            // При перемещении присоединенного зависимого вектора
+                            if (!activeVector.hasIndependentStart) {
+                                activeVector.startPositionParameter = 0;
+                                
+                                activeVector.startPoint = {
+                                    x: activeVector.startPoint.x,
+                                    y: activeVector.startPoint.y,
+                                    name: activeVector.startPoint.name + "'"
+                                };
+                                points.push(activeVector.startPoint);
+                                activeVector.hasIndependentStart = true;
+                            }
+                            
+                            // Обычное движение по прямой для только что отсоединенного
+                            const dx = mousePos.x - dragOffset.x - activeVector.startPoint.x;
+                            const dy = mousePos.y - dragOffset.y - activeVector.startPoint.y;
+                            
+                            const parentDir = {
+                                x: activeVector.parentVector.endPoint.x - activeVector.parentVector.startPoint.x,
+                                y: activeVector.parentVector.endPoint.y - activeVector.parentVector.startPoint.y
+                            };
+                            const parentLengthSq = parentDir.x * parentDir.x + parentDir.y * parentDir.y;
+                            
+                            if (parentLengthSq > 0) {
+                                const projectedShift = (dx * parentDir.x + dy * parentDir.y) / parentLengthSq;
+                                
+                                activeVector.startPositionParameter += projectedShift;
+                                
+                                activeVector.startPoint.x += parentDir.x * projectedShift;
+                                activeVector.startPoint.y += parentDir.y * projectedShift;
+                                activeVector.endPoint.x += parentDir.x * projectedShift;
+                                activeVector.endPoint.y += parentDir.y * projectedShift;
+                            }
+                        }
                     }
                 } else {
+                    // Обычные независимые векторы - полная свобода движения
                     if (dragMode === 'start') {
                         activeVector.startPoint.x = mousePos.x;
                         activeVector.startPoint.y = mousePos.y;
@@ -944,9 +1489,7 @@
                         activeVector.endPoint.y += dy;
                     }
                     
-                    if (!activeVector.parentVector) {
-                        updateDependentVectors(activeVector);
-                    }
+                    updateDependentVectors(activeVector);
                 }
                 draw();
             }
@@ -978,8 +1521,10 @@
         });
 
         showGridCheckbox.addEventListener('change', draw);
+        showAxesCheckbox.addEventListener('change', draw);
         showLinesCheckbox.addEventListener('change', draw);
         vectorNamingCheckbox.addEventListener('change', draw);
+        clearCanvasBtn.addEventListener('click', clearCanvas);
 
         window.addEventListener('resize', resizeCanvas);
 

@@ -1005,7 +1005,7 @@
             const resultName = getNextVectorName();
             
             // Для конечной точки результирующего вектора тоже нужно имя
-            const resultEndName = method === 'triangle' ? null : getNextPointName(); // Для параллелограмма создаем новую точку
+            const resultEndName = method === 'triangle' ? vector2.endPoint.name : getNextPointName(); // Для треугольника используем существующую, для параллелограмма создаем новую
             
             // Создаем результирующий вектор с правильной конечной точкой
             const resultVector = createOperationVector(
@@ -1020,6 +1020,7 @@
             // Анимируем появление результирующего вектора
             const originalEndX = resultVector.endPoint.x;
             const originalEndY = resultVector.endPoint.y;
+            const originalEndPoint = resultVector.endPoint; // Сохраняем оригинальную точку ПЕРЕД созданием временной
             
             // Начинаем с нулевой длины
             const tempEndX = resultVector.startPoint.x;
@@ -1029,11 +1030,10 @@
             const tempEndPoint = {
                 x: tempEndX,
                 y: tempEndY,
-                name: 'temp_end',
+                name: originalEndPoint.name, // Теперь originalEndPoint уже определен!
                 isOperationPoint: true
             };
             
-            const originalEndPoint = resultVector.endPoint;
             resultVector.endPoint = tempEndPoint;
             
             animateVectorMovement(resultVector, 
