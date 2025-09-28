@@ -578,6 +578,98 @@
         let isBlinking = false;
         let blinkCount = 0;
 
+        // Переменные для умного переиспользования точек
+        const POINT_REUSE_THRESHOLD = 5; // Радиус в пикселях для переиспользования точек
+        let pointUsageCount = new Map(); // Карта: точка -> количество векторов, использующих эту точку
+
+        // Функция подсчета использования каждой точки
+        function updatePointUsageCount() {
+            pointUsageCount.clear();
+            
+            // Подсчитываем использование каждой точки
+            points.forEach(point => {
+                let count = 0;
+                
+                // Считаем сколько векторов используют эту точку как начальную или конечную
+                vectors.forEach(vector => {
+                    if (vector.startPoint === point) count++;
+                    if (vector.endPoint === point) count++;
+                });
+                
+                pointUsageCount.set(point, count);
+            });
+        }
+
+        // Функция получения смещения ярлыка для точки с несколькими векторами
+        function getLabelOffset(point, vectorIndex = 0) {
+            const usageCount = pointUsageCount.get(point) || 1;
+            if (usageCount === 1) {
+                return { x: 8, y: -8 }; // Стандартное смещение
+            }
+            
+            // Смещение по спирали для нескольких векторов
+            const angle = (vectorIndex * 2 * Math.PI) / usageCount;
+            const radius = 15 + vectorIndex * 3; // Увеличиваем радиус для каждого следующего ярлыка
+            
+            return {
+                x: Math.cos(angle) * radius + 8,
+                y: Math.sin(angle) * radius - 8
+            };
+        }
+
+        // Функция для генерации уникального имени точки с учетом уже существующих
+        function generateUniquePointName(baseName) {
+            // Если базовое имя не занято, используем его
+            const existingNames = new Set(points.map(p => p.name).filter(name => name));
+            
+            if (!existingNames.has(baseName)) {
+                return baseName;
+            }
+            
+            // Если занято, добавляем дополнительные апострофы
+            let candidateName = baseName;
+            
+            do {
+                candidateName += "'";
+            } while (existingNames.has(candidateName));
+            
+            return candidateName;
+        }
+
+        // Функция поиска ближайшей точки в заданном радиусе
+        function findNearbyPoint(x, y, excludePoint = null) {
+            for (let point of points) {
+                if (point === excludePoint) continue;
+                
+                const distance = Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2);
+                if (distance <= POINT_REUSE_THRESHOLD) {
+                    return point;
+                }
+            }
+            return null;
+        }
+
+        // Функция поиска существующего результирующего вектора с такими же координатами
+        function findExistingResultVector(startX, startY, endX, endY) {
+            for (let vector of resultVectors) {
+                if (vector && vector.isResultVector) {
+                    const startDistance = Math.sqrt(
+                        Math.pow(vector.startPoint.x - startX, 2) + 
+                        Math.pow(vector.startPoint.y - startY, 2)
+                    );
+                    const endDistance = Math.sqrt(
+                        Math.pow(vector.endPoint.x - endX, 2) + 
+                        Math.pow(vector.endPoint.y - endY, 2)
+                    );
+                    
+                    if (startDistance <= POINT_REUSE_THRESHOLD && endDistance <= POINT_REUSE_THRESHOLD) {
+                        return vector;
+                    }
+                }
+            }
+            return null;
+        }
+
         // Цвета
         const VECTOR_COLOR = '#4B5563';
         const DEPENDENT_VECTOR_COLOR = '#9CA3AF';
@@ -848,8 +940,8 @@
                 vector2.startPoint.x, vector2.startPoint.y,
                 vector2.endPoint.x, vector2.endPoint.y,
                 vector2.name + "'",
-                vector2.startPoint.name + "'",
-                vector2.endPoint.name + "'"
+                generateUniquePointName(vector2.startPoint.name + "'"),
+                generateUniquePointName(vector2.endPoint.name + "'")
             );
             
             draw();
@@ -910,8 +1002,8 @@
                 vector2.startPoint.x - (vector2.endPoint.x - vector2.startPoint.x),
                 vector2.startPoint.y - (vector2.endPoint.y - vector2.startPoint.y),
                 '-' + vector2.name,
-                vector2.endPoint.name + "'",  // Начало -b = конец b
-                vector2.startPoint.name + "'"  // Конец -b = начало b
+                generateUniquePointName(vector2.endPoint.name + "'"),  // Начало -b = конец b
+                generateUniquePointName(vector2.startPoint.name + "'")  // Конец -b = начало b
             );
             
             draw();
@@ -1001,11 +1093,42 @@
                 };
             }
             
-            // Простое именование результирующего вектора - следующая буква алфавита
-            const resultName = getNextVectorName();
+            // НОВАЯ ЛОГИКА: Проверяем, есть ли уже идентичный результирующий вектор
+            const existingVector = findExistingResultVector(
+                resultStart.x, resultStart.y, 
+                resultEnd.x, resultEnd.y
+            );
             
-            // Для конечной точки результирующего вектора тоже нужно имя
-            const resultEndName = method === 'triangle' ? vector2.endPoint.name : getNextPointName(); // Для треугольника используем существующую, для параллелограмма создаем новую
+            if (existingVector) {
+                // Если найден идентичный вектор, используем его
+                console.log('Переиспользуем существующий результирующий вектор:', existingVector.name);
+                
+                isAnimating = false;
+                
+                // Добавляем к информации об операции
+                if (lastOperation) {
+                    if (!lastOperation.methods.includes(method)) {
+                        lastOperation.methods.push(method);
+                    }
+                    if (!resultVectors.includes(existingVector)) {
+                        resultVectors.push(existingVector);
+                    }
+                    
+                    // Если это второй метод, показываем мигание
+                    if (lastOperation.methods.length === 2) {
+                        startBlinking(existingVector);
+                    }
+                }
+                
+                updateVectorsList();
+                updateVerifyButton();
+                draw();
+                return;
+            }
+            
+            // Если идентичного вектора нет, создаем новый
+            const resultName = getNextVectorName();
+            const resultEndName = method === 'triangle' ? vector2.endPoint.name : getNextPointName();
             
             // Создаем результирующий вектор с правильной конечной точкой
             const resultVector = createOperationVector(
@@ -1782,9 +1905,13 @@
             ctx.font = 'bold 16px "STIX Two Math", "Times New Roman", serif';
             ctx.textAlign = 'left'; // Явно устанавливаем выравнивание
 
+            // Отрисовка ярлыков точек с умным смещением
+            const drawnPointLabels = new Set(); // Чтобы не дублировать ярлыки одной точки
+            let pointLabelIndex = 0;
+            
             points.forEach(point => {
                 // Пропускаем точки без имен (временные точки)
-                if (!point.name) return;
+                if (!point.name || drawnPointLabels.has(point)) return;
                 
                 let labelText = point.name;
                 
@@ -1801,7 +1928,12 @@
                     labelText = `${point.name}(${coordX}; ${coordY})`;
                 }
                 
-                ctx.fillText(labelText, point.x + 8, point.y - 8);
+                // Получаем умное смещение для этой точки
+                const offset = getLabelOffset(point, pointLabelIndex);
+                ctx.fillText(labelText, point.x + offset.x, point.y + offset.y);
+                
+                drawnPointLabels.add(point);
+                pointLabelIndex++;
             });
 
             vectors.forEach(vector => {
@@ -1813,8 +1945,22 @@
                 const offsetX = -Math.sin(angle) * offsetDistance;
                 const offsetY = Math.cos(angle) * offsetDistance;
                 
-                const labelX = midX + offsetX;
-                const labelY = midY + offsetY;
+                let labelX = midX + offsetX;
+                let labelY = midY + offsetY;
+                
+                // Проверяем, нужно ли смещение из-за близости к точке с несколькими векторами
+                for (let point of points) {
+                    if (point.name && pointUsageCount.has(point) && pointUsageCount.get(point) > 1) {
+                        const distanceToPoint = Math.sqrt((labelX - point.x) ** 2 + (labelY - point.y) ** 2);
+                        if (distanceToPoint < 40) { // Если ярлык вектора слишком близко к многоиспользуемой точке
+                            // Смещаем ярлык вектора дальше
+                            const avoidanceOffsetX = -Math.sin(angle) * (offsetDistance + 15);
+                            const avoidanceOffsetY = Math.cos(angle) * (offsetDistance + 15);
+                            labelX = midX + avoidanceOffsetX;
+                            labelY = midY + avoidanceOffsetY;
+                        }
+                    }
+                }
                 
                 let displayText;
                 
@@ -2030,6 +2176,10 @@
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Обновляем счетчики использования точек перед отрисовкой
+            updatePointUsageCount();
+            
             drawGrid();
             drawAxes();
             
