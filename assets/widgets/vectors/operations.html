@@ -565,7 +565,7 @@
         // Переменные для анимации операций
         let isAnimating = false;
         let animationStartTime = 0;
-        let animationDuration = 2000; // 2 секунды на этап
+        let animationDuration = 3000; // 3 секунды на этап
         let currentAnimationStep = 0;
         let operationVectors = []; // Векторы, созданные в процессе операции
         let operationLines = []; // Пунктирные линии для геометрических фигур
@@ -581,6 +581,14 @@
         // Переменные для умного переиспользования точек
         const POINT_REUSE_THRESHOLD = 5; // Радиус в пикселях для переиспользования точек
         let pointUsageCount = new Map(); // Карта: точка -> количество векторов, использующих эту точку
+
+        // Переменные для анимации вспомогательных линий
+        let animatedLines = []; // Линии, которые анимируются
+        let lineAnimationProgress = 0; // Прогресс анимации линий (0-1)
+
+        // Переменные для анимации разворота вектора
+        let rotatingVector = null; // Вектор, который разворачивается
+        let rotationProgress = 0; // Прогресс разворота (0-1)
 
         // Функция подсчета использования каждой точки
         function updatePointUsageCount() {
@@ -888,28 +896,118 @@
             animate();
         }
 
-        function drawDashedLine(x1, y1, x2, y2, dashLength = 5) {
+        function drawDashedLine(x1, y1, x2, y2, progress = 1, dashLength = 5) {
+            ctx.save();
+            
             const dx = x2 - x1;
             const dy = y2 - y1;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            const dashCount = Math.floor(distance / (dashLength * 2));
             
             ctx.setLineDash([dashLength, dashLength]);
             ctx.strokeStyle = '#9CA3AF';
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 2;
             
             ctx.beginPath();
             ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
             
+            // Анимированное появление линии
+            const currentX = x1 + dx * progress;
+            const currentY = y1 + dy * progress;
+            ctx.lineTo(currentX, currentY);
+            
+            ctx.stroke();
             ctx.setLineDash([]); // Сбрасываем пунктир
+            ctx.restore();
         }
 
         function drawOperationLines() {
+            // Рисуем статичные линии
             operationLines.forEach(line => {
                 drawDashedLine(line.x1, line.y1, line.x2, line.y2);
             });
+            
+            // Рисуем анимированные линии
+            animatedLines.forEach(line => {
+                drawDashedLine(line.x1, line.y1, line.x2, line.y2, lineAnimationProgress);
+            });
+        }
+
+        // Новая функция для анимированного добавления вспомогательных линий
+        function addAnimatedLine(x1, y1, x2, y2, delay = 0) {
+            setTimeout(() => {
+                const line = { x1, y1, x2, y2 };
+                animatedLines.push(line);
+                
+                // Анимируем появление линии
+                const startTime = performance.now();
+                const duration = 1500; // 1.5 секунды на построение линии
+                
+                function animate() {
+                    const elapsed = performance.now() - startTime;
+                    lineAnimationProgress = Math.min(elapsed / duration, 1);
+                    
+                    draw();
+                    
+                    if (lineAnimationProgress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        // Переносим в обычные линии после завершения анимации
+                        operationLines.push(line);
+                        animatedLines = animatedLines.filter(l => l !== line);
+                        lineAnimationProgress = 0;
+                        draw();
+                    }
+                }
+                
+                animate();
+            }, delay);
+        }
+
+        // Функция для анимированного разворота вектора на 180 градусов
+        function animateVectorRotation(vector, duration = 2000, callback) {
+            rotatingVector = {
+                original: vector,
+                startPoint: { ...vector.startPoint },
+                endPoint: { ...vector.endPoint },
+                originalEndPoint: { ...vector.endPoint }
+            };
+            
+            const startTime = performance.now();
+            
+            function animate() {
+                const elapsed = performance.now() - startTime;
+                rotationProgress = Math.min(elapsed / duration, 1);
+                
+                // Вычисляем промежуточную позицию конца вектора при развороте
+                // Разворот происходит вокруг начальной точки
+                const angle = Math.PI * rotationProgress; // От 0 до π (180 градусов)
+                const dx = rotatingVector.originalEndPoint.x - rotatingVector.startPoint.x;
+                const dy = rotatingVector.originalEndPoint.y - rotatingVector.startPoint.y;
+                
+                // Применяем поворот вокруг начальной точки
+                const cosAngle = Math.cos(angle);
+                const sinAngle = Math.sin(angle);
+                
+                const newDx = dx * cosAngle - dy * sinAngle;
+                const newDy = dx * sinAngle + dy * cosAngle;
+                
+                // Обновляем конечную точку вектора
+                vector.endPoint.x = rotatingVector.startPoint.x + newDx;
+                vector.endPoint.y = rotatingVector.startPoint.y + newDy;
+                
+                draw();
+                
+                if (rotationProgress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Завершаем анимацию
+                    rotatingVector = null;
+                    rotationProgress = 0;
+                    draw();
+                    if (callback) callback();
+                }
+            }
+            
+            animate();
         }
 
         function performVectorAddition(vector1, vector2, method, clearPrevious = true) {
@@ -966,7 +1064,7 @@
                             setTimeout(() => {
                                 // Этап 4: Строим результирующий вектор
                                 buildResultVector(vector1, copiedVector, method, 'addition');
-                            }, 500);
+                            }, 800); // Увеличили до 800мс
                         });
                     }, 500);
                 });
@@ -996,20 +1094,26 @@
             isAnimating = true;
             currentAnimationStep = 0;
             
-            // Этап 1: Создаем обращенный второй вектор (-b)
+            // Этап 1: Создаем копию второго вектора и анимированно разворачиваем на 180°
+            // Сначала создаем точную копию исходного вектора
             const minusVector = createOperationVector(
                 vector2.startPoint.x, vector2.startPoint.y,
-                vector2.startPoint.x - (vector2.endPoint.x - vector2.startPoint.x),
-                vector2.startPoint.y - (vector2.endPoint.y - vector2.startPoint.y),
-                '-' + vector2.name,
-                generateUniquePointName(vector2.endPoint.name + "'"),  // Начало -b = конец b
-                generateUniquePointName(vector2.startPoint.name + "'")  // Конец -b = начало b
+                vector2.endPoint.x, vector2.endPoint.y, // Пока что такие же координаты
+                vector2.name, // Пока что такое же имя
+                generateUniquePointName(vector2.startPoint.name + "'"),
+                generateUniquePointName(vector2.endPoint.name + "'")
             );
             
             draw();
             
+            // Анимируем разворот вектора на 180 градусов
             setTimeout(() => {
-                // Этап 2: Перемещаем -b к первому вектору
+                animateVectorRotation(minusVector, 2500, () => {
+                    // После разворота меняем имя на -b
+                    minusVector.name = '-' + vector2.name;
+                    
+                    setTimeout(() => {
+                        // Этап 2: Перемещаем -b к первому вектору
                 const targetStartX = method === 'triangle' ? vector1.endPoint.x : vector1.startPoint.x;
                 const targetStartY = method === 'triangle' ? vector1.endPoint.y : vector1.startPoint.y;
                 const targetEndX = targetStartX + (minusVector.endPoint.x - minusVector.startPoint.x);
@@ -1026,49 +1130,63 @@
                             setTimeout(() => {
                                 // Этап 4: Строим результирующий вектор
                                 buildResultVector(vector1, minusVector, method, 'subtraction');
-                            }, 500);
+                            }, 800); // Увеличили до 800мс
                         });
                     }, 500);
                 });
-            }, 1000);
+                    }, 1000); // Задержка перед началом перемещения
+                });
+            }, 500); // Задержка перед началом разворота
         }
 
         function buildGeometricShape(vector1, vector2, method, callback) {
             if (method === 'triangle') {
-                // Для треугольника добавляем только одну замыкающую линию
-                operationLines.push({
-                    x1: vector1.startPoint.x,
-                    y1: vector1.startPoint.y,
-                    x2: vector2.endPoint.x,
-                    y2: vector2.endPoint.y
-                });
+                // Для треугольника добавляем только одну замыкающую линию с анимацией
+                addAnimatedLine(
+                    vector1.startPoint.x,
+                    vector1.startPoint.y,
+                    vector2.endPoint.x,
+                    vector2.endPoint.y,
+                    0 // Без задержки
+                );
+                
+                // Вызываем callback после завершения анимации
+                setTimeout(() => {
+                    if (callback) callback();
+                }, 1500); // Время анимации линии
             } else {
-                // Для параллелограмма строим недостающие стороны
+                // Для параллелограмма строим недостающие стороны с задержкой
                 // 1. Линия от конца первого вектора параллельно второму вектору
                 const side1EndX = vector1.endPoint.x + (vector2.endPoint.x - vector2.startPoint.x);
                 const side1EndY = vector1.endPoint.y + (vector2.endPoint.y - vector2.startPoint.y);
                 
-                operationLines.push({
-                    x1: vector1.endPoint.x,
-                    y1: vector1.endPoint.y,
-                    x2: side1EndX,
-                    y2: side1EndY
-                });
+                addAnimatedLine(
+                    vector1.endPoint.x,
+                    vector1.endPoint.y,
+                    side1EndX,
+                    side1EndY,
+                    0 // Первая линия сразу
+                );
                 
                 // 2. Линия от конца второго вектора параллельно первому вектору
                 const side2EndX = vector2.endPoint.x + (vector1.endPoint.x - vector1.startPoint.x);
                 const side2EndY = vector2.endPoint.y + (vector1.endPoint.y - vector1.startPoint.y);
                 
-                operationLines.push({
-                    x1: vector2.endPoint.x,
-                    y1: vector2.endPoint.y,
-                    x2: side2EndX,
-                    y2: side2EndY
-                });
+                addAnimatedLine(
+                    vector2.endPoint.x,
+                    vector2.endPoint.y,
+                    side2EndX,
+                    side2EndY,
+                    800 // Вторая линия с задержкой 800мс
+                );
+                
+                // Вызываем callback после завершения обеих анимаций
+                setTimeout(() => {
+                    if (callback) callback();
+                }, 2300); // 1500 + 800 = 2300мс
             }
             
             draw();
-            if (callback) callback();
         }
 
         function buildResultVector(vector1, vector2, method, operation) {
@@ -1716,10 +1834,16 @@
             const isBlinking = vector.isBlinking;
             const isHighlighted = vector.isHighlighted;
             const isVerificationCopy = vector.isVerificationCopy;
+            const isRotating = rotatingVector && rotatingVector.original === vector;
             
             let strokeStyle, fillStyle;
             
-            if (isHighlighted) {
+            if (isRotating) {
+                // Разворачивающийся вектор - специальный цвет
+                strokeStyle = '#8B5CF6'; // Фиолетовый
+                fillStyle = '#8B5CF6';
+                ctx.lineWidth = 4;
+            } else if (isHighlighted) {
                 // Подсвеченные векторы - ярко-желтые
                 strokeStyle = '#F59E0B';
                 fillStyle = '#F59E0B';
