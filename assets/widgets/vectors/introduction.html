@@ -522,6 +522,7 @@
         }
 
         function createDependentVector(parentVector, mousePos) {
+            console.log('🔗 Creating dependent vector for:', parentVector.name, 'at position:', mousePos);
             // Начало зависимого вектора = ТОТ ЖЕ ОБЪЕКТ начала исходного вектора
             const startPoint = parentVector.startPoint;  // Разделяем тот же объект точки!
             
@@ -1183,6 +1184,7 @@
         }
 
         function draw() {
+            console.log('🎨 Drawing canvas with', vectors.length, 'vectors and', points.length, 'points');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawGrid();
             drawAxes();
@@ -1258,12 +1260,14 @@
         }
 
         canvas.addEventListener('mousedown', (e) => {
+            console.log('🖱️ Mouse down event:', e.button, getMousePos(e));
             hideContextMenu();
             
             if (e.button === 2) {
                 e.preventDefault();
                 const mousePos = getMousePos(e);
                 const target = findClickTarget(mousePos);
+                console.log('🎯 Right click target:', target);
                 if (target) {
                     selectedVector = target.vector;
                     showContextMenu(e.clientX, e.clientY, target.vector);
