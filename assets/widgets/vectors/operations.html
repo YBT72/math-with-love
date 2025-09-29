@@ -1288,7 +1288,14 @@
                 const newStartName = method === 'triangle' ? vector1.endPoint.name : vector1.startPoint.name;
                 
                 animateVectorMovement(operationVector, targetStartX, targetStartY, targetEndX, targetEndY, animationDuration, () => {
-                    operationVector.startPoint.name = newStartName;
+                    // Для треугольного метода: используем существующую точку вместо переименования
+                    if (method === 'triangle') {
+                        // Ищем существующую точку в нужном месте (конец первого вектора)
+                        operationVector.startPoint = vector1.endPoint;
+                        console.log(`Треугольный метод: используем существующую точку ${vector1.endPoint.name} как начало операционного вектора`);
+                    } else {
+                        operationVector.startPoint.name = newStartName;
+                    }
                     
                     setTimeout(() => {
                         // Этап 3: Строим геометрическую фигуру
