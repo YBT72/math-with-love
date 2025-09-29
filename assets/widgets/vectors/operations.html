@@ -90,8 +90,9 @@
         .switch {
             position: relative;
             display: inline-block;
-            width: 60px;
-            height: 34px;
+            width: 80px;
+            height: 40px;
+            vertical-align: middle;
         }
 
         .switch input {
@@ -107,21 +108,22 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #ccc;
+            background-color: #2196F3;
             transition: .4s;
-            border-radius: 34px;
+            border-radius: 20px;
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 26px;
-            width: 26px;
+            height: 32px;
+            width: 32px;
             left: 4px;
             bottom: 4px;
             background-color: white;
             transition: .4s;
             border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         input:checked + .slider {
@@ -129,7 +131,69 @@
         }
 
         input:checked + .slider:before {
-            transform: translateX(26px);
+            transform: translateX(40px);
+        }
+        
+        .switch-option-left, .switch-option-right {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            font-weight: bold;
+            color: #000;
+            z-index: 10;
+            transition: all 0.4s ease;
+            pointer-events: none;
+        }
+
+        .switch-option-left {
+            left: 20px; /* Фиксированная позиция - центр левого кружка */
+            transform: translate(-50%, -50%);
+        }
+
+        .switch-option-right {
+            right: 20px; /* Фиксированная позиция - центр правого кружка */
+            transform: translate(50%, -50%);
+        }
+        
+        /* KaTeX в переключателе */
+        .switch-option-left .katex, .switch-option-right .katex {
+            font-size: 17px !important;
+        }
+        
+        /* Фиксированные позиции - только цвета меняются */
+        input:not(:checked) + .slider .switch-option-left {
+            color: #000;
+            font-weight: bold;
+        }
+
+        input:not(:checked) + .slider .switch-option-left .katex {
+            color: #000 !important;
+        }
+
+        input:not(:checked) + .slider .switch-option-right {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        input:not(:checked) + .slider .switch-option-right .katex {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        input:checked + .slider .switch-option-left {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        input:checked + .slider .switch-option-left .katex {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        input:checked + .slider .switch-option-right {
+            color: #000;
+            font-weight: bold;
+        }
+
+        input:checked + .slider .switch-option-right .katex {
+            color: #000 !important;
         }
 
         .switch-label {
@@ -191,10 +255,19 @@
         }
 
         /* Переключатель метода построения */
-        .method-switch-container {
+        
+        /* Контейнер для обоих переключателей */
+        .switches-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 30px;
+        }
+        
+        .switch-group {
             display: flex;
             align-items: center;
-            gap: 15px;
         }
 
         .method-switch {
@@ -202,6 +275,7 @@
             display: inline-block;
             width: 80px;
             height: 40px;
+            vertical-align: middle;
         }
 
         .method-switch input {
@@ -217,13 +291,9 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #e5e7eb;
+            background-color: #2196F3;
             transition: .4s;
             border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 8px;
         }
 
         .method-slider:before {
@@ -239,44 +309,65 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
+        .method-switch input:checked + .method-slider {
+            background-color: #2196F3;
+        }
+
         .method-switch input:checked + .method-slider:before {
             transform: translateX(40px);
         }
 
         .method-triangle, .method-parallelogram {
+            position: absolute;
+            top: 50%;
             font-size: 18px;
             font-weight: bold;
-            color: #6b7280;
-            z-index: 1;
+            color: #000;
+            z-index: 10;
+            transition: all 0.4s ease;
+            pointer-events: none;
         }
 
-        .method-switch input:checked + .method-slider .method-triangle {
-            color: #9ca3af;
+        .method-triangle {
+            left: 20px; /* Фиксированная позиция */
+            transform: translate(-50%, -50%);
+        }
+
+        .method-parallelogram {
+            right: 20px; /* Фиксированная позиция */
+            transform: translate(50%, -50%);
+        }
+
+        /* Фиксированные позиции - только цвета меняются */
+        .method-switch input:not(:checked) + .method-slider .method-triangle {
+            color: #000;
+            font-weight: bold;
         }
 
         .method-switch input:not(:checked) + .method-slider .method-parallelogram {
-            color: #9ca3af;
+            color: rgba(255, 255, 255, 0.8);
         }
 
-        .method-switch input:not(:checked) + .method-slider .method-triangle {
-            color: #374151;
+        .method-switch input:checked + .method-slider .method-triangle {
+            color: rgba(255, 255, 255, 0.8);
         }
 
         .method-switch input:checked + .method-slider .method-parallelogram {
-            color: #374151;
+            color: #000;
+            font-weight: bold;
         }
 
-        .method-label {
-            font-size: 1rem;
-            color: #374151;
-            font-weight: 500;
+        /* Контейнер для кнопок операций в одну строку */
+        .operations-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
         }
 
         /* Кнопки операций */
         .operation-button {
-            width: 100%;
+            flex: 1;
             padding: 12px 20px;
-            margin-bottom: 8px;
             border: none;
             border-radius: 8px;
             font-size: 16px;
@@ -464,10 +555,9 @@
                 <div id="selectedVectorsInfo">Выберите 2 вектора (Shift + клик)</div>
             </div>
             
-            <!-- Способ построения -->
-            <div style="margin-bottom: 15px;">
-                <label style="font-size: 1rem; font-weight: 600; color: #374151; margin-bottom: 8px; display: block;">Способ построения:</label>
-                <div class="method-switch-container">
+            <!-- Переключатели -->
+            <div class="switches-row">
+                <div class="switch-group">
                     <label class="method-switch">
                         <input type="checkbox" id="methodSwitch">
                         <span class="method-slider">
@@ -475,18 +565,29 @@
                             <span class="method-parallelogram">▱</span>
                         </span>
                     </label>
-                    <span class="method-label" id="methodLabel">Треугольник</span>
+                </div>
+                
+                <div class="switch-group">
+                    <label class="switch">
+                        <input type="checkbox" id="vectorNaming">
+                        <span class="slider">
+                            <span class="switch-option-left" id="switchLeft"></span>
+                            <span class="switch-option-right" id="switchRight"></span>
+                        </span>
+                    </label>
                 </div>
             </div>
             
             <!-- Кнопки операций -->
-            <div style="margin-bottom: 15px;">
+            <div class="operations-row" style="margin-bottom: 15px;">
                 <button id="addVectorsBtn" class="operation-button" disabled>
                     <span style="text-decoration: underline;">a</span> + <span style="text-decoration: underline;">b</span>
                 </button>
                 <button id="subtractVectorsBtn" class="operation-button" disabled>
                     <span style="text-decoration: underline;">a</span> - <span style="text-decoration: underline;">b</span>
                 </button>
+            </div>
+            <div style="margin-bottom: 15px;">
                 <button id="verifyResultBtn" class="verify-button" disabled>
                     Проверка ответа
                 </button>
@@ -510,14 +611,6 @@
                 <label for="showLines">Показать прямые векторов</label>
             </div>
             
-            <div class="switch-container">
-                <label class="switch">
-                    <input type="checkbox" id="vectorNaming">
-                    <span class="slider"></span>
-                </label>
-                <div id="vectorNamingLabel" class="switch-label"></div>
-            </div>
-            
             <button id="clearCanvas" class="clear-button">Очистить канвас</button>
             
             <!-- Информационная панель с векторами -->
@@ -539,7 +632,6 @@
         const vectorNamingCheckbox = document.getElementById('vectorNaming');
         const clearCanvasBtn = document.getElementById('clearCanvas');
         const methodSwitch = document.getElementById('methodSwitch');
-        const methodLabel = document.getElementById('methodLabel');
         const addVectorsBtn = document.getElementById('addVectorsBtn');
         const subtractVectorsBtn = document.getElementById('subtractVectorsBtn');
         const verifyResultBtn = document.getElementById('verifyResultBtn');
@@ -2807,9 +2899,6 @@
             // Переключаем метод
             isTriangleMethod = !isTriangleMethod;
             
-            // Обновляем метку
-            methodLabel.textContent = isTriangleMethod ? 'Треугольник' : 'Параллелограмм';
-            
             // Обновляем кнопки операций
             updateOperationButtons();
             
@@ -2842,13 +2931,26 @@
 
         // Инициализация KaTeX для панели управления
         function initializeKaTeX() {
-            const label = document.getElementById('vectorNamingLabel');
+            // Рендерим математические символы в переключателе векторного представления
+            const switchLeft = document.getElementById('switchLeft');
+            const switchRight = document.getElementById('switchRight');
+            
             try {
-                katex.render('\\overrightarrow{AB} \\text{ | } \\underline{a}', label, {
-                    throwOnError: false
+                // Левая сторона - однобуквенное представление с подчеркиванием
+                katex.render('\\underline{a}', switchLeft, {
+                    throwOnError: false,
+                    displayMode: false
+                });
+                
+                // Правая сторона - двубуквенное представление со стрелкой
+                katex.render('\\overrightarrow{AB}', switchRight, {
+                    throwOnError: false,
+                    displayMode: false
                 });
             } catch (e) {
-                label.innerHTML = 'AB→ | a̲';
+                // Fallback для браузеров без KaTeX
+                switchLeft.innerHTML = 'a̲';
+                switchRight.innerHTML = 'AB→';
             }
         }
 
