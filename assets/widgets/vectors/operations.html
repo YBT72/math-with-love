@@ -761,7 +761,10 @@
                         Math.pow(vector.endPoint.y - endY, 2)
                     );
                     
-                    if (startDistance <= POINT_REUSE_THRESHOLD && endDistance <= POINT_REUSE_THRESHOLD) {
+                    // Увеличиваем порог для лучшего обнаружения совпадений
+                    const threshold = 3.0; // Увеличенный порог для надежного поиска
+                    if (startDistance <= threshold && endDistance <= threshold) {
+                        console.log(`Найден существующий результирующий вектор: ${vector.name}, расстояния: start=${startDistance.toFixed(2)}, end=${endDistance.toFixed(2)}`);
                         return vector;
                     }
                 }
@@ -1381,6 +1384,7 @@
                 // Для треугольника: используем СУЩЕСТВУЮЩУЮ конечную точку второго вектора
                 resultEnd = vector2.endPoint;  // ✅ Используем сам объект точки, а не копию координат
                 resultEndName = vector2.endPoint.name;  // ✅ Используем существующее имя точки
+                console.log(`Треугольник: используем существующую точку ${resultEndName} (${resultEnd.x}, ${resultEnd.y})`);
             } else {
                 // Для параллелограмма: вычисляем диагональ и создаем новую точку
                 const diagonalEndX = vector2.endPoint.x + (vector1.endPoint.x - vector1.startPoint.x);
@@ -1391,7 +1395,10 @@
                     y: diagonalEndY
                 };
                 resultEndName = getNextPointName();  // Новое имя только для параллелограмма
+                console.log(`Параллелограмм: вычисленные координаты (${diagonalEndX}, ${diagonalEndY})`);
             }
+            
+            console.log(`Поиск существующего вектора с координатами: start(${resultStart.x}, ${resultStart.y}), end(${resultEnd.x}, ${resultEnd.y})`);
             
             // ПОИСК СУЩЕСТВУЮЩЕГО РЕЗУЛЬТИРУЮЩЕГО ВЕКТОРА
             const existingVector = findExistingResultVector(
@@ -1400,10 +1407,11 @@
             );
             
             if (existingVector) {
-                // Если найден идентичный вектор, используем его
+                console.log(`Используем существующий результирующий вектор: ${existingVector.name} для метода ${method}`);
+                console.log(`Существующий вектор: start(${existingVector.startPoint.x}, ${existingVector.startPoint.y}), end(${existingVector.endPoint.x}, ${existingVector.endPoint.y})`);
                 
-                // УДАЛЯЕМ ДУБЛИРУЮЩИЕ РЕЗУЛЬТИРУЮЩИЕ ТОЧКИ
-                removeDuplicateResultPoints(existingVector, resultEnd.x, resultEnd.y);
+                // НЕ ВЫЗЫВАЕМ removeDuplicateResultPoints - это может изменить координаты!
+                // Просто используем существующий вектор как есть
                 
                 isAnimating = false;
                 
@@ -1411,13 +1419,15 @@
                 if (lastOperation) {
                     if (!lastOperation.methods.includes(method)) {
                         lastOperation.methods.push(method);
+                        console.log(`Добавлен метод ${method} к операции. Всего методов: ${lastOperation.methods.length}`);
                     }
                     if (!resultVectors.includes(existingVector)) {
                         resultVectors.push(existingVector);
                     }
                     
-                    // Если это второй метод, показываем мигание
+                    // Если это второй метод, показываем мигание для демонстрации совпадения
                     if (lastOperation.methods.length === 2) {
+                        console.log('Оба метода завершены - показываем мигание совпадения результатов');
                         startBlinking(existingVector);
                     }
                 }
@@ -2910,14 +2920,36 @@
         addVectorsBtn.addEventListener('click', () => {
             if (selectedVectors.length === 2 && !isAnimating) {
                 const method = isTriangleMethod ? 'triangle' : 'parallelogram';
-                performVectorAddition(selectedVectors[0], selectedVectors[1], method);
+                
+                // Проверяем, является ли это повторной операцией с теми же векторами
+                const sameOperation = lastOperation && 
+                                    lastOperation.type === 'add' &&
+                                    lastOperation.vectorA === selectedVectors[0] &&
+                                    lastOperation.vectorB === selectedVectors[1];
+                
+                // Если это та же операция, не очищаем предыдущие результаты
+                const clearPrevious = !sameOperation;
+                
+                console.log(`Сложение: метод=${method}, та же операция=${sameOperation}, очищать=${clearPrevious}`);
+                performVectorAddition(selectedVectors[0], selectedVectors[1], method, clearPrevious);
             }
         });
 
         subtractVectorsBtn.addEventListener('click', () => {
             if (selectedVectors.length === 2 && !isAnimating) {
                 const method = isTriangleMethod ? 'triangle' : 'parallelogram';
-                performVectorSubtraction(selectedVectors[0], selectedVectors[1], method);
+                
+                // Проверяем, является ли это повторной операцией с теми же векторами
+                const sameOperation = lastOperation && 
+                                    lastOperation.type === 'subtract' &&
+                                    lastOperation.vectorA === selectedVectors[0] &&
+                                    lastOperation.vectorB === selectedVectors[1];
+                
+                // Если это та же операция, не очищаем предыдущие результаты
+                const clearPrevious = !sameOperation;
+                
+                console.log(`Вычитание: метод=${method}, та же операция=${sameOperation}, очищать=${clearPrevious}`);
+                performVectorSubtraction(selectedVectors[0], selectedVectors[1], method, clearPrevious);
             }
         });
 
