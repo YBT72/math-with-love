@@ -2534,7 +2534,23 @@
                     katexVectorName = `\\overrightarrow{${vectorName}}`;
                 } else {
                     vectorName = vector.name;
-                    katexVectorName = `\\underline{${vectorName}}`;
+                    // Проверяем, является ли это операционным вектором с операторами
+                    if (vector.isOperationVector && (vectorName.includes('+') || vectorName.includes('-'))) {
+                        // Разбираем имя и подчеркиваем только буквы векторов
+                        const parts = vectorName.split(/([+\-])/);
+                        let formattedName = '';
+                        for (let i = 0; i < parts.length; i++) {
+                            const part = parts[i];
+                            if (part === '+' || part === '-') {
+                                formattedName += part; // Операторы без подчеркивания
+                            } else if (part.trim()) {
+                                formattedName += `\\underline{${part.trim()}}`; // Подчеркиваем только буквы
+                            }
+                        }
+                        katexVectorName = formattedName;
+                    } else {
+                        katexVectorName = `\\underline{${vectorName}}`;
+                    }
                 }
                 
                 // Особые названия для зависимых векторов
@@ -2556,8 +2572,24 @@
                         katexVectorName = `${coefficientPart}\\overrightarrow{${vectorPoints}}`;
                         vectorName = coefficientPart + vectorPoints;
                     } else {
-                        katexVectorName = `${coefficientPart}\\underline{${vector.parentVector.name}}`;
-                        vectorName = coefficientPart + vector.parentVector.name;
+                        const parentName = vector.parentVector.name;
+                        // Проверяем, есть ли операторы в имени родительского вектора
+                        if (parentName.includes('+') || parentName.includes('-')) {
+                            const parts = parentName.split(/([+\-])/);
+                            let formattedName = '';
+                            for (let i = 0; i < parts.length; i++) {
+                                const part = parts[i];
+                                if (part === '+' || part === '-') {
+                                    formattedName += part;
+                                } else if (part.trim()) {
+                                    formattedName += `\\underline{${part.trim()}}`;
+                                }
+                            }
+                            katexVectorName = `${coefficientPart}${formattedName}`;
+                        } else {
+                            katexVectorName = `${coefficientPart}\\underline{${parentName}}`;
+                        }
+                        vectorName = coefficientPart + parentName;
                     }
                 }
                 
