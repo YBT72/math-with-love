@@ -137,8 +137,7 @@
         .switch-option-left, .switch-option-right {
             position: absolute;
             top: 50%;
-            transform: translateY(-50%);
-            font-size: 18px;
+            font-size: 20px; /* Увеличили с 18px на 20px для однобуквенного */
             font-weight: bold;
             color: #000;
             z-index: 10;
@@ -147,21 +146,25 @@
         }
 
         .switch-option-left {
-            left: 20px; /* Фиксированная позиция - центр левого кружка */
+            left: 20px; /* Центр левого положения круга (4px + 16px) */
             transform: translate(-50%, -50%);
         }
 
         .switch-option-right {
-            right: 20px; /* Фиксированная позиция - центр правого кружка */
+            right: 20px; /* Центр правого положения круга (4px + 16px) */
             transform: translate(50%, -50%);
         }
         
         /* KaTeX в переключателе */
-        .switch-option-left .katex, .switch-option-right .katex {
-            font-size: 17px !important;
+        .switch-option-left .katex {
+            font-size: 20px !important; /* Однобуквенный */
         }
         
-        /* Фиксированные позиции - только цвета меняются */
+        .switch-option-right .katex {
+            font-size: 16px !important; /* Двубуквенный */
+        }
+        
+        /* Overlay логика - символ под белым кружком становится черным */
         input:not(:checked) + .slider .switch-option-left {
             color: #000;
             font-weight: bold;
@@ -320,6 +323,7 @@
         .method-triangle, .method-parallelogram {
             position: absolute;
             top: 50%;
+            transform: translateY(-50%);
             font-size: 18px;
             font-weight: bold;
             color: #000;
@@ -329,16 +333,14 @@
         }
 
         .method-triangle {
-            left: 20px; /* Фиксированная позиция */
-            transform: translate(-50%, -50%);
+            left: 12px;
         }
 
         .method-parallelogram {
-            right: 20px; /* Фиксированная позиция */
-            transform: translate(50%, -50%);
+            right: 12px;
         }
 
-        /* Фиксированные позиции - только цвета меняются */
+        /* Overlay логика для method-переключателя */
         .method-switch input:not(:checked) + .method-slider .method-triangle {
             color: #000;
             font-weight: bold;
@@ -357,20 +359,20 @@
             font-weight: bold;
         }
 
-        /* Контейнер для кнопок операций в одну строку */
-        .operations-row {
+        /* Контейнер для кнопок операций */
+        .operation-buttons {
             display: flex;
-            gap: 10px;
-            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
         }
 
         /* Кнопки операций */
         .operation-button {
             flex: 1;
-            padding: 12px 20px;
+            padding: 12px 16px;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
@@ -579,7 +581,7 @@
             </div>
             
             <!-- Кнопки операций -->
-            <div class="operations-row" style="margin-bottom: 15px;">
+            <div class="operation-buttons">
                 <button id="addVectorsBtn" class="operation-button" disabled>
                     <span style="text-decoration: underline;">a</span> + <span style="text-decoration: underline;">b</span>
                 </button>
@@ -587,6 +589,7 @@
                     <span style="text-decoration: underline;">a</span> - <span style="text-decoration: underline;">b</span>
                 </button>
             </div>
+            
             <div style="margin-bottom: 15px;">
                 <button id="verifyResultBtn" class="verify-button" disabled>
                     Проверка ответа
@@ -606,11 +609,6 @@
                 <label for="showAxes">Показать координатные оси</label>
             </div>
             
-            <div class="checkbox-container">
-                <input type="checkbox" id="showLines">
-                <label for="showLines">Показать прямые векторов</label>
-            </div>
-            
             <button id="clearCanvas" class="clear-button">Очистить канвас</button>
             
             <!-- Информационная панель с векторами -->
@@ -628,7 +626,6 @@
         const ctx = canvas.getContext('2d');
         const showGridCheckbox = document.getElementById('showGrid');
         const showAxesCheckbox = document.getElementById('showAxes');
-        const showLinesCheckbox = document.getElementById('showLines');
         const vectorNamingCheckbox = document.getElementById('vectorNaming');
         const clearCanvasBtn = document.getElementById('clearCanvas');
         const methodSwitch = document.getElementById('methodSwitch');
@@ -761,10 +758,7 @@
                         Math.pow(vector.endPoint.y - endY, 2)
                     );
                     
-                    // Увеличиваем порог для лучшего обнаружения совпадений
-                    const threshold = 3.0; // Увеличенный порог для надежного поиска
-                    if (startDistance <= threshold && endDistance <= threshold) {
-                        console.log(`Найден существующий результирующий вектор: ${vector.name}, расстояния: start=${startDistance.toFixed(2)}, end=${endDistance.toFixed(2)}`);
+                    if (startDistance <= POINT_REUSE_THRESHOLD && endDistance <= POINT_REUSE_THRESHOLD) {
                         return vector;
                     }
                 }
@@ -1288,14 +1282,7 @@
                 const newStartName = method === 'triangle' ? vector1.endPoint.name : vector1.startPoint.name;
                 
                 animateVectorMovement(operationVector, targetStartX, targetStartY, targetEndX, targetEndY, animationDuration, () => {
-                    // Для треугольного метода: используем существующую точку вместо переименования
-                    if (method === 'triangle') {
-                        // Ищем существующую точку в нужном месте (конец первого вектора)
-                        operationVector.startPoint = vector1.endPoint;
-                        console.log(`Треугольный метод: используем существующую точку ${vector1.endPoint.name} как начало операционного вектора`);
-                    } else {
-                        operationVector.startPoint.name = newStartName;
-                    }
+                    operationVector.startPoint.name = newStartName;
                     
                     setTimeout(() => {
                         // Этап 3: Строим геометрическую фигуру
@@ -1381,9 +1368,10 @@
         }
 
         function buildResultVector(vector1, vector2, method, operation) {
+            // Для начальной точки: ВСЕГДА используем существующую точку startPoint первого вектора
             const resultStart = vector1.startPoint;
             
-            // УНИФИЦИРОВАННАЯ ЛОГИКА: всегда создаем объект с координатами
+            // УНИФИЦИРОВАННАЯ ЛОГИКА: ищем существующие точки, не создаем новые
             let resultEnd;
             let resultEndName;
             
@@ -1391,21 +1379,30 @@
                 // Для треугольника: используем СУЩЕСТВУЮЩУЮ конечную точку второго вектора
                 resultEnd = vector2.endPoint;  // ✅ Используем сам объект точки, а не копию координат
                 resultEndName = vector2.endPoint.name;  // ✅ Используем существующее имя точки
-                console.log(`Треугольник: используем существующую точку ${resultEndName} (${resultEnd.x}, ${resultEnd.y})`);
             } else {
-                // Для параллелограмма: вычисляем диагональ и создаем новую точку
+                // Для параллелограмма: вычисляем диагональ
                 const diagonalEndX = vector2.endPoint.x + (vector1.endPoint.x - vector1.startPoint.x);
                 const diagonalEndY = vector2.endPoint.y + (vector1.endPoint.y - vector1.startPoint.y);
                 
-                resultEnd = {
-                    x: diagonalEndX,
-                    y: diagonalEndY
-                };
-                resultEndName = getNextPointName();  // Новое имя только для параллелограмма
-                console.log(`Параллелограмм: вычисленные координаты (${diagonalEndX}, ${diagonalEndY})`);
+                // ИЩЕМ СУЩЕСТВУЮЩУЮ ТОЧКУ с такими координатами
+                const existingPoint = points.find(p => 
+                    Math.abs(p.x - diagonalEndX) < 0.1 && 
+                    Math.abs(p.y - diagonalEndY) < 0.1
+                );
+                
+                if (existingPoint) {
+                    // Используем существующую точку и ее имя
+                    resultEnd = existingPoint;
+                    resultEndName = existingPoint.name;
+                } else {
+                    // Только если точки нет - создаем новую
+                    resultEnd = {
+                        x: diagonalEndX,
+                        y: diagonalEndY
+                    };
+                    resultEndName = getNextPointName();
+                }
             }
-            
-            console.log(`Поиск существующего вектора с координатами: start(${resultStart.x}, ${resultStart.y}), end(${resultEnd.x}, ${resultEnd.y})`);
             
             // ПОИСК СУЩЕСТВУЮЩЕГО РЕЗУЛЬТИРУЮЩЕГО ВЕКТОРА
             const existingVector = findExistingResultVector(
@@ -1414,11 +1411,10 @@
             );
             
             if (existingVector) {
-                console.log(`Используем существующий результирующий вектор: ${existingVector.name} для метода ${method}`);
-                console.log(`Существующий вектор: start(${existingVector.startPoint.x}, ${existingVector.startPoint.y}), end(${existingVector.endPoint.x}, ${existingVector.endPoint.y})`);
+                // Если найден идентичный вектор, используем его
                 
-                // НЕ ВЫЗЫВАЕМ removeDuplicateResultPoints - это может изменить координаты!
-                // Просто используем существующий вектор как есть
+                // УДАЛЯЕМ ДУБЛИРУЮЩИЕ РЕЗУЛЬТИРУЮЩИЕ ТОЧКИ
+                removeDuplicateResultPoints(existingVector, resultEnd.x, resultEnd.y);
                 
                 isAnimating = false;
                 
@@ -1426,15 +1422,13 @@
                 if (lastOperation) {
                     if (!lastOperation.methods.includes(method)) {
                         lastOperation.methods.push(method);
-                        console.log(`Добавлен метод ${method} к операции. Всего методов: ${lastOperation.methods.length}`);
                     }
                     if (!resultVectors.includes(existingVector)) {
                         resultVectors.push(existingVector);
                     }
                     
-                    // Если это второй метод, показываем мигание для демонстрации совпадения
+                    // Если это второй метод, показываем мигание
                     if (lastOperation.methods.length === 2) {
-                        console.log('Оба метода завершены - показываем мигание совпадения результатов');
                         startBlinking(existingVector);
                     }
                 }
@@ -1446,7 +1440,18 @@
             }
             
             // КРЕАЦИЯ НОВОГО РЕЗУЛЬТИРУЮЩЕГО ВЕКТОРА
-            const resultName = getNextVectorName();
+            // Определяем имя в зависимости от операции
+            const operationSymbol = operation === 'add' ? '+' : '-';
+            let resultName;
+            
+            if (operation === 'subtract' && vector2.name.startsWith('-')) {
+                // Для вычитания, если vector2 уже имеет минус (операционный вектор -b)
+                // Убираем минус из имени второго вектора и используем обычную логику a-b
+                const originalVector2Name = vector2.name.substring(1); // Убираем первый символ '-'
+                resultName = `${vector1.name}${operationSymbol}${originalVector2Name}`;
+            } else {
+                resultName = `${vector1.name}${operationSymbol}${vector2.name}`;
+            }
             
             let resultVector;
             
@@ -2010,63 +2015,7 @@
             ctx.lineWidth = savedLineWidth;
         }
 
-        function drawVectorLine(vector) {
-            if (!showLinesCheckbox.checked) return;
-            
-            ctx.strokeStyle = LINE_COLOR;
-            ctx.lineWidth = 1.5;
-            
-            const dx = vector.endPoint.x - vector.startPoint.x;
-            const dy = vector.endPoint.y - vector.startPoint.y;
-            
-            let startPoint, endPoint;
-            
-            if (Math.abs(dx) < 0.001) {
-                startPoint = { x: vector.startPoint.x, y: 0 };
-                endPoint = { x: vector.startPoint.x, y: canvas.height };
-            } else {
-                const slope = dy / dx;
-                const b = vector.startPoint.y - slope * vector.startPoint.x;
-                
-                const intersectionPoints = [];
-                
-                const yAtLeft = b;
-                if (yAtLeft >= 0 && yAtLeft <= canvas.height) {
-                    intersectionPoints.push({ x: 0, y: yAtLeft });
-                }
-                
-                const yAtRight = slope * canvas.width + b;
-                if (yAtRight >= 0 && yAtRight <= canvas.height) {
-                    intersectionPoints.push({ x: canvas.width, y: yAtRight });
-                }
-                
-                const xAtTop = -b / slope;
-                if (xAtTop >= 0 && xAtTop <= canvas.width) {
-                    intersectionPoints.push({ x: xAtTop, y: 0 });
-                }
-                
-                const xAtBottom = (canvas.height - b) / slope;
-                if (xAtBottom >= 0 && xAtBottom <= canvas.width) {
-                    intersectionPoints.push({ x: xAtBottom, y: canvas.height });
-                }
-                
-                const uniquePoints = intersectionPoints.filter((point, index, arr) => 
-                    arr.findIndex(p => Math.abs(p.x - point.x) < 1 && Math.abs(p.y - point.y) < 1) === index
-                );
-                
-                if (uniquePoints.length >= 2) {
-                    startPoint = uniquePoints[0];
-                    endPoint = uniquePoints[1];
-                } else {
-                    return;
-                }
-            }
-            
-            ctx.beginPath();
-            ctx.moveTo(startPoint.x, startPoint.y);
-            ctx.lineTo(endPoint.x, endPoint.y);
-            ctx.stroke();
-        }
+
 
         function drawVector(vector) {
             const isDependent = vector.parentVector !== undefined;
@@ -2267,6 +2216,32 @@
             ctx.stroke();
         }
 
+        function drawOperationVectorUnderline(text, x, y) {
+            // Подчеркиваем отдельные буквы в операциях как на кнопках (a+b → a̲+b̲)
+            ctx.font = 'bold 16px "STIX Two Math", "Times New Roman", serif';
+            ctx.strokeStyle = LABEL_COLOR;
+            ctx.lineWidth = 1.5;
+            
+            const textBeforeCoords = text.split('(')[0]; // Убираем координаты если есть
+            let currentX = x;
+            const underlineY = y + 3;
+            
+            for (let i = 0; i < textBeforeCoords.length; i++) {
+                const char = textBeforeCoords[i];
+                const charWidth = ctx.measureText(char).width;
+                
+                // Подчеркиваем только буквы (a, b, c и т.д.)
+                if (/[a-zA-Z]/.test(char)) {
+                    ctx.beginPath();
+                    ctx.moveTo(currentX, underlineY);
+                    ctx.lineTo(currentX + charWidth, underlineY);
+                    ctx.stroke();
+                }
+                
+                currentX += charWidth;
+            }
+        }
+
         function drawLabels() {
             ctx.fillStyle = LABEL_COLOR;
             ctx.font = 'bold 16px "STIX Two Math", "Times New Roman", serif';
@@ -2407,7 +2382,13 @@
                         }
                         
                         ctx.fillText(displayText, labelX, labelY);
-                        drawVectorUnderline(displayText, labelX, labelY);
+                        
+                        // Для результирующих векторов операций подчеркиваем отдельные буквы как на кнопках
+                        if (vector.name && (vector.name.includes('+') || vector.name.includes('-'))) {
+                            drawOperationVectorUnderline(displayText, labelX, labelY);
+                        } else {
+                            drawVectorUnderline(displayText, labelX, labelY);
+                        }
                     }
                 }
             });
@@ -2558,10 +2539,6 @@
             
             drawGrid();
             drawAxes();
-            
-            vectors.forEach(vector => {
-                drawVectorLine(vector);
-            });
             
             // Рисуем пунктирные линии операций
             drawOperationLines();
@@ -2902,7 +2879,6 @@
 
         showGridCheckbox.addEventListener('change', draw);
         showAxesCheckbox.addEventListener('change', draw);
-        showLinesCheckbox.addEventListener('change', draw);
         vectorNamingCheckbox.addEventListener('change', draw);
         clearCanvasBtn.addEventListener('click', clearCanvas);
         clearOperationBtn.addEventListener('click', clearOperationResults);
@@ -2927,36 +2903,14 @@
         addVectorsBtn.addEventListener('click', () => {
             if (selectedVectors.length === 2 && !isAnimating) {
                 const method = isTriangleMethod ? 'triangle' : 'parallelogram';
-                
-                // Проверяем, является ли это повторной операцией с теми же векторами
-                const sameOperation = lastOperation && 
-                                    lastOperation.type === 'add' &&
-                                    lastOperation.vectorA === selectedVectors[0] &&
-                                    lastOperation.vectorB === selectedVectors[1];
-                
-                // Если это та же операция, не очищаем предыдущие результаты
-                const clearPrevious = !sameOperation;
-                
-                console.log(`Сложение: метод=${method}, та же операция=${sameOperation}, очищать=${clearPrevious}`);
-                performVectorAddition(selectedVectors[0], selectedVectors[1], method, clearPrevious);
+                performVectorAddition(selectedVectors[0], selectedVectors[1], method);
             }
         });
 
         subtractVectorsBtn.addEventListener('click', () => {
             if (selectedVectors.length === 2 && !isAnimating) {
                 const method = isTriangleMethod ? 'triangle' : 'parallelogram';
-                
-                // Проверяем, является ли это повторной операцией с теми же векторами
-                const sameOperation = lastOperation && 
-                                    lastOperation.type === 'subtract' &&
-                                    lastOperation.vectorA === selectedVectors[0] &&
-                                    lastOperation.vectorB === selectedVectors[1];
-                
-                // Если это та же операция, не очищаем предыдущие результаты
-                const clearPrevious = !sameOperation;
-                
-                console.log(`Вычитание: метод=${method}, та же операция=${sameOperation}, очищать=${clearPrevious}`);
-                performVectorSubtraction(selectedVectors[0], selectedVectors[1], method, clearPrevious);
+                performVectorSubtraction(selectedVectors[0], selectedVectors[1], method);
             }
         });
 
