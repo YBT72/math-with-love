@@ -238,19 +238,24 @@
             background-color: #fef2f2;
         }
 
-        /* Кнопка очистки */
+        /* Кнопки очистки */
+        .clear-buttons-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
         .clear-button {
-            width: 100%;
-            padding: 12px 20px;
+            flex: 1;
+            padding: 8px 16px;
             background-color: #dc2626;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
-            transition: background-color 0.2s;
-            margin-top: 15px;
+            transition: all 0.2s;
         }
 
         .clear-button:hover {
@@ -261,6 +266,55 @@
             transform: translateY(1px);
         }
 
+        /* Кнопка системы координат */
+        .coordinate-system-button {
+            width: 40px;
+            height: 40px;
+            padding: 8px;
+            background-color: #f3f4f6;
+            border: 2px solid #d1d5db;
+            border-radius: 50%; /* Делаем круглой */
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #374151;
+        }
+
+        .coordinate-system-button.active {
+            background-color: #3b82f6;
+            border-color: transparent; /* Убираем контур в активном состоянии */
+            color: white;
+        }
+
+        .coordinate-system-button:hover {
+            background-color: #e5e7eb;
+            border-color: #9ca3af;
+            transform: scale(1.05); /* Небольшое увеличение при наведении */
+        }
+
+        .coordinate-system-button.active:hover {
+            background-color: #2563eb;
+            border-color: transparent; /* Убираем контур и при наведении в активном состоянии */
+            transform: scale(1.05);
+        }
+
+        .coordinate-system-button:active {
+            transform: scale(0.95); /* Сжатие при нажатии */
+        }
+
+        .coordinate-icon {
+            width: 20px;
+            height: 20px;
+            transition: all 0.2s;
+        }
+
+        .coordinate-icon path {
+            stroke: currentColor;
+            transition: stroke 0.2s;
+        }
+
         /* Переключатель метода построения */
         
         /* Контейнер для обоих переключателей */
@@ -268,7 +322,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             gap: 30px;
         }
         
@@ -367,7 +421,7 @@
         .operation-buttons {
             display: flex;
             gap: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         /* Кнопки операций */
@@ -400,7 +454,7 @@
         }
 
         .clear-operation-button {
-            width: 100%;
+            flex: 1;
             padding: 8px 16px;
             background-color: #f97316;
             color: white;
@@ -641,7 +695,7 @@
                 <div id="selectedVectorsInfo">Выберите 2 вектора (Shift + клик)</div>
             </div>
             
-            <!-- Переключатели -->
+            <!-- Переключатели и кнопка координат -->
             <div class="switches-row">
                 <div class="switch-group">
                     <label class="method-switch">
@@ -662,6 +716,21 @@
                         </span>
                     </label>
                 </div>
+                
+                <div class="switch-group">
+                    <button id="coordinateSystemBtn" class="coordinate-system-button">
+                        <svg class="coordinate-icon" viewBox="0 0 24 24" fill="none">
+                            <!-- Горизонтальная ось X -->
+                            <path d="M2 12 L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <!-- Вертикальная ось Y -->
+                            <path d="M12 2 L12 22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <!-- Стрелка оси X -->
+                            <path d="M18 8 L22 12 L18 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <!-- Стрелка оси Y -->
+                            <path d="M8 6 L12 2 L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
             
             <!-- Кнопки операций -->
@@ -674,26 +743,21 @@
                 </button>
             </div>
             
-            <div style="margin-bottom: 15px;">
+            <div style="margin-bottom: 20px;">
                 <button id="verifyResultBtn" class="verify-button" disabled>
                     Проверка ответа
                 </button>
+            </div>
+            
+            <!-- Кнопки очистки в одну строку -->
+            <div class="clear-buttons-row">
                 <button id="clearOperationBtn" class="clear-operation-button">
                     Очистить результат
                 </button>
+                <button id="clearCanvas" class="clear-button">
+                    Очистить канвас
+                </button>
             </div>
-            
-            <div class="checkbox-container">
-                <input type="checkbox" id="showGrid">
-                <label for="showGrid">Показать координатную сетку</label>
-            </div>
-            
-            <div class="checkbox-container">
-                <input type="checkbox" id="showAxes">
-                <label for="showAxes">Показать координатные оси</label>
-            </div>
-            
-            <button id="clearCanvas" class="clear-button">Очистить канвас</button>
             
             <!-- Постоянно видимая панель векторов -->
             <div class="vectors-panel">
@@ -710,8 +774,7 @@
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        const showGridCheckbox = document.getElementById('showGrid');
-        const showAxesCheckbox = document.getElementById('showAxes');
+        const coordinateSystemBtn = document.getElementById('coordinateSystemBtn');
         const vectorNamingCheckbox = document.getElementById('vectorNaming');
         const clearCanvasBtn = document.getElementById('clearCanvas');
         const methodSwitch = document.getElementById('methodSwitch');
@@ -732,6 +795,7 @@
         let pointCounter = 0;
         let contextMenu = null;
         let lastClickTime = 0;
+        let showCoordinateSystem = false; // Состояние отображения системы координат
         
         // Переменные для операций с векторами
         let selectedVectors = []; // Массив выбранных векторов (максимум 2)
@@ -1974,7 +2038,7 @@
         }
 
         function drawGrid() {
-            if (!showGridCheckbox.checked) return;
+            if (!showCoordinateSystem) return;
             
             ctx.strokeStyle = GRID_COLOR;
             ctx.lineWidth = 1;
@@ -1995,7 +2059,7 @@
         }
 
         function drawAxes() {
-            if (!showAxesCheckbox.checked) return;
+            if (!showCoordinateSystem) return;
             
             // Сохраняем текущие настройки контекста
             const savedTextAlign = ctx.textAlign;
@@ -2998,8 +3062,11 @@
             }
         });
 
-        showGridCheckbox.addEventListener('change', draw);
-        showAxesCheckbox.addEventListener('change', draw);
+        coordinateSystemBtn.addEventListener('click', () => {
+            showCoordinateSystem = !showCoordinateSystem;
+            coordinateSystemBtn.classList.toggle('active', showCoordinateSystem);
+            draw();
+        });
         vectorNamingCheckbox.addEventListener('change', draw);
         clearCanvasBtn.addEventListener('click', clearCanvas);
         clearOperationBtn.addEventListener('click', clearOperationResults);
