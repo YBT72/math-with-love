@@ -242,7 +242,10 @@
         .clear-buttons-row {
             display: flex;
             gap: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 0;
+            max-width: 290px; /* Увеличиваем ширину */
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .clear-button {
@@ -317,13 +320,23 @@
 
         /* Переключатель метода построения */
         
+        /* Блок управления */
+        .controls-block {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
         /* Контейнер для обоих переключателей */
         .switches-row {
             display: flex;
             justify-content: center;
             align-items: center;
-            margin-bottom: 20px;
-            gap: 30px;
+            margin-bottom: 16px;
+            gap: 15px; /* Уменьшаем зазор с 30px до 15px */
         }
         
         .switch-group {
@@ -421,7 +434,10 @@
         .operation-buttons {
             display: flex;
             gap: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+            max-width: 290px; /* Увеличиваем ширину */
+            margin-left: auto;
+            margin-right: auto;
         }
 
         /* Кнопки операций */
@@ -475,9 +491,10 @@
         }
 
         .verify-button {
-            width: 100%;
+            width: 290px; /* Увеличиваем ширину */
+            max-width: 290px;
+            margin: 0 auto 8px auto; /* Центрируем кнопку */
             padding: 10px 16px;
-            margin-bottom: 8px;
             border: none;
             border-radius: 8px;
             font-size: 15px;
@@ -675,6 +692,70 @@
             }
             .settings-block {
                 width: 100%;
+                height: auto; /* Позволяем блоку растягиваться */
+                max-height: none; /* Убираем ограничение высоты */
+                overflow: visible; /* Делаем содержимое видимым */
+            }
+            
+            /* Адаптируем блок управления для мобильных */
+            .controls-block {
+                padding: 15px; /* Уменьшаем отступы */
+            }
+            
+            /* Переключатели остаются в строку, но занимают больше места */
+            .switches-row {
+                justify-content: space-between; /* Распределяем по ширине */
+                gap: 10px; /* Уменьшаем зазор */
+            }
+            
+            /* Кнопки операций и очистки занимают всю ширину */
+            .operation-buttons, .clear-buttons-row {
+                max-width: none; /* Убираем ограничение ширины */
+                width: 100%;
+            }
+            
+            .verify-button {
+                width: 100%; /* Занимает всю ширину */
+                max-width: none;
+            }
+            
+            /* Панель векторов должна быть видна */
+            .vectors-panel {
+                margin-top: 15px;
+                flex: 1;
+                min-height: 200px; /* Минимальная высота для видимости */
+            }
+        }
+        
+        /* Для очень маленьких экранов (портретная ориентация телефонов) */
+        @media (max-width: 480px) {
+            .switches-row {
+                gap: 8px; /* Ещё меньше зазор */
+            }
+            
+            .controls-block {
+                padding: 12px;
+            }
+            
+            /* Слегка уменьшаем размер переключателей только для очень маленьких экранов */
+            .switch, .method-switch {
+                width: 75px;
+                height: 36px;
+            }
+            
+            .slider:before, .method-slider:before {
+                height: 28px;
+                width: 28px;
+            }
+            
+            .coordinate-system-button {
+                width: 36px;
+                height: 36px;
+            }
+            
+            .coordinate-icon {
+                width: 18px;
+                height: 18px;
             }
         }
     </style>
@@ -695,68 +776,71 @@
                 <div id="selectedVectorsInfo">Выберите 2 вектора (Shift + клик)</div>
             </div>
             
-            <!-- Переключатели и кнопка координат -->
-            <div class="switches-row">
-                <div class="switch-group">
-                    <label class="method-switch">
-                        <input type="checkbox" id="methodSwitch">
-                        <span class="method-slider">
-                            <span class="method-triangle">△</span>
-                            <span class="method-parallelogram">▱</span>
-                        </span>
-                    </label>
+            <!-- Блок управления -->
+            <div class="controls-block">
+                <!-- Переключатели и кнопка координат -->
+                <div class="switches-row">
+                    <div class="switch-group">
+                        <label class="method-switch">
+                            <input type="checkbox" id="methodSwitch">
+                            <span class="method-slider">
+                                <span class="method-triangle">△</span>
+                                <span class="method-parallelogram">▱</span>
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <div class="switch-group">
+                        <label class="switch">
+                            <input type="checkbox" id="vectorNaming">
+                            <span class="slider">
+                                <span class="switch-option-left" id="switchLeft"></span>
+                                <span class="switch-option-right" id="switchRight"></span>
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <div class="switch-group">
+                        <button id="coordinateSystemBtn" class="coordinate-system-button">
+                            <svg class="coordinate-icon" viewBox="0 0 24 24" fill="none">
+                                <!-- Горизонтальная ось X -->
+                                <path d="M2 12 L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <!-- Вертикальная ось Y -->
+                                <path d="M12 2 L12 22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <!-- Стрелка оси X -->
+                                <path d="M18 8 L22 12 L18 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <!-- Стрелка оси Y -->
+                                <path d="M8 6 L12 2 L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 
-                <div class="switch-group">
-                    <label class="switch">
-                        <input type="checkbox" id="vectorNaming">
-                        <span class="slider">
-                            <span class="switch-option-left" id="switchLeft"></span>
-                            <span class="switch-option-right" id="switchRight"></span>
-                        </span>
-                    </label>
-                </div>
-                
-                <div class="switch-group">
-                    <button id="coordinateSystemBtn" class="coordinate-system-button">
-                        <svg class="coordinate-icon" viewBox="0 0 24 24" fill="none">
-                            <!-- Горизонтальная ось X -->
-                            <path d="M2 12 L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            <!-- Вертикальная ось Y -->
-                            <path d="M12 2 L12 22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                            <!-- Стрелка оси X -->
-                            <path d="M18 8 L22 12 L18 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <!-- Стрелка оси Y -->
-                            <path d="M8 6 L12 2 L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
+                <!-- Кнопки операций -->
+                <div class="operation-buttons">
+                    <button id="addVectorsBtn" class="operation-button" disabled>
+                        <span style="text-decoration: underline;">a</span> + <span style="text-decoration: underline;">b</span>
+                    </button>
+                    <button id="subtractVectorsBtn" class="operation-button" disabled>
+                        <span style="text-decoration: underline;">a</span> - <span style="text-decoration: underline;">b</span>
                     </button>
                 </div>
-            </div>
-            
-            <!-- Кнопки операций -->
-            <div class="operation-buttons">
-                <button id="addVectorsBtn" class="operation-button" disabled>
-                    <span style="text-decoration: underline;">a</span> + <span style="text-decoration: underline;">b</span>
-                </button>
-                <button id="subtractVectorsBtn" class="operation-button" disabled>
-                    <span style="text-decoration: underline;">a</span> - <span style="text-decoration: underline;">b</span>
-                </button>
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-                <button id="verifyResultBtn" class="verify-button" disabled>
-                    Проверка ответа
-                </button>
-            </div>
-            
-            <!-- Кнопки очистки в одну строку -->
-            <div class="clear-buttons-row">
-                <button id="clearOperationBtn" class="clear-operation-button">
-                    Очистить результат
-                </button>
-                <button id="clearCanvas" class="clear-button">
-                    Очистить канвас
-                </button>
+                
+                <div style="margin-bottom: 16px;">
+                    <button id="verifyResultBtn" class="verify-button" disabled>
+                        Проверка ответа
+                    </button>
+                </div>
+                
+                <!-- Кнопки очистки в одну строку -->
+                <div class="clear-buttons-row">
+                    <button id="clearOperationBtn" class="clear-operation-button">
+                        Очистить результат
+                    </button>
+                    <button id="clearCanvas" class="clear-button">
+                        Очистить канвас
+                    </button>
+                </div>
             </div>
             
             <!-- Постоянно видимая панель векторов -->
@@ -2406,8 +2490,8 @@
                 
                 let labelText = point.name;
                 
-                // Добавляем координаты если показаны оси
-                if (showAxesCheckbox.checked) {
+                // Добавляем координаты если показана система координат
+                if (showCoordinateSystem) {
                     // Находим центр координатной системы
                     const centerX = Math.round(canvas.width / 2 / GRID_SIZE) * GRID_SIZE;
                     const centerY = Math.round(canvas.height / 2 / GRID_SIZE) * GRID_SIZE;
@@ -2480,8 +2564,8 @@
                             displayText = roundedCoeff + vectorPoints;
                         }
                         
-                        // Добавляем координаты если показаны оси
-                        if (showAxesCheckbox.checked) {
+                        // Добавляем координаты если показана система координат
+                        if (showCoordinateSystem) {
                             const coords = getVectorCoordinates(vector);
                             displayText += `(${coords.x}; ${coords.y})`;
                         }
@@ -2498,8 +2582,8 @@
                             displayText = roundedCoeff + vector.parentVector.name;
                         }
                         
-                        // Добавляем координаты если показаны оси
-                        if (showAxesCheckbox.checked) {
+                        // Добавляем координаты если показана система координат
+                        if (showCoordinateSystem) {
                             const coords = getVectorCoordinates(vector);
                             displayText += `(${coords.x}; ${coords.y})`;
                         }
@@ -2513,8 +2597,8 @@
                         // Двубуквенный формат со стрелкой
                         displayText = vector.startPoint.name + vector.endPoint.name;
                         
-                        // Добавляем координаты если показаны оси
-                        if (showAxesCheckbox.checked) {
+                        // Добавляем координаты если показана система координат
+                        if (showCoordinateSystem) {
                             const coords = getVectorCoordinates(vector);
                             displayText += `(${coords.x}; ${coords.y})`;
                         }
@@ -2525,8 +2609,8 @@
                         // Однобуквенный формат с подчеркиванием
                         displayText = vector.name;
                         
-                        // Добавляем координаты если показаны оси
-                        if (showAxesCheckbox.checked) {
+                        // Добавляем координаты если показана система координат
+                        if (showCoordinateSystem) {
                             const coords = getVectorCoordinates(vector);
                             displayText += `(${coords.x}; ${coords.y})`;
                         }
@@ -3136,8 +3220,12 @@
         }
 
         window.addEventListener('load', () => {
-            initializeKaTeX();
-            resizeCanvas();
+            // Ждем немного для корректной инициализации размеров
+            setTimeout(() => {
+                initializeKaTeX();
+                resizeCanvas();
+                draw();
+            }, 100);
         });
         
         // Функция для управления индивидуальными аккордионами векторов
