@@ -52,6 +52,10 @@
             border-radius: 15px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100%; /* Равна высоте канваса */
+            overflow: hidden; /* Скрываем переполнение */
         }
 
         .settings-title {
@@ -447,21 +451,100 @@
         }
 
         /* Информационная панель с векторами */
-        .vectors-info {
+        /* Постоянно видимый список векторов */
+        .vectors-panel {
             margin-top: 20px;
-            padding: 15px;
+            margin-bottom: 0;
             background: rgba(249, 250, 251, 0.8);
             border-radius: 10px;
             border: 1px solid #e5e7eb;
-            max-height: 300px;
-            overflow-y: auto;
+            overflow: hidden;
+            flex: 1; /* Занимает всё оставшееся место до низа панели */
+            display: flex;
+            flex-direction: column;
+            min-height: 0; /* Позволяет сжиматься */
         }
 
-        .vectors-info-title {
-            font-size: 1.2rem;
+        .vectors-panel-header {
+            padding: 12px 15px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
             font-weight: 600;
-            margin-bottom: 10px;
+            font-size: 0.9rem;
+            border-bottom: 1px solid #e5e7eb;
+            flex-shrink: 0; /* Заголовок не сжимается */
+        }
+
+        .vectors-list {
+            padding: 10px; /* Равные отступы со всех сторон */
+            overflow-y: auto; /* Скролл при переполнении */
+            background: rgba(249, 250, 251, 0.8);
+            flex: 1; /* Занимает всё оставшееся место */
+            max-height: 100%; /* Ограничиваем максимальную высоту */
+            /* Убираем flex внутри списка чтобы не растягивался */
+        }
+
+        /* Индивидуальные векторы */
+        .vector-item {
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            flex-shrink: 0; /* Не сжимается */
+            min-height: 50px; /* Минимальная высота для читаемости */
+        }
+        
+        /* Убираем нижний отступ у последнего элемента */
+        .vector-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .vector-header {
+            padding: 10px 12px;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
             color: #374151;
+            transition: background-color 0.2s ease;
+            flex-shrink: 0; /* Заголовок не сжимается */
+            min-height: 40px; /* Минимальная высота заголовка */
+        }
+
+        .vector-header:hover {
+            background-color: #f9fafb;
+        }
+
+        .vector-arrow {
+            transition: transform 0.3s ease;
+            font-size: 0.7rem;
+            color: #6b7280;
+        }
+
+        .vector-item.expanded .vector-arrow {
+            transform: rotate(180deg);
+        }
+
+        .vector-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: #f8fafc;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .vector-item.expanded .vector-content {
+            max-height: 100px;
+        }
+
+        .vector-coordinates {
+            padding: 10px 12px;
+            font-size: 0.8rem;
+            color: #6b7280;
+            line-height: 1.4;
         }
 
         .vector-item {
@@ -527,7 +610,8 @@
             color: #9ca3af;
             font-style: italic;
             text-align: center;
-            padding: 20px;
+            padding: 0 !important; /* Принудительно убираем отступы */
+            margin: 0 !important; /* Убираем все отступы */
         }
 
         /* Мобильные устройства - блоки в столбец */
@@ -611,10 +695,12 @@
             
             <button id="clearCanvas" class="clear-button">Очистить канвас</button>
             
-            <!-- Информационная панель с векторами -->
-            <div class="vectors-info">
-                <div class="vectors-info-title">Векторы</div>
-                <div id="vectorsList">
+            <!-- Постоянно видимая панель векторов -->
+            <div class="vectors-panel">
+                <div class="vectors-panel-header">
+                    Векторы
+                </div>
+                <div class="vectors-list" id="vectorsList">
                     <div class="no-vectors">Нет построенных векторов</div>
                 </div>
             </div>
@@ -2490,12 +2576,19 @@
                 const vectorCoordsId = `vector-coords-${index}`;
                 
                 html += `
-                    <div class="vector-item">
-                        <div class="vector-name">Вектор <span id="${vectorTitleId}"></span></div>
-                        <div class="vector-formula">
-                            <span id="${vectorFormulaId}"></span>
+                    <div class="vector-item" id="vector-${index}">
+                        <div class="vector-header" onclick="toggleVectorDetails(${index})">
+                            <span>Вектор <span id="${vectorTitleId}"></span></span>
+                            <span class="vector-arrow">▼</span>
                         </div>
-                        <div class="vector-coordinates"><span id="${vectorCoordsId}"></span></div>
+                        <div class="vector-content">
+                            <div class="vector-coordinates">
+                                <div class="vector-formula">
+                                    <span id="${vectorFormulaId}"></span>
+                                </div>
+                                <div><span id="${vectorCoordsId}"></span></div>
+                            </div>
+                        </div>
                     </div>
                 `;
                 
@@ -2507,25 +2600,21 @@
                             throwOnError: false
                         });
                         
-                        // Формула расчета
-                        const formulaLatex = `${katexVectorName} = (${formatCoordinate(endCoords.x, startCoords.x)}; ${formatCoordinate(endCoords.y, startCoords.y)})`;
-                        katex.render(formulaLatex, document.getElementById(vectorFormulaId), {
+                        // Формула вектора
+                        const formulaText = `${katexVectorName} = (${formatCoordinate(endCoords.x, startCoords.x)}; ${formatCoordinate(endCoords.y, startCoords.y)})`;
+                        katex.render(formulaText, document.getElementById(vectorFormulaId), {
                             throwOnError: false
                         });
                         
-                        // Итоговые координаты
-                        const coordsLatex = `${katexVectorName} = (${coords.x}; ${coords.y})`;
-                        katex.render(coordsLatex, document.getElementById(vectorCoordsId), {
+                        // Координаты вектора
+                        const coordsText = `${katexVectorName} = (${coords.x}; ${coords.y})`;
+                        katex.render(coordsText, document.getElementById(vectorCoordsId), {
                             throwOnError: false
                         });
-                    } catch (e) {
-                        console.warn('KaTeX rendering error:', e);
-                        // Fallback к обычному тексту если KaTeX не работает
-                        document.getElementById(vectorTitleId).textContent = vectorName;
-                        document.getElementById(vectorFormulaId).textContent = `${vectorName} = (${formatCoordinate(endCoords.x, startCoords.x)}; ${formatCoordinate(endCoords.y, startCoords.y)})`;
-                        document.getElementById(vectorCoordsId).textContent = `${vectorName} = (${coords.x}; ${coords.y})`;
+                    } catch (error) {
+                        console.warn('KaTeX rendering error:', error);
                     }
-                }, 0);
+                }, 10);
             });
             
             vectorsList.innerHTML = html;
@@ -2951,6 +3040,14 @@
             initializeKaTeX();
             resizeCanvas();
         });
+        
+        // Функция для управления индивидуальными аккордионами векторов
+        function toggleVectorDetails(vectorId) {
+            const vectorItem = document.getElementById(`vector-${vectorId}`);
+            if (vectorItem) {
+                vectorItem.classList.toggle('expanded');
+            }
+        }
     </script>
 </body>
 </html>
