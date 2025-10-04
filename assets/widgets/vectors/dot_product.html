@@ -1,0 +1,464 @@
+
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מכפלה סקלרית של וקטורים</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+import React, { useState, useRef, useEffect } from 'react';
+
+const VectorDotProduct = () => {
+  const canvasRef = useRef(null);
+  // Векторы в абсолютных экранных координатах
+  const [vectorAScreen, setVectorAScreen] = useState({ start: { x: 200, y: 300 }, end: { x: 400, y: 300 } });
+  const [vectorBScreen, setVectorBScreen] = useState({ start: { x: 200, y: 300 }, end: { x: 340, y: 220 } });
+  const [showGrid, setShowGrid] = useState(false);
+  const [dragging, setDragging] = useState(null);
+  const [isMac] = useState(/Mac/.test(navigator.userAgent));
+  const coordOrigin = { x: 300, y: 300 }; // Фиксированное начало координат
+
+  const scale = 40;
+
+  // Преобразование экранных в мировые координаты
+  const screenToWorld = (screenPos) => ({
+    x: (screenPos.x - coordOrigin.x) / scale,
+    y: -(screenPos.y - coordOrigin.y) / scale
+  });
+
+  // Получение векторов в мировых координатах
+  const getWorldVectors = () => {
+    const aStart = screenToWorld(vectorAScreen.start);
+    const aEnd = screenToWorld(vectorAScreen.end);
+    const bStart = screenToWorld(vectorBScreen.start);
+    const bEnd = screenToWorld(vectorBScreen.end);
+    
+    return {
+      a: { x: aEnd.x - aStart.x, y: aEnd.y - aStart.y },
+      b: { x: bEnd.x - bStart.x, y: bEnd.y - bStart.y }
+    };
+  };
+
+  const magnitude = (v) => Math.sqrt(v.x * v.x + v.y * v.y);
+  const dotProduct = (a, b) => a.x * b.x + a.y * b.y;
+  
+  const angle = (a, b) => {
+    const dot = dotProduct(a, b);
+    const magA = magnitude(a);
+    const magB = magnitude(b);
+    if (magA === 0 || magB === 0) return 0;
+    return Math.acos(Math.max(-1, Math.min(1, dot / (magA * magB))));
+  };
+
+  const projection = (a, b) => {
+    const magA = magnitude(a);
+    if (magA === 0) return { x: 0, y: 0 };
+    const scalar = dotProduct(a, b) / (magA * magA);
+    return { x: a.x * scalar, y: a.y * scalar };
+  };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Set text direction to LTR for all canvas text
+    ctx.direction = 'ltr';
+
+    // Draw grid
+    if (showGrid) {
+      ctx.strokeStyle = '#e0e0e0';
+      ctx.lineWidth = 1;
+      
+      for (let i = -15; i <= 15; i++) {
+        const x = coordOrigin.x + i * scale;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+        
+        const y = coordOrigin.y - i * scale;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+
+      // Draw axes with arrows
+      ctx.strokeStyle = '#666';
+      ctx.lineWidth = 2;
+      
+      // X axis
+      ctx.beginPath();
+      ctx.moveTo(0, coordOrigin.y);
+      ctx.lineTo(canvas.width, coordOrigin.y);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#666';
+      ctx.beginPath();
+      ctx.moveTo(canvas.width - 10, coordOrigin.y);
+      ctx.lineTo(canvas.width - 20, coordOrigin.y - 7);
+      ctx.lineTo(canvas.width - 20, coordOrigin.y + 7);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Y axis
+      ctx.beginPath();
+      ctx.moveTo(coordOrigin.x, 0);
+      ctx.lineTo(coordOrigin.x, canvas.height);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#666';
+      ctx.beginPath();
+      ctx.moveTo(coordOrigin.x, 10);
+      ctx.lineTo(coordOrigin.x - 7, 20);
+      ctx.lineTo(coordOrigin.x + 7, 20);
+      ctx.closePath();
+      ctx.fill();
+
+      // Labels
+      ctx.fillStyle = '#666';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      for (let i = -14; i <= 14; i += 2) {
+        if (i !== 0) {
+          const x = coordOrigin.x + i * scale;
+          ctx.fillText(i.toString(), x, coordOrigin.y + 5);
+          
+          const y = coordOrigin.y - i * scale;
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(i.toString(), coordOrigin.x + 5, y);
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+        }
+      }
+      
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText('X', canvas.width - 20, coordOrigin.y - 10);
+      ctx.textBaseline = 'top';
+      ctx.fillText('Y', coordOrigin.x + 10, 20);
+    }
+
+    const { a, b } = getWorldVectors();
+    
+    // Calculate projection in world coords
+    const proj = projection(a, b);
+    const projEndWorld = { x: proj.x, y: proj.y };
+    const projEndScreen = {
+      x: vectorAScreen.start.x + projEndWorld.x * scale,
+      y: vectorAScreen.start.y - projEndWorld.y * scale
+    };
+
+    // Draw perpendicular
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(vectorBScreen.end.x, vectorBScreen.end.y);
+    ctx.lineTo(projEndScreen.x, projEndScreen.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Draw angle sector
+    const ang = angle(a, b);
+    if (ang > 0.01) {
+      ctx.fillStyle = 'rgba(34, 197, 94, 0.2)';
+      ctx.beginPath();
+      ctx.moveTo(vectorAScreen.start.x, vectorAScreen.start.y);
+      const angleA = Math.atan2(a.y, a.x);
+      const angleB = Math.atan2(b.y, b.x);
+      ctx.arc(vectorAScreen.start.x, vectorAScreen.start.y, 50, -angleA, -angleB, angleA < angleB);
+      ctx.closePath();
+      ctx.fill();
+
+      const midAngle = -(angleA + angleB) / 2;
+      const labelDist = 70;
+      const labelX = vectorAScreen.start.x + Math.cos(midAngle) * labelDist;
+      const labelY = vectorAScreen.start.y + Math.sin(midAngle) * labelDist;
+      
+      ctx.fillStyle = '#000';
+      ctx.font = '14px sans-serif';
+      ctx.fillText(`θ = ${(ang * 180 / Math.PI).toFixed(1)}°`, labelX - 30, labelY);
+    }
+
+    // Draw vector A
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(vectorAScreen.start.x, vectorAScreen.start.y);
+    ctx.lineTo(vectorAScreen.end.x, vectorAScreen.end.y);
+    ctx.stroke();
+    
+    const angleArrowA = Math.atan2(a.y, a.x);
+    ctx.fillStyle = '#3b82f6';
+    ctx.beginPath();
+    ctx.moveTo(vectorAScreen.end.x, vectorAScreen.end.y);
+    ctx.lineTo(
+      vectorAScreen.end.x - 15 * Math.cos(angleArrowA - Math.PI / 6),
+      vectorAScreen.end.y + 15 * Math.sin(angleArrowA - Math.PI / 6)
+    );
+    ctx.lineTo(
+      vectorAScreen.end.x - 15 * Math.cos(angleArrowA + Math.PI / 6),
+      vectorAScreen.end.y + 15 * Math.sin(angleArrowA + Math.PI / 6)
+    );
+    ctx.closePath();
+    ctx.fill();
+
+    // Draw vector B
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(vectorBScreen.start.x, vectorBScreen.start.y);
+    ctx.lineTo(vectorBScreen.end.x, vectorBScreen.end.y);
+    ctx.stroke();
+    
+    const angleArrowB = Math.atan2(b.y, b.x);
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath();
+    ctx.moveTo(vectorBScreen.end.x, vectorBScreen.end.y);
+    ctx.lineTo(
+      vectorBScreen.end.x - 15 * Math.cos(angleArrowB - Math.PI / 6),
+      vectorBScreen.end.y + 15 * Math.sin(angleArrowB - Math.PI / 6)
+    );
+    ctx.lineTo(
+      vectorBScreen.end.x - 15 * Math.cos(angleArrowB + Math.PI / 6),
+      vectorBScreen.end.y + 15 * Math.sin(angleArrowB + Math.PI / 6)
+    );
+    ctx.closePath();
+    ctx.fill();
+
+    // Draw projection vector
+    ctx.strokeStyle = '#22c55e';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(vectorAScreen.start.x, vectorAScreen.start.y);
+    ctx.lineTo(projEndScreen.x, projEndScreen.y);
+    ctx.stroke();
+
+    const angleArrowProj = Math.atan2(proj.y, proj.x);
+    ctx.fillStyle = '#22c55e';
+    ctx.beginPath();
+    ctx.moveTo(projEndScreen.x, projEndScreen.y);
+    ctx.lineTo(
+      projEndScreen.x - 15 * Math.cos(angleArrowProj - Math.PI / 6),
+      projEndScreen.y + 15 * Math.sin(angleArrowProj - Math.PI / 6)
+    );
+    ctx.lineTo(
+      projEndScreen.x - 15 * Math.cos(angleArrowProj + Math.PI / 6),
+      projEndScreen.y + 15 * Math.sin(angleArrowProj + Math.PI / 6)
+    );
+    ctx.closePath();
+    ctx.fill();
+
+    // Draw origin point
+    ctx.fillStyle = '#8b5cf6';
+    ctx.beginPath();
+    ctx.arc(vectorAScreen.start.x, vectorAScreen.start.y, 8, 0, 2 * Math.PI);
+    ctx.fill();
+
+    // Labels with underline at midpoint of vectors
+    const midA = {
+      x: (vectorAScreen.start.x + vectorAScreen.end.x) / 2,
+      y: (vectorAScreen.start.y + vectorAScreen.end.y) / 2
+    };
+    const midB = {
+      x: (vectorBScreen.start.x + vectorBScreen.end.x) / 2,
+      y: (vectorBScreen.start.y + vectorBScreen.end.y) / 2
+    };
+    
+    // Проверяем, с какой стороны угол (cross product)
+    const crossProduct = a.x * b.y - a.y * b.x;
+    
+    // Перпендикуляр к векторам (повернутый на 90 градусов), с ПРОТИВОПОЛОЖНОЙ стороны от угла
+    const perpOffsetDist = 20;
+    const perpA = crossProduct < 0 ? 
+      { x: a.y * perpOffsetDist / magnitude(a), y: -a.x * perpOffsetDist / magnitude(a) } :
+      { x: -a.y * perpOffsetDist / magnitude(a), y: a.x * perpOffsetDist / magnitude(a) };
+    
+    const perpB = crossProduct < 0 ? 
+      { x: b.y * perpOffsetDist / magnitude(b), y: -b.x * perpOffsetDist / magnitude(b) } :
+      { x: -b.y * perpOffsetDist / magnitude(b), y: b.x * perpOffsetDist / magnitude(b) };
+    
+    ctx.fillStyle = '#3b82f6';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const labelAX = midA.x + perpA.x;
+    const labelAY = midA.y + perpA.y;
+    ctx.fillText('a', labelAX, labelAY);
+    ctx.fillRect(labelAX - 5, labelAY + 8, 10, 2);
+    
+    ctx.fillStyle = '#ef4444';
+    const labelBX = midB.x + perpB.x;
+    const labelBY = midB.y + perpB.y;
+    ctx.fillText('b', labelBX, labelBY);
+    ctx.fillRect(labelBX - 5, labelBY + 8, 10, 2);
+    
+    // End point labels - further from vectors
+    const endA = screenToWorld(vectorAScreen.end);
+    const endB = screenToWorld(vectorBScreen.end);
+    const startPoint = screenToWorld(vectorAScreen.start);
+    
+    ctx.fillStyle = '#3b82f6';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    if (showGrid) {
+      ctx.fillText('A', vectorAScreen.end.x + 10, vectorAScreen.end.y - 10);
+      ctx.fillText(`(${endA.x.toFixed(1)}, ${endA.y.toFixed(1)})`, vectorAScreen.end.x + 25, vectorAScreen.end.y - 10);
+    } else {
+      ctx.fillText('A', vectorAScreen.end.x + 10, vectorAScreen.end.y - 10);
+    }
+    
+    ctx.fillStyle = '#ef4444';
+    if (showGrid) {
+      ctx.fillText('B', vectorBScreen.end.x + 10, vectorBScreen.end.y - 10);
+      ctx.fillText(`(${endB.x.toFixed(1)}, ${endB.y.toFixed(1)})`, vectorBScreen.end.x + 25, vectorBScreen.end.y - 10);
+    } else {
+      ctx.fillText('B', vectorBScreen.end.x + 10, vectorBScreen.end.y - 10);
+    }
+    
+    ctx.fillStyle = '#8b5cf6';
+    if (showGrid) {
+      ctx.fillText('O', vectorAScreen.start.x + 12, vectorAScreen.start.y - 12);
+      ctx.fillText(`(${startPoint.x.toFixed(1)}, ${startPoint.y.toFixed(1)})`, vectorAScreen.start.x + 27, vectorAScreen.start.y - 12);
+    } else {
+      ctx.fillText('O', vectorAScreen.start.x + 12, vectorAScreen.start.y - 12);
+    }
+  }, [vectorAScreen, vectorBScreen, coordOrigin, showGrid]);
+
+  const handleMouseDown = (e) => {
+    const rect = canvasRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    const distToOrigin = Math.sqrt((mouseX - vectorAScreen.start.x) ** 2 + (mouseY - vectorAScreen.start.y) ** 2);
+    const distToA = Math.sqrt((mouseX - vectorAScreen.end.x) ** 2 + (mouseY - vectorAScreen.end.y) ** 2);
+    const distToB = Math.sqrt((mouseX - vectorBScreen.end.x) ** 2 + (mouseY - vectorBScreen.end.y) ** 2);
+    
+    if (distToOrigin < 12) {
+      setDragging('origin');
+    } else if (distToA < 15) {
+      setDragging('a');
+    } else if (distToB < 15) {
+      setDragging('b');
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    if (!dragging) return;
+    
+    const rect = canvasRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    if (dragging === 'origin') {
+      const dx = mouseX - vectorAScreen.start.x;
+      const dy = mouseY - vectorAScreen.start.y;
+      setVectorAScreen({
+        start: { x: mouseX, y: mouseY },
+        end: { x: vectorAScreen.end.x + dx, y: vectorAScreen.end.y + dy }
+      });
+      setVectorBScreen({
+        start: { x: mouseX, y: mouseY },
+        end: { x: vectorBScreen.end.x + dx, y: vectorBScreen.end.y + dy }
+      });
+    } else if (dragging === 'a') {
+      setVectorAScreen({ ...vectorAScreen, end: { x: mouseX, y: mouseY } });
+    } else if (dragging === 'b') {
+      setVectorBScreen({ ...vectorBScreen, end: { x: mouseX, y: mouseY } });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setDragging(null);
+  };
+
+  const { a, b } = getWorldVectors();
+  const magA = magnitude(a);
+  const magB = magnitude(b);
+  const ang = angle(a, b);
+  const cosAng = Math.cos(ang);
+  const dot = dotProduct(a, b);
+  const geomResult = magA * magB * cosAng;
+
+  return (
+    <div className="w-full max-w-6xl mx-auto p-4 bg-white" dir="rtl">
+      <h1 className="text-2xl font-bold text-center mb-2">מכפלה סקלרית של וקטורים</h1>
+      
+      <div className="bg-blue-50 p-3 rounded mb-4 flex items-center justify-between">
+        <div className="text-sm flex-1">
+          <p>💡 גררו את קצוות הוקטורים לשינוי</p>
+          <p className="mr-5">גררו את הנקודה המרכזית להזזת הקבוצה</p>
+        </div>
+        <button
+          onClick={() => setShowGrid(!showGrid)}
+          className={`p-2 rounded transition-colors flex-shrink-0 mr-4 ${showGrid ? 'bg-blue-500' : 'bg-gray-400'}`}
+          title={showGrid ? 'הסתר רשת' : 'הצג רשת'}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L12 22M12 2L9 5M12 2L15 5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M2 12L22 12M22 12L19 9M22 12L19 15" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div className="flex gap-4">
+        <div className="w-80 flex flex-col justify-center space-y-6 border border-gray-300 rounded-xl p-4 shadow-lg bg-white">
+          <div className="bg-gray-50 p-4 rounded-xl shadow-lg">
+            <h3 className="font-bold mb-2">נוסחה גיאומטרית</h3>
+            <p className="font-mono mb-2" dir="ltr">a · b = |a| · |b| · cos(θ)</p>
+            <hr className="my-2" />
+            <p dir="ltr">|a| = {magA.toFixed(1)}</p>
+            <p dir="ltr">|b| = {magB.toFixed(1)}</p>
+            <p dir="ltr">cos(θ) = {cosAng.toFixed(2)}</p>
+            <div className="border-2 border-blue-500 bg-blue-50 p-2 mt-2 rounded-lg shadow-sm">
+              <p className="font-bold"><span>תוצאה:</span> <span dir="ltr">{geomResult.toFixed(1)}</span></p>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 p-4 rounded-xl shadow-lg">
+            <h3 className="font-bold mb-2">נוסחה אלגברית</h3>
+            <p className="font-mono mb-2" dir="ltr">a · b = a<sub>x</sub> · b<sub>x</sub> + a<sub>y</sub> · b<sub>y</sub></p>
+            <hr className="my-2" />
+            <p dir="ltr">a = ({a.x.toFixed(1)}, {a.y.toFixed(1)})</p>
+            <p dir="ltr">b = ({b.x.toFixed(1)}, {b.y.toFixed(1)})</p>
+            <p className="text-sm" dir="ltr">({a.x.toFixed(1)} × {b.x.toFixed(1)}) + ({a.y.toFixed(1)} × {b.y.toFixed(1)})</p>
+            <div className="border-2 border-blue-500 bg-blue-50 p-2 mt-2 rounded-lg shadow-sm">
+              <p className="font-bold"><span>תוצאה:</span> <span dir="ltr">{dot.toFixed(1)}</span></p>
+            </div>
+          </div>
+        </div>
+
+        <canvas
+          ref={canvasRef}
+          width={600}
+          height={600}
+          className="border border-gray-300 cursor-move flex-1 object-contain rounded-xl shadow-lg"
+          style={{ maxHeight: '600px' }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default VectorDotProduct;
+ReactDOM.createRoot(document.getElementById('root')).render(<VectorDotProduct />);
+    </script>
+</body>
+</html>

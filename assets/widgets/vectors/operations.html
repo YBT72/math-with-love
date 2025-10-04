@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Визуализация векторов</title>
+    <title>חיזוי וקטורים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Math&display=swap" rel="stylesheet">
@@ -27,6 +27,7 @@
             height: calc(100vh - 20px);
             display: flex;
             gap: 10px;
+            direction: ltr; /* Force LTR for canvas-panel layout */
         }
 
         .photo-block {
@@ -54,8 +55,8 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
-            height: 100%; /* Равна высоте канваса */
-            overflow: hidden; /* Скрываем переполнение */
+            height: 100%; /* Equal to canvas height */
+            overflow: hidden; /* Hide overflow */
         }
 
         .settings-title {
@@ -63,6 +64,12 @@
             font-weight: 600;
             margin-bottom: 20px;
             color: #374151;
+            text-align: center; /* Center the title */
+        }
+
+        #selectedVectorsInfo {
+            text-align: center;
+            direction: rtl;
         }
 
         .checkbox-container {
@@ -141,7 +148,7 @@
         .switch-option-left, .switch-option-right {
             position: absolute;
             top: 50%;
-            font-size: 20px; /* Увеличили с 18px на 20px для однобуквенного */
+            font-size: 20px; /* Increased from 18px to 20px for single letter */
             font-weight: bold;
             color: #000;
             z-index: 10;
@@ -150,25 +157,25 @@
         }
 
         .switch-option-left {
-            left: 20px; /* Центр левого положения круга (4px + 16px) */
+            left: 20px; /* Center of left circle position (4px + 16px) */
             transform: translate(-50%, -50%);
         }
 
         .switch-option-right {
-            right: 20px; /* Центр правого положения круга (4px + 16px) */
+            right: 20px; /* Center of right circle position (4px + 16px) */
             transform: translate(50%, -50%);
         }
         
-        /* KaTeX в переключателе */
+        /* KaTeX in toggle switch */
         .switch-option-left .katex {
-            font-size: 20px !important; /* Однобуквенный */
+            font-size: 20px !important; /* Single letter */
         }
-        
+
         .switch-option-right .katex {
-            font-size: 16px !important; /* Двубуквенный */
+            font-size: 16px !important; /* Two letters */
         }
-        
-        /* Overlay логика - символ под белым кружком становится черным */
+
+        /* Overlay logic - symbol under white circle becomes black */
         input:not(:checked) + .slider .switch-option-left {
             color: #000;
             font-weight: bold;
@@ -269,14 +276,14 @@
             transform: translateY(1px);
         }
 
-        /* Кнопка системы координат */
+        /* Coordinate system button */
         .coordinate-system-button {
             width: 40px;
             height: 40px;
             padding: 8px;
             background-color: #f3f4f6;
             border: 2px solid #d1d5db;
-            border-radius: 50%; /* Делаем круглой */
+            border-radius: 50%; /* Make it circular */
             cursor: pointer;
             transition: all 0.2s;
             display: flex;
@@ -287,24 +294,24 @@
 
         .coordinate-system-button.active {
             background-color: #3b82f6;
-            border-color: transparent; /* Убираем контур в активном состоянии */
+            border-color: transparent; /* Remove border in active state */
             color: white;
         }
 
         .coordinate-system-button:hover {
             background-color: #e5e7eb;
             border-color: #9ca3af;
-            transform: scale(1.05); /* Небольшое увеличение при наведении */
+            transform: scale(1.05); /* Small zoom on hover */
         }
 
         .coordinate-system-button.active:hover {
             background-color: #2563eb;
-            border-color: transparent; /* Убираем контур и при наведении в активном состоянии */
+            border-color: transparent; /* Remove border on hover in active state */
             transform: scale(1.05);
         }
 
         .coordinate-system-button:active {
-            transform: scale(0.95); /* Сжатие при нажатии */
+            transform: scale(0.95); /* Shrink on click */
         }
 
         .coordinate-icon {
@@ -318,9 +325,15 @@
             transition: stroke 0.2s;
         }
 
-        /* Переключатель метода построения */
-        
-        /* Блок управления */
+        /* Mathematical formulas should be LTR */
+        .math-formula {
+            direction: ltr;
+            display: inline-block;
+        }
+
+        /* Construction method toggle */
+
+        /* Control block */
         .controls-block {
             background: rgba(255, 255, 255, 0.6);
             border-radius: 12px;
@@ -411,7 +424,7 @@
             right: 12px;
         }
 
-        /* Overlay логика для method-переключателя */
+        /* Overlay logic for method toggle */
         .method-switch input:not(:checked) + .method-slider .method-triangle {
             color: #000;
             font-weight: bold;
@@ -430,17 +443,17 @@
             font-weight: bold;
         }
 
-        /* Контейнер для кнопок операций */
+        /* Container for operation buttons */
         .operation-buttons {
             display: flex;
             gap: 8px;
             margin-bottom: 16px;
-            max-width: 290px; /* Увеличиваем ширину */
+            max-width: 290px; /* Increase width to match switches */
             margin-left: auto;
             margin-right: auto;
         }
 
-        /* Кнопки операций */
+        /* Operation buttons */
         .operation-button {
             flex: 1;
             padding: 12px 16px;
@@ -503,7 +516,7 @@
             transition: all 0.2s;
             background-color: #059669;
             color: white;
-            display: none; /* По умолчанию скрыта */
+            display: none; /* Hidden by default */
         }
 
         .verify-button:disabled {
@@ -521,8 +534,8 @@
             transform: translateY(0);
         }
 
-        /* Информационная панель с векторами */
-        /* Постоянно видимый список векторов */
+        /* Information panel with vectors */
+        /* Always visible vectors list */
         .vectors-panel {
             margin-top: 20px;
             margin-bottom: 0;
@@ -530,10 +543,10 @@
             border-radius: 10px;
             border: 1px solid #e5e7eb;
             overflow: hidden;
-            flex: 1; /* Занимает всё оставшееся место до низа панели */
+            flex: 1; /* Takes all remaining space to panel bottom */
             display: flex;
             flex-direction: column;
-            min-height: 0; /* Позволяет сжиматься */
+            min-height: 0; /* Allows shrinking */
         }
 
         .vectors-panel-header {
@@ -544,29 +557,31 @@
             font-size: 0.9rem;
             border-bottom: 1px solid #e5e7eb;
             flex-shrink: 0; /* Заголовок не сжимается */
+            direction: rtl;
+            text-align: right;
         }
 
         .vectors-list {
-            padding: 10px; /* Равные отступы со всех сторон */
-            overflow-y: auto; /* Скролл при переполнении */
+            padding: 10px; /* Equal padding on all sides */
+            overflow-y: auto; /* Scroll on overflow */
             background: rgba(249, 250, 251, 0.8);
-            flex: 1; /* Занимает всё оставшееся место */
-            max-height: 100%; /* Ограничиваем максимальную высоту */
-            /* Убираем flex внутри списка чтобы не растягивался */
+            flex: 1; /* Takes all remaining space */
+            max-height: 100%; /* Limit maximum height */
+            /* Remove flex inside list so it doesn't stretch */
         }
 
-        /* Индивидуальные векторы */
+        /* Individual vectors */
         .vector-item {
             margin-bottom: 8px;
             background: white;
             border-radius: 6px;
             border: 1px solid #e5e7eb;
             overflow: hidden;
-            flex-shrink: 0; /* Не сжимается */
-            min-height: 50px; /* Минимальная высота для читаемости */
+            flex-shrink: 0; /* Doesn't shrink */
+            min-height: 50px; /* Minimum height for readability */
         }
         
-        /* Убираем нижний отступ у последнего элемента */
+        /* Remove bottom margin from last element */
         .vector-item:last-child {
             margin-bottom: 0;
         }
@@ -577,12 +592,13 @@
             user-select: none;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: space-between; /* Triangle to left edge, text to right */
             font-weight: 600;
             color: #374151;
             transition: background-color 0.2s ease;
-            flex-shrink: 0; /* Заголовок не сжимается */
-            min-height: 40px; /* Минимальная высота заголовка */
+            flex-shrink: 0; /* Header doesn't shrink */
+            min-height: 40px; /* Minimum header height */
+            direction: rtl; /* RTL direction */
         }
 
         .vector-header:hover {
@@ -593,6 +609,7 @@
             transition: transform 0.3s ease;
             font-size: 0.7rem;
             color: #6b7280;
+            display: inline-block; /* Ensure proper rotation */
         }
 
         .vector-item.expanded .vector-arrow {
@@ -681,63 +698,63 @@
             color: #9ca3af;
             font-style: italic;
             text-align: center;
-            padding: 0 !important; /* Принудительно убираем отступы */
-            margin: 0 !important; /* Убираем все отступы */
+            padding: 0 !important; /* Force remove padding */
+            margin: 0 !important; /* Remove all margins */
         }
 
-        /* Мобильные устройства - блоки в столбец */
+        /* Mobile devices - blocks in column */
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
             }
             .settings-block {
                 width: 100%;
-                height: auto; /* Позволяем блоку растягиваться */
-                max-height: none; /* Убираем ограничение высоты */
-                overflow: visible; /* Делаем содержимое видимым */
+                height: auto; /* Allow block to stretch */
+                max-height: none; /* Remove height limit */
+                overflow: visible; /* Make content visible */
             }
             
-            /* Адаптируем блок управления для мобильных */
+            /* Adapt control block for mobile */
             .controls-block {
-                padding: 15px; /* Уменьшаем отступы */
+                padding: 15px; /* Reduce padding */
             }
             
-            /* Переключатели остаются в строку, но занимают больше места */
+            /* Switches stay in row but use more space */
             .switches-row {
-                justify-content: space-between; /* Распределяем по ширине */
-                gap: 10px; /* Уменьшаем зазор */
+                justify-content: space-between; /* Distribute across width */
+                gap: 10px; /* Reduce gap */
             }
             
-            /* Кнопки операций и очистки занимают всю ширину */
+            /* Operation and clear buttons take full width */
             .operation-buttons, .clear-buttons-row {
-                max-width: none; /* Убираем ограничение ширины */
+                max-width: none; /* Remove width limit */
                 width: 100%;
             }
             
             .verify-button {
-                width: 100%; /* Занимает всю ширину */
+                width: 100%; /* Take full width */
                 max-width: none;
             }
             
-            /* Панель векторов должна быть видна */
+            /* Vector panel should be visible */
             .vectors-panel {
                 margin-top: 15px;
                 flex: 1;
-                min-height: 200px; /* Минимальная высота для видимости */
+                min-height: 200px; /* Minimum height for visibility */
             }
         }
         
-        /* Для очень маленьких экранов (портретная ориентация телефонов) */
+        /* For very small screens (portrait phone orientation) */
         @media (max-width: 480px) {
             .switches-row {
-                gap: 8px; /* Ещё меньше зазор */
+                gap: 8px; /* Even smaller gap */
             }
             
             .controls-block {
                 padding: 12px;
             }
             
-            /* Слегка уменьшаем размер переключателей только для очень маленьких экранов */
+            /* Slightly reduce switch size only for very small screens */
             .switch, .method-switch {
                 width: 75px;
                 height: 36px;
@@ -762,23 +779,23 @@
 </head>
 <body>
     <div class="container">
-        <!-- Блок визуализации (фото) -->
+        <!-- Visualization block (image) -->
         <div class="photo-block">
             <canvas id="canvas"></canvas>
         </div>
 
-        <!-- Блок управления (настройки) -->
+        <!-- Control block (settings) -->
         <div class="settings-block">
-            <div class="settings-title">Операции с векторами</div>
+            <div class="settings-title">פעולות עם וקטורים</div>
             
-            <!-- Выбранные векторы -->
+            <!-- Selected vectors -->
             <div style="margin-bottom: 15px; font-size: 0.9rem; color: #6b7280;">
-                <div id="selectedVectorsInfo">Выберите 2 вектора (Shift + клик)</div>
+                <div id="selectedVectorsInfo">בחרו 2 וקטורים (Shift + לחיצה)</div>
             </div>
             
-            <!-- Блок управления -->
+            <!-- Control block -->
             <div class="controls-block">
-                <!-- Переключатели и кнопка координат -->
+                <!-- Toggles and coordinate button -->
                 <div class="switches-row">
                     <div class="switch-group">
                         <label class="method-switch">
@@ -816,40 +833,40 @@
                     </div>
                 </div>
                 
-                <!-- Кнопки операций -->
+                <!-- Operation buttons -->
                 <div class="operation-buttons">
                     <button id="addVectorsBtn" class="operation-button" disabled>
-                        <span style="text-decoration: underline;">a</span> + <span style="text-decoration: underline;">b</span>
+                        <span dir="ltr"><span style="text-decoration: underline;">a</span> + <span style="text-decoration: underline;">b</span></span>
                     </button>
                     <button id="subtractVectorsBtn" class="operation-button" disabled>
-                        <span style="text-decoration: underline;">a</span> - <span style="text-decoration: underline;">b</span>
+                        <span dir="ltr"><span style="text-decoration: underline;">a</span> - <span style="text-decoration: underline;">b</span></span>
                     </button>
                 </div>
                 
                 <div style="margin-bottom: 16px;">
                     <button id="verifyResultBtn" class="verify-button" disabled>
-                        Проверка ответа
+                        בדיקת תשובה
                     </button>
                 </div>
                 
-                <!-- Кнопки очистки в одну строку -->
+                <!-- Clear buttons in one row -->
                 <div class="clear-buttons-row">
                     <button id="clearOperationBtn" class="clear-operation-button">
-                        Очистить результат
+                        ניקוי תוצאה
                     </button>
                     <button id="clearCanvas" class="clear-button">
-                        Очистить канвас
+                        ניקוי לוח
                     </button>
                 </div>
             </div>
             
-            <!-- Постоянно видимая панель векторов -->
+            <!-- Always visible vectors panel -->
             <div class="vectors-panel">
                 <div class="vectors-panel-header">
-                    Векторы
+                    וקטורים
                 </div>
                 <div class="vectors-list" id="vectorsList">
-                    <div class="no-vectors">Нет построенных векторов</div>
+                    <div class="no-vectors">אין וקטורים מוגדרים</div>
                 </div>
             </div>
         </div>
@@ -879,13 +896,11 @@
         let pointCounter = 0;
         let contextMenu = null;
         let lastClickTime = 0;
-        let showCoordinateSystem = false; // Состояние отображения системы координат
-        
-        // Переменные для операций с векторами
-        let selectedVectors = []; // Массив выбранных векторов (максимум 2)
-        let isTriangleMethod = true; // true = треугольник, false = параллелограмм
-        
-        // Переменные для анимации операций
+        let showCoordinateSystem = false; // Coordinate system display state
+
+        // Variables for vector operations
+        let selectedVectors = []; // Array of selected vectors (maximum 2)
+        let isTriangleMethod = true; // true = triangle, false = parallelogram        // Переменные для анимации операций
         let isAnimating = false;
         let animationStartTime = 0;
         let animationDuration = 3000; // 3 секунды на этап
@@ -901,16 +916,16 @@
         let isBlinking = false;
         let blinkCount = 0;
 
-        // Переменные для умного переиспользования точек
-        const POINT_REUSE_THRESHOLD = 5; // Радиус в пикселях для переиспользования точек
-        let pointUsageCount = new Map(); // Карта: точка -> количество векторов, использующих эту точку
+        // Variables for smart point reuse
+        const POINT_REUSE_THRESHOLD = 5; // Radius in pixels for point reuse
+        let pointUsageCount = new Map(); // Map: point -> number of vectors using this point
 
-        // Переменные для анимации вспомогательных линий
-        let animatedLines = []; // Линии, которые анимируются (теперь каждая имеет свой progress)
+        // Variables for auxiliary lines animation
+        let animatedLines = []; // Lines that are animated (each has its own progress)
 
-        // Переменные для анимации разворота вектора
-        let rotatingVector = null; // Вектор, который разворачивается
-        let rotationProgress = 0; // Прогресс разворота (0-1)
+        // Variables for vector rotation animation
+        let rotatingVector = null; // Vector being rotated
+        let rotationProgress = 0; // Rotation progress (0-1)
 
         // Функция подсчета использования каждой точки
         function updatePointUsageCount() {
@@ -1089,11 +1104,11 @@
 
         function updateSelectedVectorsInfo() {
             if (selectedVectors.length === 0) {
-                selectedVectorsInfo.textContent = 'Выберите 2 вектора (Shift + клик)';
+                selectedVectorsInfo.textContent = 'בחרו 2 וקטורים (Shift + לחיצה)';
             } else if (selectedVectors.length === 1) {
-                selectedVectorsInfo.textContent = `Выбран: вектор ${selectedVectors[0].name}. Выберите второй вектор.`;
+                selectedVectorsInfo.innerHTML = `נבחר: וקטור <span dir="ltr">${selectedVectors[0].name}</span>. בחרו וקטור שני.`;
             } else if (selectedVectors.length === 2) {
-                selectedVectorsInfo.textContent = `Выбраны: векторы ${selectedVectors[0].name} и ${selectedVectors[1].name}`;
+                selectedVectorsInfo.innerHTML = `נבחרו: וקטורים <span dir="ltr">${selectedVectors[0].name}</span> ו-<span dir="ltr">${selectedVectors[1].name}</span>`;
             }
         }
 
@@ -1674,7 +1689,7 @@
             }
             
             // КРЕАЦИЯ НОВОГО РЕЗУЛЬТИРУЮЩЕГО ВЕКТОРА
-            // Определяем имя в зависимости от операции
+            // Determine name based on operation
             const operationSymbol = operation === 'add' ? '+' : '-';
             let resultName;
             
@@ -1970,7 +1985,7 @@
                     const parentLength = Math.sqrt(parentDir.x * parentDir.x + parentDir.y * parentDir.y);
                     
                     if (parentLength > 0 && currentLength > 0) {
-                        // Определяем знак (направление) зависимого вектора
+                        // Determine sign (direction) of dependent vector
                         const sign = (depVector.storedCoefficient >= 0) ? 1 : -1;
                         
                         // Нормализуем направление исходного вектора
@@ -2663,7 +2678,7 @@
             const vectorsList = document.getElementById('vectorsList');
             
             if (vectors.length === 0) {
-                vectorsList.innerHTML = '<div class="no-vectors">Нет построенных векторов</div>';
+                vectorsList.innerHTML = '<div class="no-vectors">אין וקטורים מוגדרים</div>';
                 return;
             }
             
@@ -2676,7 +2691,7 @@
                 let vectorName = '';
                 let katexVectorName = '';
                 
-                // Определяем название вектора без коэффициентов
+                // Determine vector name without coefficients
                 if (vectorNamingCheckbox.checked) {
                     vectorName = vector.startPoint.name + vector.endPoint.name;
                     katexVectorName = `\\overrightarrow{${vectorName}}`;
@@ -2758,15 +2773,15 @@
                 html += `
                     <div class="vector-item" id="vector-${index}">
                         <div class="vector-header" onclick="toggleVectorDetails(${index})">
-                            <span>Вектор <span id="${vectorTitleId}"></span></span>
+                            <span dir="rtl">וקטור <span id="${vectorTitleId}" class="math-formula" dir="ltr"></span></span>
                             <span class="vector-arrow">▼</span>
                         </div>
                         <div class="vector-content">
                             <div class="vector-coordinates">
                                 <div class="vector-formula">
-                                    <span id="${vectorFormulaId}"></span>
+                                    <span id="${vectorFormulaId}" class="math-formula" dir="ltr"></span>
                                 </div>
-                                <div><span id="${vectorCoordsId}"></span></div>
+                                <div><span id="${vectorCoordsId}" class="math-formula" dir="ltr"></span></div>
                             </div>
                         </div>
                     </div>
@@ -2775,10 +2790,17 @@
                 // Рендерим KaTeX после добавления HTML
                 setTimeout(() => {
                     try {
+                        console.log('Rendering vector:', vectorName, 'with KaTeX:', katexVectorName); // Отладка
+                        
                         // Название вектора
-                        katex.render(katexVectorName, document.getElementById(vectorTitleId), {
-                            throwOnError: false
-                        });
+                        const titleElement = document.getElementById(vectorTitleId);
+                        if (titleElement) {
+                            katex.render(katexVectorName, titleElement, {
+                                throwOnError: false
+                            });
+                        } else {
+                            console.error('Title element not found:', vectorTitleId);
+                        }
                         
                         // Формула вектора
                         const formulaText = `${katexVectorName} = (${formatCoordinate(endCoords.x, startCoords.x)}; ${formatCoordinate(endCoords.y, startCoords.y)})`;
@@ -2798,6 +2820,13 @@
             });
             
             vectorsList.innerHTML = html;
+            
+            // Принудительное обновление стилей после рендеринга
+            setTimeout(() => {
+                vectorsList.style.display = 'none';
+                vectorsList.offsetHeight; // Принудительный reflow
+                vectorsList.style.display = '';
+            }, 100);
         }
 
         function draw() {
