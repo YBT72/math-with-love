@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Векторная Лаборатория</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            width: 100%;
+        }
+
+        /* Left panel - Tools */
+        .left-panel {
+            width: 7%;
+            background: #3C3C3C;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem 0;
+            gap: 1rem;
+        }
+
+        .tool-icon {
+            width: 65%;
+            aspect-ratio: 1;
+            background: #555;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            font-size: 1.5rem;
+        }
+
+        .tool-icon:hover {
+            background: #666;
+            transform: scale(1.1);
+        }
+
+        .tool-icon.active {
+            background: #4A9EFF;
+            border: 2px solid #2D7DD2;
+        }
+
+        .tool-icon:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .tooltip {
+            position: absolute;
+            left: 110%;
+            background: #222;
+            color: white;
+            padding: 0.5rem 0.8rem;
+            border-radius: 0.3rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            z-index: 10;
+        }
+
+        /* Center panel - 3D Scene */
+        .center-panel {
+            width: 66%;
+            background: #E8E8E8;
+            position: relative;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Right panel - Info */
+        .right-panel {
+            width: 27%;
+            background: #F0F0F0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .accordion-block {
+            border-bottom: 1px solid #CCC;
+        }
+
+        .accordion-header {
+            background: #E0E0E0;
+            padding: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .accordion-header:hover {
+            background: #D5D5D5;
+        }
+
+        .accordion-content {
+            padding: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .accordion-content.collapsed {
+            display: none;
+        }
+
+        .object-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .object-list li {
+            padding: 0.4rem 0;
+            cursor: pointer;
+        }
+
+        .object-list li:hover {
+            background: #E8E8E8;
+        }
+
+        .vertex-item {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Courier New', monospace;
+        }
+
+        .placeholder-text {
+            color: #888;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left panel - Tools -->
+        <div class="left-panel">
+            <div class="tool-icon" onclick="setTool('select')" id="tool-select" title="Выбор/Перемещение">
+                <span>🖱️</span>
+                <div class="tooltip">Выбор/Перемещение</div>
+            </div>
+            <div class="tool-icon" onclick="setTool('point')" id="tool-point" title="Создать точку">
+                <span>•</span>
+                <div class="tooltip">Создать точку</div>
+            </div>
+            <div class="tool-icon" onclick="setTool('vector')" id="tool-vector" title="Создать вектор">
+                <span>→</span>
+                <div class="tooltip">Создать вектор</div>
+            </div>
+            <div class="tool-icon" onclick="setTool('plane')" id="tool-plane" title="Создать плоскость">
+                <span>▱</span>
+                <div class="tooltip">Создать плоскость</div>
+            </div>
+            <div class="tool-icon" onclick="setTool('angle')" id="tool-angle" title="Измерить угол">
+                <span>∠</span>
+                <div class="tooltip">Измерить угол</div>
+            </div>
+            <div class="tool-icon" title="Настройки">
+                <span>⚙️</span>
+                <div class="tooltip">Настройки</div>
+            </div>
+            <div class="tool-icon" onclick="clearScene()" title="Сброс">
+                <span>🗑️</span>
+                <div class="tooltip">Сброс</div>
+            </div>
+        </div>
+
+        <!-- Center panel - 3D Scene -->
+        <div class="center-panel">
+            <div id="canvas-container"></div>
+        </div>
+
+        <!-- Right panel - Info -->
+        <div class="right-panel">
+            <!-- Block 1: Scene objects -->
+            <div class="accordion-block">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>Объекты сцены</span>
+                    <span>▼</span>
+                </div>
+                <div class="accordion-content">
+                    <ul class="object-list">
+                        <li><strong>▼ Параллелепипед</strong></li>
+                        <li class="vertex-item"><span>&nbsp;&nbsp;• Точка A</span><span>(0, 0, 0)</span></li>
+                        <li class="vertex-item"><span>&nbsp;&nbsp;• Точка B</span><span>(4, 0, 0)</span></li>
+                        <li class="vertex-item"><span>&nbsp;&nbsp;• Точка C</span><span>(4, 6, 0)</span></li>
+                        <li class="vertex-item"><span>&nbsp;&nbsp;• Точка D</span><span>(0, 6, 0)</span></li>
+                        <li class="vertex-item"><span>&nbsp;&nbsp;• Точка A'</span><span>(0, 0, 5)</span></li>
+                        <li class="vertex-item"><span>&nbsp;&nbsp;• Точка B'</span><span>(4, 0, 5)</span></li>
+                        <li class="vertex-item"><span>&nbsp;&nbsp;• Точка C'</span><span>(4, 6, 5)</span></li>
+                        <li class="vertex-item"><span>&nbsp;&nbsp;• Точка D'</span><span>(0, 6, 5)</span></li>
+                        <li><strong>▼ Пользовательские объекты</strong></li>
+                        <li id="user-objects-list" class="placeholder-text">&nbsp;&nbsp;Пока пусто</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Block 2: Selected object properties -->
+            <div class="accordion-block">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>Свойства выбранного объекта</span>
+                    <span>▼</span>
+                </div>
+                <div class="accordion-content">
+                    <p id="properties-content" class="placeholder-text">Выберите объект на сцене</p>
+                </div>
+            </div>
+
+            <!-- Block 3: Calculations -->
+            <div class="accordion-block">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span>Расчёты</span>
+                    <span>▼</span>
+                </div>
+                <div class="accordion-content">
+                    <p class="placeholder-text">Используйте инструмент "Измерить угол"</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Accordion
+        function toggleAccordion(header) {
+            const content = header.nextElementSibling;
+            const arrow = header.querySelector('span:last-child');
+            content.classList.toggle('collapsed');
+            arrow.textContent = content.classList.contains('collapsed') ? '▶' : '▼';
+        }
+
+        // Three.js scene
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        
+        const camera = new THREE.PerspectiveCamera(
+            50,
+            container.clientWidth / container.clientHeight,
+            0.1,
+            1000
+        );
+        camera.position.set(15, 12, 10);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setClearColor(0xE8E8E8);
+        container.appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(10, 10, 10);
+        scene.add(directionalLight);
+
+        // Parallelepiped parameters (math coordinates: a=6 along Y, b=4 along X, c=5 along Z)
+        const a = 6, b = 4, c = 5;
+
+        // Tool state
+        let activeTool = 'select';
+        let isCreatingVector = false;
+        let vectorStartPos = null;
+        let vectorStartSnap = null;
+        let previewVector = null;
+        
+        // Storage for user objects
+        let userVectors = [];
+        let userVectorLabels = []; // Store labels for user vectors
+        let vectorCounter = 0;
+        const vectorNames = ['u', 'v', 'w'];
+        let useDoubleLetterNames = false;
+
+        // Storage for user-created points
+        let userPoints = [];
+        let userPointLabels = []; // Store labels for user points
+        let pointCounter = 0;
+
+        // Snap detection state
+        let currentSnap = null; // { type: 'vertex'|'edge'|'face', object: ..., position: Vector3 }
+        let highlightedObject = null;
+        let selectedStartVertex = null; // Track selected start vertex for vector creation
+        
+        // Selection state for delete tool
+        let selectedObject = null; // Currently selected object for deletion
+        let selectionHighlight = null; // Highlight for selected object
+        
+        // Selection and dragging state
+        let isDraggingSelected = false;
+        let dragStartPosition = null;
+
+        // Coordinate axes with correct orientation
+        const axisLength = Math.max(a, b, c) * 1.3;
+        
+        // X axis (red) - math X direction
+        const xAxis = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(0, 0, axisLength)
+            ]),
+            new THREE.LineBasicMaterial({ color: 0xff0000, linewidth: 5 })
+        );
+        scene.add(xAxis);
+
+        // Y axis (green) - math Y direction  
+        const yAxis = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(axisLength, 0, 0)
+            ]),
+            new THREE.LineBasicMaterial({ color: 0x00aa00, linewidth: 5 })
+        );
+        scene.add(yAxis);
+
+        // Z axis (blue) - math Z direction
+        const zAxis = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(0, axisLength, 0)
+            ]),
+            new THREE.LineBasicMaterial({ color: 0x0000ff, linewidth: 5 })
+        );
+        scene.add(zAxis);
+
+        // Axis labels
+        function createAxisLabel(text, color, position) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = 256;
+            context.font = 'Bold 140px Arial';
+            context.fillStyle = color;
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(text, 128, 128);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMat = new THREE.SpriteMaterial({ map: texture, depthTest: false });
+            const sprite = new THREE.Sprite(spriteMat);
+            sprite.position.copy(position);
+            sprite.scale.set(1.2, 1.2, 1);
+            scene.add(sprite);
+        }
+
+        createAxisLabel('x', '#ff0000', new THREE.Vector3(0, 0, axisLength + 0.5));
+        createAxisLabel('y', '#00aa00', new THREE.Vector3(axisLength + 0.5, 0, 0));
+        createAxisLabel('z', '#0000ff', new THREE.Vector3(0, axisLength + 0.5, 0));
+
+        // Function to convert math coordinates (x,y,z) to Three.js coordinates
+        function mathToThreeJS(x, y, z) {
+            // Math: x=horizontal right, y=horizontal depth, z=vertical up
+            // Three.js: x=horizontal right, y=vertical up, z=horizontal depth (towards viewer)
+            return [y, z, x]; // [Three.x, Three.y, Three.z] = [math.y, math.z, math.x]
+        }
+
+        // Vertices (math coordinates converted to Three.js)
+        const vertices = [
+            { pos: mathToThreeJS(0, 0, 0), label: 'A' },   // Origin
+            { pos: mathToThreeJS(b, 0, 0), label: 'B' },   // Along X axis
+            { pos: mathToThreeJS(b, a, 0), label: 'C' },   // X+Y
+            { pos: mathToThreeJS(0, a, 0), label: 'D' },   // Along Y axis
+            { pos: mathToThreeJS(0, 0, c), label: "A'" },  // Along Z axis
+            { pos: mathToThreeJS(b, 0, c), label: "B'" },  // X+Z
+            { pos: mathToThreeJS(b, a, c), label: "C'" },  // X+Y+Z
+            { pos: mathToThreeJS(0, a, c), label: "D'" }   // Y+Z
+        ];
+
+        // Edges
+        const edgeList = [
+            [0, 1], [1, 2], [2, 3], [3, 0], // bottom
+            [4, 5], [5, 6], [6, 7], [7, 4], // top
+            [0, 4], [1, 5], [2, 6], [3, 7]  // vertical
+        ];
+
+        const edgeMaterial = new THREE.LineBasicMaterial({ 
+            color: 0x404040,
+            opacity: 0.9, 
+            transparent: true,
+            linewidth: 6
+        });
+
+        const edgeObjects = [];
+        edgeList.forEach(edge => {
+            const points = [
+                new THREE.Vector3(...vertices[edge[0]].pos),
+                new THREE.Vector3(...vertices[edge[1]].pos)
+            ];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geometry, edgeMaterial);
+            line.userData.edge = edge;
+            line.userData.originalColor = 0x404040;
+            scene.add(line);
+            edgeObjects.push(line);
+        });
+
+        // Faces (invisible for snapping, will be highlighted on hover)
+        const faceList = [
+            { indices: [0, 1, 2, 3], normal: [0, -1, 0] }, // bottom (XZ plane at y=0)
+            { indices: [4, 5, 6, 7], normal: [0, 1, 0] },  // top (XZ plane at y=c)
+            { indices: [0, 1, 5, 4], normal: [0, 0, -1] }, // front (YZ plane at x=0)
+            { indices: [2, 3, 7, 6], normal: [0, 0, 1] },  // back (YZ plane at x=a)
+            { indices: [0, 3, 7, 4], normal: [-1, 0, 0] }, // left (XY plane at z=0)
+            { indices: [1, 2, 6, 5], normal: [1, 0, 0] }   // right (XY plane at z=b)
+        ];
+
+        const faceMeshes = [];
+        faceList.forEach((face, idx) => {
+            const shape = new THREE.Shape();
+            const v0 = vertices[face.indices[0]].pos;
+            
+            // Create shape in 2D based on face orientation
+            const points = face.indices.map(i => new THREE.Vector3(...vertices[i].pos));
+            
+            const geom = new THREE.BufferGeometry().setFromPoints([
+                points[0], points[1], points[2],
+                points[0], points[2], points[3]
+            ]);
+            
+            const mat = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                opacity: 0,
+                transparent: true,
+                side: THREE.DoubleSide
+            });
+            
+            const mesh = new THREE.Mesh(geom, mat);
+            mesh.userData.faceIndex = idx;
+            mesh.userData.normal = new THREE.Vector3(...face.normal);
+            mesh.userData.originalOpacity = 0;
+            scene.add(mesh);
+            faceMeshes.push(mesh);
+        });
+
+        // Vertex spheres
+        const vertexSpheres = [];
+        const vertexLabels = [];
+        const sphereRadius = 0.15;
+
+        vertices.forEach(v => {
+            const sphereGeom = new THREE.SphereGeometry(sphereRadius, 16, 16);
+            const sphereMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const sphere = new THREE.Mesh(sphereGeom, sphereMat);
+            sphere.position.set(...v.pos);
+            sphere.userData = { label: v.label, originalColor: 0xffffff };
+            scene.add(sphere);
+            vertexSpheres.push(sphere);
+
+            // Vertex labels
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = 256;
+            context.font = 'Bold 160px Arial';
+            context.fillStyle = 'black';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(v.label, 128, 128);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMat = new THREE.SpriteMaterial({ map: texture, depthTest: false });
+            const sprite = new THREE.Sprite(spriteMat);
+            const offset = 1.2;
+            sprite.position.set(v.pos[0] + offset, v.pos[1] + offset, v.pos[2] + offset);
+            sprite.scale.set(1.5, 1.5, 1);
+            scene.add(sprite);
+            vertexLabels.push(sprite);
+        });
+
+        // Raycaster
+        const raycaster = new THREE.Raycaster();
+        raycaster.params.Line.threshold = 0.3;
+        const mouse = new THREE.Vector2();
+
+        // Camera controls
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let cameraRotation = { theta: Math.PI / 4, phi: Math.PI / 4 };
+        let cameraDistance = 20;
+
+        function updateCameraPosition() {
+            camera.position.x = cameraDistance * Math.sin(cameraRotation.theta) * Math.cos(cameraRotation.phi);
+            camera.position.y = cameraDistance * Math.sin(cameraRotation.phi);
+            camera.position.z = cameraDistance * Math.cos(cameraRotation.theta) * Math.cos(cameraRotation.phi);
+            camera.lookAt(a/2, c/2, b/2);
+        }
+
+        // Tool selection
+        function setTool(tool) {
+            // Clear previous tool state
+            clearSelection();
+            
+            activeTool = tool;
+            document.querySelectorAll('.tool-icon').forEach(icon => icon.classList.remove('active'));
+            document.getElementById('tool-' + tool)?.classList.add('active');
+            
+            if (tool === 'vector') {
+                container.style.cursor = 'crosshair';
+            } else if (tool === 'point') {
+                container.style.cursor = 'crosshair';
+            } else if (tool === 'select') {
+                container.style.cursor = 'pointer';
+            } else {
+                container.style.cursor = 'default';
+            }
+        }
+
+        // Clear scene
+        function clearScene() {
+            // Clear selection first
+            clearSelection();
+            
+            userVectors.forEach(v => {
+                scene.remove(v.arrow);
+                if (v.label) scene.remove(v.label);
+            });
+            userVectors = [];
+            userVectorLabels = [];
+            vectorCounter = 0;
+            
+            userPoints.forEach(p => {
+                scene.remove(p.sphere);
+                if (p.label) scene.remove(p.label);
+            });
+            userPoints = [];
+            userPointLabels = [];
+            pointCounter = 0;
+            
+            updateUserObjectsList();
+        }
+
+        // Snap detection (priority: Edit Handles -> Vertex -> Edge -> Face for better precision)
+        function detectSnap(event) {
+            const rect = container.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            
+            // Reset previous highlight
+            if (highlightedObject) {
+                if (highlightedObject.type === 'face') {
+                    highlightedObject.obj.material.opacity = 0;
+                } else if (highlightedObject.type === 'edge') {
+                    highlightedObject.obj.material.color.setHex(0x404040);
+                } else if (highlightedObject.type === 'vertex') {
+                    const originalColor = highlightedObject.obj.userData.originalColor || 0xffffff;
+                    highlightedObject.obj.material.color.setHex(originalColor);
+                }
+                highlightedObject = null;
+            }
+            
+            // Check all vertices (original + user points) 
+            const allVertices = [...vertexSpheres];
+            userPoints.forEach(point => allVertices.push(point.sphere));
+            
+            const vertexIntersects = raycaster.intersectObjects(allVertices);
+            if (vertexIntersects.length > 0) {
+                const vertex = vertexIntersects[0];
+                vertex.object.material.color.setHex(0x00FF00); // bright green for better visibility
+                highlightedObject = { type: 'vertex', obj: vertex.object };
+                return {
+                    type: 'vertex',
+                    position: vertex.object.position.clone(),
+                    label: vertex.object.userData.label,
+                    isUserPoint: vertex.object.userData.isUserPoint || false
+                };
+            }
+            
+            // Check edges second
+            const edgeIntersects = raycaster.intersectObjects(edgeObjects);
+            if (edgeIntersects.length > 0) {
+                const edge = edgeIntersects[0];
+                edge.object.material.color.setHex(0xFF8C00); // orange
+                highlightedObject = { type: 'edge', obj: edge.object };
+                
+                const edgeIndices = edge.object.userData.edge;
+                const p1 = new THREE.Vector3(...vertices[edgeIndices[0]].pos);
+                const p2 = new THREE.Vector3(...vertices[edgeIndices[1]].pos);
+                
+                return {
+                    type: 'edge',
+                    position: edge.point.clone(),
+                    p1: p1,
+                    p2: p2
+                };
+            }
+            
+            // Check faces last (lowest priority)
+            const faceIntersects = raycaster.intersectObjects(faceMeshes);
+            if (faceIntersects.length > 0) {
+                const face = faceIntersects[0];
+                face.object.material.opacity = 0.2;
+                face.object.material.color.setHex(0x87CEEB); // sky blue
+                highlightedObject = { type: 'face', obj: face.object };
+                return {
+                    type: 'face',
+                    position: face.point.clone(),
+                    plane: new THREE.Plane(face.object.userData.normal, -face.object.userData.normal.dot(face.point))
+                };
+            }
+            
+            return null;
+        }
+
+        // Get snapped position during drag
+        function getSnapPosition(event, startSnap) {
+            const snap = detectSnap(event);
+            
+            if (!snap) return null;
+            
+            // Always use the exact snap position for precise placement
+            return snap.position;
+        }
+
+        // Create arrow for vector
+        function createVectorArrow(start, end, isPreview = false) {
+            const group = new THREE.Group();
+            
+            const direction = new THREE.Vector3().subVectors(end, start).normalize();
+            const vectorLength = start.distanceTo(end);
+            
+            // Scale arrow head based on vector length
+            const arrowScale = Math.min(Math.max(vectorLength * 0.08, 0.1), 0.3);
+            const arrowHeight = arrowScale * 2;
+            
+            // Calculate arrow tip position (exactly at the end point)
+            const arrowTipPosition = end.clone();
+            
+            // Calculate arrow base position (shifted back along the vector)
+            const arrowBasePosition = end.clone().sub(direction.clone().multiplyScalar(arrowHeight));
+            
+            // Create line from start to arrow base (not to the end)
+            const lineGeometry = new THREE.BufferGeometry().setFromPoints([start, arrowBasePosition]);
+            const lineMaterial = new THREE.LineBasicMaterial({ 
+                color: isPreview ? 0x8B00FF : 0xFF0080, 
+                linewidth: isPreview ? 2 : 4,
+                opacity: isPreview ? 0.7 : 1,
+                transparent: isPreview,
+                depthTest: !isPreview, // Preview vectors ignore depth, final vectors respect it
+                depthWrite: !isPreview
+            });
+            const line = new THREE.Line(lineGeometry, lineMaterial);
+            group.add(line);
+            
+            // Create arrow head with tip exactly at the end point
+            const coneGeometry = new THREE.ConeGeometry(arrowScale * 0.8, arrowHeight, 8);
+            const coneMaterial = new THREE.MeshBasicMaterial({ 
+                color: isPreview ? 0x8B00FF : 0xFF0080,
+                opacity: isPreview ? 0.7 : 1,
+                transparent: isPreview,
+                depthTest: !isPreview,
+                depthWrite: !isPreview
+            });
+            const cone = new THREE.Mesh(coneGeometry, coneMaterial);
+            
+            // Position cone so its tip is exactly at the end point
+            const arrowCenterPosition = arrowBasePosition.clone().add(direction.clone().multiplyScalar(arrowHeight / 2));
+            cone.position.copy(arrowCenterPosition);
+            cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+            group.add(cone);
+            
+            // Set render order for final vectors to appear on top
+            if (!isPreview) {
+                group.renderOrder = 1000;
+                line.renderOrder = 1000;
+                cone.renderOrder = 1000;
+            }
+            
+            return group;
+        }
+
+        // Generate point name using alphabet letters (excluding occupied ones)
+        function getPointName() {
+            const occupiedNames = ['A', 'B', 'C', 'D', "A'", "B'", "C'", "D'"];
+            const alphabet = 'EFGHIJKLMNOPQRSTUVWXYZ'; // Skip A,B,C,D as they're used by parallelepiped
+            
+            // Get all existing user point names
+            const existingNames = userPoints.map(p => p.name);
+            
+            // Find first available letter
+            for (let char of alphabet) {
+                if (!occupiedNames.includes(char) && !existingNames.includes(char)) {
+                    return char;
+                }
+            }
+            
+            // If all single letters are used, use double letters
+            for (let i = 0; i < alphabet.length; i++) {
+                for (let j = 0; j < alphabet.length; j++) {
+                    const name = alphabet[i] + alphabet[j];
+                    if (!existingNames.includes(name)) {
+                        return name;
+                    }
+                }
+            }
+            
+            // Fallback to numbered points if all combinations exhausted
+            return `P${pointCounter + 1}`;
+        }
+
+        // Create label for user point
+        function createPointLabel(text, position) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = 256;
+            context.font = 'Bold 160px Arial';
+            context.fillStyle = 'black';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(text, 128, 128);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMat = new THREE.SpriteMaterial({ map: texture, depthTest: false });
+            const sprite = new THREE.Sprite(spriteMat);
+            const offset = 1.2;
+            sprite.position.set(position.x + offset, position.y + offset, position.z + offset);
+            sprite.scale.set(1.5, 1.5, 1);
+            scene.add(sprite);
+            return sprite;
+        }
+
+        // Create label for vector with underline
+        function createVectorLabel(text, position) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = 256;
+            context.font = 'Bold 160px Arial';
+            context.fillStyle = 'purple'; // Purple color for vector labels
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            
+            // Draw the letter with underline using Unicode combining character
+            const labelWithUnderline = text + '\u0332'; // \u0332 is combining underline
+            context.fillText(labelWithUnderline, 128, 128);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMat = new THREE.SpriteMaterial({ map: texture, depthTest: false });
+            const sprite = new THREE.Sprite(spriteMat);
+            sprite.position.copy(position);
+            sprite.scale.set(1.2, 1.2, 1);
+            scene.add(sprite);
+            return sprite;
+        }
+        // Generate vector name
+        function getVectorName() {
+            const baseNames = vectorNames;
+            const index = vectorCounter % baseNames.length;
+            const prefix = Math.floor(vectorCounter / baseNames.length);
+            
+            if (useDoubleLetterNames && prefix > 0) {
+                const scalar = String.fromCharCode(116 + (prefix - 1) % 7);
+                return scalar + baseNames[index];
+            }
+            
+            return baseNames[index] + (prefix > 0 ? prefix : '');
+        }
+
+        // Clear selection
+        function clearSelection() {
+            if (selectedObject) {
+                const originalColor = selectedObject.userData.originalColor || 0xffffff;
+                selectedObject.material.color.setHex(originalColor);
+                selectedObject = null;
+            }
+        }
+        
+        // Select object for deletion
+        function selectObject(object) {
+            clearSelection();
+            selectedObject = object;
+            object.material.color.setHex(0x00FF00); // Green highlight for selection
+        }
+        
+        // Create user point at specific position
+        function createUserPointAt(position, snapType = null) {
+            const sphereRadius = 0.12;
+            const sphereGeom = new THREE.SphereGeometry(sphereRadius, 12, 12);
+            const sphereMat = new THREE.MeshBasicMaterial({ color: 0x000000 }); // black color
+            const sphere = new THREE.Mesh(sphereGeom, sphereMat);
+            sphere.position.copy(position);
+            
+            // Convert Three.js coordinates to math coordinates for display
+            const mathCoords = { x: position.z, y: position.x, z: position.y };
+            
+            const pointName = getPointName();
+            const userData = { 
+                label: pointName, 
+                originalColor: 0x000000,
+                isUserPoint: true,
+                mathCoords: mathCoords,
+                snapType: snapType
+            };
+            sphere.userData = userData;
+            
+            scene.add(sphere);
+            
+            // Create and add label
+            const label = createPointLabel(pointName, position);
+            userPointLabels.push(label);
+            
+            // Add to user points array
+            userPoints.push({
+                name: pointName,
+                sphere: sphere,
+                label: label,
+                position: position.clone(),
+                mathCoords: mathCoords,
+                snapType: snapType
+            });
+            
+            pointCounter++;
+            updateUserObjectsList();
+            
+            return sphere;
+        }
+
+        // Create user point on edge or face
+        function createUserPoint(position, snapType) {
+            return createUserPointAt(position, snapType);
+        }
+
+                // Update UI
+        function updateUserObjectsList() {
+            const list = document.getElementById('user-objects-list');
+            let content = '';
+            
+            // Add user points
+            if (userPoints.length > 0) {
+                userPoints.forEach((point, i) => {
+                    const coords = `(${point.mathCoords.x.toFixed(1)}, ${point.mathCoords.y.toFixed(1)}, ${point.mathCoords.z.toFixed(1)})`;
+                    const snapInfo = point.snapType === 'edge' ? 'на ребре' : 
+                                   point.snapType === 'face' ? 'на грани' : 
+                                   'произвольная';
+                    content += `<li>&nbsp;&nbsp;• Точка <strong>${point.name}</strong> ${coords} <small>(${snapInfo})</small> <button onclick="deleteUserPoint(${i})" style="font-size: 0.8em;">🗑️</button></li>`;
+                });
+            }
+            
+            // Add user vectors
+            if (userVectors.length > 0) {
+                userVectors.forEach((v, i) => {
+                    const startCoords = `(${(v.start.z).toFixed(1)}, ${(v.start.x).toFixed(1)}, ${(v.start.y).toFixed(1)})`;
+                    const endCoords = `(${(v.end.z).toFixed(1)}, ${(v.end.x).toFixed(1)}, ${(v.end.y).toFixed(1)})`;
+                    const magnitude = v.magnitude.toFixed(2);
+                    content += `<li>&nbsp;&nbsp;• Вектор <strong>${v.name}</strong> |${magnitude}| <small>${startCoords}→${endCoords}</small> <button onclick="deleteVector(${i})" style="font-size: 0.8em;">🗑️</button></li>`;
+                });
+            }
+            
+            if (content === '') {
+                list.className = 'placeholder-text';
+                list.innerHTML = '&nbsp;&nbsp;Пока пусто';
+            } else {
+                list.className = '';
+                list.innerHTML = content;
+            }
+        }
+
+        function deleteUserPoint(index) {
+            const point = userPoints[index];
+            
+            // Clear selection if this point was selected
+            if (selectedObject === point.sphere) {
+                clearSelection();
+            }
+            
+            // Remove sphere and label from scene
+            scene.remove(point.sphere);
+            if (point.label) {
+                scene.remove(point.label);
+            }
+            
+            userPoints.splice(index, 1);
+            updateUserObjectsList();
+        }
+        
+        // Delete selected object
+        function deleteSelectedObject() {
+            if (!selectedObject) return;
+            
+            // Find and delete user point
+            const pointIndex = userPoints.findIndex(p => p.sphere === selectedObject);
+            if (pointIndex !== -1) {
+                deleteUserPoint(pointIndex);
+                return;
+            }
+            
+            // Find and delete vector
+            const vectorIndex = userVectors.findIndex(v => v.arrow === selectedObject);
+            if (vectorIndex !== -1) {
+                deleteVector(vectorIndex);
+                return;
+            }
+        }
+
+        function deleteVector(index) {
+            const v = userVectors[index];
+            scene.remove(v.arrow);
+            if (v.label) {
+                scene.remove(v.label);
+            }
+            userVectors.splice(index, 1);
+            updateUserObjectsList();
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                clearSelection();
+            } else if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+                e.preventDefault();
+                // Undo: delete last created object (vector or point)
+                if (userVectors.length > 0 && userPoints.length > 0) {
+                    // Delete the most recently created object
+                    const lastVector = userVectors[userVectors.length - 1];
+                    const lastPoint = userPoints[userPoints.length - 1];
+                    
+                    // Compare creation order (assuming higher counter = more recent)
+                    if (vectorCounter >= pointCounter) {
+                        deleteVector(userVectors.length - 1);
+                    } else {
+                        deleteUserPoint(userPoints.length - 1);
+                    }
+                } else if (userVectors.length > 0) {
+                    deleteVector(userVectors.length - 1);
+                } else if (userPoints.length > 0) {
+                    deleteUserPoint(userPoints.length - 1);
+                }
+            } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                e.preventDefault();
+                deleteSelectedObject();
+            }
+        });
+
+        // Mouse events
+        container.addEventListener('mousedown', (e) => {
+            let toolActionPerformed = false;
+            const snap = detectSnap(e);
+            
+            if (activeTool === 'vector') {
+                if (snap) {
+                    isCreatingVector = true;
+                    vectorStartPos = snap.position.clone();
+                    vectorStartSnap = snap;
+                    
+                    // Highlight selected start vertex
+                    if (snap.type === 'vertex') {
+                        selectedStartVertex = highlightedObject.obj;
+                        selectedStartVertex.material.color.setHex(0xFF4500); // orange-red for selected start
+                    }
+                    toolActionPerformed = true;
+                }
+            } else if (activeTool === 'point') {
+                // Only create point if NOT clicking on existing user point
+                if (snap && snap.type === 'vertex' && snap.isUserPoint) {
+                    // Clicked on existing user point - do nothing to avoid duplicates
+                    toolActionPerformed = true;
+                } else if (snap) {
+                    // Create point at snapped position (vertex, edge, face)
+                    createUserPointAt(snap.position, snap.type);
+                    toolActionPerformed = true;
+                } else {
+                    // Create point at clicked position on face/plane
+                    const rect = container.getBoundingClientRect();
+                    const mouse = new THREE.Vector2();
+                    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                    
+                    raycaster.setFromCamera(mouse, camera);
+                    const intersects = raycaster.intersectObjects(faceMeshes);
+                    
+                    if (intersects.length > 0) {
+                        createUserPointAt(intersects[0].point, 'face');
+                        toolActionPerformed = true;
+                    }
+                }
+            } else if (activeTool === 'select') {
+                if (snap && snap.type === 'vertex' && snap.isUserPoint) {
+                    selectObject(highlightedObject.obj);
+                    isDraggingSelected = true;
+                    dragStartPosition = { x: e.clientX, y: e.clientY };
+                    toolActionPerformed = true;
+                } else {
+                    clearSelection();
+                }
+            }
+            
+            // Always allow camera rotation if no tool action was performed
+            if (!toolActionPerformed) {
+                isDragging = true;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            }
+        });
+
+        container.addEventListener('mousemove', (event) => {
+            if (isDraggingSelected && selectedObject) {
+                // Handle dragging selected point
+                const snap = detectSnap(event);
+                if (snap && (snap.type === 'vertex' || snap.type === 'edge' || snap.type === 'face')) {
+                    // Update point position
+                    selectedObject.position.copy(snap.position);
+                    
+                    // Find and update the user point data
+                    const userPoint = userPoints.find(p => p.sphere === selectedObject);
+                    if (userPoint) {
+                        userPoint.position.copy(snap.position);
+                        
+                        // Update label position
+                        if (userPoint.label) {
+                            const offset = 1.2;
+                            userPoint.label.position.set(
+                                snap.position.x + offset, 
+                                snap.position.y + offset, 
+                                snap.position.z + offset
+                            );
+                        }
+                        
+                        // Update math coordinates
+                        const mathCoords = { x: snap.position.z, y: snap.position.x, z: snap.position.y };
+                        userPoint.mathCoords = mathCoords;
+                        userPoint.sphere.userData.mathCoords = mathCoords;
+                        
+                        updateUserObjectsList();
+                    }
+                }
+            }
+            else if (isCreatingVector && vectorStartPos) {
+                const currentPos = getSnapPosition(event, vectorStartSnap);
+                
+                if (previewVector) {
+                    scene.remove(previewVector);
+                }
+                
+                if (currentPos) {
+                    previewVector = createVectorArrow(vectorStartPos, currentPos, true);
+                    scene.add(previewVector);
+                }
+            } else if (isDragging) {
+                const deltaX = event.clientX - previousMousePosition.x;
+                const deltaY = event.clientY - previousMousePosition.y;
+
+                cameraRotation.theta -= deltaX * 0.01;
+                cameraRotation.phi += deltaY * 0.01;
+                cameraRotation.phi = Math.max(0.1, Math.min(Math.PI - 0.1, cameraRotation.phi));
+                
+                updateCameraPosition();
+                previousMousePosition = { x: event.clientX, y: event.clientY };
+            } else {
+                detectSnap(event);
+            }
+        });
+
+        container.addEventListener('mouseup', (e) => {
+            if (isDraggingSelected) {
+                // Finish dragging selected point
+                isDraggingSelected = false;
+                dragStartPosition = null;
+            }
+            else if (isCreatingVector && vectorStartPos) {
+                const endSnap = detectSnap(e);
+                
+                if (previewVector) {
+                    scene.remove(previewVector);
+                    previewVector = null;
+                }
+                
+                if (endSnap) {
+                    let endPos = endSnap.position;
+                    
+                    // Create user point if snapping to edge or face
+                    if (endSnap.type === 'edge' || endSnap.type === 'face') {
+                        createUserPoint(endPos, endSnap.type);
+                    }
+                    
+                    const arrow = createVectorArrow(vectorStartPos, endPos);
+                    scene.add(arrow);
+                    
+                    // Calculate vector center for label placement
+                    const vectorCenter = new THREE.Vector3()
+                        .addVectors(vectorStartPos, endPos)
+                        .multiplyScalar(0.5);
+                    
+                    // Create vector label
+                    const vectorName = getVectorName();
+                    const vectorLabel = createVectorLabel(vectorName, vectorCenter);
+                    userVectorLabels.push(vectorLabel);
+                    
+                    // Convert Three.js coordinates back to math coordinates for vector components
+                    const startMath = { x: vectorStartPos.z, y: vectorStartPos.x, z: vectorStartPos.y };
+                    const endMath = { x: endPos.z, y: endPos.x, z: endPos.y };
+                    
+                    const dx = endMath.x - startMath.x;
+                    const dy = endMath.y - startMath.y; 
+                    const dz = endMath.z - startMath.z;
+                    const magnitude = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                    
+                    userVectors.push({
+                        name: vectorName,
+                        start: vectorStartPos.clone(),
+                        end: endPos.clone(),
+                        arrow: arrow,
+                        label: vectorLabel,
+                        components: { dx, dy, dz },
+                        magnitude: magnitude
+                    });
+                    
+                    vectorCounter++;
+                    updateUserObjectsList();
+                }
+                
+                // Reset start vertex highlight
+                if (selectedStartVertex) {
+                    const originalColor = selectedStartVertex.userData.originalColor || 0xffffff;
+                    selectedStartVertex.material.color.setHex(originalColor);
+                    selectedStartVertex = null;
+                }
+                
+                isCreatingVector = false;
+                vectorStartPos = null;
+                vectorStartSnap = null;
+            } else {
+                isDragging = false;
+            }
+        });
+
+        container.addEventListener('mouseleave', () => {
+            isDragging = false;
+            isCreatingVector = false;
+            if (previewVector) {
+                scene.remove(previewVector);
+                previewVector = null;
+            }
+            
+            // Reset highlights (but not selection)
+            if (highlightedObject) {
+                if (highlightedObject.type === 'face') {
+                    highlightedObject.obj.material.opacity = 0;
+                } else if (highlightedObject.type === 'edge') {
+                    highlightedObject.obj.material.color.setHex(0x404040);
+                } else if (highlightedObject.type === 'vertex') {
+                    // Don't reset color if this is the selected object
+                    if (highlightedObject.obj !== selectedObject) {
+                        const originalColor = highlightedObject.obj.userData.originalColor || 0xffffff;
+                        highlightedObject.obj.material.color.setHex(originalColor);
+                    }
+                }
+                highlightedObject = null;
+            }
+            
+            // Reset selected start vertex
+            if (selectedStartVertex) {
+                const originalColor = selectedStartVertex.userData.originalColor || 0xffffff;
+                selectedStartVertex.material.color.setHex(originalColor);
+                selectedStartVertex = null;
+            }
+            
+            vectorStartPos = null;
+            vectorStartSnap = null;
+        });
+
+        // Zoom
+        container.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomSpeed = 0.1;
+            cameraDistance += e.deltaY * zoomSpeed;
+            cameraDistance = Math.max(10, Math.min(50, cameraDistance));
+            updateCameraPosition();
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        
+        // Error handling for debugging
+        window.addEventListener('error', (e) => {
+            console.error('JavaScript Error:', e.error);
+        });
+        
+        // Initialize
+        updateCameraPosition();
+        animate();
+
+        // Responsiveness
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+    </script>
+</body>
+</html>
