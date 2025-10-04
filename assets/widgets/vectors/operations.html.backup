@@ -245,12 +245,12 @@
             background-color: #fef2f2;
         }
 
-        /* Clear buttons */
+        /* Кнопки очистки */
         .clear-buttons-row {
             display: flex;
             gap: 8px;
             margin-bottom: 0;
-            max-width: 290px; /* Increase width */
+            max-width: 290px; /* Увеличиваем ширину */
             margin-left: auto;
             margin-right: auto;
         }
@@ -343,13 +343,13 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
 
-        /* Container for both toggles */
+        /* Контейнер для обоих переключателей */
         .switches-row {
             display: flex;
             justify-content: center;
             align-items: center;
             margin-bottom: 16px;
-            gap: 15px; /* Reduce gap from 30px to 15px */
+            gap: 15px; /* Уменьшаем зазор с 30px до 15px */
         }
         
         .switch-group {
@@ -504,9 +504,9 @@
         }
 
         .verify-button {
-            width: 290px; /* Increase width */
+            width: 290px; /* Увеличиваем ширину */
             max-width: 290px;
-            margin: 0 auto 8px auto; /* Center button */
+            margin: 0 auto 8px auto; /* Центрируем кнопку */
             padding: 10px 16px;
             border: none;
             border-radius: 8px;
@@ -900,13 +900,13 @@
 
         // Variables for vector operations
         let selectedVectors = []; // Array of selected vectors (maximum 2)
-        let isTriangleMethod = true; // true = triangle, false = parallelogram        // Variables for operation animations
+        let isTriangleMethod = true; // true = triangle, false = parallelogram        // Переменные для анимации операций
         let isAnimating = false;
         let animationStartTime = 0;
-        let animationDuration = 3000; // 3 seconds per step
+        let animationDuration = 3000; // 3 секунды на этап
         let currentAnimationStep = 0;
-        let operationVectors = []; // Vectors created during operation
-        let operationLines = []; // Dashed lines for geometric figures
+        let operationVectors = []; // Векторы, созданные в процессе операции
+        let operationLines = []; // Пунктирные линии для геометрических фигур
         let animationFrameId = null;
         
         // Variables for method comparison
@@ -927,15 +927,15 @@
         let rotatingVector = null; // Vector being rotated
         let rotationProgress = 0; // Rotation progress (0-1)
 
-        // Function to count usage of each point
+        // Функция подсчета использования каждой точки
         function updatePointUsageCount() {
             pointUsageCount.clear();
             
-            // Count usage of each point
+            // Подсчитываем использование каждой точки
             points.forEach(point => {
                 let count = 0;
                 
-                // Count how many vectors use this point as start or end
+                // Считаем сколько векторов используют эту точку как начальную или конечную
                 vectors.forEach(vector => {
                     if (vector.startPoint === point) count++;
                     if (vector.endPoint === point) count++;
@@ -945,16 +945,16 @@
             });
         }
 
-        // Function to get label offset for point with multiple vectors
+        // Функция получения смещения ярлыка для точки с несколькими векторами
         function getLabelOffset(point, vectorIndex = 0) {
             const usageCount = pointUsageCount.get(point) || 1;
             if (usageCount === 1) {
-                return { x: 8, y: -8 }; // Standard offset
+                return { x: 8, y: -8 }; // Стандартное смещение
             }
             
-            // Spiral offset for multiple vectors
+            // Смещение по спирали для нескольких векторов
             const angle = (vectorIndex * 2 * Math.PI) / usageCount;
-            const radius = 15 + vectorIndex * 3; // Increase radius for each next label
+            const radius = 15 + vectorIndex * 3; // Увеличиваем радиус для каждого следующего ярлыка
             
             return {
                 x: Math.cos(angle) * radius + 8,
@@ -962,16 +962,16 @@
             };
         }
 
-        // Function to generate unique point name considering existing ones
+        // Функция для генерации уникального имени точки с учетом уже существующих
         function generateUniquePointName(baseName) {
-            // If base name is not taken, use it
+            // Если базовое имя не занято, используем его
             const existingNames = new Set(points.map(p => p.name).filter(name => name));
             
             if (!existingNames.has(baseName)) {
                 return baseName;
             }
             
-            // If taken, add additional apostrophes
+            // Если занято, добавляем дополнительные апострофы
             let candidateName = baseName;
             
             do {
@@ -981,7 +981,7 @@
             return candidateName;
         }
 
-        // Function to find nearest point within given radius
+        // Функция поиска ближайшей точки в заданном радиусе
         function findNearbyPoint(x, y, excludePoint = null) {
             for (let point of points) {
                 if (point === excludePoint) continue;
@@ -994,7 +994,7 @@
             return null;
         }
 
-        // Function to find existing result vector with same coordinates
+        // Функция поиска существующего результирующего вектора с такими же координатами
         function findExistingResultVector(startX, startY, endX, endY) {
             for (let vector of resultVectors) {
                 if (vector && vector.isResultVector) {
@@ -1015,11 +1015,11 @@
             return null;
         }
 
-        // Function to remove duplicate result points
+        // Функция для удаления дублирующих результирующих точек
         function removeDuplicateResultPoints(existingVector, targetX, targetY) {
-            // Find all points at same location as existing vector end point
+            // Находим все точки в том же месте, что и конечная точка существующего вектора
             const duplicatePoints = points.filter(point => {
-                if (point === existingVector.endPoint) return false; // Do not remove original point
+                if (point === existingVector.endPoint) return false; // Не удаляем исходную точку
                 
                 const distance = Math.sqrt(
                     Math.pow(point.x - targetX, 2) + 
@@ -1030,7 +1030,7 @@
                        (point.isOperationPoint || point.isResultPoint);
             });
             
-            // Remove duplicate points from main array
+            // Удаляем дублирующие точки из основного массива
             duplicatePoints.forEach(point => {
                 const index = points.indexOf(point);
                 if (index !== -1) {
@@ -1038,9 +1038,9 @@
                 }
             });
             
-            // Check operation vectors that might reference deleted points
+            // Проверяем операционные векторы, которые могли ссылаться на удаленные точки
             operationVectors.forEach(vector => {
-                // Update end point references if they pointed to deleted point
+                // Обновляем ссылки на конечные точки, если они указывали на удаленную точку
                 duplicatePoints.forEach(removedPoint => {
                     if (vector.endPoint === removedPoint) {
                         vector.endPoint = existingVector.endPoint;
@@ -1051,11 +1051,11 @@
                 });
             });
             
-            // UPDATE POINT USAGE COUNTER
+            // ОБНОВЛЯЕМ СЧЕТЧИК ИСПОЛЬЗОВАНИЯ ТОЧЕК
             updatePointUsageCount();
         }
 
-        // Colors
+        // Цвета
         const VECTOR_COLOR = '#4B5563';
         const DEPENDENT_VECTOR_COLOR = '#9CA3AF';
         const LINE_COLOR = '#9CA3AF';
@@ -1066,14 +1066,14 @@
         const GRID_SIZE = 20;
 
         function clearCanvas() {
-            // Clear all arrays
+            // Очищаем все массивы
             vectors = [];
             points = [];
             selectedVectors = [];
             operationVectors = [];
             operationLines = [];
             
-            // Stop animation
+            // Останавливаем анимацию
             if (animationFrameId) {
                 cancelAnimationFrame(animationFrameId);
                 animationFrameId = null;
@@ -1081,7 +1081,7 @@
             isAnimating = false;
             currentAnimationStep = 0;
             
-            // Reset state
+            // Сбрасываем состояние
             isDrawing = false;
             dragMode = null;
             activeVector = null;
@@ -1090,15 +1090,15 @@
             vectorCounter = 0;
             pointCounter = 0;
             
-            // Hide context menu if open
+            // Скрываем контекстное меню если оно открыто
             hideContextMenu();
             
-            // Update vectors list and interface
+            // Обновляем список векторов и интерфейс
             updateVectorsList();
             updateSelectedVectorsInfo();
             updateOperationButtons();
             
-            // Redraw empty canvas
+            // Перерисовываем пустой канвас
             draw();
         }
 
@@ -1120,24 +1120,24 @@
 
         function toggleVectorSelection(vector, isShiftPressed) {
             if (!isShiftPressed) {
-                // Without Shift - normal selection of one vector (clear selection for operations)
+                // Без Shift - обычное выделение одного вектора (очищаем выбор для операций)
                 selectedVector = vector;
-                // DO NOT clear selectedVectors - allow user to select without reset
-                draw(); // Redraw to update highlighting
+                // НЕ очищаем selectedVectors - позволяем пользователю выбирать без сброса
+                draw(); // Перерисовываем для обновления подсветки
                 return;
             }
             
-            // With Shift - add/remove from selected for operations
+            // С Shift - добавляем/убираем из выбранных для операций
             const index = selectedVectors.indexOf(vector);
             if (index !== -1) {
-                // Vector already selected - remove it
+                // Вектор уже выбран - убираем его
                 selectedVectors.splice(index, 1);
             } else {
-                // Vector not selected - add it
+                // Вектор не выбран - добавляем
                 if (selectedVectors.length < 2) {
                     selectedVectors.push(vector);
                 } else {
-                    // Already selected 2 vectors - replace first
+                    // Уже выбрано 2 вектора - заменяем первый
                     selectedVectors[0] = selectedVectors[1];
                     selectedVectors[1] = vector;
                 }
@@ -1145,15 +1145,15 @@
             
             updateSelectedVectorsInfo();
             updateOperationButtons();
-            draw(); // Redraw to update highlighting
+            draw(); // Перерисовываем для обновления подсветки
         }
 
-        // Functions for animated operations
+        // Функции для анимированных операций
         function clearOperationResults() {
-            // Remove operation vectors
+            // Удаляем векторы операций
             operationVectors.forEach(vector => {
                 vectors = vectors.filter(v => v !== vector);
-                // Remove operation points from main array
+                // Удаляем точки операций из общего массива
                 if (vector.startPoint && vector.startPoint.isOperationPoint) {
                     points = points.filter(p => p !== vector.startPoint);
                 }
@@ -1168,7 +1168,7 @@
             lastOperation = null;
             previousResult = [];
             
-            // Stop animation if running
+            // Останавливаем анимацию если идет
             if (animationFrameId) {
                 cancelAnimationFrame(animationFrameId);
                 animationFrameId = null;
@@ -1207,12 +1207,12 @@
             
             let endPoint;
             if (endName === null) {
-                // Do not create new point - use temporary coordinates without adding to points
+                // Не создаем новую точку - используем временные координаты без добавления в points
                 endPoint = {
                     x: endX,
                     y: endY,
-                    name: null, // No name for temporary point
-                    isOperationPoint: false // Not a real point
+                    name: null, // Нет имени для временной точки
+                    isOperationPoint: false // Не является настоящей точкой
                 };
             } else {
                 endPoint = {
@@ -1221,7 +1221,7 @@
                     name: endName,
                     isOperationPoint: true
                 };
-                // Add only real points with names
+                // Добавляем только реальные точки с именами
                 points.push(endPoint);
             }
             
@@ -1233,7 +1233,7 @@
                 name: name,
                 isOperationVector: true,
                 isResultVector: isResult,
-                parentVector: null // Operation vectors are independent
+                parentVector: null // Операционные векторы независимы
             };
             
             vectors.push(vector);
@@ -1253,7 +1253,7 @@
                 const elapsed = Date.now() - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 
-                // Smooth interpolation (easing)
+                // Плавная интерполяция (easing)
                 const easeProgress = 1 - Math.pow(1 - progress, 3);
                 
                 vector.startPoint.x = initialStartX + (targetStartX - initialStartX) * easeProgress;
@@ -1286,18 +1286,18 @@
             ctx.beginPath();
             ctx.moveTo(x1, y1);
             
-            // Animated line appearance
+            // Анимированное появление линии
             const currentX = x1 + dx * progress;
             const currentY = y1 + dy * progress;
             ctx.lineTo(currentX, currentY);
             
             ctx.stroke();
-            ctx.setLineDash([]); // Reset dash
+            ctx.setLineDash([]); // Сбрасываем пунктир
             ctx.restore();
         }
 
         function drawOperationLines() {
-            // Function to compare lines with tolerance (same as in addAnimatedLine)
+            // Функция для сравнения линий с учетом погрешности (та же, что в addAnimatedLine)
             function linesAreEqual(line1, line2, tolerance = 2) {
                 return Math.abs(line1.x1 - line2.x1) < tolerance &&
                        Math.abs(line1.y1 - line2.y1) < tolerance &&
@@ -1305,9 +1305,9 @@
                        Math.abs(line1.y2 - line2.y2) < tolerance;
             }
             
-            // Draw static lines (only those not being animated)
+            // Рисуем статичные линии (только те, что не находятся в процессе анимации)
             operationLines.forEach(line => {
-                // Check that this line is not being animated now (WITH TOLERANCE!)
+                // Проверяем, что эта линия не анимируется сейчас (С УЧЕТОМ ПОГРЕШНОСТИ!)
                 const isAnimating = animatedLines.some(animatedLine => 
                     linesAreEqual(animatedLine, line)
                 );
@@ -1316,18 +1316,18 @@
                 }
             });
             
-            // Draw animated lines with their individual progress
+            // Рисуем анимированные линии с их индивидуальным прогрессом
             animatedLines.forEach(line => {
-                drawDashedLine(line.x1, line.y1, line.x2, line.y2, line.progress);  // ✅ Use individual progress
+                drawDashedLine(line.x1, line.y1, line.x2, line.y2, line.progress);  // ✅ Используем индивидуальный progress
             });
         }
 
-        // New function for animated addition of auxiliary lines
+        // Новая функция для анимированного добавления вспомогательных линий
         function addAnimatedLine(x1, y1, x2, y2, delay = 0) {
             setTimeout(() => {
                 const line = { x1, y1, x2, y2 };
                 
-                // Function to compare lines with tolerance
+                // Функция для сравнения линий с учетом погрешности
                 function linesAreEqual(line1, line2, tolerance = 2) {
                     return Math.abs(line1.x1 - line2.x1) < tolerance &&
                            Math.abs(line1.y1 - line2.y1) < tolerance &&
@@ -1335,42 +1335,42 @@
                            Math.abs(line1.y2 - line2.y2) < tolerance;
                 }
                 
-                // Check that such line does not exist in operation lines (with tolerance)
+                // Проверяем, что такой линии еще нет в операционных линиях (с учетом погрешности)
                 const existsInOperationLines = operationLines.some(opLine => 
                     linesAreEqual(opLine, line)
                 );
                 
-                // Check that such line does not exist in animated (with tolerance)
+                // Проверяем, что такой линии еще нет в анимированных (с учетом погрешности)
                 const existsInAnimatedLines = animatedLines.some(animLine => 
                     linesAreEqual(animLine, line)
                 );
                 
                 if (existsInOperationLines || existsInAnimatedLines) {
-                    return; // Do not add duplicate line
+                    return; // Не добавляем дублирующую линию
                 }
                 
-                // Create line object with own progress
+                // Создаем объект линии с собственным прогрессом
                 const animatedLine = {
                     x1, y1, x2, y2,
-                    progress: 0,  // ✅ Individual progress for each line
+                    progress: 0,  // ✅ Индивидуальный прогресс для каждой линии
                     startTime: performance.now()
                 };
                 
                 animatedLines.push(animatedLine);
                 
-                // Animate line appearance
-                const duration = 1500; // 1.5 seconds to build line
+                // Анимируем появление линии
+                const duration = 1500; // 1.5 секунды на построение линии
                 
                 function animate() {
                     const elapsed = performance.now() - animatedLine.startTime;
-                    animatedLine.progress = Math.min(elapsed / duration, 1);  // ✅ Update only own progress
+                    animatedLine.progress = Math.min(elapsed / duration, 1);  // ✅ Обновляем только свой прогресс
                     
                     draw();
                     
                     if (animatedLine.progress < 1) {
                         requestAnimationFrame(animate);
                     } else {
-                        // Properly remove from animated and move to regular lines
+                        // Правильно удаляем из анимированных и переносим в обычные линии
                         const index = animatedLines.findIndex(l => 
                             linesAreEqual(l, animatedLine)
                         );
@@ -1378,12 +1378,12 @@
                             animatedLines.splice(index, 1);
                         }
                         
-                        // Add to static lines only if not already there
+                        // Добавляем в статичные линии только если её там еще нет
                         const existsInStatic = operationLines.some(opLine => 
                             linesAreEqual(opLine, animatedLine)
                         );
                         if (!existsInStatic) {
-                            operationLines.push({ x1, y1, x2, y2 });  // Add simple object without progress
+                            operationLines.push({ x1, y1, x2, y2 });  // Добавляем простой объект без progress
                         }
                         
                         draw();
@@ -1394,7 +1394,7 @@
             }, delay);
         }
 
-        // Function for animated 180-degree vector rotation
+        // Функция для анимированного разворота вектора на 180 градусов
         function animateVectorRotation(vector, duration = 2000, callback) {
             rotatingVector = {
                 original: vector,
@@ -1409,20 +1409,20 @@
                 const elapsed = performance.now() - startTime;
                 rotationProgress = Math.min(elapsed / duration, 1);
                 
-                // Calculate intermediate position of vector end during rotation
-                // Rotation happens around start point
-                const angle = Math.PI * rotationProgress; // From 0 to π (180 degrees)
+                // Вычисляем промежуточную позицию конца вектора при развороте
+                // Разворот происходит вокруг начальной точки
+                const angle = Math.PI * rotationProgress; // От 0 до π (180 градусов)
                 const dx = rotatingVector.originalEndPoint.x - rotatingVector.startPoint.x;
                 const dy = rotatingVector.originalEndPoint.y - rotatingVector.startPoint.y;
                 
-                // Apply rotation around start point
+                // Применяем поворот вокруг начальной точки
                 const cosAngle = Math.cos(angle);
                 const sinAngle = Math.sin(angle);
                 
                 const newDx = dx * cosAngle - dy * sinAngle;
                 const newDy = dx * sinAngle + dy * cosAngle;
                 
-                // Update vector end point
+                // Обновляем конечную точку вектора
                 vector.endPoint.x = rotatingVector.startPoint.x + newDx;
                 vector.endPoint.y = rotatingVector.startPoint.y + newDy;
                 
@@ -1431,7 +1431,7 @@
                 if (rotationProgress < 1) {
                     requestAnimationFrame(animate);
                 } else {
-                    // Complete animation
+                    // Завершаем анимацию
                     rotatingVector = null;
                     rotationProgress = 0;
                     draw();
@@ -1442,7 +1442,7 @@
             animate();
         }
 
-        // WRAPPERS FOR COMPATIBILITY
+        // ОБЕРТКИ ДЛЯ СОВМЕСТИМОСТИ
         function performVectorAddition(vector1, vector2, method, clearPrevious = true) {
             performVectorOperation(vector1, vector2, method, false, clearPrevious);
         }
@@ -1451,7 +1451,7 @@
             performVectorOperation(vector1, vector2, method, true, clearPrevious);
         }
 
-        // UNIVERSAL FUNCTION FOR VECTOR OPERATIONS
+        // УНИВЕРСАЛЬНАЯ ФУНКЦИЯ ДЛЯ ОПЕРАЦИЙ С ВЕКТОРАМИ
         function performVectorOperation(vector1, vector2, method, isSubtraction = false, clearPrevious = true) {
             if (isAnimating) {
                 return;
@@ -1459,14 +1459,14 @@
             
             const operationType = isSubtraction ? 'subtract' : 'add';
             
-            // Check if same operation is performed by different method
+            // Проверяем, выполняется ли та же операция другим методом
             const sameOperation = lastOperation && 
                                 lastOperation.type === operationType &&
                                 lastOperation.vectorA === vector1 &&
                                 lastOperation.vectorB === vector2;
             
             if (!sameOperation || clearPrevious) {
-                // New operation - clear previous results
+                // Новая операция - очищаем предыдущие результаты
                 if (clearPrevious) clearOperationResults();
                 lastOperation = {
                     type: operationType,
@@ -1479,10 +1479,10 @@
             isAnimating = true;
             currentAnimationStep = 0;
             
-            // Step 1: Create copy of second vector (normal or inverted)
+            // Этап 1: Создаем копию второго вектора (обычную или обращенную)
             let operationVector;
             if (isSubtraction) {
-                // For subtraction: first create copy, then rotate
+                // Для вычитания: сначала создаем копию, затем разворачиваем
                 operationVector = createOperationVector(
                     vector2.startPoint.x, vector2.startPoint.y,
                     vector2.endPoint.x, vector2.endPoint.y,
@@ -1493,10 +1493,10 @@
                 
                 draw();
                 
-                // Animate 180-degree vector rotation
+                // Анимируем разворот вектора на 180 градусов
                 setTimeout(() => {
                     animateVectorRotation(operationVector, 2500, () => {
-                        // After rotation change name to -b
+                        // После разворота меняем имя на -b
                         operationVector.name = '-' + vector2.name;
                         
                         setTimeout(() => {
@@ -1505,7 +1505,7 @@
                     });
                 }, 500);
             } else {
-                // For addition: create normal copy
+                // Для сложения: создаем обычную копию
                 operationVector = createOperationVector(
                     vector2.startPoint.x, vector2.startPoint.y,
                     vector2.endPoint.x, vector2.endPoint.y,
@@ -1522,7 +1522,7 @@
             }
             
             function continueWithMovement() {
-                // Step 2: Move operation vector to first vector
+                // Этап 2: Перемещаем операционный вектор к первому вектору
                 const targetStartX = method === 'triangle' ? vector1.endPoint.x : vector1.startPoint.x;
                 const targetStartY = method === 'triangle' ? vector1.endPoint.y : vector1.startPoint.y;
                 const targetEndX = targetStartX + (operationVector.endPoint.x - operationVector.startPoint.x);
@@ -1534,10 +1534,10 @@
                     operationVector.startPoint.name = newStartName;
                     
                     setTimeout(() => {
-                        // Step 3: Build geometric figure
+                        // Этап 3: Строим геометрическую фигуру
                         buildGeometricShape(vector1, operationVector, method, () => {
                             setTimeout(() => {
-                                // Step 4: Build result vector
+                                // Этап 4: Строим результирующий вектор
                                 buildResultVector(vector1, operationVector, method, operationType);
                             }, 800);
                         });
@@ -1553,26 +1553,26 @@
                     vector1.startPoint.y,
                     vector2.endPoint.x,
                     vector2.endPoint.y,
-                    0 // Without delay
+                    0 // Без задержки
                 );
                 
-                // Call callback after animation completion
+                // Вызываем callback после завершения анимации
                 setTimeout(() => {
                     if (callback) callback();
-                }, 1500); // Line animation time
+                }, 1500); // Время анимации линии
             } else {
-                // For parallelogram build missing sides with delay
-                // CORRECTED CALCULATIONS:
-                // 1. Line from end of first vector parallel to moved second vector
+                // Для параллелограмма строим недостающие стороны с задержкой
+                // ИСПРАВЛЕННЫЕ ВЫЧИСЛЕНИЯ:
+                // 1. Линия от конца первого вектора параллельно перемещенному второму вектору
                 const side1EndX = vector1.endPoint.x + (vector2.endPoint.x - vector2.startPoint.x);
                 const side1EndY = vector1.endPoint.y + (vector2.endPoint.y - vector2.startPoint.y);
                 
-                // 2. Line from end of moved second vector parallel to first vector  
+                // 2. Линия от конца перемещенного второго вектора параллельно первому вектору  
                 const side2EndX = vector2.endPoint.x + (vector1.endPoint.x - vector1.startPoint.x);
                 const side2EndY = vector2.endPoint.y + (vector1.endPoint.y - vector1.startPoint.y);
                 
-                // Check if lines coincide (considering calculation tolerance)
-                const TOLERANCE = 2; // Acceptable tolerance in pixels
+                // Проверяем, не совпадают ли линии (с учетом погрешности вычислений)
+                const TOLERANCE = 2; // Допустимая погрешность в пикселях
                 const linesAreSame = (
                     Math.abs(vector1.endPoint.x - vector2.endPoint.x) < TOLERANCE &&
                     Math.abs(vector1.endPoint.y - vector2.endPoint.y) < TOLERANCE &&
@@ -1584,30 +1584,30 @@
                     Math.abs(side1EndX - vector2.endPoint.x) < TOLERANCE &&
                     Math.abs(side1EndY - vector2.endPoint.y) < TOLERANCE
                 );
-                // Add first side of parallelogram  
+                // Добавляем первую сторону параллелограмма  
                 addAnimatedLine(
                     vector1.endPoint.x,
                     vector1.endPoint.y,
                     side1EndX,
                     side1EndY,
-                    0 // First line immediately
+                    0 // Первая линия сразу
                 );
                 
-                let totalAnimationTime = 1000; // First animation time
+                let totalAnimationTime = 1000; // Время первой анимации
                 
                 if (!linesAreSame) {
-                    // Add second line only if it differs from first
+                    // Добавляем вторую линию только если она отличается от первой
                     addAnimatedLine(
                         vector2.endPoint.x,
                         vector2.endPoint.y,
                         side2EndX,
                         side2EndY,
-                        1000 // Second line with 1000ms delay
+                        1000 // Вторая линия с задержкой 1000мс
                     );
                     totalAnimationTime = 2000; // 1000 + 1000
                 }
                 
-                // Call callback after all animations complete
+                // Вызываем callback после завершения всех анимаций
                 setTimeout(() => {
                     if (callback) callback();
                 }, totalAnimationTime);
@@ -1617,34 +1617,34 @@
         }
 
         function buildResultVector(vector1, vector2, method, operation) {
-            // For start point: ALWAYS use existing startPoint of first vector
+            // Для начальной точки: ВСЕГДА используем существующую точку startPoint первого вектора
             const resultStart = vector1.startPoint;
             
-            // UNIFIED LOGIC: search existing points, do not create new ones
+            // УНИФИЦИРОВАННАЯ ЛОГИКА: ищем существующие точки, не создаем новые
             let resultEnd;
             let resultEndName;
             
             if (method === 'triangle') {
-                // For triangle: use EXISTING end point of second vector
-                resultEnd = vector2.endPoint;  // ✅ Use point object itself, not coordinate copy
-                resultEndName = vector2.endPoint.name;  // ✅ Use existing point name
+                // Для треугольника: используем СУЩЕСТВУЮЩУЮ конечную точку второго вектора
+                resultEnd = vector2.endPoint;  // ✅ Используем сам объект точки, а не копию координат
+                resultEndName = vector2.endPoint.name;  // ✅ Используем существующее имя точки
             } else {
-                // For parallelogram: calculate diagonal
+                // Для параллелограмма: вычисляем диагональ
                 const diagonalEndX = vector2.endPoint.x + (vector1.endPoint.x - vector1.startPoint.x);
                 const diagonalEndY = vector2.endPoint.y + (vector1.endPoint.y - vector1.startPoint.y);
                 
-                // SEARCH FOR EXISTING POINT with such coordinates
+                // ИЩЕМ СУЩЕСТВУЮЩУЮ ТОЧКУ с такими координатами
                 const existingPoint = points.find(p => 
                     Math.abs(p.x - diagonalEndX) < 0.1 && 
                     Math.abs(p.y - diagonalEndY) < 0.1
                 );
                 
                 if (existingPoint) {
-                    // Use existing point and its name
+                    // Используем существующую точку и ее имя
                     resultEnd = existingPoint;
                     resultEndName = existingPoint.name;
                 } else {
-                    // Only if point does not exist - create new one
+                    // Только если точки нет - создаем новую
                     resultEnd = {
                         x: diagonalEndX,
                         y: diagonalEndY
@@ -1660,14 +1660,14 @@
             );
             
             if (existingVector) {
-                // If identical vector found, use it
+                // Если найден идентичный вектор, используем его
                 
                 // УДАЛЯЕМ ДУБЛИРУЮЩИЕ РЕЗУЛЬТИРУЮЩИЕ ТОЧКИ
                 removeDuplicateResultPoints(existingVector, resultEnd.x, resultEnd.y);
                 
                 isAnimating = false;
                 
-                // Add to operation information
+                // Добавляем к информации об операции
                 if (lastOperation) {
                     if (!lastOperation.methods.includes(method)) {
                         lastOperation.methods.push(method);
@@ -1676,7 +1676,7 @@
                         resultVectors.push(existingVector);
                     }
                     
-                    // If this is second method, show blinking
+                    // Если это второй метод, показываем мигание
                     if (lastOperation.methods.length === 2) {
                         startBlinking(existingVector);
                     }
@@ -1694,9 +1694,9 @@
             let resultName;
             
             if (operation === 'subtract' && vector2.name.startsWith('-')) {
-                // For subtraction, if vector2 already has minus (operation vector -b)
-                // Remove minus from second vector name and use normal a-b logic
-                const originalVector2Name = vector2.name.substring(1); // Remove first character '-'
+                // Для вычитания, если vector2 уже имеет минус (операционный вектор -b)
+                // Убираем минус из имени второго вектора и используем обычную логику a-b
+                const originalVector2Name = vector2.name.substring(1); // Убираем первый символ '-'
                 resultName = `${vector1.name}${operationSymbol}${originalVector2Name}`;
             } else {
                 resultName = `${vector1.name}${operationSymbol}${vector2.name}`;
@@ -1705,10 +1705,10 @@
             let resultVector;
             
             if (method === 'triangle') {
-                // For triangle: create vector with existing points
+                // Для треугольника: создаем вектор с существующими точками
                 resultVector = {
-                    startPoint: resultStart,           // Use existing start point
-                    endPoint: vector2.endPoint,       // Use existing end point
+                    startPoint: resultStart,           // Используем существующую начальную точку
+                    endPoint: vector2.endPoint,       // Используем существующую конечную точку
                     name: resultName,
                     isOperationVector: true,
                     isResultVector: true,
@@ -2174,7 +2174,7 @@
             ctx.strokeStyle = AXIS_COLOR;
             ctx.lineWidth = 2;
             
-            // X axis (горизонтальная)
+            // Ось X (горизонтальная)
             ctx.beginPath();
             ctx.moveTo(0, centerY);
             ctx.lineTo(canvas.width, centerY);
@@ -2190,7 +2190,7 @@
             ctx.lineWidth = 2;
             ctx.stroke();
             
-            // Y axis (вертикальная)
+            // Ось Y (вертикальная)
             ctx.beginPath();
             ctx.moveTo(centerX, canvas.height);
             ctx.lineTo(centerX, 0);
@@ -2203,7 +2203,7 @@
             ctx.lineTo(centerX + arrowSize/2, arrowSize);
             ctx.stroke();
             
-            // Axis labels
+            // Подписи осей
             ctx.fillStyle = AXIS_LABEL_COLOR;
             ctx.font = 'bold 16px Arial';
             ctx.textAlign = 'left';
