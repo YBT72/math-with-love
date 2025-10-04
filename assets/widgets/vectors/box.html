@@ -299,6 +299,14 @@
         let userPointLabels = []; // Store labels for user points
         let pointCounter = 0;
 
+        // Storage for user-created planes
+        let userPlanes = [];
+        let userPlaneLabels = [];
+        let planeCounter = 0;
+        let isCreatingPlane = false;
+        let selectedPlanePoints = []; // Array to store 3 selected points for plane creation
+        let currentPlane = null; // Currently displayed plane
+
         // Snap detection state
         let currentSnap = null; // { type: 'vertex'|'edge'|'face', object: ..., position: Vector3 }
         let highlightedObject = null;
@@ -376,16 +384,22 @@
             return [y, z, x]; // [Three.x, Three.y, Three.z] = [math.y, math.z, math.x]
         }
 
+        // Function to convert Three.js coordinates to math coordinates
+        function threeJSToMath(pos) {
+            // Reverse conversion: [math.x, math.y, math.z] = [Three.z, Three.x, Three.y]
+            return { x: pos.z, y: pos.x, z: pos.y };
+        }
+
         // Vertices (math coordinates converted to Three.js)
         const vertices = [
             { pos: mathToThreeJS(0, 0, 0), label: 'A' },   // Origin
-            { pos: mathToThreeJS(b, 0, 0), label: 'B' },   // Along X axis
-            { pos: mathToThreeJS(b, a, 0), label: 'C' },   // X+Y
-            { pos: mathToThreeJS(0, a, 0), label: 'D' },   // Along Y axis
+            { pos: mathToThreeJS(a, 0, 0), label: 'B' },   // Along X axis  
+            { pos: mathToThreeJS(a, b, 0), label: 'C' },   // X+Y
+            { pos: mathToThreeJS(0, b, 0), label: 'D' },   // Along Y axis
             { pos: mathToThreeJS(0, 0, c), label: "A'" },  // Along Z axis
-            { pos: mathToThreeJS(b, 0, c), label: "B'" },  // X+Z
-            { pos: mathToThreeJS(b, a, c), label: "C'" },  // X+Y+Z
-            { pos: mathToThreeJS(0, a, c), label: "D'" }   // Y+Z
+            { pos: mathToThreeJS(a, 0, c), label: "B'" },  // X+Z
+            { pos: mathToThreeJS(a, b, c), label: "C'" },  // X+Y+Z
+            { pos: mathToThreeJS(0, b, c), label: "D'" }   // Y+Z
         ];
 
         // Edges
@@ -505,21 +519,122 @@
             camera.position.y = cameraDistance * Math.sin(cameraRotation.phi);
             camera.position.z = cameraDistance * Math.cos(cameraRotation.theta) * Math.cos(cameraRotation.phi);
             camera.lookAt(a/2, c/2, b/2);
+            
+            // Update visibility of all faces when camera position changes
+            updateAllFacesVisibility();
+        }
+
+        // Function to recalculate visibility of all faces
+        function updateAllFacesVisibility() {
+            userPlanes.forEach(plane => {
+                if (plane.isFace && plane.mesh) {
+                    const isNowClosest = recalculateFaceVisibility(plane);
+                    
+                    // Update material color and opacity
+                    plane.mesh.material.color.setHex(isNowClosest ? 0x0088FF : 0x90EE90);
+                    plane.mesh.material.opacity = isNowClosest ? 0.3 : 0.7;
+                    
+                    // Update saved state
+                    plane.isClosestToCamera = isNowClosest;
+                    plane.faceType = isNowClosest ? 'фронтальная' : 'обратная';
+                }
+            });
+            
+            // Update list in info panel
+            updateUserObjectsList();
+        }
+
+        // Function to recalculate visibility of a specific face
+        function recalculateFaceVisibility(plane) {
+            if (!plane.isFace || !plane.mesh || !plane.equation) return false;
+            
+            const cameraPosition = camera.position;
+            
+            // Get face center
+            const faceCenter = new THREE.Vector3();
+            const geometry = plane.mesh.geometry;
+            const positions = geometry.attributes.position.array;
+            
+            for (let i = 0; i < 4; i++) {
+                faceCenter.x += positions[i * 3];
+                faceCenter.y += positions[i * 3 + 1];
+                faceCenter.z += positions[i * 3 + 2];
+            }
+            faceCenter.divideScalar(4);
+            
+            // Use predefined normal from plane equation
+            const faceNormal = new THREE.Vector3(plane.equation.a, plane.equation.b, plane.equation.c).normalize();
+            
+            // Check visibility
+            const cameraToFace = faceCenter.clone().sub(cameraPosition).normalize();
+            const dotProduct = faceNormal.dot(cameraToFace);
+            
+            return dotProduct < 0; // Face is facing camera
+        }
+
+        // Update plane creation status display
+        function updatePlaneCreationStatus() {
+            const statusDiv = document.getElementById('plane-status');
+            if (!statusDiv) {
+                // Create status display if it doesn't exist
+                const div = document.createElement('div');
+                div.id = 'plane-status';
+                div.style.cssText = `
+                    position: fixed;
+                    top: 100px;
+                    left: 20px;
+                    background: rgba(0,0,0,0.8);
+                    color: white;
+                    padding: 10px;
+                    border-radius: 5px;
+                    font-family: monospace;
+                    z-index: 1000;
+                    display: none;
+                `;
+                document.body.appendChild(div);
+            }
+            
+            const statusElement = document.getElementById('plane-status');
+            if (isCreatingPlane && selectedPlanePoints.length > 0) {
+                statusElement.style.display = 'block';
+                statusElement.innerHTML = `Создание плоскости: ${selectedPlanePoints.length}/3 точки выбрано<br>Выберите ${3 - selectedPlanePoints.length} точки или нажмите ESC для отмены`;
+            } else {
+                statusElement.style.display = 'none';
+            }
         }
 
         // Tool selection
         function setTool(tool) {
-            // Clear previous tool state
-            clearSelection();
+            // Clear previous tool state but preserve plane selection
+            if (!isCreatingPlane) {
+                clearSelection();
+            }
             
             activeTool = tool;
             document.querySelectorAll('.tool-icon').forEach(icon => icon.classList.remove('active'));
             document.getElementById('tool-' + tool)?.classList.add('active');
             
+            // If switching away from plane tool while creating plane, cancel creation
+            if (isCreatingPlane && tool !== 'plane') {
+                selectedPlanePoints.forEach(ref => {
+                    if (ref.isVertex) {
+                        vertexSpheres[ref.index].material.color.setHex(0xffffff);
+                    } else {
+                        userPoints[ref.userIndex].sphere.material.color.setHex(0x000000);
+                    }
+                });
+                selectedPlanePoints = [];
+                isCreatingPlane = false;
+                updatePlaneCreationStatus();
+            }
+            
             if (tool === 'vector') {
                 container.style.cursor = 'crosshair';
             } else if (tool === 'point') {
                 container.style.cursor = 'crosshair';
+            } else if (tool === 'plane') {
+                container.style.cursor = 'crosshair';
+                updatePlaneCreationStatus();
             } else if (tool === 'select') {
                 container.style.cursor = 'pointer';
             } else {
@@ -547,6 +662,19 @@
             userPoints = [];
             userPointLabels = [];
             pointCounter = 0;
+            
+            userPlanes.forEach(plane => {
+                scene.remove(plane.mesh);
+                if (plane.label) scene.remove(plane.label);
+                plane.intersectionLines.forEach(line => scene.remove(line));
+            });
+            userPlanes = [];
+            userPlaneLabels = [];
+            planeCounter = 0;
+            
+            // Reset plane creation state
+            isCreatingPlane = false;
+            selectedPlanePoints = [];
             
             updateUserObjectsList();
         }
@@ -766,6 +894,790 @@
             scene.add(sprite);
             return sprite;
         }
+
+        // Create label for plane
+        function createPlaneLabel(text, position) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = 256;
+            context.font = 'Bold 160px Arial';
+            context.fillStyle = '#4169E1'; // Royal blue for plane labels
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(text, 128, 128);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMat = new THREE.SpriteMaterial({ map: texture, depthTest: false });
+            const sprite = new THREE.Sprite(spriteMat);
+            sprite.position.copy(position);
+            sprite.scale.set(1.5, 1.5, 1);
+            scene.add(sprite);
+            return sprite;
+        }
+
+        // Calculate plane equation from 3 points in math coordinates
+        function calculatePlaneEquation(p1Math, p2Math, p3Math) {
+            // Vectors in math coordinates
+            const v1 = {
+                x: p2Math.x - p1Math.x,
+                y: p2Math.y - p1Math.y,
+                z: p2Math.z - p1Math.z
+            };
+            const v2 = {
+                x: p3Math.x - p1Math.x,
+                y: p3Math.y - p1Math.y,
+                z: p3Math.z - p1Math.z
+            };
+            
+            // Normal vector (cross product)
+            const normal = {
+                x: v1.y * v2.z - v1.z * v2.y,
+                y: v1.z * v2.x - v1.x * v2.z,
+                z: v1.x * v2.y - v1.y * v2.x
+            };
+            
+            // Plane equation: ax + by + cz + d = 0
+            const a = normal.x;
+            const b = normal.y;
+            const c = normal.z;
+            const d = -(a * p1Math.x + b * p1Math.y + c * p1Math.z);
+            
+            return { a, b, c, d, normal };
+        }
+
+        // Find intersection of plane with parallelepiped using a simple approach
+        function findPlanePolygon(equation) {
+            const { a: pa, b: pb, c: pc, d } = equation;
+            
+            // Create a grid of points on the plane and filter those inside the box
+            const points = [];
+            const step = 0.2; // Fine grid
+            
+            // Generate points on the plane by varying two coordinates and solving for the third
+            for (let i = -1; i <= Math.max(a, b, c) + 1; i += step) {
+                for (let j = -1; j <= Math.max(a, b, c) + 1; j += step) {
+                    let point = null;
+                    
+                    // Try to solve for z (if c coefficient is significant)
+                    if (Math.abs(pc) > 1e-10) {
+                        const x = i, y = j;
+                        const z = -(pa * x + pb * y + d) / pc;
+                        if (x >= 0 && x <= a && y >= 0 && y <= b && z >= 0 && z <= c) {
+                            point = {x, y, z};
+                        }
+                    }
+                    // Try to solve for y (if b coefficient is significant)
+                    else if (Math.abs(pb) > 1e-10) {
+                        const x = i, z = j;
+                        const y = -(pa * x + pc * z + d) / pb;
+                        if (x >= 0 && x <= a && y >= 0 && y <= b && z >= 0 && z <= c) {
+                            point = {x, y, z};
+                        }
+                    }
+                    // Try to solve for x (if a coefficient is significant)
+                    else if (Math.abs(pa) > 1e-10) {
+                        const y = i, z = j;
+                        const x = -(pb * y + pc * z + d) / pa;
+                        if (x >= 0 && x <= a && y >= 0 && y <= b && z >= 0 && z <= c) {
+                            point = {x, y, z};
+                        }
+                    }
+                    
+                    if (point) {
+                        points.push(point);
+                    }
+                }
+            }
+            
+            if (points.length < 3) {
+                return [];
+            }
+            
+            // Find the convex hull of the points
+            // For simplicity, let's find the boundary points
+            const boundaryPoints = [];
+            
+            // Project points to the best 2D plane
+            let projectedPoints;
+            if (Math.abs(pc) >= Math.abs(pa) && Math.abs(pc) >= Math.abs(pb)) {
+                // Project to XY plane
+                projectedPoints = points.map(p => ({orig: p, x: p.x, y: p.y}));
+            } else if (Math.abs(pb) >= Math.abs(pa)) {
+                // Project to XZ plane
+                projectedPoints = points.map(p => ({orig: p, x: p.x, y: p.z}));
+            } else {
+                // Project to YZ plane
+                projectedPoints = points.map(p => ({orig: p, x: p.y, y: p.z}));
+            }
+            
+            // Find convex hull using gift wrapping algorithm (simplified)
+            if (projectedPoints.length === 0) return [];
+            
+            // Find the leftmost point
+            let leftmost = projectedPoints[0];
+            for (let i = 1; i < projectedPoints.length; i++) {
+                if (projectedPoints[i].x < leftmost.x || 
+                    (projectedPoints[i].x === leftmost.x && projectedPoints[i].y < leftmost.y)) {
+                    leftmost = projectedPoints[i];
+                }
+            }
+            
+            const hull = [];
+            let currentPoint = leftmost;
+            
+            do {
+                hull.push(currentPoint.orig);
+                let nextPoint = projectedPoints[0];
+                
+                for (let i = 1; i < projectedPoints.length; i++) {
+                    const cross = (nextPoint.x - currentPoint.x) * (projectedPoints[i].y - currentPoint.y) - 
+                                  (nextPoint.y - currentPoint.y) * (projectedPoints[i].x - currentPoint.x);
+                    if (nextPoint === currentPoint || cross < 0) {
+                        nextPoint = projectedPoints[i];
+                    }
+                }
+                
+                currentPoint = nextPoint;
+            } while (currentPoint !== leftmost && hull.length < 20); // Prevent infinite loops
+            
+            return hull.length >= 3 ? hull : [];
+        }
+
+        // Find intersection line between plane and a face
+        function findPlaneLineIntersection(planeEq, face) {
+            const { a: pa, b: pb, c: pc, d } = planeEq; // Rename to avoid conflict
+            const lines = [];
+            
+            // For each face, find intersection line
+            if (face.name.startsWith('x=')) {
+                const x = parseFloat(face.name.split('=')[1]);
+                if (Math.abs(pb) > 1e-10 || Math.abs(pc) > 1e-10) {
+                    // Line exists, find endpoints within face bounds
+                    const points = [];
+                    // Check intersections with face edges
+                    for (let y of [face.bounds.y[0], face.bounds.y[1]]) {
+                        if (Math.abs(pc) > 1e-10) {
+                            const z = -(a*x + b*y + d) / c;
+                            if (z >= face.bounds.z[0] && z <= face.bounds.z[1]) {
+                                points.push({x, y, z});
+                            }
+                        }
+                    }
+                    for (let z of [face.bounds.z[0], face.bounds.z[1]]) {
+                        if (Math.abs(b) > 1e-10) {
+                            const y = -(a*x + c*z + d) / b;
+                            if (y >= face.bounds.y[0] && y <= face.bounds.y[1]) {
+                                points.push({x, y, z});
+                            }
+                        }
+                    }
+                    if (points.length >= 2) {
+                        lines.push({ start: points[0], end: points[1] });
+                    }
+                }
+            } else if (face.name.startsWith('y=')) {
+                const y = parseFloat(face.name.split('=')[1]);
+                if (Math.abs(a) > 1e-10 || Math.abs(c) > 1e-10) {
+                    const points = [];
+                    for (let x of [face.bounds.x[0], face.bounds.x[1]]) {
+                        if (Math.abs(c) > 1e-10) {
+                            const z = -(a*x + b*y + d) / c;
+                            if (z >= face.bounds.z[0] && z <= face.bounds.z[1]) {
+                                points.push({x, y, z});
+                            }
+                        }
+                    }
+                    for (let z of [face.bounds.z[0], face.bounds.z[1]]) {
+                        if (Math.abs(a) > 1e-10) {
+                            const x = -(b*y + c*z + d) / a;
+                            if (x >= face.bounds.x[0] && x <= face.bounds.x[1]) {
+                                points.push({x, y, z});
+                            }
+                        }
+                    }
+                    if (points.length >= 2) {
+                        lines.push({ start: points[0], end: points[1] });
+                    }
+                }
+            } else if (face.name.startsWith('z=')) {
+                const z = parseFloat(face.name.split('=')[1]);
+                if (Math.abs(a) > 1e-10 || Math.abs(b) > 1e-10) {
+                    const points = [];
+                    for (let x of [face.bounds.x[0], face.bounds.x[1]]) {
+                        if (Math.abs(b) > 1e-10) {
+                            const y = -(a*x + c*z + d) / b;
+                            if (y >= face.bounds.y[0] && y <= face.bounds.y[1]) {
+                                points.push({x, y, z});
+                            }
+                        }
+                    }
+                    for (let y of [face.bounds.y[0], face.bounds.y[1]]) {
+                        if (Math.abs(a) > 1e-10) {
+                            const x = -(b*y + c*z + d) / a;
+                            if (x >= face.bounds.x[0] && x <= face.bounds.x[1]) {
+                                points.push({x, y, z});
+                            }
+                        }
+                    }
+                    if (points.length >= 2) {
+                        lines.push({ start: points[0], end: points[1] });
+                    }
+                }
+            }
+            
+            return lines;
+        }
+
+        // Update plane information display
+        function updatePlaneInfo(name, equation) {
+            // For now, just log the information
+            // Could be extended to update a dedicated info panel
+            console.log(`Plane Info: ${name}`);
+            console.log('Equation:', equation);
+        }
+
+        // Check if selected points form a face of the parallelepiped
+        function getParallelepipedFace(points) {
+            if (points.length !== 3 && points.length !== 4) return null;
+            
+            console.log('=== getParallelepipedFace DEBUG ===');
+            console.log('Input points:', points);
+            console.log('Points coordinates:');
+            points.forEach((point, i) => {
+                console.log(`  Point ${i}: (${point.x}, ${point.y}, ${point.z})`);
+            });
+            
+            // Get actual vertex positions from the parallelepiped
+            const vertexPositions = {
+                'A': vertices[0].pos,   // [0, 0, 0]
+                'B': vertices[1].pos,   // [a, 0, 0] 
+                'C': vertices[2].pos,   // [a, b, 0]
+                'D': vertices[3].pos,   // [0, b, 0]
+                "A'": vertices[4].pos,  // [0, 0, c]
+                "B'": vertices[5].pos,  // [a, 0, c]
+                "C'": vertices[6].pos,  // [a, b, c]
+                "D'": vertices[7].pos   // [0, b, c]
+            };
+            
+            console.log('Vertex positions from vertices array:');
+            Object.entries(vertexPositions).forEach(([name, pos]) => {
+                console.log(`  ${name}: [${pos[0]}, ${pos[1]}, ${pos[2]}]`);
+            });
+            
+            // Define faces using actual vertex positions with correct outward normals
+            const faces = [
+                {
+                    name: 'bottom',
+                    vertices: [vertexPositions['A'], vertexPositions['B'], vertexPositions['C'], vertexPositions['D']],
+                    equation: {a: 0, b: 0, c: -1, d: 0} // z = 0, normal downward (0, 0, -1)
+                },
+                {
+                    name: 'top', 
+                    vertices: [vertexPositions["A'"], vertexPositions["B'"], vertexPositions["C'"], vertexPositions["D'"]],
+                    equation: {a: 0, b: 0, c: 1, d: -c} // z = c, normal upward (0, 0, 1)
+                },
+                {
+                    name: 'front',
+                    vertices: [vertexPositions['A'], vertexPositions['B'], vertexPositions["B'"], vertexPositions["A'"]],
+                    equation: {a: 0, b: -1, c: 0, d: 0} // y = 0, normal toward us (0, -1, 0)
+                },
+                {
+                    name: 'back',
+                    vertices: [vertexPositions['D'], vertexPositions['C'], vertexPositions["C'"], vertexPositions["D'"]],
+                    equation: {a: 0, b: 1, c: 0, d: -b} // y = b, normal away from us (0, 1, 0)
+                },
+                {
+                    name: 'left',
+                    vertices: [vertexPositions['A'], vertexPositions['D'], vertexPositions["D'"], vertexPositions["A'"]],
+                    equation: {a: -1, b: 0, c: 0, d: 0} // x = 0, normal leftward (-1, 0, 0)
+                },
+                {
+                    name: 'right',
+                    vertices: [vertexPositions['B'], vertexPositions['C'], vertexPositions["C'"], vertexPositions["B'"]],
+                    equation: {a: 1, b: 0, c: 0, d: -a} // x = a, normal rightward (1, 0, 0)
+                }
+            ];
+            
+            // Check if selected points belong to any face
+            for (const face of faces) {
+                console.log(`\nChecking face: ${face.name}`);
+                console.log('Face vertices:');
+                face.vertices.forEach((vertex, i) => {
+                    console.log(`  Vertex ${i}: (${vertex[0]}, ${vertex[1]}, ${vertex[2]})`);
+                });
+                
+                let matchCount = 0;
+                for (const point of points) {
+                    for (const vertex of face.vertices) {
+                        // vertex is an array [x, y, z]
+                        if (Math.abs(point.x - vertex[0]) < 1e-6 &&
+                            Math.abs(point.y - vertex[1]) < 1e-6 &&
+                            Math.abs(point.z - vertex[2]) < 1e-6) {
+                            matchCount++;
+                            console.log(`Point (${point.x}, ${point.y}, ${point.z}) matches vertex (${vertex[0]}, ${vertex[1]}, ${vertex[2]}) of face ${face.name}`);
+                            break;
+                        }
+                    }
+                }
+                
+                console.log(`Face ${face.name}: ${matchCount} points match`);
+                
+                // If 3 or 4 points match this face, it's a face selection
+                if (matchCount >= 3) {
+                    console.log(`Selected points form face: ${face.name}`);
+                    return face;
+                }
+            }
+            
+            return null;
+        }
+        
+        // Create or highlight a face of the parallelepiped
+        function createOrHighlightFace(face, points) {
+            console.log('Creating/highlighting face:', face.name);
+            
+            // Determine if this face is visible from current camera position
+            const cameraPosition = camera.position;
+            
+            // Calculate face center
+            const faceCenter = new THREE.Vector3();
+            for (let i = 0; i < 4; i++) {
+                faceCenter.x += face.vertices[i][0];
+                faceCenter.y += face.vertices[i][1]; 
+                faceCenter.z += face.vertices[i][2];
+            }
+            faceCenter.divideScalar(4);
+            
+            // Calculate face normal in Three.js coordinates
+            // Use predefined normal from face equation instead of calculation
+            const faceNormal = new THREE.Vector3(face.equation.a, face.equation.b, face.equation.c).normalize();
+            
+            // Check if face is facing camera (dot product < 0 means facing camera)
+            const cameraToFace = faceCenter.clone().sub(cameraPosition).normalize();
+            const dotProduct = faceNormal.dot(cameraToFace);
+            const isFacingCamera = dotProduct < 0;  // FIXED: < 0 means face is facing camera
+            
+            // Calculate distance from camera to face center
+            const distanceToCamera = cameraPosition.distanceTo(faceCenter);
+            
+            console.log(`Face ${face.name}: center=${faceCenter.x.toFixed(2)},${faceCenter.y.toFixed(2)},${faceCenter.z.toFixed(2)}, normal=${faceNormal.x.toFixed(2)},${faceNormal.y.toFixed(2)},${faceNormal.z.toFixed(2)}, dot=${dotProduct.toFixed(2)}, distance=${distanceToCamera.toFixed(2)}, facingCamera=${isFacingCamera}`);
+            
+            // Don't remove existing planes - allow multiple planes to coexist
+            // if (currentPlane) {
+            //     scene.remove(currentPlane);
+            //     currentPlane = null;
+            // }
+            
+            // Create face geometry using the 4 vertices
+            const vertices = [];
+            const indices = [];
+            
+            // Add vertices (face.vertices contains arrays [x, y, z])
+            for (let i = 0; i < 4; i++) {
+                vertices.push(
+                    face.vertices[i][0], // x
+                    face.vertices[i][1], // y  
+                    face.vertices[i][2]  // z
+                );
+            }
+            
+            // Create two triangles to form the rectangle
+            indices.push(0, 1, 2);
+            indices.push(0, 2, 3);
+            
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            geometry.setIndex(indices);
+            geometry.computeVertexNormals();
+            
+            // Create material with high contrast colors
+            // Use facing direction to determine if this is the closest face
+            const isClosestFace = isFacingCamera; // Face facing towards camera is closest
+            
+            const material = new THREE.MeshBasicMaterial({
+                color: isClosestFace ? 0x0088FF : 0x90EE90, // Bright blue for closest, light green for farthest
+                transparent: true,
+                opacity: isClosestFace ? 0.3 : 0.7, // More transparent for closest face
+                side: THREE.DoubleSide, // Show both sides
+                depthTest: false, // Disable depth test to show all faces
+                depthWrite: false // Disable depth write for transparency
+            });
+            
+            // Create mesh
+            const planeMesh = new THREE.Mesh(geometry, material);
+            
+            // Settings for proper display from both sides
+            planeMesh.renderOrder = isClosestFace ? 500 : 1000; // Closest faces render first, then farthest
+            planeMesh.frustumCulled = false; // Don't cull based on camera frustum
+            
+            scene.add(planeMesh);
+            
+            console.log(`Face ${face.name} created with color: ${isClosestFace ? 'BRIGHT BLUE (closest to camera)' : 'LIGHT GREEN (farthest from camera)'}`);
+            console.log(`Face is ${isClosestFace ? 'facing camera (closest)' : 'facing away (farthest)'} with distance ${distanceToCamera.toFixed(2)}`);
+            
+            // Calculate center for label position
+            const center = new THREE.Vector3();
+            for (let i = 0; i < 4; i++) {
+                center.x += face.vertices[i][0];
+                center.y += face.vertices[i][1]; 
+                center.z += face.vertices[i][2];
+            }
+            center.divideScalar(4);
+            
+            // Get plane name based on face vertices
+            const planeName = getFacePlaneName(face);
+            
+            // Create label for the plane (but don't add to scene)
+            const label = null; // createPlaneLabel(planeName, center);
+            // userPlaneLabels.push(label);
+            
+            // Format equation for display
+            const formatEquation = (eq) => {
+                const { a, b, c, d } = eq;
+                let equation = '';
+                let first = true;
+                
+                if (Math.abs(a) > 1e-10) {
+                    const coeff = Math.abs(a - 1) < 1e-10 ? '' : Math.abs(a + 1) < 1e-10 ? '-' : a.toFixed(1);
+                    equation += (first ? '' : a > 0 ? '+' : '') + coeff + 'x';
+                    first = false;
+                }
+                if (Math.abs(b) > 1e-10) {
+                    const coeff = Math.abs(b - 1) < 1e-10 ? '' : Math.abs(b + 1) < 1e-10 ? '-' : b.toFixed(1);
+                    equation += (first ? '' : b > 0 ? '+' : '') + coeff + 'y';
+                    first = false;
+                }
+                if (Math.abs(c) > 1e-10) {
+                    const coeff = Math.abs(c - 1) < 1e-10 ? '' : Math.abs(c + 1) < 1e-10 ? '-' : c.toFixed(1);
+                    equation += (first ? '' : c > 0 ? '+' : '') + coeff + 'z';
+                    first = false;
+                }
+                equation += '=' + (-d).toFixed(0);
+                return equation;
+            };
+            
+            // Store face data in userPlanes array so it appears in the objects list
+            userPlanes.push({
+                name: planeName,
+                points: points.map(p => p.clone()), // Clone the selected points
+                pointRefs: selectedPlanePoints.slice(), // Copy point references
+                mesh: planeMesh,
+                label: label,
+                intersectionLines: [], // No intersection lines for faces
+                equation: face.equation,
+                equationString: formatEquation(face.equation),
+                isFace: true,
+                faceName: face.name,
+                isClosestToCamera: isClosestFace, // Save current visibility
+                faceType: isClosestFace ? 'фронтальная' : 'обратная' // Type for display
+            });
+            
+            // Increment counter and update objects list
+            planeCounter++;
+            updateUserObjectsList();
+            
+            // Update info panel with Greek letter π
+            updatePlaneInfo(`Плоскость π (${face.name})`, face.equation);
+            
+            console.log('Face created successfully');
+            
+            return planeMesh;
+        }
+
+        function getPlaneName() {
+            return `π${planeCounter + 1}`;
+        }
+
+        // Create plane name based on face type with correct vertex order
+        function getFacePlaneName(face) {
+            // Correct face names with fixed vertex order
+            const faceNames = {
+                'bottom': 'ABCD',        // Bottom face
+                'top': "A'B'C'D'",      // Top face  
+                'front': "ABB'A'",      // Front face
+                'back': "DCC'D'",       // Back face
+                'left': "ADD'A'",       // Left face
+                'right': "BCC'B'"       // Right face
+            };
+            
+            return faceNames[face.name] || face.name;
+        }
+
+        // Create plane from 3 points
+        function createPlane(point1, point2, point3) {
+            const points = [point1, point2, point3];
+            
+            // First check if these points form a face of the parallelepiped
+            const face = getParallelepipedFace(points);
+            
+            if (face) {
+                console.log('Selected points form a face:', face.name);
+                return createOrHighlightFace(face, points);
+            }
+            
+            // If not a face, create a custom plane
+            console.log('Creating custom plane through selected points');
+            
+            // Convert Three.js positions to math coordinates
+            const p1Math = threeJSToMath(point1);
+            const p2Math = threeJSToMath(point2);
+            const p3Math = threeJSToMath(point3);
+            
+            // Calculate plane equation
+            const equation = calculatePlaneEquation(p1Math, p2Math, p3Math);
+            
+            // Find polygon points within parallelepiped
+            const polygonPoints = findPlanePolygon(equation);
+            console.log('Polygon points found:', polygonPoints.length, polygonPoints);
+            
+            if (polygonPoints.length < 3) {
+                console.warn('Plane does not intersect parallelepiped properly');
+                return null;
+            }
+            
+            // Convert polygon points to Three.js coordinates
+            const threeJSPoints = polygonPoints.map(p => 
+                new THREE.Vector3(...mathToThreeJS(p.x, p.y, p.z))
+            );
+            
+            // Create geometry from polygon points
+            const vertices = [];
+            const indices = [];
+            
+            // Add vertices
+            threeJSPoints.forEach(point => {
+                vertices.push(point.x, point.y, point.z);
+            });
+            
+            // Create triangular faces (fan triangulation from first vertex)
+            for (let i = 1; i < threeJSPoints.length - 1; i++) {
+                indices.push(0, i, i + 1);
+            }
+            
+            const planeGeometry = new THREE.BufferGeometry();
+            planeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            planeGeometry.setIndex(indices);
+            planeGeometry.computeVertexNormals();
+            
+            // Create plane material
+            const planeMaterial = new THREE.MeshBasicMaterial({
+                color: 0x87CEEB, // Sky blue
+                transparent: true,
+                opacity: 0.6,
+                side: THREE.DoubleSide
+            });
+            
+            const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
+            scene.add(planeMesh);
+            
+            // Create intersection lines (edges of the polygon)
+            const intersectionObjects = [];
+            for (let i = 0; i < threeJSPoints.length; i++) {
+                const start = threeJSPoints[i];
+                const end = threeJSPoints[(i + 1) % threeJSPoints.length];
+                
+                // Create dashed line
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints([start, end]);
+                const lineMaterial = new THREE.LineDashedMaterial({
+                    color: 0x4169E1, // Royal blue, darker than plane
+                    dashSize: 0.15,
+                    gapSize: 0.1,
+                    linewidth: 2
+                });
+                
+                const dashedLine = new THREE.Line(lineGeometry, lineMaterial);
+                dashedLine.computeLineDistances();
+                scene.add(dashedLine);
+                intersectionObjects.push(dashedLine);
+            }
+            
+            // Calculate center for label placement
+            const center = new THREE.Vector3();
+            threeJSPoints.forEach(point => center.add(point));
+            center.divideScalar(threeJSPoints.length);
+            
+            // Create label
+            const planeName = getPlaneName();
+            const label = createPlaneLabel(planeName, center);
+            userPlaneLabels.push(label);
+            
+            // Format equation for display
+            const formatEquation = (eq) => {
+                const { a, b, c, d } = eq;
+                let equation = '';
+                let first = true;
+                
+                if (Math.abs(a) > 1e-10) {
+                    const coeff = Math.abs(a - 1) < 1e-10 ? '' : Math.abs(a + 1) < 1e-10 ? '-' : a.toFixed(2);
+                    equation += (first ? '' : a > 0 ? '+' : '') + coeff + 'x';
+                    first = false;
+                }
+                if (Math.abs(b) > 1e-10) {
+                    const coeff = Math.abs(b - 1) < 1e-10 ? '' : Math.abs(b + 1) < 1e-10 ? '-' : b.toFixed(2);
+                    equation += (first ? '' : b > 0 ? '+' : '') + coeff + 'y';
+                    first = false;
+                }
+                if (Math.abs(c) > 1e-10) {
+                    const coeff = Math.abs(c - 1) < 1e-10 ? '' : Math.abs(c + 1) < 1e-10 ? '-' : c.toFixed(2);
+                    equation += (first ? '' : c > 0 ? '+' : '') + coeff + 'z';
+                    first = false;
+                }
+                if (Math.abs(d) > 1e-10) {
+                    equation += (d > 0 ? '+' : '') + d.toFixed(2);
+                }
+                return equation + '=0';
+            };
+            
+            // Store plane data
+            userPlanes.push({
+                name: planeName,
+                points: [point1.clone(), point2.clone(), point3.clone()],
+                pointRefs: selectedPlanePoints.slice(),
+                mesh: planeMesh,
+                label: label,
+                intersectionLines: intersectionObjects,
+                equation: equation,
+                equationString: formatEquation(equation),
+                polygonPoints: polygonPoints,
+                isFace: false
+            });
+            
+            planeCounter++;
+            updateUserObjectsList();
+            
+            return planeMesh;
+        }
+
+        // Update plane when its defining points change
+        function updatePlane(planeIndex) {
+            const plane = userPlanes[planeIndex];
+            if (!plane || !plane.pointRefs) return;
+            
+            // Get current positions of the three defining points
+            const currentPositions = plane.pointRefs.map(ref => {
+                if (ref.isVertex) {
+                    return vertexSpheres[ref.index].position;
+                } else {
+                    return userPoints[ref.userIndex].sphere.position;
+                }
+            });
+            
+            // Recalculate plane equation
+            const p1Math = threeJSToMath(currentPositions[0]);
+            const p2Math = threeJSToMath(currentPositions[1]);
+            const p3Math = threeJSToMath(currentPositions[2]);
+            
+            const equation = calculatePlaneEquation(p1Math, p2Math, p3Math);
+            plane.equation = equation;
+            
+            // Find new polygon points
+            const polygonPoints = findPlanePolygon(equation);
+            plane.polygonPoints = polygonPoints;
+            
+            if (polygonPoints.length < 3) {
+                // Hide plane if it doesn't intersect properly
+                plane.mesh.visible = false;
+                plane.intersectionLines.forEach(line => line.visible = false);
+                return;
+            }
+            
+            // Make sure plane is visible
+            plane.mesh.visible = true;
+            plane.intersectionLines.forEach(line => line.visible = true);
+            
+            // Convert polygon points to Three.js coordinates
+            const threeJSPoints = polygonPoints.map(p => 
+                new THREE.Vector3(...mathToThreeJS(p.x, p.y, p.z))
+            );
+            
+            // Update geometry
+            const vertices = [];
+            const indices = [];
+            
+            // Add vertices
+            threeJSPoints.forEach(point => {
+                vertices.push(point.x, point.y, point.z);
+            });
+            
+            // Create triangular faces (fan triangulation from first vertex)
+            for (let i = 1; i < threeJSPoints.length - 1; i++) {
+                indices.push(0, i, i + 1);
+            }
+            
+            // Update mesh geometry
+            plane.mesh.geometry.dispose(); // Clean up old geometry
+            const newGeometry = new THREE.BufferGeometry();
+            newGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            newGeometry.setIndex(indices);
+            newGeometry.computeVertexNormals();
+            plane.mesh.geometry = newGeometry;
+            
+            // Remove old intersection lines
+            plane.intersectionLines.forEach(line => {
+                scene.remove(line);
+                line.geometry.dispose();
+                line.material.dispose();
+            });
+            plane.intersectionLines = [];
+            
+            // Create new intersection lines (edges of the polygon)
+            for (let i = 0; i < threeJSPoints.length; i++) {
+                const start = threeJSPoints[i];
+                const end = threeJSPoints[(i + 1) % threeJSPoints.length];
+                
+                // Create dashed line
+                const lineGeometry = new THREE.BufferGeometry().setFromPoints([start, end]);
+                const lineMaterial = new THREE.LineDashedMaterial({
+                    color: 0x4169E1, // Royal blue
+                    dashSize: 0.15,
+                    gapSize: 0.1,
+                    linewidth: 2
+                });
+                
+                const dashedLine = new THREE.Line(lineGeometry, lineMaterial);
+                dashedLine.computeLineDistances();
+                scene.add(dashedLine);
+                plane.intersectionLines.push(dashedLine);
+            }
+            
+            // Update label position
+            const center = new THREE.Vector3();
+            threeJSPoints.forEach(point => center.add(point));
+            center.divideScalar(threeJSPoints.length);
+            plane.label.position.copy(center);
+            
+            // Update equation
+            const formatEquation = (eq) => {
+                const { a, b, c, d } = eq;
+                let equation = '';
+                let first = true;
+                
+                if (Math.abs(a) > 1e-10) {
+                    const coeff = Math.abs(a - 1) < 1e-10 ? '' : Math.abs(a + 1) < 1e-10 ? '-' : a.toFixed(2);
+                    equation += (first ? '' : a > 0 ? '+' : '') + coeff + 'x';
+                    first = false;
+                }
+                if (Math.abs(b) > 1e-10) {
+                    const coeff = Math.abs(b - 1) < 1e-10 ? '' : Math.abs(b + 1) < 1e-10 ? '-' : b.toFixed(2);
+                    equation += (first ? '' : b > 0 ? '+' : '') + coeff + 'y';
+                    first = false;
+                }
+                if (Math.abs(c) > 1e-10) {
+                    const coeff = Math.abs(c - 1) < 1e-10 ? '' : Math.abs(c + 1) < 1e-10 ? '-' : c.toFixed(2);
+                    equation += (first ? '' : c > 0 ? '+' : '') + coeff + 'z';
+                    first = false;
+                }
+                if (Math.abs(d) > 1e-10) {
+                    equation += (d > 0 ? '+' : '') + d.toFixed(2);
+                }
+                return equation + '=0';
+            };
+            plane.equationString = formatEquation(equation);
+            
+            updateUserObjectsList();
+        }
+
         // Generate vector name
         function getVectorName() {
             const baseNames = vectorNames;
@@ -870,6 +1782,16 @@
                 });
             }
             
+            // Add user planes
+            if (userPlanes.length > 0) {
+                userPlanes.forEach((plane, i) => {
+                    const faceInfo = plane.isFace ? ` (${plane.faceType} грань ${plane.faceName})` : '';
+                    const colorIndicator = plane.isClosestToCamera ? '�' : '�'; // Blue for closest, green for farthest
+                    const displayName = plane.isFace ? plane.name : `π${i + 1}`; // Use vertex names for faces, π for custom planes
+                    content += `<li>&nbsp;&nbsp;• ${colorIndicator} Плоскость <strong>${displayName}</strong>${faceInfo}<br>&nbsp;&nbsp;&nbsp;&nbsp;<small>${plane.equationString}</small> <button onclick="deletePlane(${i})" style="font-size: 0.8em;">🗑️</button></li>`;
+                });
+            }
+            
             if (content === '') {
                 list.className = 'placeholder-text';
                 list.innerHTML = '&nbsp;&nbsp;Пока пусто';
@@ -926,11 +1848,36 @@
             updateUserObjectsList();
         }
 
+        function deletePlane(index) {
+            const plane = userPlanes[index];
+            scene.remove(plane.mesh);
+            if (plane.label) {
+                scene.remove(plane.label);
+            }
+            plane.intersectionLines.forEach(line => scene.remove(line));
+            userPlanes.splice(index, 1);
+            updateUserObjectsList();
+        }
+
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 e.preventDefault();
                 clearSelection();
+                
+                // Cancel plane creation
+                if (isCreatingPlane) {
+                    selectedPlanePoints.forEach(ref => {
+                        if (ref.isVertex) {
+                            vertexSpheres[ref.index].material.color.setHex(0xffffff);
+                        } else {
+                            userPoints[ref.userIndex].sphere.material.color.setHex(0x000000);
+                        }
+                    });
+                    selectedPlanePoints = [];
+                    isCreatingPlane = false;
+                    updatePlaneCreationStatus();
+                }
             } else if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
                 e.preventDefault();
                 // Undo: delete last created object (vector or point)
@@ -998,6 +1945,61 @@
                         toolActionPerformed = true;
                     }
                 }
+            } else if (activeTool === 'plane') {
+                if (snap && snap.type === 'vertex') {
+                    // Check if this point is already selected
+                    const isAlreadySelected = selectedPlanePoints.some(ref => {
+                        if (snap.isUserPoint) {
+                            return !ref.isVertex && ref.userIndex === userPoints.findIndex(p => p.sphere === highlightedObject.obj);
+                        } else {
+                            return ref.isVertex && ref.index === vertexSpheres.findIndex(v => v === highlightedObject.obj);
+                        }
+                    });
+                    
+                    if (isAlreadySelected) {
+                        return;
+                    }
+                    
+                    // Add point to plane creation
+                    const pointRef = {
+                        position: snap.position.clone(),
+                        isVertex: !snap.isUserPoint,
+                        index: snap.isUserPoint ? null : vertexSpheres.findIndex(v => v === highlightedObject.obj),
+                        userIndex: snap.isUserPoint ? userPoints.findIndex(p => p.sphere === highlightedObject.obj) : null
+                    };
+                    
+                    selectedPlanePoints.push(pointRef);
+                    
+                    // Highlight selected point with bright color
+                    highlightedObject.obj.material.color.setHex(0x00FF00); // bright green for selected points
+                    
+                    // Update status
+                    updatePlaneCreationStatus();
+                    
+                    if (selectedPlanePoints.length === 3) {
+                        // Create plane
+                        const positions = selectedPlanePoints.map(ref => ref.position);
+                        createPlane(positions[0], positions[1], positions[2]);
+                        
+                        // Reset highlights
+                        selectedPlanePoints.forEach((ref, idx) => {
+                            if (ref.isVertex) {
+                                vertexSpheres[ref.index].material.color.setHex(0xffffff);
+                            } else {
+                                userPoints[ref.userIndex].sphere.material.color.setHex(0x000000);
+                            }
+                        });
+                        
+                        // Reset plane creation state
+                        selectedPlanePoints = [];
+                        isCreatingPlane = false;
+                        updatePlaneCreationStatus();
+                    } else {
+                        isCreatingPlane = true;
+                    }
+                    
+                    toolActionPerformed = true;
+                }
             } else if (activeTool === 'select') {
                 if (snap && snap.type === 'vertex' && snap.isUserPoint) {
                     selectObject(highlightedObject.obj);
@@ -1043,6 +2045,13 @@
                         const mathCoords = { x: snap.position.z, y: snap.position.x, z: snap.position.y };
                         userPoint.mathCoords = mathCoords;
                         userPoint.sphere.userData.mathCoords = mathCoords;
+                        
+                        // Update any planes that use this point
+                        userPlanes.forEach((plane, planeIndex) => {
+                            if (plane.pointRefs && plane.pointRefs.some(ref => !ref.isVertex && ref.userIndex === userPoints.indexOf(userPoint))) {
+                                updatePlane(planeIndex);
+                            }
+                        });
                         
                         updateUserObjectsList();
                     }
