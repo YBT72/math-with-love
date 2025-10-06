@@ -876,8 +876,12 @@
             context.fillText(text, 128, 128);
 
             const texture = new THREE.CanvasTexture(canvas);
-            const spriteMat = new THREE.SpriteMaterial({ map: texture, depthTest: false });
+            const spriteMat = new THREE.SpriteMaterial({ 
+                map: texture, 
+                depthTest: false // Labels always visible
+            });
             const sprite = new THREE.Sprite(spriteMat);
+            sprite.renderOrder = 1000; // ADDED: High priority - render on top
             const offset = 1.2;
             sprite.position.set(position.x + offset, position.y + offset, position.z + offset);
             sprite.scale.set(1.5, 1.5, 1);
@@ -1638,16 +1642,14 @@
                 transparent: true,       // Enable transparency
                 opacity: 0.6,            // 60% transparency
                 side: THREE.DoubleSide,  // Visible from both sides
-                depthTest: true,         // FIXED: Enable depth test
+                depthTest: false,        // Disable depth test to always show
                 depthWrite: false,       // Don't write to depth buffer
-                polygonOffset: true,     // Prevent z-fighting
-                polygonOffsetFactor: 1,  
-                polygonOffsetUnits: 1
+                polygonOffset: false     // Not needed with depthTest: false
             });
-            
-            // Create mesh
+
+            // Create mesh with medium render order (after edges, before labels)
             const planeMesh = new THREE.Mesh(geometry, planeMaterial);
-            planeMesh.renderOrder = 999;
+            planeMesh.renderOrder = 500; // Render after parallelepiped edges but before labels
             scene.add(planeMesh);
             
             // STEP 2g: Create dashed outline around polygon perimeter
@@ -1669,9 +1671,9 @@
             
             const dashedOutline = new THREE.Line(outlineGeometry, dashedMaterial);
             dashedOutline.computeLineDistances(); // Required for dashed lines!
-            dashedOutline.renderOrder = 2; // Render after plane but before labels
+            dashedOutline.renderOrder = 501; // Render right after plane mesh
             scene.add(dashedOutline);
-            
+                        
             // Calculate center for label position (for future use if needed)
             const labelCenter = center.clone();
 
