@@ -687,15 +687,29 @@
             
             raycaster.setFromCamera(mouse, camera);
             
-            // Reset previous highlight
+            // Reset previous highlight (but keep selected plane points orange)
             if (highlightedObject) {
                 if (highlightedObject.type === 'face') {
                     highlightedObject.obj.material.opacity = 0;
                 } else if (highlightedObject.type === 'edge') {
                     highlightedObject.obj.material.color.setHex(0x404040);
                 } else if (highlightedObject.type === 'vertex') {
-                    const originalColor = highlightedObject.obj.userData.originalColor || 0xffffff;
-                    highlightedObject.obj.material.color.setHex(originalColor);
+                    // Check if this vertex is part of currently selected plane points
+                    const isSelectedForPlane = isCreatingPlane && selectedPlanePoints.some(ref => {
+                        if (highlightedObject.obj.userData.isUserPoint) {
+                            const userIndex = userPoints.findIndex(p => p.sphere === highlightedObject.obj);
+                            return !ref.isVertex && ref.userIndex === userIndex;
+                        } else {
+                            const vertexIndex = vertexSpheres.findIndex(v => v === highlightedObject.obj);
+                            return ref.isVertex && ref.index === vertexIndex;
+                        }
+                    });
+                    
+                    // Only reset color if NOT selected for plane creation
+                    if (!isSelectedForPlane) {
+                        const originalColor = highlightedObject.obj.userData.originalColor || 0xffffff;
+                        highlightedObject.obj.material.color.setHex(originalColor);
+                    }
                 }
                 highlightedObject = null;
             }
@@ -1245,7 +1259,7 @@
             const planeMesh = new THREE.Mesh(geometry, material);
             
             // Settings for proper display from both sides
-            planeMesh.renderOrder = isClosestFace ? 500 : 1000; // Closest faces render first, then farthest
+            planeMesh.renderOrder = 1; // Low priority - render before labels and points
             planeMesh.frustumCulled = false; // Don't cull based on camera frustum
             
             scene.add(planeMesh);
@@ -1341,11 +1355,18 @@
             return faceNames[face.name] || face.name;
         }
 
-        // ============================================================================
+        /// ============================================================================
         // CREATE CROSS-SECTION POLYGON FROM 3 POINTS
         // ============================================================================
         // This function builds a filled polygon representing the plane's cross-section
         // with the parallelepiped, rather than just showing a triangle through 3 points.
+        // 
+        // NEW FEATURES:
+        // - Creates user points for all polygon vertices with automatic labels
+        // - Orange semi-transparent fill for the cross-section
+        // - Dashed outline around the polygon perimeter
+        // - Plane name based on vertex labels in alphabetical order
+        // - Selected points remain orange during creation, reset after completion
         // 
         // ALGORITHM STEPS:
         // 1. Check if points form a parallelepiped face → create face if yes
@@ -1353,8 +1374,9 @@
         //    a) Calculate plane equation from 3 points
         //    b) Find ALL intersection points between plane and parallelepiped edges
         //    c) Sort intersection points by angle around their center (critical!)
-        //    d) Triangulate the sorted polygon
-        //    e) Render as filled mesh with outline
+        //    d) Create user points for all polygon vertices
+        //    e) Triangulate the sorted polygon
+        //    f) Render as semi-transparent orange mesh with dashed outline
         // 
         // PARAMETERS:
         // - point1, point2, point3: THREE.Vector3 positions of selected points
@@ -1399,22 +1421,14 @@
             }
             
             // STEP 2b: Find ALL intersection points between plane and edges
-            // Create THREE.Plane object for intersection calculations
-            
             // Convert normal vector from math coordinates to THREE.js coordinates
-            // Math: [x,y,z] = [right, depth, up]
-            // THREE.js: [x,y,z] = [right, up, towards_viewer]
-            // Conversion: THREE.js = [Math.y, Math.z, Math.x]
             const normalVector = new THREE.Vector3(
                 equation.normal.y,  // Math.y → THREE.x  
                 equation.normal.z,  // Math.z → THREE.y
                 equation.normal.x   // Math.x → THREE.z
             ).normalize();
             
-            // Convert plane equation to Three.js coordinate system
-            // Plane equation: normal * (P - P0) = 0
-            // Which gives: normal * P = normal * P0 = -d
-            // Use math coordinates for plane constant calculation
+            // Calculate plane constant for Three.js coordinate system
             const point1Math = threeJSToMath(point1);
             const planeConstant = -(equation.a * point1Math.x + 
                                 equation.b * point1Math.y + 
@@ -1436,10 +1450,10 @@
                 
                 // Calculate intersection point
                 if (plane.intersectLine(line, intersection)) {
-                    // Check if intersection is within the edge segment (not beyond endpoints)
+                    // Check if intersection is within the edge segment
                     const t = v1.distanceTo(intersection) / v1.distanceTo(v2);
                     
-                    // Allow small tolerance for numerical precision (0.0001)
+                    // Allow small tolerance for numerical precision
                     if (t >= -0.0001 && t <= 1.0001) {
                         intersectionPoints.push(intersection.clone());
                     }
@@ -1454,10 +1468,7 @@
                 return null;
             }
             
-            // STEP 2c: CRITICAL - Sort points by angle to form correct polygon
-            // Without sorting, the polygon will be self-intersecting and broken!
-            
-            // Sub-step 2c-i: Create 2D coordinate system on the plane
+            // STEP 2c: Sort points by angle to form correct polygon
             const zAxis = normalVector.clone(); // Normal is Z' axis
             
             // Create X' axis perpendicular to normal
@@ -1467,45 +1478,38 @@
             } else {
                 xAxis = new THREE.Vector3(0, 1, 0);
             }
-            
-            // Make X' orthogonal to Z' using cross product
             xAxis.cross(zAxis).normalize();
             
             // Create Y' axis perpendicular to both X' and Z'
             const yAxis = new THREE.Vector3().crossVectors(zAxis, xAxis);
             
-            // Sub-step 2c-ii: Calculate center of mass (geometric center)
+            // Calculate center of mass (geometric center)
             const center = new THREE.Vector3();
             for (let i = 0; i < intersectionPoints.length; i++) {
                 center.add(intersectionPoints[i]);
             }
             center.divideScalar(intersectionPoints.length);
             
-            // Sub-step 2c-iii: Project all points to 2D and calculate angles
+            // Project all points to 2D and calculate angles
             const points2D = [];
             
             for (let i = 0; i < intersectionPoints.length; i++) {
                 const p = intersectionPoints[i];
-                
-                // Vector from center to point
                 const relative = new THREE.Vector3().subVectors(p, center);
                 
-                // Project onto 2D plane using our coordinate system
                 const x = relative.dot(xAxis);
                 const y = relative.dot(yAxis);
-                
-                // Calculate angle from X' axis (0 to 2π)
                 const angle = Math.atan2(y, x);
                 
                 points2D.push({
-                    point3D: p,      // Original 3D position
-                    x: x,            // 2D X coordinate
-                    y: y,            // 2D Y coordinate  
-                    angle: angle     // Angle for sorting
+                    point3D: p,
+                    x: x,
+                    y: y,
+                    angle: angle
                 });
             }
             
-            // Sub-step 2c-iv: Sort points by angle (counter-clockwise)
+            // Sort points by angle (counter-clockwise)
             points2D.sort((a, b) => a.angle - b.angle);
             
             // Extract sorted 3D points
@@ -1513,71 +1517,167 @@
             
             console.log(`Sorted ${sortedPoints3D.length} vertices for polygon`);
             
-            // STEP 2d: Triangulate the sorted polygon
+            // STEP 2d: Create user points for all polygon vertices (or reuse existing ones)
+            const vertexPointRefs = []; // Store references to created vertex points
+            const vertexLabels = []; // Store labels for plane naming
+            const tolerance = 0.001; // Tolerance for point matching
+
+            sortedPoints3D.forEach((position, index) => {
+                let existingPoint = null;
+                let pointLabel = null;
+                
+                // Check if this position matches any parallelepiped vertex
+                for (let i = 0; i < vertexSpheres.length; i++) {
+                    const vertexPos = vertexSpheres[i].position;
+                    if (position.distanceTo(vertexPos) < tolerance) {
+                        existingPoint = { type: 'parallelepiped', index: i };
+                        pointLabel = vertexSpheres[i].userData.label;
+                        console.log(`Reusing parallelepiped vertex ${pointLabel} at intersection ${index + 1}`);
+                        break;
+                    }
+                }
+                
+                // If not a parallelepiped vertex, check user points
+                if (!existingPoint) {
+                    for (let i = 0; i < userPoints.length; i++) {
+                        const userPos = userPoints[i].sphere.position;
+                        if (position.distanceTo(userPos) < tolerance) {
+                            existingPoint = { type: 'user', index: i };
+                            pointLabel = userPoints[i].name;
+                            console.log(`Reusing user point ${pointLabel} at intersection ${index + 1}`);
+                            break;
+                        }
+                    }
+                }
+                
+                // If no existing point found, create new one
+                if (!existingPoint) {
+                    const pointSphere = createUserPointAt(position, 'intersection');
+                    const userPoint = userPoints[userPoints.length - 1];
+                    pointLabel = userPoint.name;
+                    
+                    vertexPointRefs.push({
+                        position: position.clone(),
+                        isVertex: false,
+                        userIndex: userPoints.length - 1,
+                        label: pointLabel,
+                        isNewPoint: true // Mark as newly created
+                    });
+                    
+                    console.log(`Created new vertex point ${pointLabel} at intersection ${index + 1}`);
+                } else {
+                    // Store reference to existing point
+                    if (existingPoint.type === 'parallelepiped') {
+                        vertexPointRefs.push({
+                            position: position.clone(),
+                            isVertex: true,
+                            index: existingPoint.index,
+                            label: pointLabel,
+                            isNewPoint: false // Mark as existing
+                        });
+                    } else {
+                        vertexPointRefs.push({
+                            position: position.clone(),
+                            isVertex: false,
+                            userIndex: existingPoint.index,
+                            label: pointLabel,
+                            isNewPoint: false // Mark as existing
+                        });
+                    }
+                }
+                
+                vertexLabels.push(pointLabel);
+            });
+            
+            // Create plane name in counter-clockwise order starting from earliest alphabetically
+            // Remove duplicates first
+            const uniqueLabels = [...new Set(vertexLabels)];
+
+            // Find the earliest label alphabetically as starting point
+            let minIndex = 0;
+            for (let i = 1; i < uniqueLabels.length; i++) {
+                if (uniqueLabels[i] < uniqueLabels[minIndex]) {
+                    minIndex = i;
+                }
+            }
+
+            // Reorder array starting from earliest label (counter-clockwise order preserved)
+            const reorderedLabels = [
+                ...uniqueLabels.slice(minIndex),
+                ...uniqueLabels.slice(0, minIndex)
+            ];
+
+            const planeName = reorderedLabels.join('');
+
+            console.log(`Plane will be named: ${planeName} (counter-clockwise from ${reorderedLabels[0]})`);
+            
+            // STEP 2e: Triangulate the sorted polygon
             const triangles = triangulatePolygon(sortedPoints3D.length);
             
             console.log(`Created ${triangles.length / 3} triangles`);
             
-            // STEP 2e: Create BufferGeometry from sorted vertices
+            // STEP 2f: Create BufferGeometry from sorted vertices
             const geometry = new THREE.BufferGeometry();
             
-            // Flatten 3D points into position array [x1,y1,z1, x2,y2,z2, ...]
+            // Flatten 3D points into position array
             const positions = [];
             for (let i = 0; i < sortedPoints3D.length; i++) {
                 const p = sortedPoints3D[i];
                 positions.push(p.x, p.y, p.z);
             }
             
-            // Set vertex positions
             geometry.setAttribute('position', 
                 new THREE.Float32BufferAttribute(positions, 3)
             );
-            
-            // Set triangle indices
             geometry.setIndex(triangles);
-            
-            // Calculate normals for proper lighting
             geometry.computeVertexNormals();
             
-            // Create material for the filled polygon
+            // Create semi-transparent orange material for the filled polygon
             const planeMaterial = new THREE.MeshBasicMaterial({
-                color: 0xff4444,        // Bright red color
-                transparent: false,      // Opaque (not transparent)
+                color: 0xFF8C00,         // Orange color (DarkOrange)
+                transparent: true,       // Enable transparency
+                opacity: 0.6,            // 60% transparency
                 side: THREE.DoubleSide,  // Visible from both sides
-                depthTest: true,
-                depthWrite: true,
-                polygonOffset: true,     // Prevent z-fighting with edges
-                polygonOffsetFactor: -1,
-                polygonOffsetUnits: -1
+                depthTest: true,         // FIXED: Enable depth test
+                depthWrite: false,       // Don't write to depth buffer
+                polygonOffset: true,     // Prevent z-fighting
+                polygonOffsetFactor: 1,  
+                polygonOffsetUnits: 1
             });
             
             // Create mesh
             const planeMesh = new THREE.Mesh(geometry, planeMaterial);
-            
-            // Set render order to appear on top
             planeMesh.renderOrder = 999;
-            
             scene.add(planeMesh);
             
-            // Add red outline for better visibility
-            const outlineGeometry = new THREE.EdgesGeometry(geometry);
-            const outlineMaterial = new THREE.LineBasicMaterial({ 
-                color: 0xff0000,  // Red outline
-                linewidth: 3 
+            // STEP 2g: Create dashed outline around polygon perimeter
+            // Create line loop geometry for the perimeter
+            const outlinePoints = sortedPoints3D.map(p => p.clone());
+            outlinePoints.push(sortedPoints3D[0].clone()); // Close the loop
+            
+            const outlineGeometry = new THREE.BufferGeometry().setFromPoints(outlinePoints);
+            
+            // Create dashed line material
+            const dashedMaterial = new THREE.LineDashedMaterial({
+                color: 0xFF4500,      // OrangeRed for outline
+                linewidth: 2,
+                dashSize: 0.3,        // Length of dash
+                gapSize: 0.15,        // Length of gap
+                depthTest: true,
+                depthWrite: false
             });
-            const outlineEdges = new THREE.LineSegments(outlineGeometry, outlineMaterial);
-            planeMesh.add(outlineEdges);
             
-            // Calculate center for label position
-            const labelCenter = new THREE.Vector3()
-                .addVectors(point1, point2)
-                .add(point3)
-                .divideScalar(3);
+            const dashedOutline = new THREE.Line(outlineGeometry, dashedMaterial);
+            dashedOutline.computeLineDistances(); // Required for dashed lines!
+            dashedOutline.renderOrder = 2; // Render after plane but before labels
+            scene.add(dashedOutline);
             
-            // Create plane label
-            const planeName = getPlaneName();
-            const label = createPlaneLabel(planeName, labelCenter);
-            userPlaneLabels.push(label);
+            // Calculate center for label position (for future use if needed)
+            const labelCenter = center.clone();
+
+            // NEW: Don't create label on canvas - it clutters the drawing
+            const label = null; // No label on canvas
+            // userPlaneLabels.push(label); // Don't add to labels array
             
             // Format equation for display
             const formatEquation = (eq) => {
@@ -1609,13 +1709,15 @@
                 return equation + '=0';
             };
             
-            // Store plane data
+            // Store plane data with vertex references for deletion
             userPlanes.push({
                 name: planeName,
                 points: [point1.clone(), point2.clone(), point3.clone()],
                 pointRefs: selectedPlanePoints.slice(),
+                vertexPointRefs: vertexPointRefs,
                 mesh: planeMesh,
-                label: label,
+                label: label, // Will be null
+                dashedOutline: dashedOutline,
                 intersectionLines: [],
                 equation: equation,
                 equationString: formatEquation(equation),
@@ -1629,91 +1731,6 @@
             console.log(`Polygon created in ${(t1 - t0).toFixed(2)}ms`);
             
             return planeMesh;
-        }
-
-        // Update plane when its defining points change
-        function updatePlane(planeIndex) {
-            const plane = userPlanes[planeIndex];
-            if (!plane || !plane.pointRefs) return;
-            
-            // Get current positions of the three defining points
-            const currentPositions = plane.pointRefs.map(ref => {
-                if (ref.isVertex) {
-                    return vertexSpheres[ref.index].position;
-                } else {
-                    return userPoints[ref.userIndex].sphere.position;
-                }
-            });
-            
-            // Recalculate plane equation
-            const p1Math = threeJSToMath(currentPositions[0]);
-            const p2Math = threeJSToMath(currentPositions[1]);
-            const p3Math = threeJSToMath(currentPositions[2]);
-            
-            const equation = calculatePlaneEquation(p1Math, p2Math, p3Math);
-            plane.equation = equation;
-            
-            // SIMPLE UPDATE: just update triangle through 3 points
-            console.log('Simple plane update without complex polygon calculation');
-            
-            // Update simple triangle geometry
-            const vertices = [
-                currentPositions[0].x, currentPositions[0].y, currentPositions[0].z,
-                currentPositions[1].x, currentPositions[1].y, currentPositions[1].z,
-                currentPositions[2].x, currentPositions[2].y, currentPositions[2].z
-            ];
-            
-            plane.mesh.geometry.dispose(); // Clean up old geometry
-            const newGeometry = new THREE.BufferGeometry();
-            newGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-            newGeometry.setIndex([0, 1, 2]);
-            newGeometry.computeVertexNormals();
-            plane.mesh.geometry = newGeometry;
-            
-            // WITHOUT dashed lines - just clean up old ones if any
-            plane.intersectionLines.forEach(line => {
-                scene.remove(line);
-                line.geometry.dispose();
-                line.material.dispose();
-            });
-            plane.intersectionLines = [];
-            
-            // Update label position - triangle center
-            const center = new THREE.Vector3()
-                .addVectors(currentPositions[0], currentPositions[1])
-                .add(currentPositions[2])
-                .divideScalar(3);
-            plane.label.position.copy(center);
-            
-            // Update equation
-            const formatEquation = (eq) => {
-                const { a, b, c, d } = eq;
-                let equation = '';
-                let first = true;
-                
-                if (Math.abs(a) > 1e-10) {
-                    const coeff = Math.abs(a - 1) < 1e-10 ? '' : Math.abs(a + 1) < 1e-10 ? '-' : a.toFixed(2);
-                    equation += (first ? '' : a > 0 ? '+' : '') + coeff + 'x';
-                    first = false;
-                }
-                if (Math.abs(b) > 1e-10) {
-                    const coeff = Math.abs(b - 1) < 1e-10 ? '' : Math.abs(b + 1) < 1e-10 ? '-' : b.toFixed(2);
-                    equation += (first ? '' : b > 0 ? '+' : '') + coeff + 'y';
-                    first = false;
-                }
-                if (Math.abs(c) > 1e-10) {
-                    const coeff = Math.abs(c - 1) < 1e-10 ? '' : Math.abs(c + 1) < 1e-10 ? '-' : c.toFixed(2);
-                    equation += (first ? '' : c > 0 ? '+' : '') + coeff + 'z';
-                    first = false;
-                }
-                if (Math.abs(d) > 1e-10) {
-                    equation += (d > 0 ? '+' : '') + d.toFixed(2);
-                }
-                return equation + '=0';
-            };
-            plane.equationString = formatEquation(equation);
-            
-            updateUserObjectsList();
         }
 
         // Generate vector name
@@ -1824,8 +1841,9 @@
             if (userPlanes.length > 0) {
                 userPlanes.forEach((plane, i) => {
                     const faceInfo = plane.isFace ? ` (${plane.faceType} грань ${plane.faceName})` : '';
-                    const colorIndicator = plane.isClosestToCamera ? '�' : '�'; // Blue for closest, green for farthest
-                    const displayName = plane.isFace ? plane.name : `π${i + 1}`; // Use vertex names for faces, π for custom planes
+                    const colorIndicator = plane.isClosestToCamera ? '🔵' : '🟢'; // Blue for closest, green for farthest
+                    // NEW: Use plane.name (which contains vertex labels) for ALL planes
+                    const displayName = plane.name;
                     content += `<li>&nbsp;&nbsp;• ${colorIndicator} Плоскость <strong>${displayName}</strong>${faceInfo}<br>&nbsp;&nbsp;&nbsp;&nbsp;<small>${plane.equationString}</small> <button onclick="deletePlane(${i})" style="font-size: 0.8em;">🗑️</button></li>`;
                 });
             }
@@ -1886,14 +1904,60 @@
             updateUserObjectsList();
         }
 
+        // Delete plane and all its vertex points
         function deletePlane(index) {
             const plane = userPlanes[index];
+            
+            // Remove mesh and label from scene
             scene.remove(plane.mesh);
             if (plane.label) {
                 scene.remove(plane.label);
             }
+            
+            // NEW: Remove dashed outline if exists
+            if (plane.dashedOutline) {
+                scene.remove(plane.dashedOutline);
+                plane.dashedOutline.geometry.dispose();
+                plane.dashedOutline.material.dispose();
+            }
+            
+            // Remove intersection lines (legacy)
             plane.intersectionLines.forEach(line => scene.remove(line));
+            
+            // NEW: Delete all vertex points associated with this plane (only for cross-sections, not faces)
+            if (!plane.isFace && plane.vertexPointRefs && plane.vertexPointRefs.length > 0) {
+                console.log(`Checking ${plane.vertexPointRefs.length} vertex points for plane ${plane.name}`);
+                
+                // Only delete newly created points (not existing ones)
+                const indicesToDelete = plane.vertexPointRefs
+                    .filter(ref => ref.isNewPoint && !ref.isVertex) // Only new user points
+                    .map(ref => ref.userIndex)
+                    .sort((a, b) => b - a); // Descending order
+                
+                console.log(`Deleting ${indicesToDelete.length} newly created vertex points`);
+                
+                indicesToDelete.forEach(userIndex => {
+                    if (userIndex >= 0 && userIndex < userPoints.length) {
+                        const point = userPoints[userIndex];
+                        
+                        // Remove sphere and label from scene
+                        scene.remove(point.sphere);
+                        if (point.label) {
+                            scene.remove(point.label);
+                        }
+                        
+                        // Remove from userPoints array
+                        userPoints.splice(userIndex, 1);
+                        
+                        console.log(`Deleted vertex point at index ${userIndex}`);
+                    }
+                });
+            }
+            
+            // Remove plane from array
             userPlanes.splice(index, 1);
+            
+            // Update UI
             updateUserObjectsList();
         }
 
@@ -1905,11 +1969,12 @@
                 
                 // Cancel plane creation
                 if (isCreatingPlane) {
+                    // NEW: Reset selected points to WHITE/BLACK instead of keeping orange
                     selectedPlanePoints.forEach(ref => {
                         if (ref.isVertex) {
-                            vertexSpheres[ref.index].material.color.setHex(0xffffff);
+                            vertexSpheres[ref.index].material.color.setHex(0xFFFFFF); // White
                         } else {
-                            userPoints[ref.userIndex].sphere.material.color.setHex(0x000000);
+                            userPoints[ref.userIndex].sphere.material.color.setHex(0x000000); // Black
                         }
                     });
                     selectedPlanePoints = [];
@@ -2008,8 +2073,9 @@
                     
                     selectedPlanePoints.push(pointRef);
                     
-                    // Highlight selected point with bright color
-                    highlightedObject.obj.material.color.setHex(0x00FF00); // bright green for selected points
+                    // NEW: Highlight selected point with ORANGE color
+                    // Keep this color until plane is created
+                    highlightedObject.obj.material.color.setHex(0xFF8C00); // Orange (DarkOrange)
                     
                     // Update status
                     updatePlaneCreationStatus();
@@ -2019,12 +2085,12 @@
                         const positions = selectedPlanePoints.map(ref => ref.position);
                         createPlane(positions[0], positions[1], positions[2]);
                         
-                        // Reset highlights
+                        // NEW: Reset highlights to WHITE after plane creation
                         selectedPlanePoints.forEach((ref, idx) => {
                             if (ref.isVertex) {
-                                vertexSpheres[ref.index].material.color.setHex(0xffffff);
+                                vertexSpheres[ref.index].material.color.setHex(0xFFFFFF); // White
                             } else {
-                                userPoints[ref.userIndex].sphere.material.color.setHex(0x000000);
+                                userPoints[ref.userIndex].sphere.material.color.setHex(0x000000); // Black for user points
                             }
                         });
                         
