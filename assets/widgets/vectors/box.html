@@ -1860,16 +1860,12 @@
             planeCounter++;
             updateUserObjectsList();
             
-            // Update info panel with Greek letter π
-            updatePlaneInfo(`Плоскость π (${face.name})`, face.equation);
+            // Update info panel
+            updatePlaneInfo(`Плоскость (${face.name})`, face.equation);
             
             console.log('Face created successfully');
             
             return planeMesh;
-        }
-
-        function getPlaneName() {
-            return `π${planeCounter + 1}`;
         }
 
         // Create plane name based on face type with correct vertex order
