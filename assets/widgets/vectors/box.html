@@ -393,6 +393,138 @@
             return { x: pos.z, y: pos.x, z: pos.y };
         }
 
+        // ============================================================================
+        // MATHEMATICAL CORE FOR ANGLE MEASUREMENT
+        // ============================================================================
+
+        // Dot product of two vectors
+        function dotProduct(v1, v2) {
+            return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+        }
+
+        // Vector magnitude (length)
+        function vectorLength(v) {
+            return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+        }
+
+        // Vector normalization (convert to unit length)
+        function normalizeVector(v) {
+            const len = vectorLength(v);
+            if (len < 0.0001) return { x: 0, y: 0, z: 0 }; // Protection against division by zero
+            return { x: v.x / len, y: v.y / len, z: v.z / len };
+        }
+
+        // Clamp value to range [min, max]
+        function clamp(value, min, max) {
+            return Math.max(min, Math.min(max, value));
+        }
+
+        // Angle between two vectors (in degrees)
+        // Uses formula: cos(θ) = (v1 · v2) / (|v1| × |v2|)
+        function angleBetweenVectors(v1, v2) {
+            const dot = dotProduct(v1, v2);
+            const len1 = vectorLength(v1);
+            const len2 = vectorLength(v2);
+            
+            if (len1 < 0.0001 || len2 < 0.0001) {
+                console.warn('One of the vectors has near-zero length');
+                return 0;
+            }
+            
+            // Clamp to prevent rounding errors (arccos is only defined on [-1, 1])
+            const cosTheta = clamp(dot / (len1 * len2), -1, 1);
+            const radians = Math.acos(cosTheta);
+            const degrees = radians * (180 / Math.PI);
+            
+            return degrees;
+        }
+
+        // Angle between vector and plane (in degrees)
+        // Formula: φ = 90° - β, where β is angle between vector and normal
+        function angleBetweenVectorAndPlane(vectorDir, planeNormal) {
+            // Angle between vector and normal
+            const beta = angleBetweenVectors(vectorDir, planeNormal);
+            
+            // Target angle φ = |90° - β|
+            const phi = Math.abs(90 - beta);
+            
+            return phi;
+        }
+
+        // Check if two vectors have common start points
+        function haveCommonStartPoint(point1, point2, tolerance = 0.001) {
+            const dx = point1.x - point2.x;
+            const dy = point1.y - point2.y;
+            const dz = point1.z - point2.z;
+            const distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+            return distance < tolerance;
+        }
+
+        // Create ghost vector (parallel translation)
+        // Returns object with new start point but same direction and length
+        function createGhostVectorData(originalVector, newStartPoint) {
+            // Preserve direction and length
+            const direction = {
+                x: originalVector.direction.x,
+                y: originalVector.direction.y,
+                z: originalVector.direction.z
+            };
+            
+            // Calculate new end point
+            const length = vectorLength(originalVector.direction);
+            const normalizedDir = normalizeVector(direction);
+            
+            const newEndPoint = new THREE.Vector3(
+                newStartPoint.x + normalizedDir.x * length,
+                newStartPoint.y + normalizedDir.y * length,
+                newStartPoint.z + normalizedDir.z * length
+            );
+            
+            return {
+                start: newStartPoint.clone(),
+                end: newEndPoint,
+                direction: direction,
+                length: length,
+                isGhost: true
+            };
+        }
+
+        // Project vector onto plane (perpendicular to normal)
+        function projectVectorOnPlane(vectorStart, vectorEnd, planeNormal) {
+            // Vector from start to end
+            const vec = {
+                x: vectorEnd.x - vectorStart.x,
+                y: vectorEnd.y - vectorStart.y,
+                z: vectorEnd.z - vectorStart.z
+            };
+            
+            // Normalize plane normal
+            const n = normalizeVector(planeNormal);
+            
+            // Component of vector along normal
+            const dotVN = dotProduct(vec, n);
+            
+            // Subtract this component from vector
+            const projectedVec = {
+                x: vec.x - dotVN * n.x,
+                y: vec.y - dotVN * n.y,
+                z: vec.z - dotVN * n.z
+            };
+            
+            // End point of projection
+            const projectedEnd = new THREE.Vector3(
+                vectorStart.x + projectedVec.x,
+                vectorStart.y + projectedVec.y,
+                vectorStart.z + projectedVec.z
+            );
+            
+            return {
+                start: vectorStart.clone(),
+                end: projectedEnd,
+                direction: projectedVec
+            };
+        }
+
         // Vertices (math coordinates converted to Three.js)
         const vertices = [
             { pos: mathToThreeJS(0, 0, 0), label: 'A' },   // Origin
@@ -1017,6 +1149,317 @@
             sprite.scale.set(1.05, 1.05, 1);
             scene.add(sprite);
             return sprite;
+        }
+
+        // ============================================================================
+        // VISUAL FUNCTIONS FOR ANGLE MEASUREMENT
+        // ============================================================================
+
+        // Create angle arc between two directions
+        // Returns THREE.Group containing the arc (and square symbol if angle ≈ 90°)
+        function createAngleArc(center, radius, direction1, direction2, angleDegrees, color = 0xFFD700) {
+            const group = new THREE.Group();
+            
+            // Normalize directions
+            const dir1 = new THREE.Vector3(direction1.x, direction1.y, direction1.z).normalize();
+            const dir2 = new THREE.Vector3(direction2.x, direction2.y, direction2.z).normalize();
+            
+            // Calculate rotation axis (perpendicular to both directions)
+            const axis = new THREE.Vector3().crossVectors(dir1, dir2);
+            
+            // Check if vectors are parallel (axis length ≈ 0)
+            if (axis.length() < 0.0001) {
+                // Parallel vectors - no arc needed
+                return group;
+            }
+            
+            axis.normalize();
+            
+            // Convert angle to radians
+            const angleRadians = angleDegrees * (Math.PI / 180);
+            
+            // Create arc points by rotating dir1 towards dir2
+            const numSegments = 32;
+            const points = [];
+            
+            for (let i = 0; i <= numSegments; i++) {
+                const t = i / numSegments;
+                const currentAngle = angleRadians * t;
+                
+                // Rotate dir1 around axis
+                const rotatedDir = dir1.clone();
+                rotatedDir.applyAxisAngle(axis, currentAngle);
+                
+                // Scale to radius and add to center
+                const point = center.clone().add(rotatedDir.multiplyScalar(radius));
+                points.push(point);
+            }
+            
+            // Create arc line
+            const arcGeometry = new THREE.BufferGeometry().setFromPoints(points);
+            const arcMaterial = new THREE.LineBasicMaterial({
+                color: color,
+                linewidth: 3,
+                depthTest: true,
+                depthWrite: false
+            });
+            
+            const arcLine = new THREE.Line(arcGeometry, arcMaterial);
+            arcLine.renderOrder = 1000; // Render above edges
+            group.add(arcLine);
+            
+            // Add right angle square symbol if angle ≈ 90°
+            if (Math.abs(angleDegrees - 90) < 0.5) {
+                const squareSize = radius * 0.25;
+                const squarePoints = [];
+                
+                // Calculate square corners in the plane of the two directions
+                const corner1 = dir1.clone().multiplyScalar(squareSize);
+                const corner2 = corner1.clone().add(dir2.clone().multiplyScalar(squareSize));
+                const corner3 = dir2.clone().multiplyScalar(squareSize);
+                
+                squarePoints.push(
+                    center.clone().add(corner1),
+                    center.clone().add(corner2),
+                    center.clone().add(corner3),
+                    center.clone()
+                );
+                
+                const squareGeometry = new THREE.BufferGeometry().setFromPoints(squarePoints);
+                const squareMaterial = new THREE.LineBasicMaterial({ 
+                    color: color, 
+                    linewidth: 2 
+                });
+                const squareLine = new THREE.LineLoop(squareGeometry, squareMaterial);
+                squareLine.renderOrder = 1001;
+                group.add(squareLine);
+            }
+            
+            return group;
+        }
+
+        // Create billboard label with angle in degrees
+        // additionalText: optional text like "Vectors parallel" for special cases
+        function createAngleLabel(angleDegrees, position, additionalText = null) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = additionalText ? 160 : 128;
+            
+            // Draw semi-transparent black background with rounded corners
+            context.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            context.beginPath();
+            context.roundRect(10, 10, canvas.width - 20, canvas.height - 20, 8);
+            context.fill();
+            
+            // Draw angle text with outline
+            context.font = 'Bold 60px Arial';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            
+            // Black outline
+            context.strokeStyle = 'black';
+            context.lineWidth = 3;
+            context.strokeText(angleDegrees.toFixed(1) + '°', canvas.width / 2, additionalText ? 50 : canvas.height / 2);
+            
+            // White fill
+            context.fillStyle = 'white';
+            context.fillText(angleDegrees.toFixed(1) + '°', canvas.width / 2, additionalText ? 50 : canvas.height / 2);
+            
+            // Draw additional text if provided
+            if (additionalText) {
+                context.font = 'Bold 24px Arial';
+                context.strokeStyle = 'black';
+                context.lineWidth = 2;
+                context.strokeText(additionalText, canvas.width / 2, 110);
+                context.fillStyle = 'white';
+                context.fillText(additionalText, canvas.width / 2, 110);
+            }
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMaterial = new THREE.SpriteMaterial({ 
+                map: texture, 
+                depthTest: false 
+            });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.position.copy(position);
+            sprite.scale.set(1.5, additionalText ? 1.2 : 0.75, 1);
+            sprite.renderOrder = 2000; // Always on top
+            
+            return sprite;
+        }
+
+        // Create helper arrow (reuses existing createVectorArrow function)
+        // type: 'ghost' | 'normal' | 'projection'
+        function createHelperArrow(start, end, type) {
+            const arrow = createVectorArrow(start, end, false);
+            
+            // Apply styling based on type
+            arrow.traverse(child => {
+                if (child.material) {
+                    switch(type) {
+                        case 'ghost':
+                            // Cyan dashed semi-transparent
+                            child.material = child.material.clone();
+                            child.material.color.setHex(0x00CED1); // DarkTurquoise
+                            child.material.opacity = 0.4;
+                            child.material.transparent = true;
+                            child.material.depthTest = false;
+                            child.material.depthWrite = false;
+                            
+                            // Make line dashed if it's a Line
+                            if (child.isLine) {
+                                child.material.dispose();
+                                child.material = new THREE.LineDashedMaterial({
+                                    color: 0x00CED1,
+                                    linewidth: 2,
+                                    dashSize: 0.3,
+                                    gapSize: 0.15,
+                                    opacity: 0.4,
+                                    transparent: true,
+                                    depthTest: false,
+                                    depthWrite: false
+                                });
+                                child.computeLineDistances();
+                            }
+                            break;
+                            
+                        case 'normal':
+                            // Purple solid
+                            child.material = child.material.clone();
+                            child.material.color.setHex(0x9370DB); // MediumPurple
+                            break;
+                            
+                        case 'projection':
+                            // Green dashed
+                            child.material = child.material.clone();
+                            child.material.color.setHex(0x00FF00);
+                            
+                            if (child.isLine) {
+                                child.material.dispose();
+                                child.material = new THREE.LineDashedMaterial({
+                                    color: 0x00FF00,
+                                    linewidth: 2,
+                                    dashSize: 0.3,
+                                    gapSize: 0.15,
+                                    opacity: 0.8,
+                                    transparent: true
+                                });
+                                child.computeLineDistances();
+                            }
+                            break;
+                    }
+                }
+            });
+            
+            arrow.renderOrder = type === 'ghost' ? 800 : 500;
+            
+            return arrow;
+        }
+
+        // Create simple line through points (for perpendiculars, connectors)
+        function createHelperLine(points, color, linewidth, dashed = false) {
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            
+            let material;
+            if (dashed) {
+                material = new THREE.LineDashedMaterial({
+                    color: color,
+                    linewidth: linewidth,
+                    dashSize: 0.3,
+                    gapSize: 0.15
+                });
+            } else {
+                material = new THREE.LineBasicMaterial({
+                    color: color,
+                    linewidth: linewidth
+                });
+            }
+            
+            const line = new THREE.Line(geometry, material);
+            
+            if (dashed) {
+                line.computeLineDistances();
+            }
+            
+            line.renderOrder = 500;
+            
+            return line;
+        }
+
+        // Create hint sprite in top-left corner of canvas
+        function createAngleHintSprite(text) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 512;
+            canvas.height = 128;
+            
+            // Semi-transparent black background
+            context.fillStyle = 'rgba(0, 0, 0, 0.75)';
+            context.beginPath();
+            context.roundRect(0, 0, canvas.width, canvas.height, 6);
+            context.fill();
+            
+            // White text
+            context.font = 'Bold 32px Arial';
+            context.fillStyle = 'white';
+            context.textAlign = 'left';
+            context.textBaseline = 'middle';
+            context.fillText(text, 20, canvas.height / 2);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMaterial = new THREE.SpriteMaterial({ 
+                map: texture,
+                depthTest: false
+            });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            
+            // Position in top-left corner (will be updated in updateAngleHintPosition)
+            sprite.scale.set(4, 1, 1);
+            sprite.renderOrder = 3000; // Highest priority
+            
+            updateAngleHintPosition(sprite);
+            
+            return sprite;
+        }
+
+        // Update hint sprite position to stay in top-left corner
+        function updateAngleHintPosition(sprite) {
+            if (!sprite) return;
+            
+            // Calculate position in 3D space that appears in top-left of screen
+            const vector = new THREE.Vector3(-0.85, 0.85, -1);
+            vector.unproject(camera);
+            
+            const dir = vector.sub(camera.position).normalize();
+            const distance = 5;
+            
+            sprite.position.copy(camera.position).add(dir.multiplyScalar(distance));
+        }
+
+        // Update hint text without recreating sprite
+        function updateAngleHint(text) {
+            if (!angleHintSprite) return;
+            
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 512;
+            canvas.height = 128;
+            
+            context.fillStyle = 'rgba(0, 0, 0, 0.75)';
+            context.beginPath();
+            context.roundRect(0, 0, canvas.width, canvas.height, 6);
+            context.fill();
+            
+            context.font = 'Bold 32px Arial';
+            context.fillStyle = 'white';
+            context.textAlign = 'left';
+            context.textBaseline = 'middle';
+            context.fillText(text, 20, canvas.height / 2);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            angleHintSprite.material.map = texture;
+            angleHintSprite.material.needsUpdate = true;
         }
 
         // Calculate plane equation from 3 points in math coordinates
