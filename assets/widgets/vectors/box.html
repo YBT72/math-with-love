@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Векторная Лаборатория</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -369,7 +372,7 @@
             const spriteMat = new THREE.SpriteMaterial({ map: texture, depthTest: false });
             const sprite = new THREE.Sprite(spriteMat);
             sprite.position.copy(position);
-            sprite.scale.set(1.2, 1.2, 1);
+            sprite.scale.set(0.84, 0.84, 1);
             scene.add(sprite);
         }
 
@@ -496,9 +499,8 @@
             const texture = new THREE.CanvasTexture(canvas);
             const spriteMat = new THREE.SpriteMaterial({ map: texture, depthTest: false });
             const sprite = new THREE.Sprite(spriteMat);
-            const offset = 1.2;
-            sprite.position.set(v.pos[0] + offset, v.pos[1] + offset, v.pos[2] + offset);
-            sprite.scale.set(1.5, 1.5, 1);
+            const vertexPos = new THREE.Vector3(...v.pos);
+            sprite.position.copy(calculateLabelPosition(vertexPos));
             scene.add(sprite);
             vertexLabels.push(sprite);
         });
@@ -522,6 +524,39 @@
             
             // Update visibility of all faces when camera position changes
             updateAllFacesVisibility();
+            
+            // UPDATE LABEL POSITIONS - ADD THIS LINE
+            updateLabelPositions();
+        }
+
+        // Calculate label position relative to camera
+        function calculateLabelPosition(pointPosition) {
+            const offset = 0.5;
+            const toCamera = camera.position.clone().sub(pointPosition).normalize();
+            
+            const right = new THREE.Vector3();
+            right.crossVectors(toCamera, camera.up).normalize();
+            const up = new THREE.Vector3();
+            up.crossVectors(right, toCamera).normalize();
+            
+            const labelOffset = right.multiplyScalar(offset * 0.7).add(up.multiplyScalar(offset * 0.7));
+            return pointPosition.clone().add(labelOffset);
+        }
+
+        // Update label positions to avoid overlapping with points
+        function updateLabelPositions() {
+            // Update parallelepiped vertex labels
+            vertices.forEach((v, i) => {
+                const vertexPos = new THREE.Vector3(...v.pos);
+                vertexLabels[i].position.copy(calculateLabelPosition(vertexPos));
+            });
+            
+            // Update user point labels
+            userPoints.forEach(point => {
+                if (point.label) {
+                    point.label.position.copy(calculateLabelPosition(point.position));
+                }
+            });
         }
 
         // Function to recalculate visibility of all faces
@@ -666,6 +701,14 @@
             userPlanes.forEach(plane => {
                 scene.remove(plane.mesh);
                 if (plane.label) scene.remove(plane.label);
+                
+                // ⚠️ ДОБАВИТЬ ЭТИ СТРОКИ:
+                if (plane.dashedOutline) {
+                    scene.remove(plane.dashedOutline);
+                    plane.dashedOutline.geometry.dispose();
+                    plane.dashedOutline.material.dispose();
+                }
+                
                 plane.intersectionLines.forEach(line => scene.remove(line));
             });
             userPlanes = [];
@@ -777,6 +820,47 @@
             return snap.position;
         }
 
+        // Show dialog to ask if user wants to name the vector
+        function askVectorName(startLabel, endLabel, callback) {
+            const dialog = document.createElement('div');
+            dialog.id = 'vector-name-dialog';
+            dialog.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10000;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            `;
+            
+            const defaultName = `${startLabel}${endLabel}`;
+            
+            dialog.innerHTML = `
+                <h3 style="margin: 0 0 15px 0;">Название вектора</h3>
+                <p style="margin: 0 0 15px 0;">Дать вектору однобуквенное имя?</p>
+                <div style="display: flex; gap: 10px;">
+                    <button id="vector-name-yes" style="padding: 8px 16px; cursor: pointer;">Да</button>
+                    <button id="vector-name-no" style="padding: 8px 16px; cursor: pointer;">Нет (использовать ${defaultName})</button>
+                </div>
+            `;
+            
+            document.body.appendChild(dialog);
+            
+            document.getElementById('vector-name-yes').onclick = () => {
+                document.body.removeChild(dialog);
+                callback(getVectorName(), defaultName);
+            };
+            
+            document.getElementById('vector-name-no').onclick = () => {
+                document.body.removeChild(dialog);
+                callback('', defaultName);
+            };
+        }
+
         // Create arrow for vector
         function createVectorArrow(start, end, isPreview = false) {
             const group = new THREE.Group();
@@ -878,13 +962,14 @@
             const texture = new THREE.CanvasTexture(canvas);
             const spriteMat = new THREE.SpriteMaterial({ 
                 map: texture, 
-                depthTest: false // Labels always visible
+                depthTest: false
             });
             const sprite = new THREE.Sprite(spriteMat);
-            sprite.renderOrder = 1000; // ADDED: High priority - render on top
-            const offset = 1.2;
-            sprite.position.set(position.x + offset, position.y + offset, position.z + offset);
-            sprite.scale.set(1.5, 1.5, 1);
+            sprite.renderOrder = 1000;
+            
+            // Calculate position relative to camera
+            sprite.position.copy(calculateLabelPosition(position));
+            sprite.scale.set(1.05, 1.05, 1);
             scene.add(sprite);
             return sprite;
         }
@@ -908,7 +993,7 @@
             const spriteMat = new THREE.SpriteMaterial({ map: texture, depthTest: false });
             const sprite = new THREE.Sprite(spriteMat);
             sprite.position.copy(position);
-            sprite.scale.set(1.2, 1.2, 1);
+            sprite.scale.set(0.84, 0.84, 1);
             scene.add(sprite);
             return sprite;
         }
@@ -929,7 +1014,7 @@
             const spriteMat = new THREE.SpriteMaterial({ map: texture, depthTest: false });
             const sprite = new THREE.Sprite(spriteMat);
             sprite.position.copy(position);
-            sprite.scale.set(1.5, 1.5, 1);
+            sprite.scale.set(1.05, 1.05, 1);
             scene.add(sprite);
             return sprite;
         }
@@ -1735,18 +1820,27 @@
             return planeMesh;
         }
 
-        // Generate vector name
+        // Flag to control automatic vector naming
+        let autoNameVectors = true; // Set to false to disable auto-naming
+
+        // Generate vector name (only if not already used)
         function getVectorName() {
-            const baseNames = vectorNames;
-            const index = vectorCounter % baseNames.length;
-            const prefix = Math.floor(vectorCounter / baseNames.length);
-            
-            if (useDoubleLetterNames && prefix > 0) {
-                const scalar = String.fromCharCode(116 + (prefix - 1) % 7);
-                return scalar + baseNames[index];
+            if (!autoNameVectors) {
+                return ''; // Return empty string if auto-naming disabled
             }
             
-            return baseNames[index] + (prefix > 0 ? prefix : '');
+            const baseNames = vectorNames; // ['u', 'v', 'w']
+            const usedNames = userVectors.map(v => v.name);
+            
+            // Find first available name from baseNames
+            for (let name of baseNames) {
+                if (!usedNames.includes(name)) {
+                    return name;
+                }
+            }
+            
+            // If all base names used, return empty string (or you can add logic for extended names)
+            return '';
         }
 
         // Clear selection
@@ -1767,7 +1861,7 @@
         
         // Create user point at specific position
         function createUserPointAt(position, snapType = null) {
-            const sphereRadius = 0.12;
+            const sphereRadius = 0.15;
             const sphereGeom = new THREE.SphereGeometry(sphereRadius, 12, 12);
             const sphereMat = new THREE.MeshBasicMaterial({ color: 0x000000 }); // black color
             const sphere = new THREE.Mesh(sphereGeom, sphereMat);
@@ -1835,7 +1929,11 @@
                     const startCoords = `(${(v.start.z).toFixed(1)}, ${(v.start.x).toFixed(1)}, ${(v.start.y).toFixed(1)})`;
                     const endCoords = `(${(v.end.z).toFixed(1)}, ${(v.end.x).toFixed(1)}, ${(v.end.y).toFixed(1)})`;
                     const magnitude = v.magnitude.toFixed(2);
-                    content += `<li>&nbsp;&nbsp;• Вектор <strong>${v.name}</strong> |${magnitude}| <small>${startCoords}→${endCoords}</small> <button onclick="deleteVector(${i})" style="font-size: 0.8em;">🗑️</button></li>`;
+                    
+                    // Use KaTeX for vector arrow notation
+                    const vectorNameDisplay = v.name ? `<strong>${v.name}</strong> (<span id="katex-vec-${i}"></span>)` : `<span id="katex-vec-${i}"></span>`;
+                    
+                    content += `<li>&nbsp;&nbsp;• Вектор ${vectorNameDisplay} |${magnitude}| <small>${startCoords}→${endCoords}</small> <button onclick="deleteVector(${i})" style="font-size: 0.8em;">🗑️</button></li>`;
                 });
             }
             
@@ -1856,6 +1954,14 @@
             } else {
                 list.className = '';
                 list.innerHTML = content;
+                
+                // Render KaTeX for vector arrows
+                userVectors.forEach((v, i) => {
+                    const katexElement = document.getElementById(`katex-vec-${i}`);
+                    if (katexElement && v.vectorName) {
+                        katex.render(`\\vec{${v.vectorName}}`, katexElement, { throwOnError: false });
+                    }
+                });
             }
         }
 
@@ -2139,7 +2245,7 @@
                         
                         // Update label position
                         if (userPoint.label) {
-                            const offset = 1.2;
+                            const offset = 0.5;
                             userPoint.label.position.set(
                                 snap.position.x + offset, 
                                 snap.position.y + offset, 
@@ -2196,55 +2302,81 @@
                 dragStartPosition = null;
             }
             else if (isCreatingVector && vectorStartPos) {
-                const endSnap = detectSnap(e);
-                
-                if (previewVector) {
-                    scene.remove(previewVector);
-                    previewVector = null;
-                }
-                
-                if (endSnap) {
-                    let endPos = endSnap.position;
+                    const endSnap = detectSnap(e);
                     
-                    // Create user point if snapping to edge or face
-                    if (endSnap.type === 'edge' || endSnap.type === 'face') {
-                        createUserPoint(endPos, endSnap.type);
+                    if (previewVector) {
+                        scene.remove(previewVector);
+                        previewVector = null;
                     }
                     
-                    const arrow = createVectorArrow(vectorStartPos, endPos);
-                    scene.add(arrow);
-                    
-                    // Calculate vector center for label placement
-                    const vectorCenter = new THREE.Vector3()
-                        .addVectors(vectorStartPos, endPos)
-                        .multiplyScalar(0.5);
-                    
-                    // Create vector label
-                    const vectorName = getVectorName();
-                    const vectorLabel = createVectorLabel(vectorName, vectorCenter);
-                    userVectorLabels.push(vectorLabel);
-                    
-                    // Convert Three.js coordinates back to math coordinates for vector components
-                    const startMath = { x: vectorStartPos.z, y: vectorStartPos.x, z: vectorStartPos.y };
-                    const endMath = { x: endPos.z, y: endPos.x, z: endPos.y };
-                    
-                    const dx = endMath.x - startMath.x;
-                    const dy = endMath.y - startMath.y; 
-                    const dz = endMath.z - startMath.z;
-                    const magnitude = Math.sqrt(dx*dx + dy*dy + dz*dz);
-                    
-                    userVectors.push({
-                        name: vectorName,
-                        start: vectorStartPos.clone(),
-                        end: endPos.clone(),
-                        arrow: arrow,
-                        label: vectorLabel,
-                        components: { dx, dy, dz },
-                        magnitude: magnitude
-                    });
-                    
-                    vectorCounter++;
-                    updateUserObjectsList();
+                    if (endSnap) {
+                        let endPos = endSnap.position;
+                        
+                        // СОХРАНЯЕМ позиции ДО сброса
+                        const savedStartPos = vectorStartPos.clone();
+                        const savedEndPos = endPos.clone();
+                        
+                        // Create user point for START if snapping to edge or face
+                        if (vectorStartSnap && (vectorStartSnap.type === 'edge' || vectorStartSnap.type === 'face')) {
+                            createUserPoint(vectorStartPos, vectorStartSnap.type);
+                        }
+                        
+                        // Create user point for END if snapping to edge or face
+                        if (endSnap.type === 'edge' || endSnap.type === 'face') {
+                            createUserPoint(endPos, endSnap.type);
+                        }
+
+                        // Find labels for start and end points
+                        let startLabel = 'O';
+                        let endLabel = 'P';
+
+                        if (vectorStartSnap && vectorStartSnap.type === 'vertex') {
+                            startLabel = vectorStartSnap.label || startLabel;
+                        }
+                        if (endSnap && endSnap.type === 'vertex') {
+                            endLabel = endSnap.label || endLabel;
+                        }
+
+                        // Ask user if they want to name the vector
+                        askVectorName(startLabel, endLabel, (singleLetterName, defaultName) => {
+                            const arrow = createVectorArrow(savedStartPos, savedEndPos);
+                            scene.add(arrow);
+
+                            // Calculate vector center for label placement
+                            const vectorCenter = new THREE.Vector3()
+                                .addVectors(savedStartPos, savedEndPos)
+                                .multiplyScalar(0.5);
+
+                            // Create vector label only if single letter name provided
+                            let vectorLabel = null;
+                            if (singleLetterName) {
+                                vectorLabel = createVectorLabel(singleLetterName, vectorCenter);
+                                userVectorLabels.push(vectorLabel);
+                            }
+
+                            // Convert Three.js coordinates back to math coordinates for vector components
+                            const startMath = { x: savedStartPos.z, y: savedStartPos.x, z: savedStartPos.y };
+                            const endMath = { x: savedEndPos.z, y: savedEndPos.x, z: savedEndPos.y };
+
+                            const dx = endMath.x - startMath.x;
+                            const dy = endMath.y - startMath.y; 
+                            const dz = endMath.z - startMath.z;
+                            const magnitude = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+                            userVectors.push({
+                                name: singleLetterName, // Can be empty string
+                                vectorName: defaultName, // Always store AB-style name
+                                start: savedStartPos.clone(),
+                                end: savedEndPos.clone(),
+                                arrow: arrow,
+                                label: vectorLabel,
+                                components: { dx, dy, dz },
+                                magnitude: magnitude
+                            });
+
+                            vectorCounter++;
+                            updateUserObjectsList();
+                        });
                 }
                 
                 // Reset start vertex highlight
