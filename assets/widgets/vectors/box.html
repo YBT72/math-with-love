@@ -733,11 +733,6 @@
             
             // UPDATE LABEL POSITIONS - ADD THIS LINE
             updateLabelPositions();
-
-            // Update angle hint sprite position if active
-            if (angleHintSprite) {
-                updateAngleHintPosition(angleHintSprite);
-            }
         }
 
         // Calculate label position relative to camera
@@ -857,10 +852,9 @@
             }
             
             // Remove angle hint if switching away from angle tool
-            if (activeTool === 'angle' && tool !== 'angle' && angleHintSprite) {
-                scene.remove(angleHintSprite);
-                angleHintSprite.material.map.dispose();
-                angleHintSprite.material.dispose();
+            if (activeTool === 'angle' && tool !== 'angle') {
+                const hint = document.getElementById('angle-hint');
+                if (hint) hint.remove();
                 angleHintSprite = null;
                 
                 // Reset colors of selected angle objects
@@ -897,7 +891,6 @@
                 container.style.cursor = 'crosshair';
                 selectedAngleObjects = [];
                 angleHintSprite = createAngleHintSprite('Выберите первый объект (вектор, ребро или плоскость)');
-                scene.add(angleHintSprite);
             } else if (tool === 'select') {
                 container.style.cursor = 'pointer';
             } else {
@@ -1307,14 +1300,27 @@
         function visualizeVectorVectorAngle(vec1, vec2, angle) {
             const center = vec1.start;
             
-            // Create arc
+            // DEBUG: Log visualization
+            console.log('Visualizing vector-vector angle:', {
+                center: center,
+                angle: angle,
+                vec1: vec1,
+                vec2: vec2
+            });
+            
+            // Create arc with LARGER radius for better visibility
             const arc = createAngleArc(
                 center,
-                0.8,
+                1.5, // Increased from 0.8
                 vec1.direction,
                 vec2.direction,
                 angle
             );
+            
+            if (arc.children.length === 0) {
+                console.error('Arc has no children! Vectors may be parallel.');
+            }
+            
             scene.add(arc);
             
             // Calculate label position (above arc midpoint)
@@ -1364,10 +1370,10 @@
             const ghostArrow = createHelperArrow(ghost.start, ghost.end, 'ghost');
             scene.add(ghostArrow);
             
-            // Create arc between vec1 and ghost
+            // Create arc between vec1 and ghost with LARGER radius
             const arc = createAngleArc(
                 center,
-                0.8,
+                1.5, // Increased from 0.8
                 vec1.direction,
                 ghost.direction,
                 angle
@@ -2227,11 +2233,11 @@
             cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
             group.add(cone);
             
-            // Set render order for final vectors to appear on top
+            // Set render order for final vectors to appear on top of planes
             if (!isPreview) {
-                group.renderOrder = 1000;
-                line.renderOrder = 1000;
-                cone.renderOrder = 1000;
+                group.renderOrder = 2000; // Higher than planes (which are 500-1000)
+                line.renderOrder = 2000;
+                cone.renderOrder = 2000;
             }
             
             return group;
@@ -2357,9 +2363,19 @@
             // Check if vectors are parallel (axis length ≈ 0)
             if (axis.length() < 0.0001) {
                 // Parallel vectors - no arc needed
+                console.log('Vectors are parallel, no arc created');
                 return group;
             }
             
+            // DEBUG: Log arc creation
+            console.log('Creating arc:', {
+                center: center,
+                radius: radius,
+                angle: angleDegrees,
+                dir1: dir1,
+                dir2: dir2
+            });
+
             axis.normalize();
             
             // Convert angle to radians
@@ -2392,8 +2408,11 @@
             });
             
             const arcLine = new THREE.Line(arcGeometry, arcMaterial);
-            arcLine.renderOrder = 1000; // Render above edges
+            arcLine.renderOrder = 3000; // Render above everything (vectors are 2000)
             group.add(arcLine);
+
+            // DEBUG: Verify arc was created
+            console.log('Arc created with', points.length, 'points');
             
             // Add right angle square symbol if angle ≈ 90°
             if (Math.abs(angleDegrees - 90) < 0.5) {
@@ -2430,48 +2449,45 @@
         function createAngleLabel(angleDegrees, position, additionalText = null) {
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
-            canvas.width = 256;
-            canvas.height = additionalText ? 160 : 128;
+            canvas.width = 128;
+            canvas.height = additionalText ? 96 : 64;
             
-            // Draw semi-transparent black background with rounded corners
-            context.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            context.beginPath();
-            context.roundRect(10, 10, canvas.width - 20, canvas.height - 20, 8);
-            context.fill();
+            // NO BACKGROUND - transparent
             
             // Draw angle text with outline
-            context.font = 'Bold 60px Arial';
+            context.font = 'Bold 36px Arial';
             context.textAlign = 'center';
             context.textBaseline = 'middle';
             
-            // Black outline
+            // Black outline (thicker for better visibility)
             context.strokeStyle = 'black';
-            context.lineWidth = 3;
-            context.strokeText(angleDegrees.toFixed(1) + '°', canvas.width / 2, additionalText ? 50 : canvas.height / 2);
+            context.lineWidth = 4;
+            context.strokeText(angleDegrees.toFixed(1) + '°', canvas.width / 2, additionalText ? 32 : canvas.height / 2);
             
             // White fill
             context.fillStyle = 'white';
-            context.fillText(angleDegrees.toFixed(1) + '°', canvas.width / 2, additionalText ? 50 : canvas.height / 2);
+            context.fillText(angleDegrees.toFixed(1) + '°', canvas.width / 2, additionalText ? 32 : canvas.height / 2);
             
-            // Draw additional text if provided
+            // Draw additional text if provided (smaller)
             if (additionalText) {
-                context.font = 'Bold 24px Arial';
+                context.font = 'Bold 16px Arial';
                 context.strokeStyle = 'black';
-                context.lineWidth = 2;
-                context.strokeText(additionalText, canvas.width / 2, 110);
+                context.lineWidth = 3;
+                context.strokeText(additionalText, canvas.width / 2, 70);
                 context.fillStyle = 'white';
-                context.fillText(additionalText, canvas.width / 2, 110);
+                context.fillText(additionalText, canvas.width / 2, 70);
             }
             
             const texture = new THREE.CanvasTexture(canvas);
             const spriteMaterial = new THREE.SpriteMaterial({ 
                 map: texture, 
-                depthTest: false 
+                depthTest: false,
+                transparent: true
             });
             const sprite = new THREE.Sprite(spriteMaterial);
             sprite.position.copy(position);
-            sprite.scale.set(1.5, additionalText ? 1.2 : 0.75, 1);
-            sprite.renderOrder = 2000; // Always on top
+            sprite.scale.set(0.8, additionalText ? 0.6 : 0.4, 1); // Much smaller
+            sprite.renderOrder = 4000; // Highest priority
             
             return sprite;
         }
@@ -2576,77 +2592,44 @@
 
         // Create hint sprite in top-left corner of canvas
         function createAngleHintSprite(text) {
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            canvas.width = 512;
-            canvas.height = 128;
+            // Remove old hint div if exists
+            const oldHint = document.getElementById('angle-hint');
+            if (oldHint) oldHint.remove();
             
-            // Semi-transparent black background
-            context.fillStyle = 'rgba(0, 0, 0, 0.75)';
-            context.beginPath();
-            context.roundRect(0, 0, canvas.width, canvas.height, 6);
-            context.fill();
+            // Create HTML div instead of sprite (same style as plane-status)
+            const div = document.createElement('div');
+            div.id = 'angle-hint';
+            div.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 120px;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 10px 15px;
+                border-radius: 5px;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-size: 14px;
+                z-index: 1000;
+                pointer-events: none;
+            `;
+            div.textContent = text;
+            document.body.appendChild(div);
             
-            // White text
-            context.font = 'Bold 32px Arial';
-            context.fillStyle = 'white';
-            context.textAlign = 'left';
-            context.textBaseline = 'middle';
-            context.fillText(text, 20, canvas.height / 2);
-            
-            const texture = new THREE.CanvasTexture(canvas);
-            const spriteMaterial = new THREE.SpriteMaterial({ 
-                map: texture,
-                depthTest: false
-            });
-            const sprite = new THREE.Sprite(spriteMaterial);
-            
-            // Position in top-left corner (will be updated in updateAngleHintPosition)
-            sprite.scale.set(4, 1, 1);
-            sprite.renderOrder = 3000; // Highest priority
-            
-            updateAngleHintPosition(sprite);
-            
-            return sprite;
+            return div; // Return div instead of sprite
         }
 
-        // Update hint sprite position to stay in top-left corner
-        function updateAngleHintPosition(sprite) {
-            if (!sprite) return;
-            
-            // Calculate position in 3D space that appears in top-left of screen
-            const vector = new THREE.Vector3(-0.85, 0.85, -1);
-            vector.unproject(camera);
-            
-            const dir = vector.sub(camera.position).normalize();
-            const distance = 5;
-            
-            sprite.position.copy(camera.position).add(dir.multiplyScalar(distance));
+        // Update hint position (not needed for HTML div, but keep for compatibility)
+        function updateAngleHintPosition(hint) {
+            // HTML div position is fixed, no need to update
+            return;
         }
 
-        // Update hint text without recreating sprite
+        // Update hint text without recreating element
         function updateAngleHint(text) {
-            if (!angleHintSprite) return;
-            
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            canvas.width = 512;
-            canvas.height = 128;
-            
-            context.fillStyle = 'rgba(0, 0, 0, 0.75)';
-            context.beginPath();
-            context.roundRect(0, 0, canvas.width, canvas.height, 6);
-            context.fill();
-            
-            context.font = 'Bold 32px Arial';
-            context.fillStyle = 'white';
-            context.textAlign = 'left';
-            context.textBaseline = 'middle';
-            context.fillText(text, 20, canvas.height / 2);
-            
-            const texture = new THREE.CanvasTexture(canvas);
-            angleHintSprite.material.map = texture;
-            angleHintSprite.material.needsUpdate = true;
+            const hint = document.getElementById('angle-hint');
+            if (hint) {
+                hint.textContent = text;
+            }
         }
 
         // Calculate plane equation from 3 points in math coordinates
@@ -2978,7 +2961,7 @@
             const planeMesh = new THREE.Mesh(geometry, material);
             
             // Settings for proper display from both sides
-            planeMesh.renderOrder = 1; // Low priority - render before labels and points
+            planeMesh.renderOrder = 50; // Very low priority - render before everything
             planeMesh.frustumCulled = false; // Don't cull based on camera frustum
             
             scene.add(planeMesh);
@@ -3353,14 +3336,16 @@
                 transparent: true,       // Enable transparency
                 opacity: 0.6,            // 60% transparency
                 side: THREE.DoubleSide,  // Visible from both sides
-                depthTest: false,        // Disable depth test to always show
-                depthWrite: false,       // Don't write to depth buffer
-                polygonOffset: false     // Not needed with depthTest: false
+                depthTest: true,         // ENABLE depth test for proper layering
+                depthWrite: false,       // Don't write to depth buffer for transparency
+                polygonOffset: true,     // Enable polygon offset
+                polygonOffsetFactor: 1,  // Push back slightly
+                polygonOffsetUnits: 1
             });
 
             // Create mesh with medium render order (after edges, before labels)
             const planeMesh = new THREE.Mesh(geometry, planeMaterial);
-            planeMesh.renderOrder = 500; // Render after parallelepiped edges but before labels
+            planeMesh.renderOrder = 100; // Render BEFORE vectors (which have 2000)
             scene.add(planeMesh);
             
             // STEP 2g: Create dashed outline around polygon perimeter
@@ -4118,39 +4103,70 @@
                     toolActionPerformed = true;
                 }
             } else if (activeTool === 'angle') {
-                const snap = detectSnap(e);
                 let objectData = null;
                 
-                // Priority 1: Check if clicking on a user vector
-                if (snap && snap.type === 'vertex') {
-                    const vectorData = findVectorByPoint(snap.position);
-                    if (vectorData) {
-                        objectData = vectorData;
+                const rect = container.getBoundingClientRect();
+                const mouse = new THREE.Vector2();
+                mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                
+                raycaster.setFromCamera(mouse, camera);
+                
+                // PRIORITY 1: User VECTORS (ABSOLUTE HIGHEST)
+                // Check ALL user vector arrows, including all their children
+                const userVectorArrows = userVectors.map(v => v.arrow);
+                const vectorIntersects = raycaster.intersectObjects(userVectorArrows, true);
+                
+                if (vectorIntersects.length > 0) {
+                    // Find which vector was clicked by checking the arrow group
+                    for (let vector of userVectors) {
+                        let isThisVector = false;
+                        
+                        // Check if the intersected object is part of this vector's arrow
+                        vector.arrow.traverse(child => {
+                            if (child === vectorIntersects[0].object) {
+                                isThisVector = true;
+                            }
+                        });
+                        
+                        if (isThisVector) {
+                            objectData = {
+                                type: 'vector',
+                                vector: vector,
+                                arrow: vector.arrow,
+                                start: vector.start,
+                                end: vector.end,
+                                direction: {
+                                    x: vector.end.x - vector.start.x,
+                                    y: vector.end.y - vector.start.y,
+                                    z: vector.end.z - vector.start.z
+                                },
+                                name: vector.vectorName || vector.name,
+                                object: vector
+                            };
+                            break;
+                        }
                     }
                 }
                 
-                // Priority 2: Check if clicking on an edge
-                if (!objectData && highlightedObject && highlightedObject.type === 'edge') {
-                    objectData = findEdgeObject(highlightedObject.obj);
+                // PRIORITY 2: Parallelepiped EDGES
+                if (!objectData) {
+                    const edgeIntersects = raycaster.intersectObjects(edgeObjects);
+                    if (edgeIntersects.length > 0) {
+                        objectData = findEdgeObject(edgeIntersects[0].object);
+                    }
                 }
                 
-                // Priority 3: Check if clicking on a plane (user plane or face)
+                // PRIORITY 3: PLANES (lowest priority)
                 if (!objectData) {
-                    const rect = container.getBoundingClientRect();
-                    const mouse = new THREE.Vector2();
-                    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-                    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-                    
-                    raycaster.setFromCamera(mouse, camera);
-                    
-                    // Check user planes first
+                    // First check user planes
                     const userPlaneMeshes = userPlanes.map(p => p.mesh);
                     const userPlaneIntersects = raycaster.intersectObjects(userPlaneMeshes);
                     
                     if (userPlaneIntersects.length > 0) {
                         objectData = findPlaneByMesh(userPlaneIntersects[0].object);
                     } else {
-                        // Check parallelepiped faces
+                        // Then check parallelepiped faces
                         const faceIntersects = raycaster.intersectObjects(faceMeshes);
                         if (faceIntersects.length > 0) {
                             objectData = findPlaneByMesh(faceIntersects[0].object);
@@ -4408,11 +4424,6 @@
             camera.aspect = container.clientWidth / container.clientHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(container.clientWidth, container.clientHeight);
-            
-            // Update angle hint position if active
-            if (angleHintSprite) {
-                updateAngleHintPosition(angleHintSprite);
-            }
         });
     </script>
 </body>
