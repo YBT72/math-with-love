@@ -702,7 +702,7 @@
                 scene.remove(plane.mesh);
                 if (plane.label) scene.remove(plane.label);
                 
-                // ⚠️ ДОБАВИТЬ ЭТИ СТРОКИ:
+                // ⚠️ ADD THESE LINES:
                 if (plane.dashedOutline) {
                     scene.remove(plane.dashedOutline);
                     plane.dashedOutline.geometry.dispose();
@@ -2312,7 +2312,7 @@
                     if (endSnap) {
                         let endPos = endSnap.position;
                         
-                        // СОХРАНЯЕМ позиции ДО сброса
+                        // SAVE positions BEFORE reset
                         const savedStartPos = vectorStartPos.clone();
                         const savedEndPos = endPos.clone();
                         
