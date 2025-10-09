@@ -1308,21 +1308,35 @@
                 vec2: vec2
             });
             
-            // Create arc with LARGER radius for better visibility
-            const arc = createAngleArc(
+            // Create SECTOR (not arc) with semi-transparent fill
+            const sector = createAngleSector(
                 center,
-                1.5, // Increased from 0.8
+                1.5, // Radius
                 vec1.direction,
                 vec2.direction,
-                angle
+                angle,
+                0xFFD700 // Gold color
             );
             
-            if (arc.children.length === 0) {
-                console.error('Arc has no children! Vectors may be parallel.');
+            if (sector.children.length === 0) {
+                console.error('Sector has no children! Vectors may be parallel.');
             }
             
-            scene.add(arc);
-            
+            scene.add(sector);
+    
+            // DEBUG: Check what was added
+            console.log('===== SECTOR DEBUG =====');
+            console.log('Sector object:', sector);
+            console.log('Sector children count:', sector.children.length);
+            console.log('Sector children:', sector.children);
+            sector.children.forEach((child, i) => {
+                console.log(`Child ${i}:`, child.type, child);
+                if (child.geometry) {
+                    console.log(`  - Geometry vertices:`, child.geometry.attributes.position.count);
+                }
+            });
+            console.log('========================');
+
             // Calculate label position (above arc midpoint)
             const dir1Normalized = normalizeVector(vec1.direction);
             const dir2Normalized = normalizeVector(vec2.direction);
@@ -1356,7 +1370,7 @@
             scene.add(label);
             
             return {
-                arc: arc,
+                arc: sector, // Renamed but keeping 'arc' key for compatibility
                 label: label,
                 type: 'vector-vector'
             };
@@ -1370,15 +1384,16 @@
             const ghostArrow = createHelperArrow(ghost.start, ghost.end, 'ghost');
             scene.add(ghostArrow);
             
-            // Create arc between vec1 and ghost with LARGER radius
-            const arc = createAngleArc(
+            // Create SECTOR between vec1 and ghost
+            const sector = createAngleSector(
                 center,
-                1.5, // Increased from 0.8
+                1.5,
                 vec1.direction,
                 ghost.direction,
-                angle
+                angle,
+                0xFFD700 // Gold color
             );
-            scene.add(arc);
+            scene.add(sector);
             
             // Calculate label position
             const dir1Normalized = normalizeVector(vec1.direction);
@@ -1411,7 +1426,7 @@
             scene.add(label);
             
             return {
-                arc: arc,
+                arc: sector, // Renamed but keeping 'arc' key for compatibility
                 label: label,
                 ghostArrow: ghostArrow,
                 type: 'vector-vector-ghost'
@@ -1462,13 +1477,14 @@
             );
             scene.add(perpendicular);
             
-            // Create arc between vector and projection
-            const arc = createAngleArc(
+            // Create sector between vector and projection
+            const arc = createAngleSector(
                 vector.start,
-                0.8,
+                1.5,
                 vector.direction,
                 projection.direction,
-                angle
+                angle,
+                0xFFD700
             );
             scene.add(arc);
             
@@ -1539,13 +1555,14 @@
             });
             scene.add(normal2Arrow);
             
-            // Create arc between normals
-            const arc = createAngleArc(
+            // Create sector between normals
+            const arc = createAngleSector(
                 visualPoint,
-                0.8,
+                1.5,
                 plane1.normal,
                 plane2.normal,
-                angle
+                angle,
+                0xFFD700
             );
             scene.add(arc);
             
@@ -2168,22 +2185,43 @@
                 <h3 style="margin: 0 0 15px 0;">Название вектора</h3>
                 <p style="margin: 0 0 15px 0;">Дать вектору однобуквенное имя?</p>
                 <div style="display: flex; gap: 10px;">
-                    <button id="vector-name-yes" style="padding: 8px 16px; cursor: pointer;">Да</button>
-                    <button id="vector-name-no" style="padding: 8px 16px; cursor: pointer;">Нет (использовать ${defaultName})</button>
+                    <button id="vector-name-yes" style="padding: 8px 16px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 4px;">Да</button>
+                    <button id="vector-name-no" style="padding: 8px 16px; cursor: pointer; background: #2196F3; color: white; border: none; border-radius: 4px;">Нет (использовать ${defaultName})</button>
                 </div>
             `;
             
             document.body.appendChild(dialog);
             
-            document.getElementById('vector-name-yes').onclick = () => {
-                document.body.removeChild(dialog);
-                callback(getVectorName(), defaultName);
-            };
-            
-            document.getElementById('vector-name-no').onclick = () => {
-                document.body.removeChild(dialog);
-                callback('', defaultName);
-            };
+            // CRITICAL FIX: Use setTimeout to ensure DOM is ready
+            setTimeout(() => {
+                const yesBtn = document.getElementById('vector-name-yes');
+                const noBtn = document.getElementById('vector-name-no');
+                
+                if (!yesBtn || !noBtn) {
+                    console.error('Dialog buttons not found in DOM!');
+                    return;
+                }
+                
+                yesBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Yes button clicked');
+                    const dlg = document.getElementById('vector-name-dialog');
+                    if (dlg) document.body.removeChild(dlg);
+                    callback(getVectorName(), defaultName);
+                });
+                
+                noBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('No button clicked');
+                    const dlg = document.getElementById('vector-name-dialog');
+                    if (dlg) document.body.removeChild(dlg);
+                    callback('', defaultName);
+                });
+                
+                console.log('Dialog created and event listeners attached');
+            }, 0);
         }
 
         // Create arrow for vector
@@ -2210,8 +2248,8 @@
                 linewidth: isPreview ? 2 : 4,
                 opacity: isPreview ? 0.7 : 1,
                 transparent: isPreview,
-                depthTest: !isPreview, // Preview vectors ignore depth, final vectors respect it
-                depthWrite: !isPreview
+                depthTest: false, // CHANGED: Always ignore depth
+                depthWrite: false  // CHANGED: Always ignore depth
             });
             const line = new THREE.Line(lineGeometry, lineMaterial);
             group.add(line);
@@ -2222,8 +2260,8 @@
                 color: isPreview ? 0x8B00FF : 0xFF0080,
                 opacity: isPreview ? 0.7 : 1,
                 transparent: isPreview,
-                depthTest: !isPreview,
-                depthWrite: !isPreview
+                depthTest: false, // CHANGED: Always ignore depth
+                depthWrite: false  // CHANGED: Always ignore depth
             });
             const cone = new THREE.Mesh(coneGeometry, coneMaterial);
             
@@ -2344,13 +2382,9 @@
             return sprite;
         }
 
-        // ============================================================================
-        // VISUAL FUNCTIONS FOR ANGLE MEASUREMENT
-        // ============================================================================
-
-        // Create angle arc between two directions
-        // Returns THREE.Group containing the arc (and square symbol if angle ≈ 90°)
-        function createAngleArc(center, radius, direction1, direction2, angleDegrees, color = 0xFFD700) {
+        // Create angle sector (filled semi-transparent area) between two directions
+        // Returns THREE.Group containing the sector mesh
+        function createAngleSector(center, radius, direction1, direction2, angleDegrees, color = 0xFFD700) {
             const group = new THREE.Group();
             
             // Normalize directions
@@ -2362,29 +2396,24 @@
             
             // Check if vectors are parallel (axis length ≈ 0)
             if (axis.length() < 0.0001) {
-                // Parallel vectors - no arc needed
-                console.log('Vectors are parallel, no arc created');
+                console.log('Vectors are parallel, no sector created');
                 return group;
             }
             
-            // DEBUG: Log arc creation
-            console.log('Creating arc:', {
-                center: center,
-                radius: radius,
-                angle: angleDegrees,
-                dir1: dir1,
-                dir2: dir2
-            });
-
             axis.normalize();
             
             // Convert angle to radians
             const angleRadians = angleDegrees * (Math.PI / 180);
             
-            // Create arc points by rotating dir1 towards dir2
+            // Create sector geometry
             const numSegments = 32;
-            const points = [];
+            const vertices = [];
+            const indices = [];
             
+            // Add center point
+            vertices.push(center.x, center.y, center.z);
+            
+            // Add arc points
             for (let i = 0; i <= numSegments; i++) {
                 const t = i / numSegments;
                 const currentAngle = angleRadians * t;
@@ -2395,31 +2424,39 @@
                 
                 // Scale to radius and add to center
                 const point = center.clone().add(rotatedDir.multiplyScalar(radius));
-                points.push(point);
+                vertices.push(point.x, point.y, point.z);
             }
             
-            // Create arc line
-            const arcGeometry = new THREE.BufferGeometry().setFromPoints(points);
-            const arcMaterial = new THREE.LineBasicMaterial({
+            // Create triangular faces (fan triangulation from center)
+            for (let i = 0; i < numSegments; i++) {
+                indices.push(0, i + 1, i + 2);
+            }
+            
+            // Create geometry
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            geometry.setIndex(indices);
+            geometry.computeVertexNormals();
+            
+            // Create semi-transparent material
+            const material = new THREE.MeshBasicMaterial({
                 color: color,
-                linewidth: 3,
+                transparent: true,
+                opacity: 0.5, // 50% transparency
+                side: THREE.DoubleSide,
                 depthTest: true,
                 depthWrite: false
             });
             
-            const arcLine = new THREE.Line(arcGeometry, arcMaterial);
-            arcLine.renderOrder = 3000; // Render above everything (vectors are 2000)
-            group.add(arcLine);
-
-            // DEBUG: Verify arc was created
-            console.log('Arc created with', points.length, 'points');
+            const sectorMesh = new THREE.Mesh(geometry, material);
+            sectorMesh.renderOrder = 2500; // CORRECT: After vectors (2000) but before labels (3000+)
+            group.add(sectorMesh);
             
             // Add right angle square symbol if angle ≈ 90°
             if (Math.abs(angleDegrees - 90) < 0.5) {
                 const squareSize = radius * 0.25;
                 const squarePoints = [];
                 
-                // Calculate square corners in the plane of the two directions
                 const corner1 = dir1.clone().multiplyScalar(squareSize);
                 const corner2 = corner1.clone().add(dir2.clone().multiplyScalar(squareSize));
                 const corner3 = dir2.clone().multiplyScalar(squareSize);
@@ -2437,9 +2474,11 @@
                     linewidth: 2 
                 });
                 const squareLine = new THREE.LineLoop(squareGeometry, squareMaterial);
-                squareLine.renderOrder = 1001;
+                squareLine.renderOrder = 2600; // CHANGED: In auxiliary elements layer
                 group.add(squareLine);
             }
+            
+            console.log('Sector created with', numSegments, 'segments, angle:', angleDegrees);
             
             return group;
         }
@@ -2555,8 +2594,8 @@
                 }
             });
             
-            arrow.renderOrder = type === 'ghost' ? 800 : 500;
-            
+            arrow.renderOrder = 2100; // CHANGED: All helper arrows in same layer as vectors
+
             return arrow;
         }
 
@@ -2585,7 +2624,7 @@
                 line.computeLineDistances();
             }
             
-            line.renderOrder = 500;
+            line.renderOrder = 2100; // CHANGED: Helper lines with vectors
             
             return line;
         }
@@ -2922,49 +2961,25 @@
             //     currentPlane = null;
             // }
             
-            // Create face geometry using the 4 vertices
-            const vertices = [];
-            const indices = [];
-            
-            // Add vertices (face.vertices contains arrays [x, y, z])
-            for (let i = 0; i < 4; i++) {
-                vertices.push(
-                    face.vertices[i][0], // x
-                    face.vertices[i][1], // y  
-                    face.vertices[i][2]  // z
-                );
+            // Find existing face mesh instead of creating new one
+            const faceIndex = faceList.findIndex(f => f.name === face.name);
+            if (faceIndex === -1) {
+                console.error('Face not found:', face.name);
+                return null;
             }
-            
-            // Create two triangles to form the rectangle
-            indices.push(0, 1, 2);
-            indices.push(0, 2, 3);
-            
-            const geometry = new THREE.BufferGeometry();
-            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-            geometry.setIndex(indices);
-            geometry.computeVertexNormals();
-            
-            // Create material with high contrast colors
-            // Use facing direction to determine if this is the closest face
-            const isClosestFace = isFacingCamera; // Face facing towards camera is closest
-            
-            const material = new THREE.MeshBasicMaterial({
-                color: isClosestFace ? 0x0088FF : 0x90EE90, // Bright blue for closest, light green for farthest
-                transparent: true,
-                opacity: isClosestFace ? 0.3 : 0.7, // More transparent for closest face
-                side: THREE.DoubleSide, // Show both sides
-                depthTest: false, // Disable depth test to show all faces
-                depthWrite: false // Disable depth write for transparency
-            });
-            
-            // Create mesh
-            const planeMesh = new THREE.Mesh(geometry, material);
-            
-            // Settings for proper display from both sides
-            planeMesh.renderOrder = 50; // Very low priority - render before everything
-            planeMesh.frustumCulled = false; // Don't cull based on camera frustum
-            
-            scene.add(planeMesh);
+
+            const planeMesh = faceMeshes[faceIndex];
+
+            // Update material properties to make face visible
+            const isClosestFace = isFacingCamera;
+
+            planeMesh.material.color.setHex(isClosestFace ? 0x0088FF : 0x90EE90);
+            planeMesh.material.opacity = isClosestFace ? 0.3 : 0.7;
+            planeMesh.material.transparent = true;
+            planeMesh.material.side = THREE.DoubleSide;
+            planeMesh.material.depthTest = true;  // CHANGED: Enable depth test
+            planeMesh.material.depthWrite = true; // CHANGED: Enable depth write
+            planeMesh.renderOrder = 100; // CHANGED: Higher priority for selected faces
             
             console.log(`Face ${face.name} created with color: ${isClosestFace ? 'BRIGHT BLUE (closest to camera)' : 'LIGHT GREEN (farthest from camera)'}`);
             console.log(`Face is ${isClosestFace ? 'facing camera (closest)' : 'facing away (farthest)'} with distance ${distanceToCamera.toFixed(2)}`);
@@ -3026,6 +3041,10 @@
                 faceType: isClosestFace ? 'фронтальная' : 'обратная' // Type for display
             });
             
+            // Mark this face mesh as being used as a plane
+            planeMesh.userData.isActivePlane = true;
+            planeMesh.userData.planeIndex = userPlanes.length - 1;
+
             // Increment counter and update objects list
             planeCounter++;
             updateUserObjectsList();
@@ -3336,16 +3355,14 @@
                 transparent: true,       // Enable transparency
                 opacity: 0.6,            // 60% transparency
                 side: THREE.DoubleSide,  // Visible from both sides
-                depthTest: true,         // ENABLE depth test for proper layering
-                depthWrite: false,       // Don't write to depth buffer for transparency
-                polygonOffset: true,     // Enable polygon offset
-                polygonOffsetFactor: 1,  // Push back slightly
-                polygonOffsetUnits: 1
+                depthTest: true,         // CHANGED: Enable depth test
+                depthWrite: true,        // CHANGED: Enable depth write
+                polygonOffset: false     // CHANGED: Disable polygon offset
             });
 
-            // Create mesh with medium render order (after edges, before labels)
+            // Create mesh with correct render order
             const planeMesh = new THREE.Mesh(geometry, planeMaterial);
-            planeMesh.renderOrder = 100; // Render BEFORE vectors (which have 2000)
+            planeMesh.renderOrder = 200; // CHANGED: Render after face planes (100) but before vectors (2000)
             scene.add(planeMesh);
             
             // STEP 2g: Create dashed outline around polygon perimeter
@@ -3892,8 +3909,19 @@
                 mesh: plane.mesh
             });
             
-            // Remove mesh and label from scene
-            scene.remove(plane.mesh);
+            // If this is a face (not a section), restore it to invisible state
+            if (plane.isFace) {
+                plane.mesh.material.opacity = 0;
+                plane.mesh.material.depthTest = false;
+                plane.mesh.material.depthWrite = false;
+                plane.mesh.renderOrder = 0;
+                plane.mesh.userData.isActivePlane = false;
+                plane.mesh.userData.planeIndex = undefined;
+            } else {
+                // For sections, remove mesh from scene
+                scene.remove(plane.mesh);
+            }
+            
             if (plane.label) {
                 scene.remove(plane.label);
             }
