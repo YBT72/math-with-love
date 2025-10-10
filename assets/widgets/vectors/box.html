@@ -467,6 +467,42 @@
             return { x: pos.z, y: pos.x, z: pos.y };
         }
 
+        // Universal function to find existing point near given position
+        function findExistingPoint(position, tolerance = 0.4) {
+            // Check parallelepiped vertices first
+            for (let i = 0; i < vertexSpheres.length; i++) {
+                const vertexPos = vertexSpheres[i].position;
+                if (position.distanceTo(vertexPos) < tolerance) {
+                    return {
+                        exists: true,
+                        type: 'parallelepiped',
+                        index: i,
+                        position: vertexPos.clone(),
+                        label: vertexSpheres[i].userData.label
+                    };
+                }
+            }
+            
+            // Check user-created points
+            for (let i = 0; i < userPoints.length; i++) {
+                const userPos = userPoints[i].sphere.position;
+                if (position.distanceTo(userPos) < tolerance) {
+                    return {
+                        exists: true,
+                        type: 'user',
+                        index: i,
+                        position: userPos.clone(),
+                        label: userPoints[i].name
+                    };
+                }
+            }
+            
+            // No existing point found
+            return {
+                exists: false
+            };
+        }
+
         // ============================================================================
         // MATHEMATICAL CORE FOR ANGLE MEASUREMENT
         // ============================================================================
@@ -3237,33 +3273,25 @@
             // STEP 2d: Create user points for all polygon vertices (or reuse existing ones)
             const vertexPointRefs = []; // Store references to created vertex points
             const vertexLabels = []; // Store labels for plane naming
-            const tolerance = 0.001; // Tolerance for point matching
+            // Note: Using findExistingPoint() with tolerance 0.4
 
             sortedPoints3D.forEach((position, index) => {
+                
+                // Use universal function to check for existing point
+                const existingPointData = findExistingPoint(position, 0.4);
+                
                 let existingPoint = null;
                 let pointLabel = null;
                 
-                // Check if this position matches any parallelepiped vertex
-                for (let i = 0; i < vertexSpheres.length; i++) {
-                    const vertexPos = vertexSpheres[i].position;
-                    if (position.distanceTo(vertexPos) < tolerance) {
-                        existingPoint = { type: 'parallelepiped', index: i };
-                        pointLabel = vertexSpheres[i].userData.label;
+                if (existingPointData.exists) {
+                    if (existingPointData.type === 'parallelepiped') {
+                        existingPoint = { type: 'parallelepiped', index: existingPointData.index };
+                        pointLabel = existingPointData.label;
                         console.log(`Reusing parallelepiped vertex ${pointLabel} at intersection ${index + 1}`);
-                        break;
-                    }
-                }
-                
-                // If not a parallelepiped vertex, check user points
-                if (!existingPoint) {
-                    for (let i = 0; i < userPoints.length; i++) {
-                        const userPos = userPoints[i].sphere.position;
-                        if (position.distanceTo(userPos) < tolerance) {
-                            existingPoint = { type: 'user', index: i };
-                            pointLabel = userPoints[i].name;
-                            console.log(`Reusing user point ${pointLabel} at intersection ${index + 1}`);
-                            break;
-                        }
+                    } else {
+                        existingPoint = { type: 'user', index: existingPointData.index };
+                        pointLabel = existingPointData.label;
+                        console.log(`Reusing user point ${pointLabel} at intersection ${index + 1}`);
                     }
                 }
                 
@@ -3489,6 +3517,20 @@
         
         // Create user point at specific position
         function createUserPointAt(position, snapType = null) {
+            // Check if point already exists at this position
+            const existingPointData = findExistingPoint(position, 0.4);
+            
+            if (existingPointData.exists) {
+                console.log(`Point already exists at this position: ${existingPointData.label}`);
+                // Return existing sphere instead of creating new one
+                if (existingPointData.type === 'parallelepiped') {
+                    return vertexSpheres[existingPointData.index];
+                } else {
+                    return userPoints[existingPointData.index].sphere;
+                }
+            }
+            
+            // No existing point - create new one
             const sphereRadius = 0.15;
             const sphereGeom = new THREE.SphereGeometry(sphereRadius, 12, 12);
             const sphereMat = new THREE.MeshBasicMaterial({ color: 0x000000 }); // black color
@@ -4310,14 +4352,26 @@
                         const savedStartPos = vectorStartPos.clone();
                         const savedEndPos = endPos.clone();
                         
-                        // Create user point for START if snapping to edge or face
+                        // Check and create user point for START if needed
                         if (vectorStartSnap && (vectorStartSnap.type === 'edge' || vectorStartSnap.type === 'face')) {
-                            createUserPoint(vectorStartPos, vectorStartSnap.type);
+                            const existingStart = findExistingPoint(vectorStartPos, 0.4);
+                            if (!existingStart.exists) {
+                                createUserPoint(vectorStartPos, vectorStartSnap.type);
+                            } else {
+                                // Use existing point position for precision
+                                savedStartPos.copy(existingStart.position);
+                            }
                         }
                         
-                        // Create user point for END if snapping to edge or face
+                        // Check and create user point for END if needed
                         if (endSnap.type === 'edge' || endSnap.type === 'face') {
-                            createUserPoint(endPos, endSnap.type);
+                            const existingEnd = findExistingPoint(endPos, 0.4);
+                            if (!existingEnd.exists) {
+                                createUserPoint(endPos, endSnap.type);
+                            } else {
+                                // Use existing point position for precision
+                                savedEndPos.copy(existingEnd.position);
+                            }
                         }
 
                         // Find labels for start and end points
