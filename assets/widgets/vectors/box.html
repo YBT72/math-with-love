@@ -503,6 +503,90 @@
             };
         }
 
+        // Prioritized raycasting for angle measurement tool
+        // Returns the highest priority object that was hit by the ray
+        function getPriorityRaycastHit(mouse, camera) {
+            raycaster.setFromCamera(mouse, camera);
+            
+            // PRIORITY 1 (HIGHEST): User vectors
+            const userVectorArrows = userVectors.map(v => v.arrow);
+            const vectorIntersects = raycaster.intersectObjects(userVectorArrows, true);
+            
+            if (vectorIntersects.length > 0) {
+                // Find which vector was clicked
+                for (let vector of userVectors) {
+                    let isThisVector = false;
+                    vector.arrow.traverse(child => {
+                        if (child === vectorIntersects[0].object) {
+                            isThisVector = true;
+                        }
+                    });
+                    
+                    if (isThisVector) {
+                        return {
+                            type: 'vector',
+                            data: {
+                                type: 'vector',
+                                vector: vector,
+                                arrow: vector.arrow,
+                                start: vector.start,
+                                end: vector.end,
+                                direction: {
+                                    x: vector.end.x - vector.start.x,
+                                    y: vector.end.y - vector.start.y,
+                                    z: vector.end.z - vector.start.z
+                                },
+                                name: vector.vectorName || vector.name,
+                                object: vector
+                            }
+                        };
+                    }
+                }
+            }
+            
+            // PRIORITY 2 (HIGH): Edges
+            const edgeIntersects = raycaster.intersectObjects(edgeObjects);
+            if (edgeIntersects.length > 0) {
+                const edgeData = findEdgeObject(edgeIntersects[0].object);
+                if (edgeData) {
+                    return {
+                        type: 'edge',
+                        data: edgeData
+                    };
+                }
+            }
+            
+            // PRIORITY 3 (LOW): Planes
+            // First check user planes
+            const userPlaneMeshes = userPlanes.map(p => p.mesh);
+            const userPlaneIntersects = raycaster.intersectObjects(userPlaneMeshes);
+            
+            if (userPlaneIntersects.length > 0) {
+                const planeData = findPlaneByMesh(userPlaneIntersects[0].object);
+                if (planeData) {
+                    return {
+                        type: 'plane',
+                        data: planeData
+                    };
+                }
+            }
+            
+            // Then check parallelepiped faces
+            const faceIntersects = raycaster.intersectObjects(faceMeshes);
+            if (faceIntersects.length > 0) {
+                const planeData = findPlaneByMesh(faceIntersects[0].object);
+                if (planeData) {
+                    return {
+                        type: 'plane',
+                        data: planeData
+                    };
+                }
+            }
+            
+            // Nothing found
+            return null;
+        }
+
         // ============================================================================
         // MATHEMATICAL CORE FOR ANGLE MEASUREMENT
         // ============================================================================
@@ -677,12 +761,12 @@
 
         // Faces (invisible for snapping, will be highlighted on hover)
         const faceList = [
-            { indices: [0, 1, 2, 3], normal: [0, -1, 0] }, // bottom (XZ plane at y=0)
-            { indices: [4, 5, 6, 7], normal: [0, 1, 0] },  // top (XZ plane at y=c)
-            { indices: [0, 1, 5, 4], normal: [0, 0, -1] }, // front (YZ plane at x=0)
-            { indices: [2, 3, 7, 6], normal: [0, 0, 1] },  // back (YZ plane at x=a)
-            { indices: [0, 3, 7, 4], normal: [-1, 0, 0] }, // left (XY plane at z=0)
-            { indices: [1, 2, 6, 5], normal: [1, 0, 0] }   // right (XY plane at z=b)
+            { indices: [0, 1, 2, 3], normal: [0, -1, 0], name: 'bottom' }, // bottom (XZ plane at y=0)
+            { indices: [4, 5, 6, 7], normal: [0, 1, 0], name: 'top' },     // top (XZ plane at y=c)
+            { indices: [0, 1, 5, 4], normal: [0, 0, -1], name: 'front' },  // front (YZ plane at x=0)
+            { indices: [2, 3, 7, 6], normal: [0, 0, 1], name: 'back' },    // back (YZ plane at x=a)
+            { indices: [0, 3, 7, 4], normal: [-1, 0, 0], name: 'left' },   // left (XY plane at z=0)
+            { indices: [1, 2, 6, 5], normal: [1, 0, 0], name: 'right' }    // right (XY plane at z=b)
         ];
 
         const faceMeshes = [];
@@ -804,45 +888,49 @@
         // Function to recalculate visibility of all faces
         function updateAllFacesVisibility() {
             userPlanes.forEach(plane => {
-                if (plane.isFace && plane.mesh) {
+                if (plane.isFace && plane.mesh && plane.mesh.material) {
                     const isNowClosest = recalculateFaceVisibility(plane);
                     
-                    // Update material color and opacity
-                    plane.mesh.material.color.setHex(isNowClosest ? 0x0088FF : 0x90EE90);
-                    plane.mesh.material.opacity = isNowClosest ? 0.3 : 0.7;
+                    // Update material color and opacity ONLY if material exists
+                    plane.mesh.material.color.setHex(isNowClosest ? 0x4169E1 : 0x32CD32);
+                    plane.mesh.material.opacity = Math.max(0.4, isNowClosest ? 0.4 : 0.7); // Never fully transparent
                     
                     // Update saved state
                     plane.isClosestToCamera = isNowClosest;
                     plane.faceType = isNowClosest ? 'фронтальная' : 'обратная';
                 }
             });
-            
-            // Update list in info panel
-            updateUserObjectsList();
         }
 
         // Function to recalculate visibility of a specific face
         function recalculateFaceVisibility(plane) {
-            if (!plane.isFace || !plane.mesh || !plane.equation) return false;
+            if (!plane.isFace || !plane.mesh || !plane.equation) return plane.isClosestToCamera || false;
             
             const cameraPosition = camera.position;
             
-            // Get face center
-            const faceCenter = new THREE.Vector3();
-            const geometry = plane.mesh.geometry;
-            const positions = geometry.attributes.position.array;
-            
-            for (let i = 0; i < 4; i++) {
-                faceCenter.x += positions[i * 3];
-                faceCenter.y += positions[i * 3 + 1];
-                faceCenter.z += positions[i * 3 + 2];
+            // Get face center from mesh userData or calculate
+            let faceCenter = plane.mesh.userData.faceCenter;
+            if (!faceCenter) {
+                faceCenter = new THREE.Vector3();
+                const geometry = plane.mesh.geometry;
+                const positions = geometry.attributes.position.array;
+                
+                const vertexCount = positions.length / 3;
+                for (let i = 0; i < vertexCount; i++) {
+                    faceCenter.x += positions[i * 3];
+                    faceCenter.y += positions[i * 3 + 1];
+                    faceCenter.z += positions[i * 3 + 2];
+                }
+                faceCenter.divideScalar(vertexCount);
+                
+                // Cache the center
+                plane.mesh.userData.faceCenter = faceCenter.clone();
             }
-            faceCenter.divideScalar(4);
             
-            // Use predefined normal from plane equation
-            const faceNormal = new THREE.Vector3(plane.equation.a, plane.equation.b, plane.equation.c).normalize();
+            // Get face normal from mesh instead of equation to avoid coordinate system issues
+            const faceNormal = plane.mesh.userData.normal.clone().normalize();
             
-            // Check visibility
+            // Check visibility using camera-to-face vector
             const cameraToFace = faceCenter.clone().sub(cameraPosition).normalize();
             const dotProduct = faceNormal.dot(cameraToFace);
             
@@ -890,7 +978,9 @@
             // Remove angle hint if switching away from angle tool
             if (activeTool === 'angle' && tool !== 'angle') {
                 const hint = document.getElementById('angle-hint');
-                if (hint) hint.remove();
+                if (hint) {
+                    hint.remove();
+                }
                 angleHintSprite = null;
                 
                 // Reset colors of selected angle objects
@@ -1156,6 +1246,14 @@
                     selectedAngleObjects.forEach(obj => resetAngleObjectColor(obj));
                     selectedAngleObjects = [];
                     updateAngleHint('Выберите первый объект (вектор, ребро или плоскость)');
+                    
+                    // Hide hint after successful measurement
+                    setTimeout(() => {
+                        const hint = document.getElementById('angle-hint');
+                        if (hint) {
+                            hint.style.display = 'none';
+                        }
+                    }, 2000); // Hide after 2 seconds
                 }, 100);
             }
         }
@@ -2111,7 +2209,16 @@
             // Reset previous highlight (but keep selected plane points orange)
             if (highlightedObject) {
                 if (highlightedObject.type === 'face') {
-                    highlightedObject.obj.material.opacity = 0;
+                    // DON'T hide user-created faces, only reset temporary face highlights
+                    if (!highlightedObject.obj.userData.isActivePlane) {
+                        highlightedObject.obj.material.opacity = 0;
+                    } else {
+                        // For user-created faces, restore proper opacity based on visibility
+                        const planeData = userPlanes.find(p => p.mesh === highlightedObject.obj);
+                        if (planeData) {
+                            highlightedObject.obj.material.opacity = planeData.isClosestToCamera ? 0.4 : 0.7;
+                        }
+                    }
                 } else if (highlightedObject.type === 'edge') {
                     highlightedObject.obj.material.color.setHex(0x404040);
                 } else if (highlightedObject.type === 'vertex') {
@@ -2200,6 +2307,9 @@
 
         // Show dialog to ask if user wants to name the vector
         function askVectorName(startLabel, endLabel, callback) {
+            console.log('askVectorName called with:', startLabel, endLabel);
+            console.log('This means vector creation completed');
+
             const dialog = document.createElement('div');
             dialog.id = 'vector-name-dialog';
             dialog.style.cssText = `
@@ -2478,15 +2588,14 @@
             const material = new THREE.MeshBasicMaterial({
                 color: color,
                 transparent: true,
-                opacity: 0.5, // 50% transparency
+                opacity: 0.4,               // CHANGED: 0.5 → 0.4
                 side: THREE.DoubleSide,
-                depthTest: true,
+                depthTest: false,           // CHANGED: true → false
                 depthWrite: false
             });
-            
+
             const sectorMesh = new THREE.Mesh(geometry, material);
-            sectorMesh.renderOrder = 2500; // CORRECT: After vectors (2000) but before labels (3000+)
-            group.add(sectorMesh);
+            sectorMesh.renderOrder = 2500;            group.add(sectorMesh);
             
             // Add right angle square symbol if angle ≈ 90°
             if (Math.abs(angleDegrees - 90) < 0.5) {
@@ -2580,11 +2689,11 @@
                             // Cyan dashed semi-transparent
                             child.material = child.material.clone();
                             child.material.color.setHex(0x00CED1); // DarkTurquoise
-                            child.material.opacity = 0.4;
+                            child.material.opacity = 0.3;          // CHANGED: 0.4 → 0.3 (менее заметно)
                             child.material.transparent = true;
                             child.material.depthTest = false;
                             child.material.depthWrite = false;
-                            
+                                                    
                             // Make line dashed if it's a Line
                             if (child.isLine) {
                                 child.material.dispose();
@@ -2865,6 +2974,50 @@
             console.log('Equation:', equation);
         }
 
+        // Check if a point lies on a face of the parallelepiped
+        function isPointOnParallelepipedFace(point, face) {
+            const tolerance = 0.1;
+            
+            // Get face equation from face definition
+            const { a, b, c, d } = face.equation;
+            
+            // Convert point to math coordinates for equation check
+            const mathPoint = threeJSToMath(point);
+            
+            // Check if point satisfies face equation: ax + by + cz + d = 0
+            const equationValue = a * mathPoint.x + b * mathPoint.y + c * mathPoint.z + d;
+            
+            if (Math.abs(equationValue) > tolerance) {
+                return false; // Point not on plane
+            }
+            
+            // Check if point is within face bounds
+            const faceVertices = face.vertices;
+            
+            // Get min/max bounds of the face in Three.js coordinates
+            let minX = Infinity, maxX = -Infinity;
+            let minY = Infinity, maxY = -Infinity; 
+            let minZ = Infinity, maxZ = -Infinity;
+            
+            for (const vertex of faceVertices) {
+                minX = Math.min(minX, vertex[0]);
+                maxX = Math.max(maxX, vertex[0]);
+                minY = Math.min(minY, vertex[1]);
+                maxY = Math.max(maxY, vertex[1]);
+                minZ = Math.min(minZ, vertex[2]);
+                maxZ = Math.max(maxZ, vertex[2]);
+            }
+            
+            // Check if point is within bounds (with small tolerance)
+            const withinBounds = (
+                point.x >= minX - tolerance && point.x <= maxX + tolerance &&
+                point.y >= minY - tolerance && point.y <= maxY + tolerance &&
+                point.z >= minZ - tolerance && point.z <= maxZ + tolerance
+            );
+            
+            return withinBounds;
+        }
+
         // Check if selected points form a face of the parallelepiped
         function getParallelepipedFace(points) {
             if (points.length !== 3 && points.length !== 4) return null;
@@ -2937,14 +3090,29 @@
                 
                 let matchCount = 0;
                 for (const point of points) {
+                    let pointMatched = false;
+                    
+                    // First check exact vertex matches
                     for (const vertex of face.vertices) {
-                        // vertex is an array [x, y, z]
-                        if (Math.abs(point.x - vertex[0]) < 1e-6 &&
-                            Math.abs(point.y - vertex[1]) < 1e-6 &&
-                            Math.abs(point.z - vertex[2]) < 1e-6) {
+                        const dx = Math.abs(point.x - vertex[0]);
+                        const dy = Math.abs(point.y - vertex[1]);
+                        const dz = Math.abs(point.z - vertex[2]);
+                        
+                        if (dx < 0.1 && dy < 0.1 && dz < 0.1) {
                             matchCount++;
-                            console.log(`Point (${point.x}, ${point.y}, ${point.z}) matches vertex (${vertex[0]}, ${vertex[1]}, ${vertex[2]}) of face ${face.name}`);
+                            console.log(`Point (${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${point.z.toFixed(1)}) matches vertex (${vertex[0]}, ${vertex[1]}, ${vertex[2]}) of face ${face.name}`);
+                            pointMatched = true;
                             break;
+                        }
+                    }
+                    
+                    // If not exact vertex match, check if point lies ON this face
+                    if (!pointMatched) {
+                        const isOnFace = isPointOnParallelepipedFace(point, face);
+                        if (isOnFace) {
+                            matchCount++;
+                            console.log(`Point (${point.x.toFixed(1)}, ${point.y.toFixed(1)}, ${point.z.toFixed(1)}) lies on face ${face.name}`);
+                            pointMatched = true;
                         }
                     }
                 }
@@ -2963,6 +3131,7 @@
         
         // Create or highlight a face of the parallelepiped
         function createOrHighlightFace(face, points) {
+            console.log('=== createOrHighlightFace ВЫЗВАНА ===');
             console.log('Creating/highlighting face:', face.name);
             
             // Determine if this face is visible from current camera position
@@ -3010,12 +3179,12 @@
             const isClosestFace = isFacingCamera;
 
             planeMesh.material.color.setHex(isClosestFace ? 0x0088FF : 0x90EE90);
-            planeMesh.material.opacity = isClosestFace ? 0.3 : 0.7;
+            planeMesh.material.opacity = 0.4;          // CHANGED: единая прозрачность
             planeMesh.material.transparent = true;
             planeMesh.material.side = THREE.DoubleSide;
-            planeMesh.material.depthTest = true;  // CHANGED: Enable depth test
-            planeMesh.material.depthWrite = true; // CHANGED: Enable depth write
-            planeMesh.renderOrder = 100; // CHANGED: Higher priority for selected faces
+            planeMesh.material.depthTest = false;      // CHANGED: true → false
+            planeMesh.material.depthWrite = false;     // Keep false
+            planeMesh.renderOrder = 100;
             
             console.log(`Face ${face.name} created with color: ${isClosestFace ? 'BRIGHT BLUE (closest to camera)' : 'LIGHT GREEN (farthest from camera)'}`);
             console.log(`Face is ${isClosestFace ? 'facing camera (closest)' : 'facing away (farthest)'} with distance ${distanceToCamera.toFixed(2)}`);
@@ -3108,6 +3277,64 @@
             return faceNames[face.name] || face.name;
         }
 
+        // Проверяет, находится ли точка на отрезке между v1 и v2
+        function isPointOnLineSegment(point, v1, v2, tolerance = 0.0001) {
+            const segmentLength = v1.distanceTo(v2);
+            const dist1 = v1.distanceTo(point);
+            const dist2 = v2.distanceTo(point);
+            
+            // Точка на отрезке, если сумма расстояний равна длине отрезка
+            return Math.abs(dist1 + dist2 - segmentLength) < tolerance;
+        }
+
+        // Конвертирует Three.js плоскость в математическое уравнение для отображения
+        function convertPlaneToMathEquation(threeJSPlane, referencePoint) {
+            // Получаем нормаль в Three.js координатах
+            const threeNormal = threeJSPlane.normal;
+            
+            // Конвертируем нормаль в математические координаты
+            // Three.js: (x,y,z) → Math: (z,x,y)
+            const mathNormal = {
+                x: threeNormal.z,  // Three.z → Math.x
+                y: threeNormal.x,  // Three.x → Math.y  
+                z: threeNormal.y   // Three.y → Math.z
+            };
+            
+            // Конвертируем референсную точку в математические координаты
+            const refMath = threeJSToMath(referencePoint);
+            
+            // Вычисляем константу d: ax + by + cz + d = 0
+            const d = -(mathNormal.x * refMath.x + mathNormal.y * refMath.y + mathNormal.z * refMath.z);
+            
+            return {
+                a: mathNormal.x,
+                b: mathNormal.y, 
+                c: mathNormal.z,
+                d: d,
+                normal: mathNormal
+            };
+        }
+
+        // Удаляет дублирующиеся точки из массива
+        function removeDuplicatePoints(points, tolerance = 0.0001) {
+            const uniquePoints = [];
+            
+            for (const point of points) {
+                let isDuplicate = false;
+                for (const existing of uniquePoints) {
+                    if (point.distanceTo(existing) < tolerance) {
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+                if (!isDuplicate) {
+                    uniquePoints.push(point);
+                }
+            }
+            
+            return uniquePoints;
+        }
+
         /// ============================================================================
         // CREATE CROSS-SECTION POLYGON FROM 3 POINTS
         // ============================================================================
@@ -3153,45 +3380,22 @@
             
             const t0 = performance.now(); // Start performance timer
             
-            // Convert Three.js positions to math coordinates for plane equation
-            const p1Math = threeJSToMath(point1);
-            const p2Math = threeJSToMath(point2);
-            const p3Math = threeJSToMath(point3);
-            
-            // STEP 2a: Calculate plane equation (ax + by + cz + d = 0)
-            const equation = calculatePlaneEquation(p1Math, p2Math, p3Math);
-            
-            // Check for collinearity (normal vector length ≈ 0)
-            const normalLength = Math.sqrt(
-                equation.normal.x * equation.normal.x +
-                equation.normal.y * equation.normal.y +
-                equation.normal.z * equation.normal.z
-            );
-            
-            if (normalLength < 0.0001) {
+            // STEP 2a: Create Three.js plane directly from points (optimal approach)
+            const plane = new THREE.Plane();
+            plane.setFromCoplanarPoints(point1, point2, point3);
+
+            // Check for collinearity (plane normal length ≈ 0)
+            if (plane.normal.length() < 0.0001) {
                 console.error('Points are collinear - cannot create plane');
                 return null;
             }
-            
-            // STEP 2b: Find ALL intersection points between plane and edges
-            // Convert normal vector from math coordinates to THREE.js coordinates
-            const normalVector = new THREE.Vector3(
-                equation.normal.y,  // Math.y → THREE.x  
-                equation.normal.z,  // Math.z → THREE.y
-                equation.normal.x   // Math.x → THREE.z
-            ).normalize();
-            
-            // Calculate plane constant for Three.js coordinate system
-            const point1Math = threeJSToMath(point1);
-            const planeConstant = -(equation.a * point1Math.x + 
-                                equation.b * point1Math.y + 
-                                equation.c * point1Math.z);
-            
-            const plane = new THREE.Plane(normalVector, planeConstant / normalLength);
+
+            // STEP 2b: Convert to math equation for UI display
+            const equation = convertPlaneToMathEquation(plane, point1);
             
             // Array to store all intersection points
             const intersectionPoints = [];
-            
+
             // Loop through all 12 edges of the parallelepiped
             edgeList.forEach((edge, edgeIndex) => {
                 const v1 = new THREE.Vector3(...vertices[edge[0]].pos);
@@ -3203,15 +3407,17 @@
                 
                 // Calculate intersection point
                 if (plane.intersectLine(line, intersection)) {
-                    // Check if intersection is within the edge segment
-                    const t = v1.distanceTo(intersection) / v1.distanceTo(v2);
-                    
-                    // Allow small tolerance for numerical precision
-                    if (t >= -0.0001 && t <= 1.0001) {
+                    // Check if intersection is within the edge segment using our new function
+                    if (isPointOnLineSegment(intersection, v1, v2)) {
                         intersectionPoints.push(intersection.clone());
                     }
                 }
             });
+
+            // Remove duplicate points
+            const uniqueIntersectionPoints = removeDuplicatePoints(intersectionPoints);
+            intersectionPoints.length = 0;
+            intersectionPoints.push(...uniqueIntersectionPoints);
             
             console.log(`Found ${intersectionPoints.length} intersection points`);
             
@@ -3222,11 +3428,11 @@
             }
             
             // STEP 2c: Sort points by angle to form correct polygon
-            const zAxis = normalVector.clone(); // Normal is Z' axis
+            const zAxis = plane.normal.clone(); // Use plane normal directly
             
             // Create X' axis perpendicular to normal
             let xAxis;
-            if (Math.abs(normalVector.x) < 0.9) {
+            if (Math.abs(zAxis.x) < 0.9) {
                 xAxis = new THREE.Vector3(1, 0, 0);
             } else {
                 xAxis = new THREE.Vector3(0, 1, 0);
@@ -3363,36 +3569,48 @@
             
             // STEP 2f: Create BufferGeometry from sorted vertices
             const geometry = new THREE.BufferGeometry();
-            
+
             // Flatten 3D points into position array
             const positions = [];
             for (let i = 0; i < sortedPoints3D.length; i++) {
                 const p = sortedPoints3D[i];
                 positions.push(p.x, p.y, p.z);
             }
-            
+
             geometry.setAttribute('position', 
                 new THREE.Float32BufferAttribute(positions, 3)
             );
+
+            // Debug: log triangulation data
+            console.log(`Creating geometry with ${sortedPoints3D.length} vertices`);
+            console.log('Vertices:', sortedPoints3D.map((p, i) => `${i}: (${p.x.toFixed(1)}, ${p.y.toFixed(1)}, ${p.z.toFixed(1)})`));
+            console.log('Triangles indices:', triangles);
+
             geometry.setIndex(triangles);
             geometry.computeVertexNormals();
+
+            // Force geometry to update
+            geometry.computeBoundingBox();
+            geometry.computeBoundingSphere();
             
-            // Create semi-transparent orange material for the filled polygon
+            // Create semi-transparent beige material for the filled polygon
             const planeMaterial = new THREE.MeshBasicMaterial({
-                color: 0xFF8C00,         // Orange color (DarkOrange)
-                transparent: true,       // Enable transparency
-                opacity: 0.6,            // 60% transparency
-                side: THREE.DoubleSide,  // Visible from both sides
-                depthTest: true,         // CHANGED: Enable depth test
-                depthWrite: true,        // CHANGED: Enable depth write
-                polygonOffset: false     // CHANGED: Disable polygon offset
+                color: 0xF5E6D3,         // Soft beige color
+                transparent: true,       
+                opacity: 0.6,            // Gentle transparency
+                side: THREE.DoubleSide,  
+                depthTest: false,        
+                depthWrite: false,
+                polygonOffset: true,     
+                polygonOffsetFactor: -1, 
+                polygonOffsetUnits: -1
             });
 
             // Create mesh with correct render order
             const planeMesh = new THREE.Mesh(geometry, planeMaterial);
-            planeMesh.renderOrder = 200; // CHANGED: Render after face planes (100) but before vectors (2000)
+            planeMesh.renderOrder = 200; // Higher priority - render after most objects
             scene.add(planeMesh);
-            
+
             // STEP 2g: Create dashed outline around polygon perimeter
             // Create line loop geometry for the perimeter
             const outlinePoints = sortedPoints3D.map(p => p.clone());
@@ -3618,21 +3836,22 @@
                 });
             }
             
+            // Add angle measurements ALWAYS (not only when content is empty)
+            if (angleMeasurements.length > 0) {
+                content += '<li><strong>▼ Измерения углов</strong></li>';
+                angleMeasurements.forEach((measurement, i) => {
+                    const obj1Name = getObjectNameForDisplay(measurement.obj1);
+                    const obj2Name = getObjectNameForDisplay(measurement.obj2);
+                    const angle = measurement.angle.toFixed(1);
+                    
+                    content += `<li class="angle-list-item" onclick="selectAngleFromList(${i})">
+                        &nbsp;&nbsp;• <span id="angle-formula-${i}"></span> = ${angle}° 
+                        <button onclick="event.stopPropagation(); deleteAngle(${i})" style="font-size: 0.8em;">🗑️</button>
+                    </li>`;
+                });
+            }
+
             if (content === '') {
-                // Add angle measurements
-                if (angleMeasurements.length > 0) {
-                    content += '<li><strong>▼ Измерения углов</strong></li>';
-                    angleMeasurements.forEach((measurement, i) => {
-                        const obj1Name = getObjectNameForDisplay(measurement.obj1);
-                        const obj2Name = getObjectNameForDisplay(measurement.obj2);
-                        const angle = measurement.angle.toFixed(1);
-                        
-                        content += `<li class="angle-list-item" onclick="selectAngleFromList(${i})">
-                            &nbsp;&nbsp;• Угол ${i+1}: ${obj1Name} ↔ ${obj2Name} = ${angle}° 
-                            <button onclick="event.stopPropagation(); deleteAngle(${i})" style="font-size: 0.8em;">🗑️</button>
-                        </li>`;
-                    });
-                }
                 list.className = 'placeholder-text';
                 list.innerHTML = '&nbsp;&nbsp;Пока пусто';
             } else {
@@ -3646,17 +3865,42 @@
                         katex.render(`\\vec{${v.vectorName}}`, katexElement, { throwOnError: false });
                     }
                 });
+
+                // Render KaTeX for angle formulas
+                angleMeasurements.forEach((measurement, i) => {
+                    const angleElement = document.getElementById(`angle-formula-${i}`);
+                    if (angleElement) {
+                        const obj1Name = getObjectNameForDisplay(measurement.obj1);
+                        const obj2Name = getObjectNameForDisplay(measurement.obj2);
+                        
+                        // Create KaTeX formula based on object types
+                        let formula = '';
+                        if (measurement.obj1.type === 'vector' && measurement.obj2.type === 'vector') {
+                            formula = `\\angle(\\overrightarrow{${obj1Name}}, \\overrightarrow{${obj2Name}})`;
+                        } else if (measurement.obj1.type === 'vector' && measurement.obj2.type === 'plane') {
+                            formula = `\\angle(\\overrightarrow{${obj1Name}}, ${obj2Name})`;
+                        } else if (measurement.obj1.type === 'plane' && measurement.obj2.type === 'vector') {
+                            formula = `\\angle(${obj1Name}, \\overrightarrow{${obj2Name}})`;
+                        } else if (measurement.obj1.type === 'plane' && measurement.obj2.type === 'plane') {
+                            formula = `\\angle(${obj1Name}, ${obj2Name})`;
+                        } else {
+                            formula = `\\angle(${obj1Name}, ${obj2Name})`;
+                        }
+                        
+                        katex.render(formula, angleElement, { throwOnError: false });
+                    }
+                });
             }
         }
 
         // Get display name for object in angle measurements list
         function getObjectNameForDisplay(obj) {
             if (obj.type === 'vector') {
-                return `вектор <strong>${obj.name}</strong>`;
+                return obj.name; // Return just the name for KaTeX formatting
             } else if (obj.type === 'edge' || obj.isEdge) {
-                return `ребро <strong>${obj.name}</strong>`;
+                return obj.name; // Return just the name
             } else if (obj.type === 'plane') {
-                return `плоскость <strong>${obj.name}</strong>`;
+                return obj.name; // Return just the name
             }
             return 'объект';
         }
@@ -4173,79 +4417,16 @@
                     toolActionPerformed = true;
                 }
             } else if (activeTool === 'angle') {
-                let objectData = null;
-                
                 const rect = container.getBoundingClientRect();
                 const mouse = new THREE.Vector2();
                 mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
                 mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
                 
-                raycaster.setFromCamera(mouse, camera);
+                // Use prioritized raycasting
+                const hitResult = getPriorityRaycastHit(mouse, camera);
                 
-                // PRIORITY 1: User VECTORS (ABSOLUTE HIGHEST)
-                // Check ALL user vector arrows, including all their children
-                const userVectorArrows = userVectors.map(v => v.arrow);
-                const vectorIntersects = raycaster.intersectObjects(userVectorArrows, true);
-                
-                if (vectorIntersects.length > 0) {
-                    // Find which vector was clicked by checking the arrow group
-                    for (let vector of userVectors) {
-                        let isThisVector = false;
-                        
-                        // Check if the intersected object is part of this vector's arrow
-                        vector.arrow.traverse(child => {
-                            if (child === vectorIntersects[0].object) {
-                                isThisVector = true;
-                            }
-                        });
-                        
-                        if (isThisVector) {
-                            objectData = {
-                                type: 'vector',
-                                vector: vector,
-                                arrow: vector.arrow,
-                                start: vector.start,
-                                end: vector.end,
-                                direction: {
-                                    x: vector.end.x - vector.start.x,
-                                    y: vector.end.y - vector.start.y,
-                                    z: vector.end.z - vector.start.z
-                                },
-                                name: vector.vectorName || vector.name,
-                                object: vector
-                            };
-                            break;
-                        }
-                    }
-                }
-                
-                // PRIORITY 2: Parallelepiped EDGES
-                if (!objectData) {
-                    const edgeIntersects = raycaster.intersectObjects(edgeObjects);
-                    if (edgeIntersects.length > 0) {
-                        objectData = findEdgeObject(edgeIntersects[0].object);
-                    }
-                }
-                
-                // PRIORITY 3: PLANES (lowest priority)
-                if (!objectData) {
-                    // First check user planes
-                    const userPlaneMeshes = userPlanes.map(p => p.mesh);
-                    const userPlaneIntersects = raycaster.intersectObjects(userPlaneMeshes);
-                    
-                    if (userPlaneIntersects.length > 0) {
-                        objectData = findPlaneByMesh(userPlaneIntersects[0].object);
-                    } else {
-                        // Then check parallelepiped faces
-                        const faceIntersects = raycaster.intersectObjects(faceMeshes);
-                        if (faceIntersects.length > 0) {
-                            objectData = findPlaneByMesh(faceIntersects[0].object);
-                        }
-                    }
-                }
-                
-                if (objectData) {
-                    handleAngleObjectSelection(objectData);
+                if (hitResult && hitResult.data) {
+                    handleAngleObjectSelection(hitResult.data);
                     toolActionPerformed = true;
                 }
             } else if (activeTool === 'select') {
