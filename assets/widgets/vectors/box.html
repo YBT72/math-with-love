@@ -348,8 +348,8 @@
         directionalLight.position.set(10, 10, 10);
         scene.add(directionalLight);
 
-        // Parallelepiped parameters (math coordinates: a=6 along Y, b=4 along X, c=5 along Z)
-        const a = 6, b = 4, c = 5;
+        // Parallelepiped parameters (math coordinates: a=4 along Y, b=6 along X, c=5 along Z)
+        const a = 4, b = 6, c = 5;
 
         // Tool state
         let activeTool = 'select';
@@ -596,6 +596,168 @@
             return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
         }
 
+        // Find intersection point of two INFINITE LINES in 3D
+        // This version extends vectors to lines and finds where they intersect
+        function findLinesIntersection(line1Start, line1Dir, line2Start, line2Dir, tolerance = 0.5) {
+            console.log('=== findLinesIntersection DEBUG ===');
+            console.log('Line1 start:', line1Start);
+            console.log('Line1 dir:', line1Dir);
+            console.log('Line2 start:', line2Start);
+            console.log('Line2 dir:', line2Dir);
+            console.log('Tolerance:', tolerance);
+            
+            // Normalize directions
+            const d1 = normalizeVector(line1Dir);
+            const d2 = normalizeVector(line2Dir);
+            
+            console.log('Normalized d1:', d1);
+            console.log('Normalized d2:', d2);
+            
+            // Check if lines are parallel using cross product
+            const crossProduct = {
+                x: d1.y * d2.z - d1.z * d2.y,
+                y: d1.z * d2.x - d1.x * d2.z,
+                z: d1.x * d2.y - d1.y * d2.x
+            };
+            
+            const crossLength = vectorLength(crossProduct);
+            console.log('Cross product length:', crossLength);
+            
+            if (crossLength < 0.001) {
+                console.log('❌ Lines are PARALLEL - no intersection');
+                console.log('===================================');
+                return { intersects: false, point: null, distance: Infinity };
+            }
+            
+            // Vector between start points
+            const w = {
+                x: line2Start.x - line1Start.x,
+                y: line2Start.y - line1Start.y,
+                z: line2Start.z - line1Start.z
+            };
+            
+            console.log('Vector w (between starts):', w);
+            
+            // Calculate parameters for closest points on both lines
+            const a = dotProduct(d1, d1);
+            const b = dotProduct(d1, d2);
+            const c = dotProduct(d2, d2);
+            const d = dotProduct(d1, w);
+            const e = dotProduct(d2, w);
+            
+            console.log('Coefficients: a=', a, 'b=', b, 'c=', c, 'd=', d, 'e=', e);
+            
+            const denom = a * c - b * b;
+            
+            console.log('Denominator:', denom);
+            
+            if (Math.abs(denom) < 0.0001) {
+                console.log('❌ Denominator too small');
+                console.log('===================================');
+                return { intersects: false, point: null, distance: Infinity };
+            }
+            
+            const t1 = (b * e - c * d) / denom;
+            const t2 = (a * e - b * d) / denom;
+            
+            console.log('Parameters: t1=', t1, 't2=', t2);
+            
+            // Calculate closest points on both INFINITE lines
+            const point1 = new THREE.Vector3(
+                line1Start.x + t1 * d1.x,
+                line1Start.y + t1 * d1.y,
+                line1Start.z + t1 * d1.z
+            );
+            
+            const point2 = new THREE.Vector3(
+                line2Start.x + t2 * d2.x,
+                line2Start.y + t2 * d2.y,
+                line2Start.z + t2 * d2.z
+            );
+            
+            console.log('Closest point on Line1:', point1);
+            console.log('Closest point on Line2:', point2);
+            
+            // Calculate distance between closest points
+            const distance = point1.distanceTo(point2);
+            
+            console.log('Distance between closest points:', distance);
+            console.log('Tolerance check:', distance, '<', tolerance, '?', distance < tolerance);
+            
+            // ✅ КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Более мягкая проверка
+            if (distance < tolerance) {
+                // Use midpoint as intersection
+                const intersection = new THREE.Vector3(
+                    (point1.x + point2.x) / 2,
+                    (point1.y + point2.y) / 2,
+                    (point1.z + point2.z) / 2
+                );
+                
+                console.log('✅ Lines INTERSECT at:', intersection);
+                console.log('===================================');
+                
+                return { 
+                    intersects: true, 
+                    point: intersection, 
+                    distance: distance,
+                    t1: t1,
+                    t2: t2
+                };
+            }
+            
+            console.log('❌ Lines DO NOT INTERSECT (distance too large)');
+            console.log('===================================');
+            
+            return { intersects: false, point: null, distance: distance };
+        }
+
+        // Returns closest points on two infinite lines L1: P + t*U and L2: Q + u*V
+        // The function returns { P1, P2, mid, t, u, parallel } where:
+        //  - P1 is closest point on L1
+        //  - P2 is closest point on L2
+        //  - mid is midpoint between P1 and P2 (useful as a neutral pivot)
+        //  - parallel indicates nearly-parallel lines
+        function findClosestPointsOnLines(P, U, Q, V, eps = 1e-9) {
+            // Normalize direction vectors to stabilize numerics (optional but helpful)
+            const lenU = vectorLength(U);
+            const lenV = vectorLength(V);
+            if (lenU < eps || lenV < eps) return { parallel: true };
+
+            const u = { x: U.x / lenU, y: U.y / lenU, z: U.z / lenU };
+            const v = { x: V.x / lenV, y: V.y / lenV, z: V.z / lenV };
+
+            const w0 = { x: P.x - Q.x, y: P.y - Q.y, z: P.z - Q.z };
+            const a = dotProduct(u, u);        // = 1
+            const b = dotProduct(u, v);
+            const c = dotProduct(v, v);        // = 1
+            const d = dotProduct(u, w0);
+            const e = dotProduct(v, w0);
+
+            const denom = a * c - b * b;       // = |u x v|^2
+            if (Math.abs(denom) < eps) {
+                // Lines are (nearly) parallel
+                // project Q onto L1 to get a representative pair
+                const tPar = -d; // since a ~ 1 and w0 = P - Q
+                const P1 = new THREE.Vector3(P.x + tPar * u.x, P.y + tPar * u.y, P.z + tPar * u.z);
+                // Point on L2 closest to P1 is simply its orthogonal projection
+                // but when parallel, the shortest segment is perpendicular to both in any common normal.
+                // We'll return midpoint between P1 and its projection on L2:
+                const u2 = -e; // since c ~ 1
+                const P2 = new THREE.Vector3(Q.x + u2 * v.x, Q.y + u2 * v.y, Q.z + u2 * v.z);
+                const mid = new THREE.Vector3().addVectors(P1, P2).multiplyScalar(0.5);
+                return { P1, P2, mid, t: tPar, u: u2, parallel: true };
+            }
+
+            const t = (b * e - c * d) / denom;
+            const u2 = (a * e - b * d) / denom;
+
+            const P1 = new THREE.Vector3(P.x + t * u.x, P.y + t * u.y, P.z + t * u.z);
+            const P2 = new THREE.Vector3(Q.x + u2 * v.x, Q.y + u2 * v.y, Q.z + u2 * v.z);
+            const mid = new THREE.Vector3().addVectors(P1, P2).multiplyScalar(0.5);
+
+            return { P1, P2, mid, t, u: u2, parallel: false };
+        }
+
         // Vector magnitude (length)
         function vectorLength(v) {
             return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
@@ -652,6 +814,73 @@
             const dz = point1.z - point2.z;
             const distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
             return distance < tolerance;
+        }
+
+        // Smart parallel translation: find the best point to translate vector to
+        // Returns: { point: Vector3, resultingVector: {start, end, name} }
+        function findBestParallelTranslation(originalVector, targetVertex = null) {
+            const bestOptions = [];
+            
+            // Try translating to each vertex of the parallelepiped
+            vertices.forEach((vertex, index) => {
+                const startPoint = new THREE.Vector3(...vertex.pos);
+                const ghostData = createGhostVectorData(originalVector, startPoint);
+                
+                // Check if the resulting vector end point is close to any vertex
+                vertices.forEach((endVertex, endIndex) => {
+                    if (index === endIndex) return; // Skip same vertex
+                    
+                    const endPoint = new THREE.Vector3(...endVertex.pos);
+                    const distance = ghostData.end.distanceTo(endPoint);
+                    
+                    if (distance < 0.5) { // Close enough to be considered the same point
+                        const vectorName = vertex.label + endVertex.label;
+                        bestOptions.push({
+                            score: distance, // Lower is better
+                            startVertex: vertex,
+                            endVertex: endVertex,
+                            vectorName: vectorName,
+                            translationPoint: startPoint,
+                            priority: getVectorPriority(vectorName)
+                        });
+                    }
+                });
+            });
+            
+            if (bestOptions.length === 0) {
+                // Fallback: use closest point method
+                return null;
+            }
+            
+            // Sort by priority (lower number = higher priority), then by score
+            bestOptions.sort((a, b) => {
+                if (a.priority !== b.priority) return a.priority - b.priority;
+                return a.score - b.score;
+            });
+            
+            const best = bestOptions[0];
+            return {
+                point: best.translationPoint,
+                resultingVector: {
+                    start: best.translationPoint,
+                    end: new THREE.Vector3(...best.endVertex.pos),
+                    name: best.vectorName,
+                    startLabel: best.startVertex.label,
+                    endLabel: best.endVertex.label
+                }
+            };
+        }
+        
+        // Assign priority to different vector types (lower = higher priority)
+        function getVectorPriority(vectorName) {
+            // Prioritize common geometric vectors
+            const highPriority = ['CA', 'AC', 'BD', 'DB', 'AB', 'BC', 'CD', 'DA'];
+            const mediumPriority = ['AA', 'BB', 'CC', 'DD']; // Diagonal vectors
+            
+            if (highPriority.includes(vectorName)) return 1;
+            if (mediumPriority.includes(vectorName)) return 2;
+            if (vectorName.includes("'")) return 3; // Vectors with primed vertices
+            return 4; // Other vectors
         }
 
         // Create ghost vector (parallel translation)
@@ -1210,6 +1439,7 @@
 
         // Handle selection of object for angle measurement
         function handleAngleObjectSelection(objectData) {
+            console.log('🎯 Selection attempt:', selectedAngleObjects.length, objectData?.type);
             if (!objectData) return;
             
             // Check if already selected
@@ -1231,10 +1461,12 @@
             
             // Visual feedback - highlight selected object
             if (selectedAngleObjects.length === 1) {
+                console.log('✅ First object selected');
                 // First object - blue
                 highlightAngleObject(objectData, 0x0088FF);
                 updateAngleHint('Выберите второй объект');
             } else if (selectedAngleObjects.length === 2) {
+                console.log('✅ Second object selected - calculating angle');
                 // Second object - gold
                 highlightAngleObject(objectData, 0xFFD700);
                 
@@ -1276,6 +1508,7 @@
 
         // Main function to calculate and visualize angle between two objects
         function calculateAndVisualizeAngle(obj1, obj2) {
+            console.log('🎯 calculateAndVisualizeAngle called:', obj1.type, obj2.type);
             // Convert edges to vectors if needed
             let object1 = obj1;
             let object2 = obj2;
@@ -1292,6 +1525,7 @@
             const type2 = object2.type;
             
             if (type1 === 'vector' && type2 === 'vector') {
+                console.log('🎯 Handling vector-vector angle');
                 handleVectorVectorAngle(object1, object2);
             } else if ((type1 === 'vector' && type2 === 'plane') || (type1 === 'plane' && type2 === 'vector')) {
                 const vec = type1 === 'vector' ? object1 : object2;
@@ -1302,51 +1536,342 @@
             }
         }
 
-        // Handle angle calculation between two vectors
-        function handleVectorVectorAngle(vec1, vec2) {
-            const haveCommon = haveCommonStartPoint(vec1.start, vec2.start);
+        // Find common vertex between two vectors (checks start and end points)
+        // Returns {found: boolean, point: Vector3 or null}
+        function findCommonVertex(vec1, vec2, tolerance = 0.1) {
+            // Check all combinations of start/end points
+            const v1Start = vec1.start;
+            const v1End = vec1.end;
+            const v2Start = vec2.start;
+            const v2End = vec2.end;
             
-            let angle, visuals, calcData;
-            
-            if (haveCommon) {
-                // Standard case - vectors share start point
-                angle = angleBetweenVectors(vec1.direction, vec2.direction);
-                visuals = visualizeVectorVectorAngle(vec1, vec2, angle);
-                calcData = {
-                    type: 'vector-vector',
-                    vec1: vec1,
-                    vec2: vec2,
-                    angle: angle,
-                    isTranslated: false
-                };
-            } else {
-                // Ghost vector case - vectors don't share start point
-                const ghost = createGhostVectorData(vec2, vec1.start);
-                angle = angleBetweenVectors(vec1.direction, ghost.direction);
-                visuals = visualizeVectorVectorAngleWithGhost(vec1, vec2, ghost, angle);
-                calcData = {
-                    type: 'vector-vector-translated',
-                    vec1: vec1,
-                    vec2: vec2,
-                    ghost: ghost,
-                    angle: angle,
-                    isTranslated: true
-                };
+            // v1.start == v2.start
+            if (v1Start.distanceTo(v2Start) < tolerance) {
+                return { found: true, point: v1Start.clone() };
             }
             
-            // Save to history
-            angleMeasurements.push({
-                id: angleCounter++,
-                obj1: vec1,
-                obj2: vec2,
-                angle: angle,
-                visuals: visuals,
-                calcData: calcData
-            });
+            // v1.start == v2.end
+            if (v1Start.distanceTo(v2End) < tolerance) {
+                return { found: true, point: v1Start.clone() };
+            }
             
-            // Update UI
-            updateUserObjectsList();
-            displayAngleCalculations(calcData);
+            // v1.end == v2.start
+            if (v1End.distanceTo(v2Start) < tolerance) {
+                return { found: true, point: v1End.clone() };
+            }
+            
+            // v1.end == v2.end
+            if (v1End.distanceTo(v2End) < tolerance) {
+                return { found: true, point: v1End.clone() };
+            }
+            
+            // No common vertex found
+            return { found: false, point: null };
+        }
+
+        // Handle vector-vector angle with proper pivot selection:
+        // - If lines intersect: pivot = intersection point (angle drawn at the actual crossing).
+        // - If parallel: angle = 0 or 180 (we skip drawing the sector).
+        // - If skew (non-intersecting): perform "parallel translation":
+        //     keep vec2 in place; take the closest point P2 on L2,
+        //     draw the sector at P2 between dir(vec2) and a line through P2 parallel to vec1.
+        function handleVectorVectorAngle(vec1, vec2) {
+            console.log('🎯 handleVectorVectorAngle called');
+            console.log('Vec1:', vec1.name, 'from', vec1.start, 'to', vec1.end);
+            console.log('Vec2:', vec2.name, 'from', vec2.start, 'to', vec2.end);
+            
+            const dir1 = vec1.direction;
+            const dir2 = vec2.direction;
+
+            // Check parallel
+            const cross = {
+                x: dir1.y * dir2.z - dir1.z * dir2.y,
+                y: dir1.z * dir2.x - dir1.x * dir2.z,
+                z: dir1.x * dir2.y - dir1.y * dir2.x
+            };
+            const crossLen = vectorLength(cross);
+            const isParallel = crossLen < 1e-6;
+
+            if (isParallel) {
+                console.log('Vectors are PARALLEL');
+                return { type: 'parallel', angle: 0, pivot: vec1.start.clone() };
+            }
+
+            // ✅ ПРИОРИТЕТ 1: Проверка общей вершины
+            const commonVertex = findCommonVertex(vec1, vec2, 0.1);
+            
+            if (commonVertex.found) {
+                console.log('✅ Using common vertex approach');
+                
+                const pivot = commonVertex.point;
+                
+                // ✅ ИСПРАВЛЕНИЕ: Определяем направления от pivot к концам векторов
+                let dirFromP1, dirFromP2;
+                
+                // Для vec1: направление от pivot к тому концу, который НЕ в pivot
+                if (pivot.distanceTo(vec1.start) < 0.01) {
+                    // pivot = start вектора 1, направление к end
+                    dirFromP1 = {
+                        x: vec1.end.x - pivot.x,
+                        y: vec1.end.y - pivot.y,
+                        z: vec1.end.z - pivot.z
+                    };
+                } else {
+                    // pivot = end вектора 1, направление к start
+                    dirFromP1 = {
+                        x: vec1.start.x - pivot.x,
+                        y: vec1.start.y - pivot.y,
+                        z: vec1.start.z - pivot.z
+                    };
+                }
+                
+                // Для vec2: аналогично
+                if (pivot.distanceTo(vec2.start) < 0.01) {
+                    // pivot = start вектора 2, направление к end
+                    dirFromP2 = {
+                        x: vec2.end.x - pivot.x,
+                        y: vec2.end.y - pivot.y,
+                        z: vec2.end.z - pivot.z
+                    };
+                } else {
+                    // pivot = end вектора 2, направление к start
+                    dirFromP2 = {
+                        x: vec2.start.x - pivot.x,
+                        y: vec2.start.y - pivot.y,
+                        z: vec2.start.z - pivot.z
+                    };
+                }
+                
+                // ✅ КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Вычисляем угол БЕЗ ограничения 90°
+                // Просто используем скалярное произведение - получим истинный угол
+                const angleDeg = angleBetweenVectors(dirFromP1, dirFromP2);
+                const displayAngle = angleDeg; // Берем как есть, без изменений
+                
+                console.log('Angle at common vertex:', displayAngle);
+                
+                const result = visualizeVectorVectorAngle(pivot, dirFromP1, dirFromP2, displayAngle);
+                
+                if (result) {
+                    const angleMeasurement = {
+                        obj1: vec1,
+                        obj2: vec2,
+                        angle: displayAngle,
+                        position: pivot,
+                        sector: result.sector,
+                        label: result.label,
+                        type: 'vector-vector',
+                        timestamp: Date.now(),
+                        visuals: {
+                            arc: result.sector,
+                            label: result.label
+                        },
+                        calcData: {
+                            type: 'vector-vector',
+                            vec1: vec1,
+                            vec2: vec2,
+                            angle: displayAngle
+                        }
+                    };
+                    
+                    angleMeasurements.push(angleMeasurement);
+                    updateUserObjectsList();
+                    displayAngleCalculations(angleMeasurement.calcData);
+                }
+                
+                return { type: 'intersecting', angle: displayAngle, pivot: pivot };
+            }
+
+            // ✅ ПРИОРИТЕТ 2: Используем findClosestPointsOnLines напрямую
+            console.log('No common vertex - using closest points approach');
+            
+            const cp = findClosestPointsOnLines(
+                vec1.start, vec1.direction,
+                vec2.start, vec2.direction,
+                1e-9
+            );
+            
+            if (!cp || cp.parallel) {
+                console.warn('Failed to compute closest points');
+                return { type: 'non-intersecting', angle: 0, pivot: vec1.start.clone() };
+            }
+
+            const distance = cp.P1.distanceTo(cp.P2);
+            console.log('Distance between closest points:', distance);
+
+            // ✅ КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: Если distance < 0.5, считаем пересечением
+            if (distance < 0.5) {
+                    console.log('✅ Treating as INTERSECTING (distance < 0.5)');
+                    
+                    const pivot = cp.mid.clone();
+                    
+                    // ✅ ИСПРАВЛЕНИЕ: Используем направления от pivot к КОНЦАМ векторов
+                    // а не к началам
+                    let dirFromP1, dirFromP2;
+                    
+                    // Направление к концу vec1
+                    dirFromP1 = {
+                        x: vec1.end.x - pivot.x,
+                        y: vec1.end.y - pivot.y,
+                        z: vec1.end.z - pivot.z
+                    };
+                    
+                    // Направление к концу vec2
+                    dirFromP2 = {
+                        x: vec2.end.x - pivot.x,
+                        y: vec2.end.y - pivot.y,
+                        z: vec2.end.z - pivot.z
+                    };
+                
+                let angleDeg = angleBetweenVectors(dirFromP1, dirFromP2);
+                const displayAngle = angleDeg > 90 ? 180 - angleDeg : angleDeg;
+                
+                console.log('Angle at intersection:', displayAngle);
+                
+                const result = visualizeVectorVectorAngle(pivot, dirFromP1, dirFromP2, displayAngle);
+                
+                if (result) {
+                    const angleMeasurement = {
+                        obj1: vec1,
+                        obj2: vec2,
+                        angle: displayAngle,
+                        position: pivot,
+                        sector: result.sector,
+                        label: result.label,
+                        type: 'vector-vector',
+                        timestamp: Date.now(),
+                        visuals: {
+                            arc: result.sector,
+                            label: result.label
+                        },
+                        calcData: {
+                            type: 'vector-vector',
+                            vec1: vec1,
+                            vec2: vec2,
+                            angle: displayAngle
+                        }
+                    };
+                    
+                    angleMeasurements.push(angleMeasurement);
+                    updateUserObjectsList();
+                    displayAngleCalculations(angleMeasurement.calcData);
+                }
+                
+                return { type: 'intersecting', angle: displayAngle, pivot: pivot };
+            }
+
+            // ✅ СКРЕЩИВАЮЩИЕСЯ ВЕКТОРЫ - УМНЫЙ ПАРАЛЛЕЛЬНЫЙ ПЕРЕНОС
+            console.log('❌ Lines DO NOT intersect - finding best parallel translation');
+            
+            // Try to find the best parallel translation for vec1
+            const bestTranslation = findBestParallelTranslation(vec1);
+            
+            let pivot, ghostData, ghostArrow;
+            
+            if (bestTranslation) {
+                // Use the smart translation
+                ghostData = {
+                    start: bestTranslation.resultingVector.start,
+                    end: bestTranslation.resultingVector.end,
+                    direction: {
+                        x: bestTranslation.resultingVector.end.x - bestTranslation.resultingVector.start.x,
+                        y: bestTranslation.resultingVector.end.y - bestTranslation.resultingVector.start.y,
+                        z: bestTranslation.resultingVector.end.z - bestTranslation.resultingVector.start.z
+                    },
+                    length: bestTranslation.resultingVector.start.distanceTo(bestTranslation.resultingVector.end),
+                    isGhost: true,
+                    name: bestTranslation.resultingVector.name
+                };
+                
+                console.log(`🎯 Smart translation: ${vec1.name} → ${ghostData.name}`);
+                
+                // Create visual ghost arrow (NO label needed)
+                ghostArrow = createHelperArrow(ghostData.start, ghostData.end, 'ghost');
+                scene.add(ghostArrow);
+                
+                // Find intersection between ghost vector and vec2 for the pivot point
+                const ghostIntersection = findLinesIntersection(
+                    ghostData.start,
+                    ghostData.direction,
+                    vec2.start,
+                    vec2.direction,
+                    1.0
+                );
+                
+                if (ghostIntersection && ghostIntersection.intersects) {
+                    pivot = ghostIntersection.point;
+                    console.log('🎯 Ghost vector intersects with vec2 at:', pivot);
+                } else {
+                    // Fallback: use closest point between ghost and vec2
+                    const ghostCp = findClosestPointsOnLines(
+                        ghostData.start, ghostData.direction,
+                        vec2.start, vec2.direction,
+                        1e-9
+                    );
+                    pivot = ghostCp ? ghostCp.P2.clone() : bestTranslation.point;
+                    console.log('🎯 Using closest point as pivot:', pivot);
+                }
+                
+            } else {
+                // Fallback to closest point method
+                console.log('⚠️ No good translation found, using closest point method');
+                pivot = cp.P2.clone();
+                ghostData = createGhostVectorData(vec1, pivot);
+                ghostArrow = createHelperArrow(ghostData.start, ghostData.end, 'ghost');
+                scene.add(ghostArrow);
+            }
+
+            // ✅ ПРАВИЛЬНЫЕ направления для сектора - ОТ ТОЧКИ PIVOT
+            // Направление от pivot вдоль призрачного вектора
+            const dirFromPivotToGhost = {
+                x: ghostData.direction.x,
+                y: ghostData.direction.y,
+                z: ghostData.direction.z
+            };
+            
+            // Направление от pivot вдоль vec2
+            const dirFromPivotToVec2 = {
+                x: vec2.direction.x,
+                y: vec2.direction.y,
+                z: vec2.direction.z
+            };
+
+            let angleDeg = angleBetweenVectors(dirFromPivotToGhost, dirFromPivotToVec2);
+            const displayAngle = angleDeg > 90 ? 180 - angleDeg : angleDeg;
+
+            console.log('Ghost angle:', displayAngle);
+
+            const result = visualizeVectorVectorAngle(pivot, dirFromPivotToGhost, dirFromPivotToVec2, displayAngle);
+
+            if (result) {
+                const angleMeasurement = {
+                    obj1: vec1,
+                    obj2: vec2,
+                    angle: displayAngle,
+                    position: pivot,
+                    sector: result.sector,
+                    label: result.label,
+                    type: 'vector-vector-ghost',
+                    timestamp: Date.now(),
+                    visuals: {
+                        arc: result.sector,
+                        label: result.label,
+                        ghostArrow: ghostArrow
+                    },
+                    calcData: {
+                        type: 'vector-vector-translated',
+                        vec1: vec1,
+                        vec2: vec2,
+                        ghost: ghostData,
+                        angle: displayAngle
+                    }
+                };
+                
+                angleMeasurements.push(angleMeasurement);
+                updateUserObjectsList();
+                displayAngleCalculations(angleMeasurement.calcData);
+            }
+
+            return { type: 'skew_parallel_translation', angle: displayAngle, pivot };
         }
 
         // Handle angle calculation between vector and plane
@@ -1430,83 +1955,61 @@
         // VISUALIZATION FUNCTIONS FOR ANGLE MEASUREMENTS
         // ============================================================================
 
-        // Visualize angle between two vectors with common start point
-        function visualizeVectorVectorAngle(vec1, vec2, angle) {
-            const center = vec1.start;
-            
-            // DEBUG: Log visualization
-            console.log('Visualizing vector-vector angle:', {
-                center: center,
-                angle: angle,
-                vec1: vec1,
-                vec2: vec2
-            });
-            
-            // Create SECTOR (not arc) with semi-transparent fill
-            const sector = createAngleSector(
-                center,
-                1.5, // Radius
-                vec1.direction,
-                vec2.direction,
-                angle,
-                0xFFD700 // Gold color
-            );
-            
-            if (sector.children.length === 0) {
-                console.error('Sector has no children! Vectors may be parallel.');
-            }
-            
-            scene.add(sector);
-    
-            // DEBUG: Check what was added
-            console.log('===== SECTOR DEBUG =====');
-            console.log('Sector object:', sector);
-            console.log('Sector children count:', sector.children.length);
-            console.log('Sector children:', sector.children);
-            sector.children.forEach((child, i) => {
-                console.log(`Child ${i}:`, child.type, child);
-                if (child.geometry) {
-                    console.log(`  - Geometry vertices:`, child.geometry.attributes.position.count);
-                }
-            });
-            console.log('========================');
+        // Draws an angle sector at a given center between two direction vectors dir1 and dir2.
+        // Angle arc lies in the plane spanned by dir1 and dir2. 
+        // 'angleDeg' should be the smaller (acute) angle between directions.
+        // Uses your existing `createAngleSector(...)` to actually build the sector mesh/group.
+        function visualizeVectorVectorAngle(center, dir1, dir2, angleDeg) {
+            console.log('🎯 visualizeVectorVectorAngle called:', center, angleDeg);
+            // Normalize directions
+            const d1 = normalizeVector(dir1);
+            const d2 = normalizeVector(dir2);
 
-            // Calculate label position (above arc midpoint)
-            const dir1Normalized = normalizeVector(vec1.direction);
-            const dir2Normalized = normalizeVector(vec2.direction);
-            
-            // Midpoint direction
-            const midDir = {
-                x: (dir1Normalized.x + dir2Normalized.x) / 2,
-                y: (dir1Normalized.y + dir2Normalized.y) / 2,
-                z: (dir1Normalized.z + dir2Normalized.z) / 2
-            };
-            const midDirNormalized = normalizeVector(midDir);
-            
-            // Position label slightly beyond arc
-            const labelPos = new THREE.Vector3(
-                center.x + midDirNormalized.x * 1.2,
-                center.y + midDirNormalized.y * 1.2,
-                center.z + midDirNormalized.z * 1.2
-            );
-            
-            // Determine if special case
-            let additionalText = null;
-            if (Math.abs(angle) < 0.5) {
-                additionalText = 'Vectors parallel';
-            } else if (Math.abs(angle - 180) < 0.5) {
-                additionalText = 'Vectors opposite';
-            } else if (Math.abs(angle - 90) < 0.5) {
-                additionalText = 'Perpendicular';
+            // If angle is (almost) zero, skip drawing (parallel case)
+            if (angleDeg < 1e-3) {
+                return null;
             }
+
+            // Build sector using your existing builder
+            const sector = createAngleSector(
+                center,               // pivot point (THREE.Vector3)
+                1.5,                  // radius (adjust as needed)
+                d1,                   // first direction
+                d2,                   // second direction
+                angleDeg,             // angle in degrees
+                0xFFD700              // color (gold)
+            );
+
+            if (!sector || !sector.add) {
+                console.error('Failed to create sector: invalid return from createAngleSector');
+                return null;
+            }
+
+            // Attach sector to scene
+            scene.add(sector);
             
-            const label = createAngleLabel(angle, labelPos, additionalText);
-            scene.add(label);
+            // Create text label on the arc (at the middle of the angle)
+            // Calculate position at the middle of the arc
+            const dir1Vec = new THREE.Vector3(d1.x, d1.y, d1.z).normalize();
+            const dir2Vec = new THREE.Vector3(d2.x, d2.y, d2.z).normalize();
+            
+            // Bisector direction (middle of the angle)
+            const bisector = new THREE.Vector3().addVectors(dir1Vec, dir2Vec).normalize();
+            
+            // Position text on the outer edge of the arc (radius + offset)
+            const textRadius = 1.5 + 0.8; // sector radius + text offset
+            const labelPosition = center.clone().add(bisector.multiplyScalar(textRadius));
+            
+            const angleLabel = createAngleLabel(angleDeg, labelPosition);
+            scene.add(angleLabel);
+            
+            console.log('🎯 Angle visualization complete:', angleDeg + '°');
             
             return {
-                arc: sector, // Renamed but keeping 'arc' key for compatibility
-                label: label,
-                type: 'vector-vector'
+                sector: sector,
+                label: angleLabel,
+                angle: angleDeg,
+                position: center
             };
         }
 
@@ -1566,6 +2069,132 @@
                 type: 'vector-vector-ghost'
             };
         }
+
+        // DEPRECATED: Visualize angle between two vectors at their intersection point
+        // This function created helper lines and extensions, but we now use simple visualization
+        /*
+        function visualizeVectorVectorAngleAtIntersection(vec1, vec2, virtualVec1, virtualVec2, intersectionPoint, angle) {
+            console.log('=== Visualizing intersection angle ===');
+            console.log('Intersection point:', intersectionPoint);
+            console.log('Angle:', angle);
+            
+            // Extend vec1 from its start through intersection point
+            const vec1Direction = new THREE.Vector3(
+                vec1.direction.x,
+                vec1.direction.y,
+                vec1.direction.z
+            ).normalize();
+            
+            // Calculate how far to extend (at least to intersection + some extra)
+            const distToIntersection1 = vec1.start.distanceTo(intersectionPoint);
+            const extensionLength1 = distToIntersection1 + 1.5; // Extra length for visibility
+            
+            const extendedEnd1 = new THREE.Vector3(
+                vec1.start.x + vec1Direction.x * extensionLength1,
+                vec1.start.y + vec1Direction.y * extensionLength1,
+                vec1.start.z + vec1Direction.z * extensionLength1
+            );
+            
+            // Create extension line for vec1 (from original start through intersection)
+            const extension1 = createHelperLine(
+                [vec1.start, extendedEnd1],
+                0x00CED1, // Cyan
+                2,
+                true // dashed
+            );
+            scene.add(extension1);
+            
+            // Extend vec2 from its start through intersection point
+            const vec2Direction = new THREE.Vector3(
+                vec2.direction.x,
+                vec2.direction.y,
+                vec2.direction.z
+            ).normalize();
+            
+            const distToIntersection2 = vec2.start.distanceTo(intersectionPoint);
+            const extensionLength2 = distToIntersection2 + 1.5;
+            
+            const extendedEnd2 = new THREE.Vector3(
+                vec2.start.x + vec2Direction.x * extensionLength2,
+                vec2.start.y + vec2Direction.y * extensionLength2,
+                vec2.start.z + vec2Direction.z * extensionLength2
+            );
+            
+            const extension2 = createHelperLine(
+                [vec2.start, extendedEnd2],
+                0x00CED1, // Cyan
+                2,
+                true // dashed
+            );
+            scene.add(extension2);
+            
+            // Create point marker at intersection
+            const markerGeom = new THREE.SphereGeometry(0.15, 16, 16);
+            const markerMat = new THREE.MeshBasicMaterial({ 
+                color: 0xFFD700,
+                depthTest: false,
+                depthWrite: false
+            });
+            const marker = new THREE.Mesh(markerGeom, markerMat);
+            marker.position.copy(intersectionPoint);
+            marker.renderOrder = 3000;
+            scene.add(marker);
+            
+            // Create sector at intersection point using NORMALIZED virtual directions
+            console.log('Creating sector with directions:', virtualVec1.direction, virtualVec2.direction);
+            
+            const sector = createAngleSector(
+                intersectionPoint,
+                0.8, // Radius for clarity
+                virtualVec1.direction,
+                virtualVec2.direction,
+                angle,
+                0xFFD700 // Gold color
+            );
+            scene.add(sector);
+            
+            // Calculate label position
+            const dir1Normalized = normalizeVector(virtualVec1.direction);
+            const dir2Normalized = normalizeVector(virtualVec2.direction);
+            
+            const midDir = {
+                x: (dir1Normalized.x + dir2Normalized.x) / 2,
+                y: (dir1Normalized.y + dir2Normalized.y) / 2,
+                z: (dir1Normalized.z + dir2Normalized.z) / 2
+            };
+            const midDirNormalized = normalizeVector(midDir);
+            
+            const labelPos = new THREE.Vector3(
+                intersectionPoint.x + midDirNormalized.x * 0.6,
+                intersectionPoint.y + midDirNormalized.y * 0.6,
+                intersectionPoint.z + midDirNormalized.z * 0.6
+            );
+            
+            console.log('Label position:', labelPos);
+            
+            // Special case text
+            let additionalText = null;
+            if (Math.abs(angle) < 0.5) {
+                additionalText = 'Parallel';
+            } else if (Math.abs(angle - 90) < 0.5) {
+                additionalText = 'Perpendicular';
+            }
+            
+            const label = createAngleLabel(angle, labelPos, additionalText);
+            scene.add(label);
+            
+            console.log('=== Visualization complete ===');
+            
+            return {
+                arc: sector,
+                label: label,
+                extension1: extension1,
+                extension2: extension2,
+                marker: marker,
+                type: 'vector-vector-intersection'
+            };
+        }
+        */
 
         // Visualize angle between vector and plane
         function visualizeVectorPlaneAngle(vector, plane, projection, angle) {
@@ -1770,6 +2399,9 @@
                 case 'vector-vector-translated':
                     html = generateVectorVectorHTML(data, true);
                     break;
+                case 'vector-vector-intersection':
+                    html = generateVectorVectorIntersectionHTML(data);
+                    break;
                 case 'vector-plane':
                     html = generateVectorPlaneHTML(data);
                     break;
@@ -1853,6 +2485,77 @@
             html += '</div>';
             
             // EXPLANATION for special cases
+            html += addSpecialCaseNote(angle, 'vector');
+            
+            html += '</div>';
+            
+            return html;
+        }
+
+        // Generate HTML for vector-vector angle at intersection point
+        function generateVectorVectorIntersectionHTML(data) {
+            const vec1 = data.vec1;
+            const vec2 = data.vec2;
+            const angle = data.angle;
+            const intersection = data.intersectionPoint;
+            
+            // Convert to math coordinates
+            const v1Math = threeJSToMath(new THREE.Vector3(vec1.direction.x, vec1.direction.y, vec1.direction.z));
+            const v2Math = threeJSToMath(new THREE.Vector3(vec2.direction.x, vec2.direction.y, vec2.direction.z));
+            const intMath = threeJSToMath(intersection);
+            
+            // Calculate intermediate values
+            const dotProd = dotProduct(vec1.direction, vec2.direction);
+            const len1 = vectorLength(vec1.direction);
+            const len2 = vectorLength(vec2.direction);
+            const cosTheta = dotProd / (len1 * len2);
+            
+            let html = '<div class="calculation-block">';
+            
+            // TASK
+            html += '<h4>ЗАДАЧА</h4>';
+            html += `<p>Найти угол θ между векторами <strong>${vec1.name || 'v₁'}</strong> и <strong>${vec2.name || 'v₂'}</strong> в точке пересечения их прямых</p>`;
+            
+            // NOTE
+            html += '<div class="calculation-note">';
+            html += '⚠️ <strong>ПРИМЕЧАНИЕ:</strong> Векторы не имеют общей начальной точки, но их прямые пересекаются. ';
+            html += `Угол измеряется в точке пересечения (${intMath.x.toFixed(1)}, ${intMath.y.toFixed(1)}, ${intMath.z.toFixed(1)}). Всегда берётся острый угол.`;
+            html += '</div>';
+            
+            // DATA
+            html += '<h4>ДАННЫЕ</h4>';
+            html += `<p><strong>${vec1.name || 'v₁'}→</strong> = {${v1Math.x.toFixed(1)}, ${v1Math.y.toFixed(1)}, ${v1Math.z.toFixed(1)}}</p>`;
+            html += `<p><strong>${vec2.name || 'v₂'}→</strong> = {${v2Math.x.toFixed(1)}, ${v2Math.y.toFixed(1)}, ${v2Math.z.toFixed(1)}}</p>`;
+            html += `<p>Точка пересечения: (${intMath.x.toFixed(1)}, ${intMath.y.toFixed(1)}, ${intMath.z.toFixed(1)})</p>`;
+            
+            // METHOD
+            html += '<h4>МЕТОД</h4>';
+            html += '<p>Угол между векторами в точке пересечения их прямых равен углу между направляющими векторами. Всегда берется острый угол (≤ 90°).</p>';
+            
+            // FORMULA
+            html += '<h4>ФОРМУЛА</h4>';
+            html += '<p class="katex-formula" data-formula="\\cos(\\theta) = \\frac{\\vec{v_1} \\cdot \\vec{v_2}}{|\\vec{v_1}| \\cdot |\\vec{v_2}|}"></p>';
+            
+            // CALCULATIONS
+            html += '<h4>ВЫЧИСЛЕНИЯ</h4>';
+            
+            html += '<p><strong>Шаг 1:</strong> Скалярное произведение</p>';
+            html += `<p>v₁→ · v₂→ = (${v1Math.x.toFixed(1)})(${v2Math.x.toFixed(1)}) + (${v1Math.y.toFixed(1)})(${v2Math.y.toFixed(1)}) + (${v1Math.z.toFixed(1)})(${v2Math.z.toFixed(1)})</p>`;
+            html += `<p>v₁→ · v₂→ = ${(v1Math.x * v2Math.x).toFixed(1)} + ${(v1Math.y * v2Math.y).toFixed(1)} + ${(v1Math.z * v2Math.z).toFixed(1)} = ${dotProd.toFixed(2)}</p>`;
+            
+            html += '<p><strong>Шаг 2:</strong> Модули векторов</p>';
+            html += `<p>|v₁→| = √(${v1Math.x.toFixed(1)}² + ${v1Math.y.toFixed(1)}² + ${v1Math.z.toFixed(1)}²) = √${(v1Math.x*v1Math.x + v1Math.y*v1Math.y + v1Math.z*v1Math.z).toFixed(1)} ≈ ${len1.toFixed(2)}</p>`;
+            html += `<p>|v₂→| = √(${v2Math.x.toFixed(1)}² + ${v2Math.y.toFixed(1)}² + ${v2Math.z.toFixed(1)}²) = √${(v2Math.x*v2Math.x + v2Math.y*v2Math.y + v2Math.z*v2Math.z).toFixed(1)} ≈ ${len2.toFixed(2)}</p>`;
+            
+            html += '<p><strong>Шаг 3:</strong> Косинус угла</p>';
+            html += `<p>cos(θ) = ${dotProd.toFixed(2)} / (${len1.toFixed(2)} × ${len2.toFixed(2)}) = ${dotProd.toFixed(2)} / ${(len1 * len2).toFixed(2)} ≈ ${cosTheta.toFixed(3)}</p>`;
+            
+            // RESULT
+            html += '<div class="calculation-result">';
+            html += `<p><strong>РЕЗУЛЬТАТ:</strong> θ = arccos(${Math.abs(cosTheta).toFixed(3)}) ≈ <strong>${angle.toFixed(1)}°</strong> (острый угол)</p>`;
+            html += '</div>';
+            
+            // EXPLANATION
             html += addSpecialCaseNote(angle, 'vector');
             
             html += '</div>';
@@ -2538,7 +3241,7 @@
             const dir2 = new THREE.Vector3(direction2.x, direction2.y, direction2.z).normalize();
             
             // Calculate rotation axis (perpendicular to both directions)
-            const axis = new THREE.Vector3().crossVectors(dir1, dir2);
+            let axis = new THREE.Vector3().crossVectors(dir1, dir2);
             
             // Check if vectors are parallel (axis length ≈ 0)
             if (axis.length() < 0.0001) {
@@ -2547,6 +3250,17 @@
             }
             
             axis.normalize();
+            
+            // ✅ ИСПРАВЛЕНИЕ: Проверяем направление вращения
+            // Если угол получается больше 90°, значит мы вращаемся в неправильную сторону
+            // Нужно инвертировать ось
+            const testRotation = dir1.clone().applyAxisAngle(axis, angleDegrees * Math.PI / 180);
+            const testAngle = testRotation.angleTo(dir2) * 180 / Math.PI;
+            
+            // Если после вращения угол не близок к 0, значит ось в неправильную сторону
+            if (testAngle > 5) {
+                axis.negate(); // Инвертируем ось
+            }
             
             // Convert angle to radians
             const angleRadians = angleDegrees * (Math.PI / 180);
@@ -2588,14 +3302,15 @@
             const material = new THREE.MeshBasicMaterial({
                 color: color,
                 transparent: true,
-                opacity: 0.4,               // CHANGED: 0.5 → 0.4
+                opacity: 0.4,
                 side: THREE.DoubleSide,
-                depthTest: false,           // CHANGED: true → false
+                depthTest: false,
                 depthWrite: false
             });
 
             const sectorMesh = new THREE.Mesh(geometry, material);
-            sectorMesh.renderOrder = 2500;            group.add(sectorMesh);
+            sectorMesh.renderOrder = 2500;
+            group.add(sectorMesh);
             
             // Add right angle square symbol if angle ≈ 90°
             if (Math.abs(angleDegrees - 90) < 0.5) {
@@ -2619,7 +3334,7 @@
                     linewidth: 2 
                 });
                 const squareLine = new THREE.LineLoop(squareGeometry, squareMaterial);
-                squareLine.renderOrder = 2600; // CHANGED: In auxiliary elements layer
+                squareLine.renderOrder = 2600;
                 group.add(squareLine);
             }
             
@@ -3838,6 +4553,7 @@
             
             // Add angle measurements ALWAYS (not only when content is empty)
             if (angleMeasurements.length > 0) {
+                console.log('🎯 Adding angles to list:', angleMeasurements.length);
                 content += '<li><strong>▼ Измерения углов</strong></li>';
                 angleMeasurements.forEach((measurement, i) => {
                     const obj1Name = getObjectNameForDisplay(measurement.obj1);
@@ -3974,6 +4690,24 @@
                 });
             }
             
+            if (measurement.visuals.extension1) {
+                scene.remove(measurement.visuals.extension1);
+                if (measurement.visuals.extension1.geometry) measurement.visuals.extension1.geometry.dispose();
+                if (measurement.visuals.extension1.material) measurement.visuals.extension1.material.dispose();
+            }
+
+            if (measurement.visuals.extension2) {
+                scene.remove(measurement.visuals.extension2);
+                if (measurement.visuals.extension2.geometry) measurement.visuals.extension2.geometry.dispose();
+                if (measurement.visuals.extension2.material) measurement.visuals.extension2.material.dispose();
+            }
+
+            if (measurement.visuals.marker) {
+                scene.remove(measurement.visuals.marker);
+                if (measurement.visuals.marker.geometry) measurement.visuals.marker.geometry.dispose();
+                if (measurement.visuals.marker.material) measurement.visuals.marker.dispose();
+            }
+
             // Remove from array
             angleMeasurements.splice(index, 1);
             

@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Three.js — анализ отношений между векторами внутри параллелепипеда</title>
+  <style>
+    html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    #app { display: grid; grid-template-columns: 320px 1fr; height: 100%; }
+    aside { background: #0b1220; color: #e6eefc; padding: 16px; overflow: auto; border-right: 1px solid #1e293b; }
+    aside h1 { font-size: 18px; margin: 0 0 8px; }
+    aside h2 { font-size: 14px; margin: 16px 0 8px; opacity: .9; }
+    aside code { background: rgba(255,255,255,.08); padding: 2px 4px; border-radius: 4px; }
+    .row { margin: 8px 0; font-size: 13px; }
+    .muted { opacity: .8; }
+    .chip { display: inline-block; padding: 2px 6px; border: 1px solid #415a77; border-radius: 999px; font-size: 12px; margin-right: 6px; }
+    .result { background: rgba(148, 163, 184, .12); border: 1px solid #334155; border-radius: 10px; padding: 10px; margin-top: 8px; }
+    .result b { color: #93c5fd; }
+    .btn { display: inline-block; background: #1f4d8a; color: white; border: 0; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    .btn:active { transform: translateY(1px); }
+    canvas { display: block; height: 100%; width: 100%; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <aside>
+      <h1>Анализ векторов</h1>
+      <div class="row muted">Статическая HTML‑страница с <code>three.js</code>. Параллелепипед и векторы предполагаются уже построенными; ниже код вычисляет угол и факт пересечения.
+      </div>
+
+      <h2>Итоги вычислений</h2>
+      <div id="out" class="result">
+        <div><span class="chip">Тип</span> <b id="rType">—</b></div>
+        <div><span class="chip">Угол</span> <b id="rAngle">—</b></div>
+        <div class="muted" id="rDetails"></div>
+      </div>
+
+      <div class="row">
+        <button id="recalc" class="btn">Пересчитать</button>
+      </div>
+
+      <h2>Как интегрировать</h2>
+      <div class="row muted">
+        Вызовите <code>findVectorRelationship(vectorA, vectorB, eps)</code>, где <code>vectorX</code> имеет поля
+        <code>P1: {x,y,z}</code> и <code>P2: {x,y,z}</code>. Для визуализации вызовите
+        <code>visualizeRelationship(scene, result)</code>. Если сцены нет — секция DEMO создаст пример.
+      </div>
+    </aside>
+    <main id="viewport"></main>
+  </div>
+
+  <!-- Three.js CDN (r164) -->
+  <script src="https://unpkg.com/three@0.164.1/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.164.1/examples/js/controls/OrbitControls.js"></script>
+
+  <script>
+    // ============================
+    // Types & helpers (Plain JS)
+    // ============================
+    // NOTE: Comments are in English for clarity and portability.
+
+    /** Create a normalized direction vector {x,y,z} from A->B */
+    function makeDir(P1, P2) {
+      const dx = P2.x - P1.x, dy = P2.y - P1.y, dz = P2.z - P1.z;
+      return { x: dx, y: dy, z: dz };
+    }
+
+    /** Dot product for {x,y,z} */
+    function dot(a, b) { return a.x*b.x + a.y*b.y + a.z*b.z; }
+
+    /** Cross product for {x,y,z} */
+    function cross(a, b) {
+      return { x: a.y*b.z - a.z*b.y, y: a.z*b.x - a.x*b.z, z: a.x*b.y - a.y*b.x };
+    }
+
+    /** Euclidean norm for {x,y,z} */
+    function norm(a) { return Math.hypot(a.x, a.y, a.z); }
+
+    /** Scalar multiply */
+    function smul(a, s) { return { x: a.x*s, y: a.y*s, z: a.z*s }; }
+
+    /** Add vectors */
+    function add(a, b) { return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z }; }
+
+    /** Subtract vectors */
+    function sub(a, b) { return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z }; }
+
+    /** Clamp value to [0,1] */
+    function clamp01(t) { return Math.max(0, Math.min(1, t)); }
+
+    /**
+     * calculateAngle: compute the acute angle (in degrees) between *direction* vectors.
+     * Returns value in [0, 90]. If you need 0/180 discrimination, check dot sign before abs.
+     */
+    function calculateAngle(dirA, dirB) {
+      const dp = dot(dirA, dirB);
+      const nA = norm(dirA), nB = norm(dirB);
+      if (nA === 0 || nB === 0) return 0; // or throw
+      let cosTh = Math.abs(dp) / (nA * nB);
+      cosTh = Math.min(1.0, cosTh); // numeric guard
+      const angleRad = Math.acos(cosTh);
+      return angleRad * 180 / Math.PI;
+    }
+
+    /**
+     * Solve closest points between two 3D lines A(t)=P + t*U and B(u)=Q + u*V.
+     * Returns { t, u, dist, parallel } for infinite lines. Based on standard
+     * formula using cross products.
+     */
+    function closestParamsOnLines(P, U, Q, V, eps = 1e-9) {
+      const w0 = sub(P, Q);
+      const a = dot(U, U);
+      const b = dot(U, V);
+      const c = dot(V, V);
+      const d = dot(U, w0);
+      const e = dot(V, w0);
+      const denom = a*c - b*b; // = |U×V|^2
+      if (Math.abs(denom) < eps) {
+        // Lines are parallel or almost parallel
+        return { t: 0, u: (b ? d/b : 0), dist: norm(cross(w0, U)) / (norm(U) || 1), parallel: true };
+      }
+      const t = (b*e - c*d) / denom;
+      const u = (a*e - b*d) / denom;
+      const Pcl = add(P, smul(U, t));
+      const Qcl = add(Q, smul(V, u));
+      const dist = norm(sub(Pcl, Qcl));
+      return { t, u, dist, parallel: false };
+    }
+
+    /**
+     * Main algorithm as described: find relationship between two 3D segments.
+     * vector = { P1:{x,y,z}, P2:{x,y,z} }
+     * Returns { angle, type, intersection_point|null, t, u }
+     */
+    function findVectorRelationship(vectorA, vectorB, eps = 1e-5) {
+      // Stage 1: direction vectors
+      const dirA = makeDir(vectorA.P1, vectorA.P2);
+      const dirB = makeDir(vectorB.P1, vectorB.P2);
+
+      // Stage 2: parallel check via cross-product magnitude
+      const c = cross(dirA, dirB);
+      const parallelish = norm(c) < 1e-8 * (norm(dirA) * norm(dirB) + eps);
+      if (parallelish) {
+        const ang = calculateAngle(dirA, dirB); // ~0° or ~180° (acute version)
+        return { angle: ang, type: 'parallel', intersection_point: null, t: null, u: null };
+      }
+
+      // Stage 3: intersection of finite segments using closest points
+      const { t, u, dist } = closestParamsOnLines(vectorA.P1, dirA, vectorB.P1, dirB, 1e-12);
+      const onSegA = t >= -eps && t <= 1 + eps;
+      const onSegB = u >= -eps && u <= 1 + eps;
+      if (dist <= eps && onSegA && onSegB) {
+        const intersection = add(vectorA.P1, smul(dirA, clamp01(t)));
+        const ang = calculateAngle(dirA, dirB);
+        return { angle: ang, type: 'intersecting', intersection_point: intersection, t, u };
+      }
+
+      // Stage 4: non-intersecting (skew or separated in same plane)
+      const ang = calculateAngle(dirA, dirB);
+      return { angle: ang, type: 'non-intersecting', intersection_point: null, t, u };
+    }
+
+    // ============================
+    // Three.js visualization layer
+    // ============================
+
+    let scene, camera, renderer, controls;
+    const objects = { arc: null, arcLabel: null, intersection: null };
+
+    function initScene() {
+      const container = document.getElementById('viewport');
+      const w = container.clientWidth, h = container.clientHeight || window.innerHeight;
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0a0f1c);
+
+      camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 2000);
+      camera.position.set(8, 6, 10);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+      renderer.setSize(w, h);
+      container.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+
+      const grid = new THREE.GridHelper(20, 20, 0x375a7f, 0x1f2a44);
+      grid.material.opacity = 0.3; grid.material.transparent = true;
+      scene.add(grid);
+
+      const axes = new THREE.AxesHelper(3);
+      scene.add(axes);
+
+      const light1 = new THREE.DirectionalLight(0xffffff, 1.0);
+      light1.position.set(5, 8, 5);
+      scene.add(light1);
+      scene.add(new THREE.AmbientLight(0x9fb8ff, 0.2));
+
+      window.addEventListener('resize', onResize);
+      animate();
+    }
+
+    function onResize() {
+      const container = document.getElementById('viewport');
+      const w = container.clientWidth, h = container.clientHeight || window.innerHeight;
+      camera.aspect = w / h; camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    // -------------
+    // Draw helpers
+    // -------------
+
+    /** Draw or update a small sphere at intersection point */
+    function setIntersectionMarker(point) {
+      if (objects.intersection) {
+        scene.remove(objects.intersection);
+        objects.intersection.geometry.dispose();
+        objects.intersection.material.dispose();
+        objects.intersection = null;
+      }
+      if (!point) return;
+      const geom = new THREE.SphereGeometry(0.08, 24, 16);
+      const mat = new THREE.MeshStandardMaterial({ color: 0x15d1a0, emissive: 0x07261f, roughness: 0.3, metalness: 0.1 });
+      const mesh = new THREE.Mesh(geom, mat);
+      mesh.position.set(point.x, point.y, point.z);
+      scene.add(mesh);
+      objects.intersection = mesh;
+    }
+
+    /** Create a 3D arc showing the angle between two directions at origin O */
+    function setAngleArc(O, dirA, dirB, radius = 1.0, segments = 48) {
+      // Remove previous
+      if (objects.arc) { scene.remove(objects.arc); objects.arc.geometry.dispose(); objects.arc.material.dispose(); objects.arc = null; }
+
+      // Normalize directions
+      const nA = norm(dirA), nB = norm(dirB);
+      if (nA === 0 || nB === 0) return;
+      const a = smul(dirA, 1/nA);
+      const b = smul(dirB, 1/nB);
+
+      // Build orthonormal basis in the plane spanned by a and b
+      const ax = new THREE.Vector3(a.x, a.y, a.z);
+      const bx = new THREE.Vector3(b.x, b.y, b.z);
+      const angle = ax.angleTo(bx); // 0..PI
+      if (!isFinite(angle) || angle < 1e-4) return;
+
+      // Plane normal and local basis u (along a) and v (perp inside plane)
+      const nrm = new THREE.Vector3().crossVectors(ax, bx).normalize();
+      const u = ax.clone();
+      const v = new THREE.Vector3().crossVectors(nrm, u).normalize();
+
+      const curvePts = [];
+      for (let i = 0; i <= segments; i++) {
+        const t = angle * (i / segments);
+        // point on arc: O + r*(u*cos t + v*sin t)
+        const ux = u.clone().multiplyScalar(Math.cos(t));
+        const vx = v.clone().multiplyScalar(Math.sin(t));
+        const p = new THREE.Vector3().addVectors(ux, vx).multiplyScalar(radius);
+        p.add(new THREE.Vector3(O.x, O.y, O.z));
+        curvePts.push(p);
+      }
+      const geom = new THREE.BufferGeometry().setFromPoints(curvePts);
+      const mat = new THREE.LineBasicMaterial({ color: 0x93c5fd });
+      const line = new THREE.Line(geom, mat);
+      scene.add(line);
+      objects.arc = line;
+    }
+
+    // ============================
+    // UI / Glue
+    // ============================
+
+    function updateUI(result) {
+      const rType = document.getElementById('rType');
+      const rAngle = document.getElementById('rAngle');
+      const rDetails = document.getElementById('rDetails');
+      rType.textContent = result.type;
+      rAngle.textContent = `${result.angle.toFixed(4)}°`;
+      if (result.type === 'intersecting' && result.intersection_point) {
+        const p = result.intersection_point;
+        rDetails.textContent = `Точка пересечения ≈ (${p.x.toFixed(4)}, ${p.y.toFixed(4)}, ${p.z.toFixed(4)})`;
+      } else {
+        rDetails.textContent = '';
+      }
+    }
+
+    function visualizeRelationship(scene, vectors, result) {
+      // Place a small arc at the tail of A to indicate the angle between directions.
+      setAngleArc(vectors.A.P1, makeDir(vectors.A.P1, vectors.A.P2), makeDir(vectors.B.P1, vectors.B.P2), 0.8, 48);
+      setIntersectionMarker(result.intersection_point);
+      updateUI(result);
+    }
+
+    // ============================
+    // DEMO scaffold (replace with your data)
+    // ============================
+
+    // CONFIG: Replace these with your real vertices/vectors if you already have them in scene
+    const DEMO_VECTORS = {
+      // Vector A from P1 to P2
+      A: { P1: { x: -1, y: 0.5, z: -1 }, P2: { x: 3, y: 2.0, z: 2 } },
+      // Vector B from Q1 to Q2
+      B: { P1: { x: -0.5, y: 1.0, z: 1.2 }, P2: { x: 2.5, y: 0.5, z: -0.8 } }
+    };
+
+    // Optional: simple visual for the demo vectors (lines)
+    function drawDemoVectors(vectors) {
+      const matA = new THREE.LineBasicMaterial({ color: 0x15d1a0 });
+      const matB = new THREE.LineBasicMaterial({ color: 0xffb86c });
+      const gA = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(vectors.A.P1.x, vectors.A.P1.y, vectors.A.P1.z),
+        new THREE.Vector3(vectors.A.P2.x, vectors.A.P2.y, vectors.A.P2.z),
+      ]);
+      const gB = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(vectors.B.P1.x, vectors.B.P1.y, vectors.B.P1.z),
+        new THREE.Vector3(vectors.B.P2.x, vectors.B.P2.y, vectors.B.P2.z),
+      ]);
+      const lA = new THREE.Line(gA, matA); lA.name = 'demoA';
+      const lB = new THREE.Line(gB, matB); lB.name = 'demoB';
+      scene.add(lA, lB);
+
+      // arrowheads for clarity
+      const endCap = (p1, p2, color) => {
+        const d = new THREE.Vector3(p2.x-p1.x, p2.y-p1.y, p2.z-p1.z).normalize();
+        const base = new THREE.Vector3(p2.x, p2.y, p2.z);
+        const cone = new THREE.ConeGeometry(0.08, 0.25, 16);
+        const mat = new THREE.MeshStandardMaterial({ color });
+        const mesh = new THREE.Mesh(cone, mat);
+        mesh.position.copy(base);
+        // orient cone along direction d
+        const quat = new THREE.Quaternion();
+        quat.setFromUnitVectors(new THREE.Vector3(0,1,0), d);
+        mesh.quaternion.copy(quat);
+        scene.add(mesh);
+      };
+      endCap(vectors.A.P1, vectors.A.P2, 0x15d1a0);
+      endCap(vectors.B.P1, vectors.B.P2, 0xffb86c);
+    }
+
+    // Boot sequence
+    initScene();
+    drawDemoVectors(DEMO_VECTORS);
+
+    function recalcAndShow() {
+      const res = findVectorRelationship(DEMO_VECTORS.A, DEMO_VECTORS.B, 1e-5);
+      visualizeRelationship(scene, { A: DEMO_VECTORS.A, B: DEMO_VECTORS.B }, res);
+    }
+
+    // initial calculation
+    recalcAndShow();
+
+    // Recalc button
+    document.getElementById('recalc').addEventListener('click', recalcAndShow);
+
+    // Expose core API globally so you can plug in your own vectors/scene
+    window.findVectorRelationship = findVectorRelationship;
+    window.calculateAngle = calculateAngle;
+    window.visualizeRelationship = (vectors) => {
+      const res = findVectorRelationship(vectors.A, vectors.B, 1e-5);
+      visualizeRelationship(scene, vectors, res);
+      return res;
+    };
+  </script>
+</body>
+</html>
