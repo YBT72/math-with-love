@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивная Стереометрия</title>
+    
+    <!-- KaTeX для математических формул -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+            overflow: hidden;
+            background: #fafafa;
+            color: #1a1a1a;
+        }
+
+        #app {
+            display: grid;
+            grid-template-columns: 64px 1fr 320px;
+            grid-template-rows: 56px 1fr;
+            height: 100vh;
+            gap: 0;
+        }
+
+        #info-panel {
+            grid-column: 1 / -1;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        #info-text {
+            font-size: 14px;
+            color: #666;
+            font-weight: 400;
+        }
+
+        #info-text.active {
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        .logo {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        #toolbar {
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            padding: 12px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .tool-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+
+        .tool-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .tool-btn.active {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .tool-btn:active {
+            transform: scale(0.95);
+        }
+
+        .tool-divider {
+            width: 32px;
+            height: 1px;
+            background: #e0e0e0;
+            margin: 8px 0;
+        }
+
+        #canvas-container {
+            position: relative;
+            background: #fafafa;
+            overflow: hidden;
+        }
+
+        #canvas3d {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #objects-panel {
+            background: white;
+            border-left: 1px solid #e0e0e0;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .panel-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .object-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .object-group {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .group-header {
+            padding: 10px 12px;
+            background: #f5f5f5;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+            border-radius: 8px;
+            transition: background 0.15s ease;
+        }
+
+        .group-header:hover {
+            background: #eeeeee;
+        }
+
+        .group-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .group-icon {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .group-count {
+            background: #e0e0e0;
+            color: #666;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .group-expand-icon {
+            font-size: 10px;
+            color: #999;
+            transition: transform 0.2s ease;
+        }
+
+        .object-group.collapsed .group-expand-icon {
+            transform: rotate(-90deg);
+        }
+
+        .group-content {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 2000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease, margin-top 0.3s ease, opacity 0.3s ease;
+            margin-top: 8px;
+            opacity: 1;
+        }
+
+        .group-content:not(.expanded) {
+            max-height: 0;
+            margin-top: 0;
+            opacity: 0;
+        }
+
+        .object-accordion {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .object-accordion:hover {
+            border-color: #bdbdbd;
+        }
+
+        .object-accordion.selected {
+            border-color: #1976d2;
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+        }
+
+        .delete-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 6px;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+            opacity: 0.6;
+        }
+
+        .delete-btn:hover {
+            background: #ffebee;
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .use-point-btn {
+            width: 100%;
+            padding: 8px 12px;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.15s ease;
+        }
+
+        .use-point-btn:hover {
+            background: #1565c0;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(25, 118, 210, 0.3);
+        }
+
+        .use-point-btn:active {
+            transform: translateY(0);
+        }
+
+        .use-point-btn.active {
+            background: #4caf50;
+        }
+
+        .object-header {
+            padding: 12px 14px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+        }
+
+        .object-header:hover {
+            background: #fafafa;
+        }
+
+        .object-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .object-icon {
+            font-size: 16px;
+        }
+
+        .expand-icon {
+            font-size: 12px;
+            color: #666;
+            transition: transform 0.2s ease;
+        }
+
+        .object-accordion.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .object-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: #fafafa;
+        }
+
+        .object-accordion.expanded .object-content {
+            max-height: 500px;
+        }
+
+        .object-details {
+            padding: 14px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .detail-row {
+            margin-bottom: 10px;
+        }
+
+        .detail-label {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            color: #1a1a1a;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        .katex {
+            font-size: 1.1em;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.3;
+        }
+
+        .empty-state-text {
+            font-size: 13px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ddd;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #bbb;
+        }
+
+        .tool-btn::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 100%;
+            margin-left: 8px;
+            padding: 6px 10px;
+            background: #1a1a1a;
+            color: white;
+            font-size: 12px;
+            border-radius: 6px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 1000;
+        }
+
+        .tool-btn:hover::after {
+            opacity: 0.95;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="info-panel">
+            <div class="logo">Стереометрия</div>
+            <div id="info-text">Выберите инструмент для начала работы</div>
+            <div style="width: 100px;"></div>
+        </div>
+
+        <div id="toolbar">
+            <button class="tool-btn active" data-tool="select" data-tooltip="Выбор (V)">
+                🖱️
+            </button>
+            
+            <div class="tool-divider"></div>
+            
+            <button class="tool-btn" data-tool="point" data-tooltip="Точка (P)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="6" cy="12" r="2" fill="currentColor"/>
+                    <circle cx="12" cy="6" r="2" fill="currentColor"/>
+                    <circle cx="18" cy="14" r="2" fill="currentColor"/>
+                </svg>
+            </button>
+            <button class="tool-btn" data-tool="line" data-tooltip="Прямая (L)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                </svg>
+            </button>
+            <button class="tool-btn" data-tool="plane" data-tooltip="Плоскость (Shift+P)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M4 8 L10 6 L16 8 L10 10 Z"/>
+                    <path d="M8 14 L14 12 L20 14 L14 16 Z"/>
+                </svg>
+            </button>
+            <button class="tool-btn" data-tool="vector" data-tooltip="Вектор (Shift+V)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="4" y1="18" x2="18" y2="6"/>
+                    <polyline points="12,6 18,6 18,12" fill="none"/>
+                </svg>
+            </button>
+            
+            <div class="tool-divider"></div>
+            
+            <button class="tool-btn" data-tool="distance" data-tooltip="Расстояние (D)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="5" y1="8" x2="5" y2="16"/>
+                    <line x1="19" y1="8" x2="19" y2="16"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="8,10 5,12 8,14"/>
+                    <polyline points="16,10 19,12 16,14"/>
+                </svg>
+            </button>
+            <button class="tool-btn" data-tool="angle" data-tooltip="Угол (A)">
+                ∠
+            </button>
+            
+            <div class="tool-divider"></div>
+            
+            <button class="tool-btn" data-tool="operations" data-tooltip="Операции (O)">
+                ⚙️
+            </button>
+            <button class="tool-btn" data-tool="delete" data-tooltip="Очистить сцену">
+                🗑️
+            </button>
+        </div>
+
+        <div id="canvas-container">
+            <canvas id="canvas3d"></canvas>
+        </div>
+
+        <div id="objects-panel">
+            <div class="panel-title">Объекты</div>
+            <div class="object-list" id="object-list">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📦</div>
+                    <div class="empty-state-text">Нет созданных объектов</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { TransformControls } from 'three/addons/controls/TransformControls.js';
+
+        // COORDINATE SYSTEM CONVERSION RULES
+        function mathToThree(mathCoords) {
+            return new THREE.Vector3(
+                mathCoords.y,
+                mathCoords.z,
+                mathCoords.x
+            );
+        }
+
+        function threeToMath(threeCoords) {
+            return {
+                x: threeCoords.z,
+                y: threeCoords.x,
+                z: threeCoords.y
+            };
+        }
+
+        // APP STATE
+        const AppState = {
+            currentTool: 'select',
+            objects: [],
+            selectedObject: null,
+            tempPoints: [],
+            nextNames: {
+                point: 65,
+                line: 1,
+                plane: 1,
+                vector: 1
+            },
+            history: [],
+            maxHistorySize: 50
+        };
+
+        // History management
+        function saveToHistory() {
+            const state = {
+                objects: JSON.parse(JSON.stringify(AppState.objects.map(obj => ({
+                    type: obj.type,
+                    name: obj.name,
+                    coords: obj.coords,
+                    point: obj.point,
+                    direction: obj.direction,
+                    normal: obj.normal,
+                    start: obj.start,
+                    end: obj.end,
+                    id: obj.id
+                })))),
+                nextNames: { ...AppState.nextNames }
+            };
+            
+            AppState.history.push(state);
+            if (AppState.history.length > AppState.maxHistorySize) {
+                AppState.history.shift();
+            }
+        }
+
+        function undo() {
+            if (AppState.history.length === 0) {
+                updateInfoPanel('Нет действий для отмены');
+                return;
+            }
+            
+            const previousState = AppState.history.pop();
+            
+            // Remove all current meshes
+            AppState.objects.forEach(obj => {
+                if (obj.mesh) {
+                    scene.remove(obj.mesh);
+                    if (obj.mesh.geometry) obj.mesh.geometry.dispose();
+                    if (obj.mesh.material) {
+                        if (Array.isArray(obj.mesh.material)) {
+                            obj.mesh.material.forEach(mat => mat.dispose());
+                        } else {
+                            obj.mesh.material.dispose();
+                        }
+                    }
+                }
+            });
+            
+            // Restore previous state
+            AppState.objects = [];
+            AppState.nextNames = { ...previousState.nextNames };
+            AppState.selectedObject = null;
+            
+            // Recreate objects from previous state
+            previousState.objects.forEach(objData => {
+                recreateObjectFromData(objData);
+            });
+            
+            updateObjectsList();
+            updateInfoPanel('Отменено последнее действие');
+        }
+
+        // THREE.JS INITIALIZATION
+        const canvas = document.getElementById('canvas3d');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xfafafa);
+        
+        const camera = new THREE.PerspectiveCamera(
+            50,
+            canvas.parentElement.clientWidth / canvas.parentElement.clientHeight,
+            0.1,
+            1000
+        );
+        camera.position.set(10, 10, 10);
+        camera.lookAt(0, 0, 0);
+        
+        const renderer = new THREE.WebGLRenderer({ 
+            canvas: canvas, 
+            antialias: true 
+        });
+        renderer.setSize(canvas.parentElement.clientWidth, canvas.parentElement.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        directionalLight.position.set(5, 10, 7);
+        scene.add(directionalLight);
+        
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+
+        // TransformControls for moving objects
+        const transformControls = new TransformControls(camera, renderer.domElement);
+        scene.add(transformControls);
+        
+        // Disable OrbitControls when using TransformControls
+        transformControls.addEventListener('dragging-changed', (event) => {
+            controls.enabled = !event.value;
+        });
+        
+        // Update object position when transform changes
+        transformControls.addEventListener('change', () => {
+            if (AppState.selectedObject && transformControls.object) {
+                updateObjectPosition(AppState.selectedObject, transformControls.object);
+            }
+        });
+
+        // CREATE AXES
+        function createAxes() {
+            const axesGroup = new THREE.Group();
+            const axisLength = 5;
+            const arrowSize = 0.4;
+            const lineWidth = 3;
+            
+            const axes = [
+                { dir: new THREE.Vector3(1, 0, 0), color: 0xef4444, label: 'Y' },  // Bright red
+                { dir: new THREE.Vector3(0, 1, 0), color: 0x10b981, label: 'Z' },  // Bright green
+                { dir: new THREE.Vector3(0, 0, 1), color: 0x3b82f6, label: 'X' }   // Bright blue
+            ];
+            
+            axes.forEach(axis => {
+                // Line with cylinder for better visibility
+                const lineMaterial = new THREE.MeshBasicMaterial({ color: axis.color });
+                const lineGeometry = new THREE.CylinderGeometry(0.03, 0.03, axisLength, 8);
+                const lineMesh = new THREE.Mesh(lineGeometry, lineMaterial);
+                
+                // Position and rotate cylinder to match axis direction
+                lineMesh.position.copy(axis.dir.clone().multiplyScalar(axisLength / 2));
+                
+                if (axis.dir.x === 1) {
+                    lineMesh.rotation.z = Math.PI / 2;
+                } else if (axis.dir.z === 1) {
+                    lineMesh.rotation.x = Math.PI / 2;
+                }
+                
+                axesGroup.add(lineMesh);
+                
+                // Arrow (cone)
+                const arrowGeometry = new THREE.ConeGeometry(0.08, arrowSize, 12);
+                const arrowMaterial = new THREE.MeshBasicMaterial({ color: axis.color });
+                const arrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
+                
+                const endPoint = axis.dir.clone().multiplyScalar(axisLength);
+                arrow.position.copy(endPoint);
+                
+                if (axis.dir.x === 1) {
+                    arrow.rotation.z = -Math.PI / 2;
+                } else if (axis.dir.z === 1) {
+                    arrow.rotation.x = Math.PI / 2;
+                }
+                
+                axesGroup.add(arrow);
+                
+                // Text label using sprite
+                const canvas = document.createElement('canvas');
+                canvas.width = 128;
+                canvas.height = 128;
+                const context = canvas.getContext('2d');
+                context.font = 'Bold 72px Arial';
+                context.fillStyle = '#' + axis.color.toString(16).padStart(6, '0');
+                context.textAlign = 'center';
+                context.textBaseline = 'middle';
+                context.fillText(axis.label, 64, 64);
+                
+                const texture = new THREE.CanvasTexture(canvas);
+                const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+                const sprite = new THREE.Sprite(spriteMaterial);
+                sprite.position.copy(axis.dir.clone().multiplyScalar(axisLength + 0.6));
+                sprite.scale.set(0.6, 0.6, 1);
+                axesGroup.add(sprite);
+            });
+            
+            const gridHelper = new THREE.GridHelper(10, 10, 0xcccccc, 0xe8e8e8);
+            axesGroup.add(gridHelper);
+            
+            scene.add(axesGroup);
+        }
+        
+        createAxes();
+
+        // RAYCASTING
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        
+        function getMousePosition(event) {
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        }
+        
+        function raycastToPlane(event) {
+            getMousePosition(event);
+            raycaster.setFromCamera(mouse, camera);
+            
+            const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+            const intersectPoint = new THREE.Vector3();
+            raycaster.ray.intersectPlane(plane, intersectPoint);
+            
+            if (intersectPoint) {
+                return threeToMath(intersectPoint);
+            }
+            return null;
+        }
+
+        // EVENT HANDLERS
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Special handler for delete button - clear all scene
+                if (btn.dataset.tool === 'delete') {
+                    clearAllScene();
+                    return;
+                }
+                
+                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                AppState.currentTool = btn.dataset.tool;
+                updateInfoPanel();
+            });
+        });
+
+        // Keyboard shortcuts
+        window.addEventListener('keydown', (event) => {
+            // Undo: Cmd+Z (Mac) or Ctrl+Z (Windows)
+            if ((event.metaKey || event.ctrlKey) && event.key === 'z') {
+                event.preventDefault();
+                undo();
+            }
+            
+            // Delete selected object: Delete (Windows) or Backspace (Mac)
+            if ((event.key === 'Delete' || event.key === 'Backspace') && AppState.selectedObject) {
+                event.preventDefault();
+                deleteObject(AppState.selectedObject);
+            }
+            
+            // Deselect: Escape
+            if (event.key === 'Escape') {
+                deselectObject();
+                updateObjectsList();
+            }
+        });
+
+        canvas.addEventListener('click', (event) => {
+            handleCanvasClick(event);
+        });
+
+        function clearAllScene() {
+            if (AppState.objects.length === 0) {
+                updateInfoPanel('Сцена уже пуста');
+                return;
+            }
+            
+            // Save to history before clearing
+            saveToHistory();
+            
+            // Remove all meshes from scene
+            AppState.objects.forEach(obj => {
+                if (obj.mesh) {
+                    scene.remove(obj.mesh);
+                    // Dispose geometry and material to free memory
+                    if (obj.mesh.geometry) obj.mesh.geometry.dispose();
+                    if (obj.mesh.material) {
+                        if (Array.isArray(obj.mesh.material)) {
+                            obj.mesh.material.forEach(mat => mat.dispose());
+                        } else {
+                            obj.mesh.material.dispose();
+                        }
+                    }
+                }
+            });
+            
+            const count = AppState.objects.length;
+            
+            // Clear objects array
+            AppState.objects = [];
+            
+            // Clear selection
+            AppState.selectedObject = null;
+            
+            // Reset naming counters
+            AppState.nextNames = {
+                point: 65,
+                line: 1,
+                plane: 1,
+                vector: 1
+            };
+            
+            // Update UI
+            updateObjectsList();
+            updateInfoPanel(`Сцена очищена: удалено ${count} объект(ов)`);
+        }
+
+        function deleteObject(objectId) {
+            const objIndex = AppState.objects.findIndex(obj => obj.id === objectId);
+            if (objIndex === -1) return;
+            
+            const obj = AppState.objects[objIndex];
+            
+            // Save to history BEFORE deletion
+            saveToHistory();
+            
+            // Remove mesh from scene
+            if (obj.mesh) {
+                scene.remove(obj.mesh);
+                // Dispose geometry and material to free memory
+                if (obj.mesh.geometry) obj.mesh.geometry.dispose();
+                if (obj.mesh.material) {
+                    if (Array.isArray(obj.mesh.material)) {
+                        obj.mesh.material.forEach(mat => mat.dispose());
+                    } else {
+                        obj.mesh.material.dispose();
+                    }
+                }
+            }
+            
+            // Remove from array
+            AppState.objects.splice(objIndex, 1);
+            
+            // Clear selection
+            if (AppState.selectedObject === objectId) {
+                AppState.selectedObject = null;
+            }
+            
+            // Update UI
+            updateObjectsList();
+            updateInfoPanel(`Удалён объект: ${obj.name}`);
+        }
+
+        function selectObject(objectId) {
+            AppState.selectedObject = objectId;
+            
+            // Find the object
+            const obj = AppState.objects.find(o => o.id === objectId);
+            
+            if (obj && obj.mesh) {
+                // Attach TransformControls to the mesh
+                transformControls.attach(obj.mesh);
+                
+                // Highlight selected object by changing color
+                if (obj.type === 'point') {
+                    obj.mesh.material.color.setHex(0x2196f3);
+                }
+            }
+            
+            // Reset other objects color
+            AppState.objects.forEach(o => {
+                if (o.id !== objectId && o.type === 'point' && o.mesh) {
+                    o.mesh.material.color.setHex(0x1976d2);
+                }
+            });
+        }
+        
+        function deselectObject() {
+            AppState.selectedObject = null;
+            transformControls.detach();
+            
+            // Reset all colors
+            AppState.objects.forEach(obj => {
+                if (obj.type === 'point' && obj.mesh) {
+                    obj.mesh.material.color.setHex(0x1976d2);
+                }
+            });
+        }
+        
+        function handlePointSelection(pointId) {
+            const point = AppState.objects.find(obj => obj.id === pointId && obj.type === 'point');
+            if (!point) return;
+            
+            const mathPoint = point.coords;
+            
+            // Check current tool and add point to construction
+            switch(AppState.currentTool) {
+                case 'line':
+                    handleLineCreation(mathPoint);
+                    updateInfoPanel(`Точка ${point.name} добавлена. ${AppState.tempPoints.length}/2`);
+                    break;
+                case 'vector':
+                    handleVectorCreation(mathPoint);
+                    updateInfoPanel(`Точка ${point.name} добавлена. ${AppState.tempPoints.length}/2`);
+                    break;
+                case 'plane':
+                    handlePlaneCreation(mathPoint);
+                    updateInfoPanel(`Точка ${point.name} добавлена. ${AppState.tempPoints.length}/3`);
+                    break;
+                default:
+                    updateInfoPanel('Выберите инструмент "Прямая", "Вектор" или "Плоскость" для использования точки');
+            }
+        }
+        
+        function updateObjectPosition(objectId, mesh) {
+            const obj = AppState.objects.find(o => o.id === objectId);
+            if (!obj) return;
+            
+            const threePos = mesh.position;
+            const mathPos = threeToMath(threePos);
+            
+            // Update object data based on type
+            if (obj.type === 'point') {
+                obj.coords = mathPos;
+            } else if (obj.type === 'line') {
+                // Update line's base point
+                obj.point = mathPos;
+            } else if (obj.type === 'plane') {
+                // Update plane's base point
+                obj.point = mathPos;
+            } else if (obj.type === 'vector') {
+                // Move both start and end points
+                const offset = {
+                    x: mathPos.x - obj.start.x,
+                    y: mathPos.y - obj.start.y,
+                    z: mathPos.z - obj.start.z
+                };
+                obj.start = mathPos;
+                obj.end = {
+                    x: obj.end.x + offset.x,
+                    y: obj.end.y + offset.y,
+                    z: obj.end.z + offset.z
+                };
+            }
+            
+            // Update UI
+            updateObjectsList();
+        }
+
+        function recreateObjectFromData(objData) {
+            switch(objData.type) {
+                case 'point':
+                    recreatePoint(objData);
+                    break;
+                case 'line':
+                    recreateLine(objData);
+                    break;
+                case 'plane':
+                    recreatePlane(objData);
+                    break;
+                case 'vector':
+                    recreateVector(objData);
+                    break;
+            }
+        }
+
+        function recreatePoint(data) {
+            const geometry = new THREE.SphereGeometry(0.15, 16, 16);
+            const material = new THREE.MeshBasicMaterial({ color: 0x1976d2 });
+            const sphere = new THREE.Mesh(geometry, material);
+            sphere.position.copy(mathToThree(data.coords));
+            scene.add(sphere);
+            
+            AppState.objects.push({
+                type: 'point',
+                name: data.name,
+                coords: data.coords,
+                mesh: sphere,
+                id: data.id
+            });
+        }
+
+        function recreateLine(data) {
+            const threeP1 = mathToThree(data.point);
+            const direction = data.direction;
+            const mathP2 = {
+                x: data.point.x + direction.x,
+                y: data.point.y + direction.y,
+                z: data.point.z + direction.z
+            };
+            const threeP2 = mathToThree(mathP2);
+            
+            // Create line as thick cylinder
+            const extendFactor = 5;
+            const dir = new THREE.Vector3().subVectors(threeP2, threeP1).normalize();
+            const startPoint = threeP1.clone().sub(dir.clone().multiplyScalar(extendFactor));
+            const endPoint = threeP2.clone().add(dir.clone().multiplyScalar(extendFactor));
+            const length = startPoint.distanceTo(endPoint);
+            
+            const geometry = new THREE.CylinderGeometry(0.025, 0.025, length, 8);
+            const material = new THREE.MeshBasicMaterial({ color: 0x333333 });
+            const cylinder = new THREE.Mesh(geometry, material);
+            
+            const midPoint = new THREE.Vector3().addVectors(startPoint, endPoint).multiplyScalar(0.5);
+            cylinder.position.copy(midPoint);
+            cylinder.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+            
+            scene.add(cylinder);
+            
+            AppState.objects.push({
+                type: 'line',
+                name: data.name,
+                point: data.point,
+                direction: data.direction,
+                mesh: cylinder,
+                id: data.id
+            });
+        }
+
+        function recreatePlane(data) {
+            const threeP1 = mathToThree(data.point);
+            const size = 8;
+            const planeGeometry = new THREE.PlaneGeometry(size, size);
+            
+            const material = new THREE.MeshBasicMaterial({ 
+                color: 0x64b5f6, 
+                transparent: true, 
+                opacity: 0.3,
+                side: THREE.DoubleSide
+            });
+            const plane = new THREE.Mesh(planeGeometry, material);
+            plane.position.copy(threeP1);
+            plane.lookAt(threeP1.clone().add(mathToThree(data.normal)));
+            
+            scene.add(plane);
+            
+            AppState.objects.push({
+                type: 'plane',
+                name: data.name,
+                point: data.point,
+                normal: data.normal,
+                mesh: plane,
+                id: data.id
+            });
+        }
+
+        function recreateVector(data) {
+            const threeStart = mathToThree(data.start);
+            const threeEnd = mathToThree(data.end);
+            const direction = new THREE.Vector3().subVectors(threeEnd, threeStart);
+            const length = direction.length();
+            direction.normalize();
+            
+            // Create custom arrow with thick shaft
+            const group = new THREE.Group();
+            
+            // Shaft
+            const shaftLength = length - 0.4;
+            const shaftGeometry = new THREE.CylinderGeometry(0.025, 0.025, shaftLength, 8);
+            const shaftMaterial = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+            const shaft = new THREE.Mesh(shaftGeometry, shaftMaterial);
+            shaft.position.y = shaftLength / 2;
+            group.add(shaft);
+            
+            // Arrow head
+            const headGeometry = new THREE.ConeGeometry(0.08, 0.4, 12);
+            const headMaterial = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = shaftLength + 0.2;
+            group.add(head);
+            
+            group.position.copy(threeStart);
+            group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+            
+            scene.add(group);
+            
+            AppState.objects.push({
+                type: 'vector',
+                name: data.name,
+                start: data.start,
+                end: data.end,
+                mesh: group,
+                id: data.id
+            });
+        }
+
+        function handleCanvasClick(event) {
+            // Check if clicking on an object in select mode
+            if (AppState.currentTool === 'select') {
+                getMousePosition(event);
+                raycaster.setFromCamera(mouse, camera);
+                
+                // Collect all meshes from objects (including children for ArrowHelper)
+                const clickableObjects = [];
+                AppState.objects.forEach(obj => {
+                    if (obj.mesh) {
+                        if (obj.type === 'vector') {
+                            // Vector has children (shaft and head)
+                            obj.mesh.children.forEach(child => {
+                                clickableObjects.push({ mesh: child, objId: obj.id });
+                            });
+                        } else {
+                            clickableObjects.push({ mesh: obj.mesh, objId: obj.id });
+                        }
+                    }
+                });
+                
+                const meshes = clickableObjects.map(item => item.mesh);
+                const intersects = raycaster.intersectObjects(meshes, false);
+                
+                if (intersects.length > 0) {
+                    const clickedMesh = intersects[0].object;
+                    const clickedItem = clickableObjects.find(item => item.mesh === clickedMesh);
+                    
+                    if (clickedItem) {
+                        selectObject(clickedItem.objId);
+                        const obj = AppState.objects.find(o => o.id === clickedItem.objId);
+                        if (obj) {
+                            updateInfoPanel(`Выбран объект: ${obj.name} (используйте стрелки для перемещения)`);
+                        }
+                        return;
+                    }
+                } else {
+                    // Clicked on empty space - deselect
+                    deselectObject();
+                    updateInfoPanel('Выбор снят');
+                    return;
+                }
+            }
+            
+            // For line, vector, and plane creation - check if clicking on existing point
+            if (['line', 'vector', 'plane'].includes(AppState.currentTool)) {
+                getMousePosition(event);
+                raycaster.setFromCamera(mouse, camera);
+                
+                // Check if clicking on a point
+                const points = AppState.objects.filter(obj => obj.type === 'point');
+                const pointMeshes = points.map(p => p.mesh);
+                const intersects = raycaster.intersectObjects(pointMeshes, false);
+                
+                if (intersects.length > 0) {
+                    // Clicked on existing point - use its coordinates
+                    const clickedMesh = intersects[0].object;
+                    const clickedPoint = points.find(p => p.mesh === clickedMesh);
+                    
+                    if (clickedPoint) {
+                        const mathPoint = clickedPoint.coords; // Use actual 3D coordinates
+                        
+                        switch(AppState.currentTool) {
+                            case 'line':
+                                handleLineCreation(mathPoint);
+                                return;
+                            case 'vector':
+                                handleVectorCreation(mathPoint);
+                                return;
+                            case 'plane':
+                                handlePlaneCreation(mathPoint);
+                                return;
+                        }
+                    }
+                }
+            }
+            
+            // Create new objects
+            const mathPoint = raycastToPlane(event);
+            if (!mathPoint) return;
+            
+            switch(AppState.currentTool) {
+                case 'point':
+                    saveToHistory();
+                    createPoint(mathPoint);
+                    break;
+                case 'line':
+                    handleLineCreation(mathPoint);
+                    break;
+                case 'plane':
+                    handlePlaneCreation(mathPoint);
+                    break;
+                case 'vector':
+                    handleVectorCreation(mathPoint);
+                    break;
+            }
+        }
+
+        // OBJECT CREATION
+        function createPoint(mathCoords) {
+            const name = String.fromCharCode(AppState.nextNames.point++);
+            
+            const geometry = new THREE.SphereGeometry(0.15, 16, 16);
+            const material = new THREE.MeshBasicMaterial({ color: 0x1976d2 });
+            const sphere = new THREE.Mesh(geometry, material);
+            
+            const threePos = mathToThree(mathCoords);
+            sphere.position.copy(threePos);
+            
+            scene.add(sphere);
+            
+            const pointObj = {
+                type: 'point',
+                name: name,
+                coords: mathCoords,
+                mesh: sphere,
+                id: Date.now()
+            };
+            
+            AppState.objects.push(pointObj);
+            updateObjectsList();
+            updateInfoPanel(`Создана точка ${name} (${formatCoords(mathCoords)})`);
+        }
+
+        function handleLineCreation(mathPoint) {
+            AppState.tempPoints.push(mathPoint);
+            
+            if (AppState.tempPoints.length === 1) {
+                updateInfoPanel('Укажите вторую точку для создания прямой');
+                createTempPointVisual(mathPoint);
+            } else if (AppState.tempPoints.length === 2) {
+                saveToHistory();
+                createLine(AppState.tempPoints[0], AppState.tempPoints[1]);
+                AppState.tempPoints = [];
+                clearTempVisuals();
+            }
+        }
+
+        function createLine(mathPoint1, mathPoint2) {
+            const name = `l_{${AppState.nextNames.line++}}`;
+            
+            const direction = {
+                x: mathPoint2.x - mathPoint1.x,
+                y: mathPoint2.y - mathPoint1.y,
+                z: mathPoint2.z - mathPoint1.z
+            };
+            
+            const threeP1 = mathToThree(mathPoint1);
+            const threeP2 = mathToThree(mathPoint2);
+            
+            // Create line as thick cylinder
+            const extendFactor = 5;
+            const dir = new THREE.Vector3().subVectors(threeP2, threeP1).normalize();
+            const startPoint = threeP1.clone().sub(dir.clone().multiplyScalar(extendFactor));
+            const endPoint = threeP2.clone().add(dir.clone().multiplyScalar(extendFactor));
+            const length = startPoint.distanceTo(endPoint);
+            
+            const geometry = new THREE.CylinderGeometry(0.025, 0.025, length, 8);
+            const material = new THREE.MeshBasicMaterial({ color: 0x333333 });
+            const cylinder = new THREE.Mesh(geometry, material);
+            
+            // Position and orient cylinder
+            const midPoint = new THREE.Vector3().addVectors(startPoint, endPoint).multiplyScalar(0.5);
+            cylinder.position.copy(midPoint);
+            cylinder.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+            
+            scene.add(cylinder);
+            
+            const lineObj = {
+                type: 'line',
+                name: name,
+                point: mathPoint1,
+                direction: direction,
+                mesh: cylinder,
+                id: Date.now()
+            };
+            
+            AppState.objects.push(lineObj);
+            updateObjectsList();
+            updateInfoPanel(`Создана прямая ${name}`);
+        }
+
+        function handlePlaneCreation(mathPoint) {
+            AppState.tempPoints.push(mathPoint);
+            
+            if (AppState.tempPoints.length < 3) {
+                updateInfoPanel(`Укажите точку ${AppState.tempPoints.length + 1} из 3 для создания плоскости`);
+                createTempPointVisual(mathPoint);
+            } else if (AppState.tempPoints.length === 3) {
+                saveToHistory();
+                createPlane(AppState.tempPoints[0], AppState.tempPoints[1], AppState.tempPoints[2]);
+                AppState.tempPoints = [];
+                clearTempVisuals();
+            }
+        }
+
+        function createPlane(mathP1, mathP2, mathP3) {
+            const name = `\\pi_{${AppState.nextNames.plane++}}`;
+            
+            const v1 = { x: mathP2.x - mathP1.x, y: mathP2.y - mathP1.y, z: mathP2.z - mathP1.z };
+            const v2 = { x: mathP3.x - mathP1.x, y: mathP3.y - mathP1.y, z: mathP3.z - mathP1.z };
+            
+            const normal = {
+                x: v1.y * v2.z - v1.z * v2.y,
+                y: v1.z * v2.x - v1.x * v2.z,
+                z: v1.x * v2.y - v1.y * v2.x
+            };
+            
+            const threeP1 = mathToThree(mathP1);
+            const threeP2 = mathToThree(mathP2);
+            const threeP3 = mathToThree(mathP3);
+            
+            const size = 8;
+            const center = new THREE.Vector3().addVectors(threeP1, threeP2).add(threeP3).divideScalar(3);
+            const planeGeometry = new THREE.PlaneGeometry(size, size);
+            
+            const material = new THREE.MeshBasicMaterial({ 
+                color: 0x64b5f6, 
+                transparent: true, 
+                opacity: 0.3,
+                side: THREE.DoubleSide
+            });
+            const plane = new THREE.Mesh(planeGeometry, material);
+            plane.position.copy(center);
+            plane.lookAt(center.clone().add(mathToThree(normal)));
+            
+            scene.add(plane);
+            
+            const planeObj = {
+                type: 'plane',
+                name: name,
+                point: mathP1,
+                normal: normal,
+                mesh: plane,
+                id: Date.now()
+            };
+            
+            AppState.objects.push(planeObj);
+            updateObjectsList();
+            updateInfoPanel(`Создана плоскость ${name}`);
+        }
+
+        function handleVectorCreation(mathPoint) {
+            AppState.tempPoints.push(mathPoint);
+            
+            if (AppState.tempPoints.length === 1) {
+                updateInfoPanel('Укажите конечную точку вектора');
+                createTempPointVisual(mathPoint);
+            } else if (AppState.tempPoints.length === 2) {
+                saveToHistory();
+                createVector(AppState.tempPoints[0], AppState.tempPoints[1]);
+                AppState.tempPoints = [];
+                clearTempVisuals();
+            }
+        }
+
+        function createVector(mathStart, mathEnd) {
+            const startName = String.fromCharCode(AppState.nextNames.point - 1);
+            const endName = String.fromCharCode(AppState.nextNames.point);
+            const name = `\\overrightarrow{${startName}${endName}}`;
+            
+            const threeStart = mathToThree(mathStart);
+            const threeEnd = mathToThree(mathEnd);
+            const direction = new THREE.Vector3().subVectors(threeEnd, threeStart);
+            const length = direction.length();
+            direction.normalize();
+            
+            // Create custom arrow with thick shaft
+            const group = new THREE.Group();
+            
+            // Shaft (cylinder)
+            const shaftLength = length - 0.4;
+            const shaftGeometry = new THREE.CylinderGeometry(0.025, 0.025, shaftLength, 8);
+            const shaftMaterial = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+            const shaft = new THREE.Mesh(shaftGeometry, shaftMaterial);
+            shaft.position.y = shaftLength / 2;
+            group.add(shaft);
+            
+            // Arrow head (cone)
+            const headGeometry = new THREE.ConeGeometry(0.08, 0.4, 12);
+            const headMaterial = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = shaftLength + 0.2;
+            group.add(head);
+            
+            // Position and orient the group
+            group.position.copy(threeStart);
+            group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+            
+            scene.add(group);
+            
+            const vectorObj = {
+                type: 'vector',
+                name: name,
+                start: mathStart,
+                end: mathEnd,
+                mesh: group,
+                id: Date.now()
+            };
+            
+            AppState.objects.push(vectorObj);
+            updateObjectsList();
+            updateInfoPanel(`Создан вектор ${name}`);
+        }
+
+        // HELPERS
+        let tempVisuals = [];
+        
+        function createTempPointVisual(mathCoords) {
+            const geometry = new THREE.SphereGeometry(0.1, 16, 16);
+            const material = new THREE.MeshBasicMaterial({ 
+                color: 0x999999,
+                transparent: true,
+                opacity: 0.5
+            });
+            const sphere = new THREE.Mesh(geometry, material);
+            sphere.position.copy(mathToThree(mathCoords));
+            scene.add(sphere);
+            tempVisuals.push(sphere);
+        }
+        
+        function clearTempVisuals() {
+            tempVisuals.forEach(visual => scene.remove(visual));
+            tempVisuals = [];
+        }
+
+        function formatCoords(coords) {
+            return `${coords.x.toFixed(1)}, ${coords.y.toFixed(1)}, ${coords.z.toFixed(1)}`;
+        }
+
+        function updateInfoPanel(text) {
+            const infoText = document.getElementById('info-text');
+            infoText.textContent = text || 'Выберите инструмент для начала работы';
+            if (text) {
+                infoText.classList.add('active');
+                setTimeout(() => infoText.classList.remove('active'), 3000);
+            }
+        }
+
+        // UPDATE OBJECTS LIST
+        function updateObjectsList() {
+            const objectList = document.getElementById('object-list');
+            
+            if (AppState.objects.length === 0) {
+                objectList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📦</div>
+                        <div class="empty-state-text">Нет созданных объектов</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            objectList.innerHTML = '';
+            
+            const groups = {
+                point: { title: 'Точки', icon: '⚫', objects: [] },
+                line: { title: 'Прямые', icon: '━', objects: [] },
+                plane: { title: 'Плоскости', icon: '▭', objects: [] },
+                vector: { title: 'Векторы', icon: '➜', objects: [] }
+            };
+            
+            AppState.objects.forEach(obj => {
+                if (groups[obj.type]) {
+                    groups[obj.type].objects.push(obj);
+                }
+            });
+            
+            Object.keys(groups).forEach(type => {
+                const group = groups[type];
+                if (group.objects.length > 0) {
+                    const groupDiv = createObjectGroup(group);
+                    objectList.appendChild(groupDiv);
+                }
+            });
+        }
+
+        function createObjectGroup(group) {
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'object-group';
+            
+            const groupHeader = document.createElement('div');
+            groupHeader.className = 'group-header';
+            groupHeader.innerHTML = `
+                <div class="group-title">
+                    <span class="group-icon">${group.icon}</span>
+                    <span>${group.title}</span>
+                    <span class="group-count">${group.objects.length}</span>
+                </div>
+                <span class="group-expand-icon">▼</span>
+            `;
+            
+            const groupContent = document.createElement('div');
+            groupContent.className = 'group-content expanded';
+            
+            group.objects.forEach(obj => {
+                const accordion = createObjectAccordion(obj);
+                groupContent.appendChild(accordion);
+            });
+            
+            groupDiv.appendChild(groupHeader);
+            groupDiv.appendChild(groupContent);
+            
+            groupHeader.addEventListener('click', () => {
+                groupContent.classList.toggle('expanded');
+                groupDiv.classList.toggle('collapsed');
+            });
+            
+            return groupDiv;
+        }
+
+        function createObjectAccordion(obj) {
+            const div = document.createElement('div');
+            div.className = 'object-accordion';
+            if (AppState.selectedObject === obj.id) {
+                div.classList.add('selected');
+            }
+            div.dataset.id = obj.id;
+            
+            const icon = {
+                'point': '⚫',
+                'line': '━',
+                'plane': '▭',
+                'vector': '➜'
+            }[obj.type];
+            
+            div.innerHTML = `
+                <div class="object-header">
+                    <div class="object-name">
+                        <span class="object-icon">${icon}</span>
+                        <span class="katex-container"></span>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button class="delete-btn" data-id="${obj.id}" title="Удалить">🗑️</button>
+                        <span class="expand-icon">▼</span>
+                    </div>
+                </div>
+                <div class="object-content">
+                    <div class="object-details">
+                        ${generateObjectDetails(obj)}
+                    </div>
+                </div>
+            `;
+            
+            const katexContainer = div.querySelector('.katex-container');
+            katex.render(obj.name, katexContainer, { throwOnError: false });
+            
+            // Render equations if expanded
+            setTimeout(() => {
+                if (obj.type === 'line' || obj.type === 'plane') {
+                    renderEquations(obj, div);
+                }
+            }, 50);
+            
+            const header = div.querySelector('.object-header');
+            header.addEventListener('click', (e) => {
+                // Don't toggle if clicking delete button
+                if (!e.target.classList.contains('delete-btn') && !e.target.closest('.delete-btn')) {
+                    const wasExpanded = div.classList.contains('expanded');
+                    div.classList.toggle('expanded');
+                    
+                    // Render equations when expanding (but don't select for transform)
+                    if (!wasExpanded && (obj.type === 'line' || obj.type === 'plane')) {
+                        setTimeout(() => {
+                            renderEquations(obj, div);
+                        }, 50);
+                    }
+                }
+            });
+            
+            // Delete button handler
+            const deleteBtn = div.querySelector('.delete-btn');
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteObject(obj.id);
+            });
+            
+            // Use point button handler
+            if (obj.type === 'point') {
+                const useBtn = div.querySelector('.use-point-btn');
+                if (useBtn) {
+                    useBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        handlePointSelection(obj.id);
+                    });
+                }
+            }
+            
+            return div;
+        }
+
+        function generateObjectDetails(obj) {
+            switch(obj.type) {
+                case 'point':
+                    return `
+                        <div class="detail-row">
+                            <div class="detail-label">Координаты:</div>
+                            <div class="detail-value">(${formatCoords(obj.coords)})</div>
+                        </div>
+                        <div class="detail-row" style="margin-top: 12px;">
+                            <button class="use-point-btn" data-point-id="${obj.id}">
+                                Использовать для построения
+                            </button>
+                        </div>
+                    `;
+                
+                case 'line':
+                    return `
+                        <div class="detail-row">
+                            <div class="detail-label">Точка на прямой:</div>
+                            <div class="detail-value">(${formatCoords(obj.point)})</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Направляющий вектор:</div>
+                            <div class="detail-value">(${formatCoords(obj.direction)})</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Векторное уравнение:</div>
+                            <div class="katex-equation" data-eq-type="line-vec"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Параметрическое уравнение:</div>
+                            <div class="katex-equation-param" data-eq-type="line-param"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Каноническое уравнение:</div>
+                            <div class="katex-equation-canon" data-eq-type="line-canon"></div>
+                        </div>
+                    `;
+                
+                case 'plane':
+                    return `
+                        <div class="detail-row">
+                            <div class="detail-label">Точка на плоскости:</div>
+                            <div class="detail-value">(${formatCoords(obj.point)})</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Нормальный вектор:</div>
+                            <div class="detail-value">(${formatCoords(obj.normal)})</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Общее уравнение:</div>
+                            <div class="katex-equation-general" data-eq-type="plane-general"></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Векторное уравнение:</div>
+                            <div class="katex-equation-vector" data-eq-type="plane-vector"></div>
+                        </div>
+                    `;
+                
+                case 'vector':
+                    return `
+                        <div class="detail-row">
+                            <div class="detail-label">Начало:</div>
+                            <div class="detail-value">(${formatCoords(obj.start)})</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Конец:</div>
+                            <div class="detail-value">(${formatCoords(obj.end)})</div>
+                        </div>
+                    `;
+            }
+        }
+        
+        function renderEquations(obj, container) {
+            if (obj.type === 'line') {
+                const lineEqVec = `\\underline{r} = (${obj.point.x.toFixed(1)}, ${obj.point.y.toFixed(1)}, ${obj.point.z.toFixed(1)}) + t(${obj.direction.x.toFixed(1)}, ${obj.direction.y.toFixed(1)}, ${obj.direction.z.toFixed(1)})`;
+                const lineEqParam = `\\begin{cases} x = ${obj.point.x.toFixed(1)} + ${obj.direction.x.toFixed(1)}t \\\\ y = ${obj.point.y.toFixed(1)} + ${obj.direction.y.toFixed(1)}t \\\\ z = ${obj.point.z.toFixed(1)} + ${obj.direction.z.toFixed(1)}t \\end{cases}`;
+                const lineEqCanon = obj.direction.x !== 0 && obj.direction.y !== 0 && obj.direction.z !== 0 
+                    ? `\\frac{x - ${obj.point.x.toFixed(1)}}{${obj.direction.x.toFixed(1)}} = \\frac{y - ${obj.point.y.toFixed(1)}}{${obj.direction.y.toFixed(1)}} = \\frac{z - ${obj.point.z.toFixed(1)}}{${obj.direction.z.toFixed(1)}}`
+                    : null;
+                
+                const vecEl = container.querySelector('[data-eq-type="line-vec"]');
+                const paramEl = container.querySelector('[data-eq-type="line-param"]');
+                const canonEl = container.querySelector('[data-eq-type="line-canon"]');
+                
+                if (vecEl) katex.render(lineEqVec, vecEl, { throwOnError: false });
+                if (paramEl) katex.render(lineEqParam, paramEl, { throwOnError: false, displayMode: true });
+                if (canonEl) {
+                    if (lineEqCanon) {
+                        katex.render(lineEqCanon, canonEl, { throwOnError: false });
+                    } else {
+                        canonEl.textContent = 'Невозможно (нулевые компоненты вектора)';
+                        canonEl.style.fontFamily = 'inherit';
+                        canonEl.style.fontSize = '12px';
+                        canonEl.style.color = '#999';
+                    }
+                }
+            } else if (obj.type === 'plane') {
+                const a = obj.normal.x.toFixed(1);
+                const b = obj.normal.y.toFixed(1);
+                const c = obj.normal.z.toFixed(1);
+                const d = -(a * obj.point.x + b * obj.point.y + c * obj.point.z).toFixed(1);
+                
+                const planeEqGeneral = `${a}x + ${b}y + ${c}z + ${d} = 0`;
+                const planeEqNormal = `(${a}, ${b}, ${c}) \\cdot ((x, y, z) - (${obj.point.x.toFixed(1)}, ${obj.point.y.toFixed(1)}, ${obj.point.z.toFixed(1)})) = 0`;
+                
+                const generalEl = container.querySelector('[data-eq-type="plane-general"]');
+                const vectorEl = container.querySelector('[data-eq-type="plane-vector"]');
+                
+                if (generalEl) katex.render(planeEqGeneral, generalEl, { throwOnError: false });
+                if (vectorEl) katex.render(planeEqNormal, vectorEl, { throwOnError: false });
+            }
+        }
+
+        // ANIMATION LOOP
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+
+        // RESIZE HANDLER
+        window.addEventListener('resize', () => {
+            const container = canvas.parentElement;
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+
+        updateInfoPanel();
+    </script>
+</body>
+</html>
