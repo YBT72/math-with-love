@@ -269,6 +269,59 @@
             background: #4caf50;
         }
 
+        .viz-btn {
+            width: 100%;
+            padding: 8px 12px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.15s ease;
+        }
+
+        .viz-btn:hover {
+            background: #f57c00;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);
+        }
+
+        .viz-btn:active {
+            transform: translateY(0);
+        }
+
+        .viz-icon-btn {
+            width: 28px;
+            height: 28px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            padding: 0;
+        }
+
+        .viz-icon-btn svg {
+            color: #666;
+        }
+
+        .viz-icon-btn:hover {
+            background: #d0d0d0;
+        }
+
+        .viz-icon-btn.active {
+            background: #1976d2;
+        }
+
+        .viz-icon-btn.active svg {
+            color: white;
+        }
+
         .object-header {
             padding: 12px 14px;
             background: white;
@@ -626,10 +679,366 @@
             controls.enabled = !event.value;
         });
         
-        // Update object position when transform changes
+        // Real-time updates during transformation
         transformControls.addEventListener('change', () => {
             if (AppState.selectedObject && transformControls.object) {
-                updateObjectPosition(AppState.selectedObject, transformControls.object);
+                updateObjectDuringTransform();
+            }
+        });
+        
+        // Auto-detect mode based on what user grabbed
+        let currentTransformMode = 'translate';
+        
+        // Track initial position/rotation for calculating changes
+        let transformStartPosition = null;
+        let transformStartRotation = null;
+        
+        // Real-time update function during transform
+        function updateObjectDuringTransform() {
+            const obj = AppState.objects.find(o => o.id === AppState.selectedObject);
+            if (!obj || !obj.mesh) return;
+            
+            if (obj.type === 'line') {
+                // Update line visualization in real-time
+                if (obj.vizGroup) {
+                    const newPosition = obj.mesh.position.clone();
+                    
+                    // Get sphere from vizGroup
+                    const sphere = obj.vizGroup.userData.sphere;
+                    const basePoint = obj.vizGroup.userData.basePoint;
+                    const direction = obj.vizGroup.userData.direction;
+                    
+                    if (sphere && basePoint && direction) {
+                        // Update base point position
+                        basePoint.copy(newPosition);
+                        
+                        // Update sphere position (maintain relative position along line)
+                        const originalDirection = obj.vizGroup.userData.originalDirection;
+                        if (originalDirection) {
+                            const tValue = sphere.userData.tValue || 1;
+                            const displayLength = Math.min(originalDirection.length(), 3);
+                            const sphereOffset = direction.clone().multiplyScalar(tValue * displayLength);
+                            sphere.position.copy(newPosition.clone().add(sphereOffset));
+                            
+                            // Update blue base vector
+                            updateBlueBaseVector(obj.vizGroup, basePoint, direction, originalDirection);
+                            
+                            // Update orange vector visualization if visible
+                            const orangeGroup = obj.vizGroup.userData.orangeGroup;
+                            if (orangeGroup && orangeGroup.visible) {
+                                updateLineVisualization(obj.vizGroup, basePoint, sphere.position, direction, tValue);
+                            }
+                        }
+                    }
+                }
+                
+            } else if (obj.type === 'point') {
+                // Update point and connected lines in real-time
+                const newPosition = obj.mesh.position.clone();
+                obj.coords = threeToMath(newPosition);
+                
+                // Update connected lines
+                if (obj.connectedLines && obj.connectedLines.length > 0) {
+                    obj.connectedLines.forEach(lineId => {
+                        const line = AppState.objects.find(l => l.id === lineId);
+                        if (line && line.type === 'line') {
+                            updateConnectedLine(obj, line);
+                        }
+                    });
+                }
+            }
+        }
+        
+        // Helper function to update connected line when point moves
+        function updateConnectedLine(movedPoint, line) {
+            const otherPointId = line.sourcePoints.find(id => id !== movedPoint.id);
+            const otherPoint = AppState.objects.find(p => p.id === otherPointId);
+            
+            if (otherPoint) {
+                // Update line's base point and direction
+                if (line.sourcePoints[0] === otherPoint.id) {
+                    line.point = { ...otherPoint.coords };
+                    line.direction = {
+                        x: movedPoint.coords.x - otherPoint.coords.x,
+                        y: movedPoint.coords.y - otherPoint.coords.y,
+                        z: movedPoint.coords.z - otherPoint.coords.z
+                    };
+                } else {
+                    line.point = { ...movedPoint.coords };
+                    line.direction = {
+                        x: otherPoint.coords.x - movedPoint.coords.x,
+                        y: otherPoint.coords.y - movedPoint.coords.y,
+                        z: otherPoint.coords.z - movedPoint.coords.z
+                    };
+                }
+                
+                // Update line mesh in real-time
+                updateLineMeshPosition(line);
+                
+                // Update line visualization if active
+                if (line.vizGroup) {
+                    const basePoint = mathToThree(line.point);
+                    line.vizGroup.userData.basePoint.copy(basePoint);
+                    
+                    // Update direction vector
+                    const mathDir = line.direction;
+                    const threeDirVector = new THREE.Vector3(
+                        mathDir.y,   // Math Y → Three X
+                        mathDir.z,   // Math Z → Three Y
+                        mathDir.x    // Math X → Three Z
+                    );
+                    const dirNormalized = threeDirVector.clone().normalize();
+                    line.vizGroup.userData.direction.copy(dirNormalized);
+                    line.vizGroup.userData.originalDirection.copy(threeDirVector);
+                    
+                    // Update blue base vector
+                    updateBlueBaseVector(line.vizGroup, basePoint, dirNormalized, threeDirVector);
+                    
+                    // Update sphere position
+                    const sphere = line.vizGroup.userData.sphere;
+                    if (sphere) {
+                        const tValue = sphere.userData.tValue || 1;
+                        const displayLength = Math.min(threeDirVector.length(), 3);
+                        const sphereOffset = dirNormalized.clone().multiplyScalar(tValue * displayLength);
+                        sphere.position.copy(basePoint.clone().add(sphereOffset));
+                        
+                        // Update orange vector if visible
+                        const orangeGroup = line.vizGroup.userData.orangeGroup;
+                        if (orangeGroup && orangeGroup.visible) {
+                            updateLineVisualization(line.vizGroup, basePoint, sphere.position, dirNormalized, tValue);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Helper function to update line mesh position
+        function updateLineMeshPosition(lineObj) {
+            if (!lineObj.mesh) return;
+            
+            const threeP1 = mathToThree(lineObj.point);
+            const mathP2 = {
+                x: lineObj.point.x + lineObj.direction.x,
+                y: lineObj.point.y + lineObj.direction.y,
+                z: lineObj.point.z + lineObj.direction.z
+            };
+            const threeP2 = mathToThree(mathP2);
+            
+            const extendFactor = 5;
+            const dir = new THREE.Vector3().subVectors(threeP2, threeP1).normalize();
+            const startPoint = threeP1.clone().sub(dir.clone().multiplyScalar(extendFactor));
+            const endPoint = threeP2.clone().add(dir.clone().multiplyScalar(extendFactor));
+            
+            const midPoint = new THREE.Vector3().addVectors(startPoint, endPoint).multiplyScalar(0.5);
+            lineObj.mesh.position.copy(midPoint);
+            lineObj.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+        }
+        
+        transformControls.addEventListener('mouseDown', () => {
+            const obj = AppState.objects.find(o => o.id === AppState.selectedObject);
+            if (obj && obj.mesh) {
+                transformStartPosition = obj.mesh.position.clone();
+                transformStartRotation = obj.mesh.rotation.clone();
+                currentTransformMode = transformControls.mode;
+            }
+        });
+        
+        // Update object position when transform changes
+        transformControls.addEventListener('mouseUp', () => {
+            if (AppState.selectedObject && transformControls.object) {
+                const obj = AppState.objects.find(o => o.id === AppState.selectedObject);
+                
+                if (obj && obj.type === 'line') {
+                    const mode = currentTransformMode;  // Use saved mode from mouseDown
+                    
+                    if (mode === 'translate') {
+                        // TRANSLATE MODE: Move line and source points
+                        const newPosition = obj.mesh.position.clone();
+                        const threeOffset = new THREE.Vector3().subVectors(newPosition, transformStartPosition);
+                        
+                        // Convert offset to math coordinates
+                        const mathOffset = threeToMath(threeOffset);
+                        
+                        // Move source points
+                        if (obj.sourcePoints && obj.sourcePoints.length > 0) {
+                            obj.sourcePoints.forEach(pointId => {
+                                const point = AppState.objects.find(p => p.id === pointId);
+                                if (point && point.type === 'point') {
+                                    // Update math coordinates
+                                    point.coords.x += mathOffset.x;
+                                    point.coords.y += mathOffset.y;
+                                    point.coords.z += mathOffset.z;
+                                    
+                                    // Update mesh position
+                                    const newThreePos = mathToThree(point.coords);
+                                    point.mesh.position.copy(newThreePos);
+                                }
+                            });
+                        }
+                        
+                        // Update line's base point
+                        obj.point.x += mathOffset.x;
+                        obj.point.y += mathOffset.y;
+                        obj.point.z += mathOffset.z;
+                        
+                        // Update vizGroup position if it exists
+                        if (obj.vizGroup) {
+                            obj.vizGroup.position.add(threeOffset);
+                        }
+                        
+                    } else if (mode === 'rotate' && transformStartRotation) {
+                        // ROTATE MODE: Rotate second point around first point
+                        
+                        // Get rotation difference
+                        const rotationDelta = new THREE.Euler(
+                            obj.mesh.rotation.x - transformStartRotation.x,
+                            obj.mesh.rotation.y - transformStartRotation.y,
+                            obj.mesh.rotation.z - transformStartRotation.z
+                        );
+                        
+                        // Pivot point is the first point (base point of line)
+                        const pivotMath = obj.point;
+                        const pivotThree = mathToThree(pivotMath);
+                        
+                        // Rotate source points around pivot
+                        if (obj.sourcePoints && obj.sourcePoints.length >= 2) {
+                            // Rotate second point (and any other points if exist)
+                            for (let i = 1; i < obj.sourcePoints.length; i++) {
+                                const point = AppState.objects.find(p => p.id === obj.sourcePoints[i]);
+                                if (point && point.type === 'point') {
+                                    // Get point position in Three.js coords
+                                    const pointThree = mathToThree(point.coords);
+                                    
+                                    // Rotate around pivot
+                                    const matrix = new THREE.Matrix4();
+                                    matrix.makeRotationFromEuler(rotationDelta);
+                                    
+                                    // Translate to origin, rotate, translate back
+                                    pointThree.sub(pivotThree);
+                                    pointThree.applyMatrix4(matrix);
+                                    pointThree.add(pivotThree);
+                                    
+                                    // Convert back to math coords
+                                    point.coords = threeToMath(pointThree);
+                                    
+                                    // Update mesh
+                                    point.mesh.position.copy(pointThree);
+                                }
+                            }
+                        }
+                        
+                        // Recalculate direction vector
+                        if (obj.sourcePoints && obj.sourcePoints.length >= 2) {
+                            const point1 = AppState.objects.find(p => p.id === obj.sourcePoints[0]);
+                            const point2 = AppState.objects.find(p => p.id === obj.sourcePoints[1]);
+                            
+                            if (point1 && point2) {
+                                obj.direction = {
+                                    x: point2.coords.x - point1.coords.x,
+                                    y: point2.coords.y - point1.coords.y,
+                                    z: point2.coords.z - point1.coords.z
+                                };
+                            }
+                        }
+                        
+                        // Rebuild the line mesh with new direction
+                        scene.remove(obj.mesh);
+                        if (obj.mesh.geometry) obj.mesh.geometry.dispose();
+                        if (obj.mesh.material) obj.mesh.material.dispose();
+                        
+                        const threeP1 = mathToThree(obj.point);
+                        const mathP2 = {
+                            x: obj.point.x + obj.direction.x,
+                            y: obj.point.y + obj.direction.y,
+                            z: obj.point.z + obj.direction.z
+                        };
+                        const threeP2 = mathToThree(mathP2);
+                        
+                        const extendFactor = 5;
+                        const dir = new THREE.Vector3().subVectors(threeP2, threeP1).normalize();
+                        const startPoint = threeP1.clone().sub(dir.clone().multiplyScalar(extendFactor));
+                        const endPoint = threeP2.clone().add(dir.clone().multiplyScalar(extendFactor));
+                        const length = startPoint.distanceTo(endPoint);
+                        
+                        const geometry = new THREE.CylinderGeometry(0.025, 0.025, length, 8);
+                        const material = new THREE.MeshBasicMaterial({ color: 0x333333 });
+                        const cylinder = new THREE.Mesh(geometry, material);
+                        
+                        const midPoint = new THREE.Vector3().addVectors(startPoint, endPoint).multiplyScalar(0.5);
+                        cylinder.position.copy(midPoint);
+                        cylinder.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+                        
+                        scene.add(cylinder);
+                        obj.mesh = cylinder;
+                        
+                        // Rebuild vizGroup if it exists
+                        if (obj.vizGroup) {
+                            hideVisualization(obj);
+                            showLineParameterVisualization(obj);
+                        }
+                    }
+                    
+                    // Update UI
+                    updateObjectsList();
+                    
+                } else if (obj && obj.type === 'point') {
+                    // POINT MOVED
+                    
+                    // Update point coordinates from mesh position
+                    const newThreePos = obj.mesh.position.clone();
+                    obj.coords = threeToMath(newThreePos);
+                    
+                    // If point is connected to lines - rotate lines around pivot
+                    if (obj.connectedLines && obj.connectedLines.length > 0) {
+                        obj.connectedLines.forEach(lineId => {
+                            const line = AppState.objects.find(l => l.id === lineId);
+                            if (line && line.type === 'line') {
+                                // Find the other point (pivot point - stays gray and fixed)
+                                const pivotPointId = line.sourcePoints.find(id => id !== obj.id);
+                                const pivotPoint = AppState.objects.find(p => p.id === pivotPointId);
+                                
+                                if (pivotPoint) {
+                                    // Update line's base point to first point
+                                    if (line.sourcePoints[0] === pivotPoint.id) {
+                                        line.point = { ...pivotPoint.coords };
+                                    } else {
+                                        line.point = { ...obj.coords };
+                                    }
+                                    
+                                    // Recalculate direction based on which point moved
+                                    if (line.sourcePoints[0] === pivotPoint.id) {
+                                        // Pivot is first, moved is second
+                                        line.direction = {
+                                            x: obj.coords.x - pivotPoint.coords.x,
+                                            y: obj.coords.y - pivotPoint.coords.y,
+                                            z: obj.coords.z - pivotPoint.coords.z
+                                        };
+                                    } else {
+                                        // Moved is first, pivot is second
+                                        line.direction = {
+                                            x: pivotPoint.coords.x - obj.coords.x,
+                                            y: pivotPoint.coords.y - obj.coords.y,
+                                            z: pivotPoint.coords.z - obj.coords.z
+                                        };
+                                    }
+                                    
+                                    // Rebuild line mesh
+                                    rebuildLineMesh(line);
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Update UI
+                    updateObjectsList();
+                    
+                } else {
+                    // For other objects (vectors, planes)
+                    updateObjectPosition(AppState.selectedObject, transformControls.object);
+                }
+                
+                transformStartPosition = null;
+                transformStartRotation = null;
             }
         });
 
@@ -770,6 +1179,240 @@
         canvas.addEventListener('click', (event) => {
             handleCanvasClick(event);
         });
+        
+        // Dragging system for interactive parameters
+        let isDragging = false;
+        let draggedObject = null;
+        
+        canvas.addEventListener('mousedown', (event) => {
+            if (AppState.currentTool !== 'select') return;
+            
+            getMousePosition(event);
+            raycaster.setFromCamera(mouse, camera);
+            
+            // Check if clicking on a draggable sphere
+            const draggableSpheres = [];
+            AppState.objects.forEach(obj => {
+                if (obj.vizGroup) {
+                    const sphere = obj.vizGroup.userData.sphere;
+                    if (sphere) draggableSpheres.push(sphere);
+                }
+            });
+            
+            const intersects = raycaster.intersectObjects(draggableSpheres, false);
+            if (intersects.length > 0) {
+                isDragging = true;
+                draggedObject = intersects[0].object;
+                controls.enabled = false;
+                
+                // Show orange vector when dragging starts
+                const lineObj = draggedObject.userData.lineObj;
+                if (lineObj && lineObj.vizGroup) {
+                    const orangeGroup = lineObj.vizGroup.userData.orangeGroup;
+                    orangeGroup.visible = true;
+                }
+                
+                event.preventDefault();
+            }
+        });
+        
+        canvas.addEventListener('mousemove', (event) => {
+            if (!isDragging || !draggedObject) return;
+            
+            getMousePosition(event);
+            raycaster.setFromCamera(mouse, camera);
+            
+            const userData = draggedObject.userData;
+            
+            if (userData.type === 'lineParam') {
+                // Project mouse ray onto the line
+                const lineObj = userData.lineObj;
+                const basePoint = userData.basePoint;
+                const direction = userData.direction;  // Normalized
+                const originalDirection = userData.originalDirection || direction;
+                const originalLength = originalDirection.length();
+                
+                // Find closest point on line to mouse ray using plane intersection
+                // Create a plane perpendicular to camera direction, passing through basePoint
+                const cameraDir = new THREE.Vector3();
+                camera.getWorldDirection(cameraDir);
+                const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(cameraDir, basePoint);
+                
+                // Intersect mouse ray with plane
+                const intersection = new THREE.Vector3();
+                raycaster.ray.intersectPlane(plane, intersection);
+                
+                if (intersection) {
+                    // Project intersection point onto the line
+                    const diff = new THREE.Vector3().subVectors(intersection, basePoint);
+                    
+                    // Calculate t relative to ORIGINAL (unnormalized) direction vector
+                    // t = (diff · originalDir) / (originalDir · originalDir)
+                    const t = diff.dot(originalDirection) / (originalLength * originalLength);
+                    
+                    // Clamp t value
+                    const tClamped = Math.max(-5, Math.min(5, t));
+                    
+                    // Update position using normalized direction
+                    const distanceAlongLine = tClamped * originalLength;
+                    const newPos = basePoint.clone().add(direction.clone().multiplyScalar(distanceAlongLine));
+                    draggedObject.position.copy(newPos);
+                    
+                    // Update vector visualization
+                    const vizGroup = lineObj.vizGroup;
+                    updateLineVisualization(vizGroup, basePoint, newPos, direction, tClamped);
+                    
+                    userData.tValue = tClamped;
+                }
+            }
+        });
+        
+        canvas.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                draggedObject = null;
+                controls.enabled = true;
+            }
+        });
+        
+        function updateLineVisualization(vizGroup, basePoint, newSpherePos, direction, tValue) {
+            const orangeGroup = vizGroup.userData.orangeGroup;
+            
+            // Clear previous orange vector
+            while (orangeGroup.children.length > 0) {
+                const child = orangeGroup.children[0];
+                if (child.geometry) child.geometry.dispose();
+                if (child.material) child.material.dispose();
+                orangeGroup.remove(child);
+            }
+            
+            // Create orange vector t·ū
+            const length = basePoint.distanceTo(newSpherePos);
+            
+            if (length > 0.01) { // Only draw if length is significant
+                // Shaft
+                const shaftGeom = new THREE.CylinderGeometry(0.04, 0.04, length, 8);
+                const shaftMat = new THREE.MeshBasicMaterial({ color: 0xff9800 });
+                const shaft = new THREE.Mesh(shaftGeom, shaftMat);
+                
+                const mid = new THREE.Vector3().addVectors(basePoint, newSpherePos).multiplyScalar(0.5);
+                shaft.position.copy(mid);
+                shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+                orangeGroup.add(shaft);
+                
+                // Head
+                const headGeom = new THREE.ConeGeometry(0.09, 0.3, 12);
+                const headMat = new THREE.MeshBasicMaterial({ color: 0xff9800 });
+                const head = new THREE.Mesh(headGeom, headMat);
+                head.position.copy(newSpherePos);
+                head.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+                orangeGroup.add(head);
+            }
+            
+            // Label "t·u̲" (underline below) - dark color for contrast
+            const labelText = `${tValue.toFixed(1)}u̲`;
+            const label = createTextSprite(labelText, '#333333', 80);
+            label.position.copy(newSpherePos.clone().add(new THREE.Vector3(0, 0.5, 0)));
+            orangeGroup.add(label);
+        }
+        
+        // Function to update blue base vector when line parameters change
+        function updateBlueBaseVector(vizGroup, basePoint, direction, originalDirection) {
+            // Find and update blue vector elements
+            const blueElements = [];
+            vizGroup.children.forEach(child => {
+                if (child.material && child.material.color.getHex() === 0x1976d2) {
+                    blueElements.push(child);
+                }
+            });
+            
+            // Remove old blue elements
+            blueElements.forEach(element => {
+                vizGroup.remove(element);
+                if (element.geometry) element.geometry.dispose();
+                if (element.material) element.material.dispose();
+            });
+            
+            // Remove old blue label
+            vizGroup.children.forEach(child => {
+                if (child.userData && child.userData.isBlueLabel) {
+                    vizGroup.remove(child);
+                    if (child.material && child.material.map) {
+                        child.material.map.dispose();
+                        child.material.dispose();
+                    }
+                }
+            });
+            
+            // Recreate blue vector
+            const displayLength = Math.min(originalDirection.length(), 3);
+            const vectorEnd = basePoint.clone().add(direction.clone().multiplyScalar(displayLength));
+            
+            // Blue shaft
+            const blueShaftGeom = new THREE.CylinderGeometry(0.04, 0.04, displayLength, 8);
+            const blueShaftMat = new THREE.MeshBasicMaterial({ color: 0x1976d2 });
+            const blueShaft = new THREE.Mesh(blueShaftGeom, blueShaftMat);
+            
+            const blueMid = new THREE.Vector3().addVectors(basePoint, vectorEnd).multiplyScalar(0.5);
+            blueShaft.position.copy(blueMid);
+            blueShaft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+            vizGroup.add(blueShaft);
+            
+            // Blue arrow head
+            const blueHeadGeom = new THREE.ConeGeometry(0.12, 0.35, 12);
+            const blueHeadMat = new THREE.MeshBasicMaterial({ color: 0x1976d2 });
+            const blueHead = new THREE.Mesh(blueHeadGeom, blueHeadMat);
+            blueHead.position.copy(vectorEnd);
+            blueHead.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+            vizGroup.add(blueHead);
+            
+            // Blue label
+            const blueLabel = createTextSprite('u̲', '#1976d2', 64);
+            blueLabel.position.copy(blueMid.clone().add(new THREE.Vector3(0, 0.4, 0)));
+            blueLabel.userData.isBlueLabel = true;
+            vizGroup.add(blueLabel);
+        }
+        
+        function rebuildLineMesh(lineObj) {
+            // Remove old mesh
+            if (lineObj.mesh) {
+                scene.remove(lineObj.mesh);
+                if (lineObj.mesh.geometry) lineObj.mesh.geometry.dispose();
+                if (lineObj.mesh.material) lineObj.mesh.material.dispose();
+            }
+            
+            // Calculate new mesh based on updated point and direction
+            const threeP1 = mathToThree(lineObj.point);
+            const mathP2 = {
+                x: lineObj.point.x + lineObj.direction.x,
+                y: lineObj.point.y + lineObj.direction.y,
+                z: lineObj.point.z + lineObj.direction.z
+            };
+            const threeP2 = mathToThree(mathP2);
+            
+            const extendFactor = 5;
+            const dir = new THREE.Vector3().subVectors(threeP2, threeP1).normalize();
+            const startPoint = threeP1.clone().sub(dir.clone().multiplyScalar(extendFactor));
+            const endPoint = threeP2.clone().add(dir.clone().multiplyScalar(extendFactor));
+            const length = startPoint.distanceTo(endPoint);
+            
+            const geometry = new THREE.CylinderGeometry(0.025, 0.025, length, 8);
+            const material = new THREE.MeshBasicMaterial({ color: 0x333333 });
+            const cylinder = new THREE.Mesh(geometry, material);
+            
+            const midPoint = new THREE.Vector3().addVectors(startPoint, endPoint).multiplyScalar(0.5);
+            cylinder.position.copy(midPoint);
+            cylinder.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+            
+            scene.add(cylinder);
+            lineObj.mesh = cylinder;
+            
+            // Rebuild vizGroup if it exists
+            if (lineObj.vizGroup && lineObj.visualizing) {
+                hideVisualization(lineObj);
+                showLineParameterVisualization(lineObj);
+            }
+        }
 
         function clearAllScene() {
             if (AppState.objects.length === 0) {
@@ -826,6 +1469,28 @@
             // Save to history BEFORE deletion
             saveToHistory();
             
+            // Remove visualization group (direction vector, orange vector, sphere)
+            if (obj.vizGroup) {
+                // Recursively dispose all children
+                obj.vizGroup.traverse((child) => {
+                    if (child.geometry) child.geometry.dispose();
+                    if (child.material) {
+                        if (Array.isArray(child.material)) {
+                            child.material.forEach(mat => {
+                                if (mat.map) mat.map.dispose();
+                                mat.dispose();
+                            });
+                        } else {
+                            if (child.material.map) child.material.map.dispose();
+                            child.material.dispose();
+                        }
+                    }
+                });
+                scene.remove(obj.vizGroup);
+                obj.vizGroup = null;
+                obj.visualizing = false;
+            }
+            
             // Remove mesh from scene
             if (obj.mesh) {
                 scene.remove(obj.mesh);
@@ -863,28 +1528,45 @@
                 // Attach TransformControls to the mesh
                 transformControls.attach(obj.mesh);
                 
-                // Highlight selected object by changing color
-                if (obj.type === 'point') {
-                    obj.mesh.material.color.setHex(0x2196f3);
+                // Set mode based on object type
+                if (obj.type === 'line') {
+                    transformControls.setMode('translate');
+                } else {
+                    transformControls.setMode('translate');
                 }
+                
+                // Update colors for all points based on their state
+                AppState.objects.forEach(o => {
+                    if (o.type === 'point' && o.mesh) {
+                        if (o.id === objectId) {
+                            // Selected point - blue
+                            o.mesh.material.color.setHex(0x2196f3);
+                        } else if (o.connectedLines && o.connectedLines.length > 0) {
+                            // Connected but not selected - gray
+                            o.mesh.material.color.setHex(0x666666);
+                        } else {
+                            // Free point - light blue
+                            o.mesh.material.color.setHex(0x1976d2);
+                        }
+                    }
+                });
             }
-            
-            // Reset other objects color
-            AppState.objects.forEach(o => {
-                if (o.id !== objectId && o.type === 'point' && o.mesh) {
-                    o.mesh.material.color.setHex(0x1976d2);
-                }
-            });
         }
         
         function deselectObject() {
             AppState.selectedObject = null;
             transformControls.detach();
             
-            // Reset all colors
+            // Reset colors for all points based on their connection status
             AppState.objects.forEach(obj => {
                 if (obj.type === 'point' && obj.mesh) {
-                    obj.mesh.material.color.setHex(0x1976d2);
+                    if (obj.connectedLines && obj.connectedLines.length > 0) {
+                        // Connected point - gray
+                        obj.mesh.material.color.setHex(0x666666);
+                    } else {
+                        // Free point - light blue
+                        obj.mesh.material.color.setHex(0x1976d2);
+                    }
                 }
             });
         }
@@ -912,6 +1594,144 @@
                 default:
                     updateInfoPanel('Выберите инструмент "Прямая", "Вектор" или "Плоскость" для использования точки');
             }
+        }
+        
+        // Visualization system
+        function toggleVisualization(objId, vizType) {
+            const obj = AppState.objects.find(o => o.id === objId);
+            if (!obj) return;
+            
+            if (obj.visualizing) {
+                // Hide visualization
+                hideVisualization(obj);
+            } else {
+                // Show visualization
+                showVisualization(obj, vizType);
+            }
+            
+            updateObjectsList();
+        }
+        
+        function showVisualization(obj, vizType) {
+            if (vizType === 'line-param') {
+                showLineParameterVisualization(obj);
+            } else if (vizType === 'plane-param') {
+                showPlaneParameterVisualization(obj);
+            }
+        }
+        
+        function hideVisualization(obj) {
+            if (obj.vizGroup) {
+                scene.remove(obj.vizGroup);
+                obj.vizGroup = null;
+            }
+            obj.visualizing = false;
+        }
+        
+        function showLineParameterVisualization(lineObj) {
+            const vizGroup = new THREE.Group();
+            vizGroup.name = 'lineViz';
+            
+            // Base point on the line (convert from math to three.js coords)
+            const basePoint = mathToThree(lineObj.point);
+            
+            // CRITICAL: Convert direction vector using SAME transformation as mathToThree
+            // mathToThree: (x,y,z)_math → (y,z,x)_three
+            const mathDir = lineObj.direction;
+            const threeDirVector = new THREE.Vector3(
+                mathDir.y,   // Math Y → Three X
+                mathDir.z,   // Math Z → Three Y
+                mathDir.x    // Math X → Three Z
+            );
+            
+            // Normalize for display
+            const dirNormalized = threeDirVector.clone().normalize();
+            const actualLength = threeDirVector.length();
+            const displayLength = Math.min(actualLength, 3);
+            
+            // End point of the blue direction vector
+            const vectorEnd = basePoint.clone().add(threeDirVector.clone().normalize().multiplyScalar(displayLength));
+            
+            // === BLUE DIRECTION VECTOR ū (along the line) ===
+            // Shaft
+            const blueShaftGeom = new THREE.CylinderGeometry(0.04, 0.04, displayLength, 8);
+            const blueShaftMat = new THREE.MeshBasicMaterial({ color: 0x1976d2 });
+            const blueShaft = new THREE.Mesh(blueShaftGeom, blueShaftMat);
+            
+            const blueMid = new THREE.Vector3().addVectors(basePoint, vectorEnd).multiplyScalar(0.5);
+            blueShaft.position.copy(blueMid);
+            blueShaft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dirNormalized);
+            vizGroup.add(blueShaft);
+            
+            // Arrow head (bigger to be visible over spheres)
+            const blueHeadGeom = new THREE.ConeGeometry(0.12, 0.35, 12);
+            const blueHeadMat = new THREE.MeshBasicMaterial({ color: 0x1976d2 });
+            const blueHead = new THREE.Mesh(blueHeadGeom, blueHeadMat);
+            blueHead.position.copy(vectorEnd);
+            blueHead.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dirNormalized);
+            vizGroup.add(blueHead);
+            
+            // Label "u̲" for blue vector (above middle of the vector)
+            const blueLabel = createTextSprite('u̲', '#1976d2', 64);
+            blueLabel.position.copy(blueMid.clone().add(new THREE.Vector3(0, 0.4, 0)));
+            vizGroup.add(blueLabel);
+            
+            // === ORANGE DRAGGABLE SPHERE (1.1x bigger than regular points) ===
+            const sphereGeometry = new THREE.SphereGeometry(0.165, 16, 16); // 0.15 * 1.1 = 0.165
+            const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff6600 });
+            const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+            sphere.position.copy(vectorEnd);
+            vizGroup.add(sphere);
+            
+            // Store data for dragging
+            sphere.userData = {
+                type: 'lineParam',
+                lineObj: lineObj,
+                basePoint: basePoint,
+                direction: dirNormalized,
+                originalDirection: threeDirVector,  // Store original unnormalized direction
+                tValue: 1.0  // Initial parameter value
+            };
+            
+            // Orange vector group (initially hidden)
+            const orangeGroup = new THREE.Group();
+            orangeGroup.visible = false;
+            vizGroup.add(orangeGroup);
+            
+            vizGroup.userData.sphere = sphere;
+            vizGroup.userData.orangeGroup = orangeGroup;
+            vizGroup.userData.basePoint = basePoint;
+            vizGroup.userData.direction = dirNormalized;
+            vizGroup.userData.originalDirection = threeDirVector;
+            
+            scene.add(vizGroup);
+            
+            lineObj.vizGroup = vizGroup;
+            lineObj.visualizing = true;
+        }
+        
+        function createTextSprite(text, color, size = 64) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size * 2;
+            canvas.height = size;
+            const context = canvas.getContext('2d');
+            context.font = `Bold ${size * 0.7}px Arial`;
+            context.fillStyle = color;
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(text, size, size / 2);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.scale.set(0.8, 0.4, 1);
+            return sprite;
+        }
+        
+        function showPlaneParameterVisualization(planeObj) {
+            // TODO: Implement plane parameter visualization
+            planeObj.visualizing = true;
+            updateInfoPanel('Визуализация параметров плоскости - в разработке');
         }
         
         function updateObjectPosition(objectId, mesh) {
@@ -1202,6 +2022,7 @@
                 name: name,
                 coords: mathCoords,
                 mesh: sphere,
+                connectedLines: [],  // Array of line IDs that use this point
                 id: Date.now()
             };
             
@@ -1254,14 +2075,47 @@
             
             scene.add(cylinder);
             
+            // Find source points if they exist and create bidirectional links
+            const sourcePoints = [];
+            AppState.objects.forEach(obj => {
+                if (obj.type === 'point') {
+                    const dist1 = Math.sqrt(
+                        Math.pow(obj.coords.x - mathPoint1.x, 2) +
+                        Math.pow(obj.coords.y - mathPoint1.y, 2) +
+                        Math.pow(obj.coords.z - mathPoint1.z, 2)
+                    );
+                    const dist2 = Math.sqrt(
+                        Math.pow(obj.coords.x - mathPoint2.x, 2) +
+                        Math.pow(obj.coords.y - mathPoint2.y, 2) +
+                        Math.pow(obj.coords.z - mathPoint2.z, 2)
+                    );
+                    if (dist1 < 0.01 || dist2 < 0.01) {
+                        sourcePoints.push(obj.id);
+                    }
+                }
+            });
+            
             const lineObj = {
                 type: 'line',
                 name: name,
                 point: mathPoint1,
                 direction: direction,
+                sourcePoints: sourcePoints,  // Store IDs of source points
                 mesh: cylinder,
                 id: Date.now()
             };
+            
+            // Add bidirectional link: point -> line
+            sourcePoints.forEach(pointId => {
+                const point = AppState.objects.find(p => p.id === pointId);
+                if (point && point.connectedLines) {
+                    point.connectedLines.push(lineObj.id);
+                    // Change point color to gray (connected)
+                    if (point.mesh) {
+                        point.mesh.material.color.setHex(0x666666);
+                    }
+                }
+            });
             
             AppState.objects.push(lineObj);
             updateObjectsList();
@@ -1408,7 +2262,11 @@
         }
         
         function clearTempVisuals() {
-            tempVisuals.forEach(visual => scene.remove(visual));
+            tempVisuals.forEach(visual => {
+                scene.remove(visual);
+                if (visual.geometry) visual.geometry.dispose();
+                if (visual.material) visual.material.dispose();
+            });
             tempVisuals = [];
         }
 
@@ -1519,6 +2377,14 @@
                         <span class="katex-container"></span>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center;">
+                        ${obj.type === 'line' || obj.type === 'plane' ? `
+                            <button class="viz-icon-btn ${obj.visualizing ? 'active' : ''}" data-viz-type="${obj.type === 'line' ? 'line-param' : 'plane-param'}" data-obj-id="${obj.id}" title="${obj.type === 'line' ? 'Показать параметр t' : 'Показать параметры (s,t)'}">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="2" y1="14" x2="14" y2="2"/>
+                                    <polyline points="8,2 14,2 14,8"/>
+                                </svg>
+                            </button>
+                        ` : ''}
                         <button class="delete-btn" data-id="${obj.id}" title="Удалить">🗑️</button>
                         <span class="expand-icon">▼</span>
                     </div>
@@ -1542,8 +2408,11 @@
             
             const header = div.querySelector('.object-header');
             header.addEventListener('click', (e) => {
-                // Don't toggle if clicking delete button
-                if (!e.target.classList.contains('delete-btn') && !e.target.closest('.delete-btn')) {
+                // Don't toggle if clicking delete button or viz button
+                if (!e.target.classList.contains('delete-btn') && 
+                    !e.target.closest('.delete-btn') &&
+                    !e.target.classList.contains('viz-icon-btn') &&
+                    !e.target.closest('.viz-icon-btn')) {
                     const wasExpanded = div.classList.contains('expanded');
                     div.classList.toggle('expanded');
                     
@@ -1574,6 +2443,18 @@
                 }
             }
             
+            // Visualization button handler
+            const vizBtn = div.querySelector('.viz-icon-btn');
+            if (vizBtn) {
+                vizBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    const vizType = vizBtn.dataset.vizType;
+                    const objId = parseInt(vizBtn.dataset.objId);
+                    toggleVisualization(objId, vizType);
+                });
+            }
+            
             return div;
         }
 
@@ -1594,14 +2475,6 @@
                 
                 case 'line':
                     return `
-                        <div class="detail-row">
-                            <div class="detail-label">Точка на прямой:</div>
-                            <div class="detail-value">(${formatCoords(obj.point)})</div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Направляющий вектор:</div>
-                            <div class="detail-value">(${formatCoords(obj.direction)})</div>
-                        </div>
                         <div class="detail-row">
                             <div class="detail-label">Векторное уравнение:</div>
                             <div class="katex-equation" data-eq-type="line-vec"></div>
