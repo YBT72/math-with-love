@@ -854,8 +854,14 @@
                                 
                                 // Rebuild vizGroup when rotating - direction changed
                                 if (line.vizGroup && line.visualizing) {
+                                    // Save current t value before rebuilding
+                                    let savedTValue = null;
+                                    if (line.vizGroup.userData.sphere && line.vizGroup.userData.sphere.userData) {
+                                        savedTValue = line.vizGroup.userData.sphere.userData.tValue;
+                                    }
+                                    
                                     hideVisualization(line);
-                                    showLineParameterVisualization(line);
+                                    showLineParameterVisualization(line, savedTValue);
                                 }
                             }
                         }
