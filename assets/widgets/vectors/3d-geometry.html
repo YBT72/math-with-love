@@ -1590,20 +1590,18 @@
             const point = AppState.objects.find(obj => obj.id === pointId && obj.type === 'point');
             if (!point) return;
             
-            const mathPoint = point.coords;
-            
             // Check current tool and add point to construction
             switch(AppState.currentTool) {
                 case 'line':
-                    handleLineCreation(mathPoint);
+                    handleLineCreation(pointId);
                     updateInfoPanel(`Точка ${point.name} добавлена. ${AppState.tempPoints.length}/2`);
                     break;
                 case 'vector':
-                    handleVectorCreation(mathPoint);
+                    handleVectorCreation(point.coords);
                     updateInfoPanel(`Точка ${point.name} добавлена. ${AppState.tempPoints.length}/2`);
                     break;
                 case 'plane':
-                    handlePlaneCreation(mathPoint);
+                    handlePlaneCreation(point.coords);
                     updateInfoPanel(`Точка ${point.name} добавлена. ${AppState.tempPoints.length}/3`);
                     break;
                 default:
@@ -2028,10 +2026,7 @@
                     const clickedPoint = points.find(p => p.mesh === clickedMesh);
                     
                     if (clickedPoint) {
-                        // Change point color to light gray (captured)
-                        clickedPoint.mesh.material.color.setHex(0xcccccc);
-                        
-                        // Pass point ID instead of coordinates
+                        // Pass point ID to handler
                         switch(AppState.currentTool) {
                             case 'line':
                                 handleLineCreation(clickedPoint.id);
@@ -2100,9 +2095,17 @@
         function handleLineCreation(pointId) {
             AppState.tempPoints.push(pointId);
             
+            // Change point color to light gray (captured)
+            const point = AppState.objects.find(p => p.id === pointId);
+            if (point && point.mesh) {
+                point.mesh.material.color.setHex(0xcccccc);
+            }
+            
+            // Update UI to show active button
+            updateObjectsList();
+            
             if (AppState.tempPoints.length === 1) {
                 updateInfoPanel('Укажите вторую точку для создания прямой');
-                // No temp visual needed - point already visible
             } else if (AppState.tempPoints.length === 2) {
                 saveToHistory();
                 // Get actual point objects
@@ -2113,7 +2116,24 @@
                     createLineFromPoints(point1.id, point2.id);
                 }
                 
+                // Clear tempPoints and reset colors after 2 seconds
+                const tempPointsCopy = [...AppState.tempPoints];
                 AppState.tempPoints = [];
+                
+                setTimeout(() => {
+                    tempPointsCopy.forEach(pid => {
+                        const pt = AppState.objects.find(p => p.id === pid);
+                        if (pt && pt.mesh) {
+                            // Restore color based on whether point is connected to lines
+                            if (pt.connectedLines && pt.connectedLines.length > 0) {
+                                pt.mesh.material.color.setHex(0x666666); // Gray for connected
+                            } else {
+                                pt.mesh.material.color.setHex(0x1976d2); // Blue for free
+                            }
+                        }
+                    });
+                    updateObjectsList();
+                }, 2000);
             }
         }
 
