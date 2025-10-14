@@ -733,7 +733,7 @@
             const frameOffset = new THREE.Vector3().subVectors(currentPosition, lastHelperPosition);
             
             if (obj.type === 'line') {
-                // Update line in real-time during translate
+                // LINE TRANSLATE: Update line in real-time
                 const mathOffset = threeToMath(frameOffset);
                 
                 // Update source points positions
@@ -797,6 +797,51 @@
                     if (obj.vizGroup.userData.basePoint) {
                         obj.vizGroup.userData.basePoint.add(frameOffset);
                     }
+                }
+                
+                // Update line equations in real-time if properties panel is expanded
+                const lineAccordion = document.querySelector(`.object-accordion[data-id="${obj.id}"]`);
+                if (lineAccordion && lineAccordion.classList.contains('expanded')) {
+                    // Always recalculate direction from current sourcePoints positions
+                    if (obj.sourcePoints && obj.sourcePoints.length >= 2) {
+                        const point1 = AppState.objects.find(p => p.id === obj.sourcePoints[0]);
+                        const point2 = AppState.objects.find(p => p.id === obj.sourcePoints[1]);
+                        
+                        if (point1 && point2) {
+                            // Create temporary obj with current direction for rendering
+                            const tempObj = {
+                                ...obj,
+                                point: { ...point1.coords },
+                                direction: {
+                                    x: point2.coords.x - point1.coords.x,
+                                    y: point2.coords.y - point1.coords.y,
+                                    z: point2.coords.z - point1.coords.z
+                                }
+                            };
+                            
+                            renderEquations(tempObj, lineAccordion);
+                        }
+                    } else {
+                        // Fallback if no sourcePoints
+                        renderEquations(obj, lineAccordion);
+                    }
+                }
+                
+                // Update coordinates of source points in real-time if their panels are expanded
+                if (obj.sourcePoints) {
+                    obj.sourcePoints.forEach(pointId => {
+                        const point = AppState.objects.find(p => p.id === pointId);
+                        if (point) {
+                            const pointAccordion = document.querySelector(`.object-accordion[data-id="${pointId}"]`);
+                            if (pointAccordion && pointAccordion.classList.contains('expanded')) {
+                                const detailValue = pointAccordion.querySelector('.detail-value');
+                                if (detailValue) {
+                                    const formattedCoords = `${point.coords.x.toFixed(1)}, ${point.coords.y.toFixed(1)}, ${point.coords.z.toFixed(1)}`;
+                                    detailValue.textContent = `(${formattedCoords})`;
+                                }
+                            }
+                        }
+                    });
                 }
                 
             } else if (obj.type === 'point') {
@@ -881,6 +926,12 @@
                                     hideVisualization(line);
                                     showLineParameterVisualization(line, savedTValue);
                                 }
+                                
+                                // Update line equations in real-time if properties panel is expanded
+                                const lineAccordion = document.querySelector(`.object-accordion[data-id="${line.id}"]`);
+                                if (lineAccordion && lineAccordion.classList.contains('expanded')) {
+                                    renderEquations(line, lineAccordion);
+                                }
                             }
                         }
                     });
@@ -901,8 +952,29 @@
                     
                     if (mode === 'translate' && transformHelper) {
                         // TRANSLATE MODE: All updates already done in 'change' event
-                        // Just update UI - coordinates already updated incrementally during drag
-                        updateObjectsList();
+                        
+                        // Update line equations in DOM if properties panel is expanded
+                        const lineAccordion = document.querySelector(`.object-accordion[data-id="${obj.id}"]`);
+                        if (lineAccordion && lineAccordion.classList.contains('expanded')) {
+                            renderEquations(obj, lineAccordion);
+                        }
+                        
+                        // Update coordinates of source points in their panels if expanded
+                        if (obj.sourcePoints) {
+                            obj.sourcePoints.forEach(pointId => {
+                                const point = AppState.objects.find(p => p.id === pointId);
+                                if (point) {
+                                    const pointAccordion = document.querySelector(`.object-accordion[data-id="${pointId}"]`);
+                                    if (pointAccordion && pointAccordion.classList.contains('expanded')) {
+                                        const detailValue = pointAccordion.querySelector('.detail-value');
+                                        if (detailValue) {
+                                            const formattedCoords = `${point.coords.x.toFixed(1)}, ${point.coords.y.toFixed(1)}, ${point.coords.z.toFixed(1)}`;
+                                            detailValue.textContent = `(${formattedCoords})`;
+                                        }
+                                    }
+                                }
+                            });
+                        }
                         
                     } else if (mode === 'rotate' && transformStartRotation) {
                         // ROTATE MODE: Rotate second point around first point
@@ -1008,23 +1080,34 @@
                         }
                     }
                     
-                    // Update UI
-                    updateObjectsList();
+                    // Update line equations in DOM if properties panel is expanded
+                    const lineAccordion = document.querySelector(`.object-accordion[data-id="${obj.id}"]`);
+                    if (lineAccordion && lineAccordion.classList.contains('expanded')) {
+                        renderEquations(obj, lineAccordion);
+                    }
+                    
+                    // Update coordinates of source points in their panels if expanded
+                    if (obj.sourcePoints) {
+                        obj.sourcePoints.forEach(pointId => {
+                            const point = AppState.objects.find(p => p.id === pointId);
+                            if (point) {
+                                const pointAccordion = document.querySelector(`.object-accordion[data-id="${pointId}"]`);
+                                if (pointAccordion && pointAccordion.classList.contains('expanded')) {
+                                    const detailValue = pointAccordion.querySelector('.detail-value');
+                                    if (detailValue) {
+                                        const formattedCoords = `${point.coords.x.toFixed(1)}, ${point.coords.y.toFixed(1)}, ${point.coords.z.toFixed(1)}`;
+                                        detailValue.textContent = `(${formattedCoords})`;
+                                    }
+                                }
+                            }
+                        });
+                    }
                     
                 } else if (obj && obj.type === 'point' && transformHelper) {
                     // POINT MOVED
                     // All updates already done in 'change' event during dragging
                     // Coordinates already updated in real-time
-                    
-                    // Update coordinates display if properties panel is expanded
-                    const objectAccordion = document.querySelector(`.object-accordion[data-id="${obj.id}"]`);
-                    if (objectAccordion && objectAccordion.classList.contains('expanded')) {
-                        const detailValue = objectAccordion.querySelector('.detail-value');
-                        if (detailValue) {
-                            const formattedCoords = `${obj.coords.x.toFixed(1)}, ${obj.coords.y.toFixed(1)}, ${obj.coords.z.toFixed(1)}`;
-                            detailValue.textContent = `(${formattedCoords})`;
-                        }
-                    }
+                    // DO NOT call updateObjectsList() here - it will collapse expanded accordion!
                     
                 } else {
                     // For other objects (vectors, planes)
