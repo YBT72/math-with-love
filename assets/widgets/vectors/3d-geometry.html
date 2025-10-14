@@ -242,33 +242,6 @@
             transform: scale(1.1);
         }
 
-        .use-point-btn {
-            width: 100%;
-            padding: 8px 12px;
-            background: #1976d2;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.15s ease;
-        }
-
-        .use-point-btn:hover {
-            background: #1565c0;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(25, 118, 210, 0.3);
-        }
-
-        .use-point-btn:active {
-            transform: translateY(0);
-        }
-
-        .use-point-btn.active {
-            background: #4caf50;
-        }
-
         .viz-btn {
             width: 100%;
             padding: 8px 12px;
@@ -319,6 +292,40 @@
         }
 
         .viz-icon-btn.active svg {
+            color: white;
+        }
+
+        .use-point-icon-btn {
+            width: 28px;
+            height: 28px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            padding: 0;
+        }
+
+        .use-point-icon-btn svg {
+            color: #666;
+        }
+
+        .use-point-icon-btn:hover {
+            background: #d0d0d0;
+        }
+
+        .use-point-icon-btn:active {
+            transform: scale(0.95);
+        }
+
+        .use-point-icon-btn.active {
+            background: #1976d2;
+        }
+
+        .use-point-icon-btn.active svg {
             color: white;
         }
 
@@ -2510,6 +2517,9 @@
                 'vector': '➜'
             }[obj.type];
             
+            // Check if point is in tempPoints for active state
+            const isPointInTempPoints = obj.type === 'point' && AppState.tempPoints.includes(obj.id);
+            
             div.innerHTML = `
                 <div class="object-header">
                     <div class="object-name">
@@ -2517,6 +2527,15 @@
                         <span class="katex-container"></span>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center;">
+                        ${obj.type === 'point' ? `
+                            <button class="use-point-icon-btn ${isPointInTempPoints ? 'active' : ''}" data-point-id="${obj.id}" title="Использовать для построения">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                                    <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                                    <line x1="12" y1="8" x2="12" y2="16"/>
+                                    <line x1="8" y1="12" x2="16" y2="12"/>
+                                </svg>
+                            </button>
+                        ` : ''}
                         ${obj.type === 'line' || obj.type === 'plane' ? `
                             <button class="viz-icon-btn ${obj.visualizing ? 'active' : ''}" data-viz-type="${obj.type === 'line' ? 'line-param' : 'plane-param'}" data-obj-id="${obj.id}" title="${obj.type === 'line' ? 'Показать параметр t' : 'Показать параметры (s,t)'}">
                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
@@ -2574,7 +2593,7 @@
             
             // Use point button handler
             if (obj.type === 'point') {
-                const useBtn = div.querySelector('.use-point-btn');
+                const useBtn = div.querySelector('.use-point-icon-btn');
                 if (useBtn) {
                     useBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
@@ -2603,13 +2622,7 @@
                 case 'point':
                     return `
                         <div class="detail-row">
-                            <div class="detail-label">Координаты:</div>
                             <div class="detail-value">(${formatCoords(obj.coords)})</div>
-                        </div>
-                        <div class="detail-row" style="margin-top: 12px;">
-                            <button class="use-point-btn" data-point-id="${obj.id}">
-                                Использовать для построения
-                            </button>
                         </div>
                     `;
                 
