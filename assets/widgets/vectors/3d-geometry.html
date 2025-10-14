@@ -1021,6 +1021,15 @@
                 transformStartPosition = null;
                 transformStartRotation = null;
                 lastHelperPosition = null;
+                
+                // Auto-hide gizmo after a short delay (configurable)
+                const AUTO_HIDE_DELAY = 1500; // 1.5 seconds - change this value as needed
+                setTimeout(() => {
+                    // Only hide if the same object is still selected (user didn't select something else)
+                    if (AppState.selectedObject === obj.id) {
+                        deselectObject();
+                    }
+                }, AUTO_HIDE_DELAY);
             }
         });
 
@@ -2159,17 +2168,15 @@
             
             AppState.objects.push(lineObj);
             updateObjectsList();
-            updateInfoPanel(`Создана прямая ${name}`);
             
-            // Switch to select tool after creating line
-            AppState.currentTool = 'select';
-            
-            // Update tool buttons UI
-            document.querySelectorAll('.tool-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.tool === 'select');
+            // Format line name for display: l_{1} -> l₁
+            const displayName = name.replace(/l_\{(\d+)\}/, (match, num) => {
+                const subscriptDigits = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'];
+                return 'l' + num.split('').map(d => subscriptDigits[parseInt(d)]).join('');
             });
+            updateInfoPanel(`Создана прямая ${displayName}`);
             
-            updateObjectsList();
+            // DON'T switch to select tool - keep line tool active for creating more lines
         }
 
         function createLine(mathPoint1, mathPoint2) {
@@ -2246,7 +2253,13 @@
             
             AppState.objects.push(lineObj);
             updateObjectsList();
-            updateInfoPanel(`Создана прямая ${name}`);
+            
+            // Format line name for display: l_{1} -> l₁
+            const displayName = name.replace(/l_\{(\d+)\}/, (match, num) => {
+                const subscriptDigits = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'];
+                return 'l' + num.split('').map(d => subscriptDigits[parseInt(d)]).join('');
+            });
+            updateInfoPanel(`Создана прямая ${displayName}`);
         }
 
         function handlePlaneCreation(mathPoint) {
