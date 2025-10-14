@@ -807,6 +807,17 @@
                 obj.coords = newMathCoords;
                 obj.mesh.position.copy(newThreePos);
                 
+                // Update coordinates display in properties panel if expanded
+                const objectAccordion = document.querySelector(`.object-accordion[data-id="${obj.id}"]`);
+                if (objectAccordion && objectAccordion.classList.contains('expanded')) {
+                    const detailValue = objectAccordion.querySelector('.detail-value');
+                    if (detailValue) {
+                        // Format coords inline since formatCoords function is declared later
+                        const formattedCoords = `${newMathCoords.x.toFixed(1)}, ${newMathCoords.y.toFixed(1)}, ${newMathCoords.z.toFixed(1)}`;
+                        detailValue.textContent = `(${formattedCoords})`;
+                    }
+                }
+                
                 // Update connected lines
                 if (obj.connectedLines && obj.connectedLines.length > 0) {
                     obj.connectedLines.forEach(lineId => {
@@ -887,7 +898,6 @@
                 
                 if (obj && obj.type === 'line') {
                     const mode = currentTransformMode;  // Use saved mode from mouseDown
-                    console.log('🎮 Transform mode:', mode);
                     
                     if (mode === 'translate' && transformHelper) {
                         // TRANSLATE MODE: All updates already done in 'change' event
@@ -985,29 +995,16 @@
                         scene.add(cylinder);
                         obj.mesh = cylinder;
                         
-                        console.log('🔧 After mesh rebuild: obj.vizGroup exists?', !!obj.vizGroup);
-                        if (obj.vizGroup) {
-                            console.log('  vizGroup.userData.sphere exists?', !!obj.vizGroup.userData.sphere);
-                            if (obj.vizGroup.userData.sphere) {
-                                console.log('  sphere.userData exists?', !!obj.vizGroup.userData.sphere.userData);
-                                if (obj.vizGroup.userData.sphere.userData) {
-                                    console.log('  sphere.userData.tValue =', obj.vizGroup.userData.sphere.userData.tValue);
-                                }
-                            }
-                        }
-                        
                         // Rebuild vizGroup if it exists - preserve t value
                         if (obj.vizGroup) {
                             // Save current t value before rebuilding
                             let savedTValue = null;
                             if (obj.vizGroup.userData.sphere && obj.vizGroup.userData.sphere.userData) {
                                 savedTValue = obj.vizGroup.userData.sphere.userData.tValue;
-                                console.log('🔍 Rotation: Saved t value =', savedTValue);
                             }
                             
                             hideVisualization(obj);
                             showLineParameterVisualization(obj, savedTValue);
-                            console.log('✅ Rotation: vizGroup rebuilt with t =', savedTValue);
                         }
                     }
                     
@@ -1016,9 +1013,18 @@
                     
                 } else if (obj && obj.type === 'point' && transformHelper) {
                     // POINT MOVED
-                    // All updates already done in 'change' event
-                    // Just update UI - coordinates and connected lines already updated during drag
-                    updateObjectsList();
+                    // All updates already done in 'change' event during dragging
+                    // Coordinates already updated in real-time
+                    
+                    // Update coordinates display if properties panel is expanded
+                    const objectAccordion = document.querySelector(`.object-accordion[data-id="${obj.id}"]`);
+                    if (objectAccordion && objectAccordion.classList.contains('expanded')) {
+                        const detailValue = objectAccordion.querySelector('.detail-value');
+                        if (detailValue) {
+                            const formattedCoords = `${obj.coords.x.toFixed(1)}, ${obj.coords.y.toFixed(1)}, ${obj.coords.z.toFixed(1)}`;
+                            detailValue.textContent = `(${formattedCoords})`;
+                        }
+                    }
                     
                 } else {
                     // For other objects (vectors, planes)
@@ -1259,7 +1265,8 @@
                     
                     // Update vector visualization
                     const vizGroup = lineObj.vizGroup;
-                    updateLineVisualization(vizGroup, basePoint, newPos, direction, tClamped);
+                    const lineNumber = vizGroup.userData.lineNumber || '';
+                    updateLineVisualization(vizGroup, basePoint, newPos, direction, tClamped, lineNumber);
                     
                     userData.tValue = tClamped;
                 }
@@ -1284,7 +1291,7 @@
             }
         });
         
-        function updateLineVisualization(vizGroup, basePoint, newSpherePos, direction, tValue) {
+        function updateLineVisualization(vizGroup, basePoint, newSpherePos, direction, tValue, lineNumber = '') {
             const orangeGroup = vizGroup.userData.orangeGroup;
             
             // Clear previous orange vector
@@ -1316,8 +1323,12 @@
             head.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
             orangeGroup.add(head);
             
-            // Label "t·u̲" (underline below) - dark color for contrast
-            const labelText = `${tValue.toFixed(1)}u̲`;
+            // Convert number to subscript for label
+            const subscriptDigits = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'];
+            const subscript = lineNumber.split('').map(d => subscriptDigits[parseInt(d)]).join('');
+            
+            // Label "t·u̲₁" with underline and subscript - dark color for contrast
+            const labelText = `${tValue.toFixed(1)}u̲${subscript}`;
             const label = createTextSprite(labelText, '#333333', 80);
             label.position.copy(newSpherePos.clone().add(new THREE.Vector3(0, 0.5, 0)));
             orangeGroup.add(label);
@@ -1695,15 +1706,22 @@
             blueHead.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dirNormalized);
             vizGroup.add(blueHead);
             
-            // Label "u̲" for blue vector (above middle of the vector)
-            const blueLabel = createTextSprite('u̲', '#1976d2', 64);
+            // Extract line number from line name (e.g., "l_{1}" -> "1")
+            const lineNumberMatch = lineObj.name.match(/l_\{(\d+)\}/);
+            const lineNumber = lineNumberMatch ? lineNumberMatch[1] : '';
+            
+            // Convert number to subscript digits for label
+            const subscriptDigits = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'];
+            const subscript = lineNumber.split('').map(d => subscriptDigits[parseInt(d)]).join('');
+            
+            // Label "u̲₁" for blue vector (u with underline + subscript)
+            const blueLabel = createTextSprite(`u̲${subscript}`, '#1976d2', 64);
             blueLabel.position.copy(blueMid.clone().add(new THREE.Vector3(0, 0.4, 0)));
             vizGroup.add(blueLabel);
             
             // === ORANGE DRAGGABLE SPHERE (1.1x bigger than regular points) ===
             // Initial position: use preserved t value or default to 1.0
             const initialT = preservedT !== null ? preservedT : 1.0;
-            console.log('🎯 showLineParameterVisualization: preservedT =', preservedT, ', initialT =', initialT);
             const initialOrangePos = basePoint.clone().add(dirNormalized.clone().multiplyScalar(initialT * actualLength));
             
             const sphereGeometry = new THREE.SphereGeometry(0.165, 16, 16); // 0.15 * 1.1 = 0.165
@@ -1732,6 +1750,7 @@
             vizGroup.userData.basePoint = basePoint;
             vizGroup.userData.direction = dirNormalized;
             vizGroup.userData.originalDirection = threeDirVector;
+            vizGroup.userData.lineNumber = lineNumber; // Store line number for labels
             
             scene.add(vizGroup);
             
@@ -1741,7 +1760,7 @@
             // If sphere was moved (t != 1.0), show orange vector immediately
             if (initialT !== 1.0) {
                 orangeGroup.visible = true;
-                updateLineVisualization(vizGroup, basePoint, initialOrangePos, dirNormalized, initialT);
+                updateLineVisualization(vizGroup, basePoint, initialOrangePos, dirNormalized, initialT, lineNumber);
             }
         }
         
@@ -2440,6 +2459,38 @@
         function formatCoords(coords) {
             return `${coords.x.toFixed(1)}, ${coords.y.toFixed(1)}, ${coords.z.toFixed(1)}`;
         }
+        
+        // Format number for equations: replace "+ -x" with "- x"
+        function formatNumber(num) {
+            const formatted = num.toFixed(1);
+            return formatted;
+        }
+        
+        // Format term in equation: handles "x + -2" -> "x - 2" and "x - -2" -> "x + 2"
+        function formatTerm(baseValue, coefficient, variable = 't') {
+            const base = baseValue.toFixed(1);
+            const coef = parseFloat(coefficient.toFixed(1));
+            
+            if (coef >= 0) {
+                return `${base} + ${Math.abs(coef).toFixed(1)}${variable}`;
+            } else {
+                // Negative coefficient: use minus sign instead of "+ -"
+                return `${base} - ${Math.abs(coef).toFixed(1)}${variable}`;
+            }
+        }
+        
+        // Format numerator for canonical equation: handles "x - -2" -> "x + 2"
+        function formatCanonicalNumerator(variable, pointCoord) {
+            const coord = parseFloat(pointCoord.toFixed(1));
+            
+            if (coord >= 0) {
+                // Positive: x - 2.4
+                return `${variable} - ${coord.toFixed(1)}`;
+            } else {
+                // Negative: x - (-2.4) -> x + 2.4
+                return `${variable} + ${Math.abs(coord).toFixed(1)}`;
+            }
+        }
 
         function updateInfoPanel(text) {
             const infoText = document.getElementById('info-text');
@@ -2699,9 +2750,20 @@
         function renderEquations(obj, container) {
             if (obj.type === 'line') {
                 const lineEqVec = `\\underline{r} = (${obj.point.x.toFixed(1)}, ${obj.point.y.toFixed(1)}, ${obj.point.z.toFixed(1)}) + t(${obj.direction.x.toFixed(1)}, ${obj.direction.y.toFixed(1)}, ${obj.direction.z.toFixed(1)})`;
-                const lineEqParam = `\\begin{cases} x = ${obj.point.x.toFixed(1)} + ${obj.direction.x.toFixed(1)}t \\\\ y = ${obj.point.y.toFixed(1)} + ${obj.direction.y.toFixed(1)}t \\\\ z = ${obj.point.z.toFixed(1)} + ${obj.direction.z.toFixed(1)}t \\end{cases}`;
+                
+                // Format parametric equation with proper signs
+                const xEq = formatTerm(obj.point.x, obj.direction.x, 't');
+                const yEq = formatTerm(obj.point.y, obj.direction.y, 't');
+                const zEq = formatTerm(obj.point.z, obj.direction.z, 't');
+                const lineEqParam = `\\begin{cases} x = ${xEq} \\\\ y = ${yEq} \\\\ z = ${zEq} \\end{cases}`;
+                
+                // Format canonical equation with proper signs in numerator
+                const xNumerator = formatCanonicalNumerator('x', obj.point.x);
+                const yNumerator = formatCanonicalNumerator('y', obj.point.y);
+                const zNumerator = formatCanonicalNumerator('z', obj.point.z);
+                
                 const lineEqCanon = obj.direction.x !== 0 && obj.direction.y !== 0 && obj.direction.z !== 0 
-                    ? `\\frac{x - ${obj.point.x.toFixed(1)}}{${obj.direction.x.toFixed(1)}} = \\frac{y - ${obj.point.y.toFixed(1)}}{${obj.direction.y.toFixed(1)}} = \\frac{z - ${obj.point.z.toFixed(1)}}{${obj.direction.z.toFixed(1)}}`
+                    ? `\\frac{${xNumerator}}{${obj.direction.x.toFixed(1)}} = \\frac{${yNumerator}}{${obj.direction.y.toFixed(1)}} = \\frac{${zNumerator}}{${obj.direction.z.toFixed(1)}}`
                     : null;
                 
                 const vecEl = container.querySelector('[data-eq-type="line-vec"]');
@@ -2721,13 +2783,38 @@
                     }
                 }
             } else if (obj.type === 'plane') {
-                const a = obj.normal.x.toFixed(1);
-                const b = obj.normal.y.toFixed(1);
-                const c = obj.normal.z.toFixed(1);
-                const d = -(a * obj.point.x + b * obj.point.y + c * obj.point.z).toFixed(1);
+                const a = parseFloat(obj.normal.x.toFixed(1));
+                const b = parseFloat(obj.normal.y.toFixed(1));
+                const c = parseFloat(obj.normal.z.toFixed(1));
+                const d = parseFloat((-(a * obj.point.x + b * obj.point.y + c * obj.point.z)).toFixed(1));
                 
-                const planeEqGeneral = `${a}x + ${b}y + ${c}z + ${d} = 0`;
-                const planeEqNormal = `(${a}, ${b}, ${c}) \\cdot ((x, y, z) - (${obj.point.x.toFixed(1)}, ${obj.point.y.toFixed(1)}, ${obj.point.z.toFixed(1)})) = 0`;
+                // Format equation terms properly
+                let planeEqGeneral = `${a.toFixed(1)}x`;
+                
+                // Add b term
+                if (b >= 0) {
+                    planeEqGeneral += ` + ${b.toFixed(1)}y`;
+                } else {
+                    planeEqGeneral += ` - ${Math.abs(b).toFixed(1)}y`;
+                }
+                
+                // Add c term
+                if (c >= 0) {
+                    planeEqGeneral += ` + ${c.toFixed(1)}z`;
+                } else {
+                    planeEqGeneral += ` - ${Math.abs(c).toFixed(1)}z`;
+                }
+                
+                // Add d term
+                if (d >= 0) {
+                    planeEqGeneral += ` + ${d.toFixed(1)}`;
+                } else {
+                    planeEqGeneral += ` - ${Math.abs(d).toFixed(1)}`;
+                }
+                
+                planeEqGeneral += ` = 0`;
+                
+                const planeEqNormal = `(${a.toFixed(1)}, ${b.toFixed(1)}, ${c.toFixed(1)}) \\cdot ((x, y, z) - (${obj.point.x.toFixed(1)}, ${obj.point.y.toFixed(1)}, ${obj.point.z.toFixed(1)})) = 0`;
                 
                 const generalEl = container.querySelector('[data-eq-type="plane-general"]');
                 const vectorEl = container.querySelector('[data-eq-type="plane-vector"]');
