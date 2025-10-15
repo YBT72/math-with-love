@@ -987,9 +987,78 @@
                                 if (planeAccordion && planeAccordion.classList.contains('expanded')) {
                                     renderEquations(plane, planeAccordion);
                                 }
+                                
+                                // Update coordinates of all 3 source points in their panels if expanded
+                                [point1, point2, point3].forEach(pt => {
+                                    const pointAccordion = document.querySelector(`.object-accordion[data-id="${pt.id}"]`);
+                                    if (pointAccordion && pointAccordion.classList.contains('expanded')) {
+                                        const detailValue = pointAccordion.querySelector('.detail-value');
+                                        if (detailValue) {
+                                            const formattedCoords = `${pt.coords.x.toFixed(1)}, ${pt.coords.y.toFixed(1)}, ${pt.coords.z.toFixed(1)}`;
+                                            detailValue.textContent = `(${formattedCoords})`;
+                                        }
+                                    }
+                                });
                             }
                         }
                     });
+                }
+            } else if (obj.type === 'plane') {
+                // PLANE TRANSLATE: Update plane and all source points in real-time
+                const mathOffset = threeToMath(frameOffset);
+                
+                // Update source points positions
+                if (obj.sourcePoints && obj.sourcePoints.length > 0) {
+                    obj.sourcePoints.forEach(pointId => {
+                        const point = AppState.objects.find(p => p.id === pointId);
+                        if (point && point.type === 'point') {
+                            point.coords.x += mathOffset.x;
+                            point.coords.y += mathOffset.y;
+                            point.coords.z += mathOffset.z;
+                            
+                            const newThreePos = mathToThree(point.coords);
+                            point.mesh.position.copy(newThreePos);
+                            
+                            // Update point coordinates in panel if expanded
+                            const pointAccordion = document.querySelector(`.object-accordion[data-id="${pointId}"]`);
+                            if (pointAccordion && pointAccordion.classList.contains('expanded')) {
+                                const detailValue = pointAccordion.querySelector('.detail-value');
+                                if (detailValue) {
+                                    const formattedCoords = `${point.coords.x.toFixed(1)}, ${point.coords.y.toFixed(1)}, ${point.coords.z.toFixed(1)}`;
+                                    detailValue.textContent = `(${formattedCoords})`;
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                // Update plane's base point
+                obj.point.x += mathOffset.x;
+                obj.point.y += mathOffset.y;
+                obj.point.z += mathOffset.z;
+                
+                // Rebuild plane mesh
+                if (obj.sourcePoints && obj.sourcePoints.length >= 3) {
+                    const point1 = AppState.objects.find(p => p.id === obj.sourcePoints[0]);
+                    const point2 = AppState.objects.find(p => p.id === obj.sourcePoints[1]);
+                    const point3 = AppState.objects.find(p => p.id === obj.sourcePoints[2]);
+                    
+                    if (point1 && point2 && point3) {
+                        const threeP1 = mathToThree(point1.coords);
+                        const threeP2 = mathToThree(point2.coords);
+                        const threeP3 = mathToThree(point3.coords);
+                        
+                        const center = new THREE.Vector3().addVectors(threeP1, threeP2).add(threeP3).divideScalar(3);
+                        
+                        obj.mesh.position.copy(center);
+                        obj.mesh.lookAt(center.clone().add(mathToThree(obj.normal)));
+                    }
+                }
+                
+                // Update equations in real-time if properties panel is expanded
+                const planeAccordion = document.querySelector(`.object-accordion[data-id="${obj.id}"]`);
+                if (planeAccordion && planeAccordion.classList.contains('expanded')) {
+                    renderEquations(obj, planeAccordion);
                 }
             }
             
@@ -1164,8 +1233,17 @@
                     // Coordinates already updated in real-time
                     // DO NOT call updateObjectsList() here - it will collapse expanded accordion!
                     
+                } else if (obj && obj.type === 'plane' && transformHelper) {
+                    // PLANE MOVED (translate)
+                    // All updates already done in 'change' event during dragging
+                    // Update equations one final time
+                    const planeAccordion = document.querySelector(`.object-accordion[data-id="${obj.id}"]`);
+                    if (planeAccordion && planeAccordion.classList.contains('expanded')) {
+                        renderEquations(obj, planeAccordion);
+                    }
+                    
                 } else {
-                    // For other objects (vectors, planes)
+                    // For other objects (vectors)
                     updateObjectPosition(AppState.selectedObject, transformControls.object);
                 }
                 
@@ -2192,7 +2270,7 @@
                                 handleVectorCreation(clickedPoint.coords);
                                 return;
                             case 'plane':
-                                handlePlaneCreation(clickedPoint.coords);
+                                handlePlaneCreation(clickedPoint.id);  // Changed: pass ID instead of coords
                                 return;
                         }
                     }
@@ -2449,18 +2527,45 @@
         function handlePlaneCreation(pointId) {
             AppState.tempPoints.push(pointId);  // Store pointId instead of coords
             
+            // Change point color to light gray (captured)
+            const point = AppState.objects.find(p => p.id === pointId);
+            if (point && point.mesh) {
+                point.mesh.material.color.setHex(0xcccccc);
+            }
+            
+            // Update UI to show active button
+            updateObjectsList();
+            
             if (AppState.tempPoints.length < 3) {
                 updateInfoPanel(`Укажите точку ${AppState.tempPoints.length + 1} из 3 для создания плоскости`);
                 // Get point coords for visual
-                const point = AppState.objects.find(p => p.id === pointId);
                 if (point) {
                     createTempPointVisual(point.coords);
                 }
             } else if (AppState.tempPoints.length === 3) {
                 saveToHistory();
                 createPlane(AppState.tempPoints[0], AppState.tempPoints[1], AppState.tempPoints[2]);
+                
+                // Clear tempPoints and reset colors after 1.5 seconds
+                const tempPointsCopy = [...AppState.tempPoints];
                 AppState.tempPoints = [];
                 clearTempVisuals();
+                
+                setTimeout(() => {
+                    tempPointsCopy.forEach(pid => {
+                        const pt = AppState.objects.find(p => p.id === pid);
+                        if (pt && pt.mesh) {
+                            // Restore color based on whether point is connected to planes/lines
+                            if ((pt.connectedLines && pt.connectedLines.length > 0) || 
+                                (pt.connectedPlanes && pt.connectedPlanes.length > 0)) {
+                                pt.mesh.material.color.setHex(0x666666); // Gray for connected
+                            } else {
+                                pt.mesh.material.color.setHex(0x1976d2); // Blue for free
+                            }
+                        }
+                    });
+                    updateObjectsList();
+                }, 1500);
             }
         }
 
@@ -2988,6 +3093,20 @@
                 
                 if (generalEl) katex.render(planeEqGeneral, generalEl, { throwOnError: false });
                 if (vectorEl) katex.render(planeEqNormal, vectorEl, { throwOnError: false });
+                
+                // Update point and normal coordinates in detail-value fields
+                const detailRows = container.querySelectorAll('.detail-row');
+                detailRows.forEach(row => {
+                    const label = row.querySelector('.detail-label');
+                    const value = row.querySelector('.detail-value');
+                    if (label && value) {
+                        if (label.textContent === 'Точка на плоскости:') {
+                            value.textContent = `(${obj.point.x.toFixed(1)}, ${obj.point.y.toFixed(1)}, ${obj.point.z.toFixed(1)})`;
+                        } else if (label.textContent === 'Нормальный вектор:') {
+                            value.textContent = `(${obj.normal.x.toFixed(1)}, ${obj.normal.y.toFixed(1)}, ${obj.normal.z.toFixed(1)})`;
+                        }
+                    }
+                });
             }
         }
 
