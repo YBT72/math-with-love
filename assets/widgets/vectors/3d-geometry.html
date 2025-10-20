@@ -757,8 +757,6 @@
             const currentPosition = transformHelper.position.clone();
             const frameOffset = new THREE.Vector3().subVectors(currentPosition, lastHelperPosition);
             
-            console.log(`=== TRANSFORM UPDATE: ${obj.type} ${obj.name}, frameOffset:`, frameOffset);
-            
             // CRITICAL: Ignore very small offsets to avoid false updates from mesh recalculations
             const offsetMagnitude = frameOffset.length();
             if (offsetMagnitude < 0.0001) {
@@ -774,17 +772,58 @@
                 // LINE TRANSLATE: Update line in real-time
                 const mathOffset = threeOffsetToMath(frameOffset);
                 
-                // Update source points positions
-                if (obj.sourcePoints && obj.sourcePoints.length > 0) {
-                    obj.sourcePoints.forEach(pointId => {
-                        const point = AppState.objects.find(p => p.id === pointId);
-                        if (point && point.type === 'point') {
-                            point.coords.x += mathOffset.x;
-                            point.coords.y += mathOffset.y;
-                            point.coords.z += mathOffset.z;
+                // Handle connected lines BEFORE updating source points (like line handles its points)
+                if (obj.connectedLines && obj.connectedLines.length > 0) {
+                    obj.connectedLines.forEach(lineId => {
+                        const line = AppState.objects.find(l => l.id === lineId);
+                        
+                        if (line && line.type === 'line') {
                             
-                            const newThreePos = mathToThree(point.coords);
-                            point.mesh.position.copy(newThreePos);
+                            // Update line's base point by offset
+                            line.point.x += mathOffset.x;
+                            line.point.y += mathOffset.y;
+                            line.point.z += mathOffset.z;
+                            
+                            // Move line mesh by offset (same approach as line translation)
+                            const threeP1 = mathToThree(line.point);
+                            const mathP2 = {
+                                x: line.point.x + line.direction.x,
+                                y: line.point.y + line.direction.y,
+                                z: line.point.z + line.direction.z
+                            };
+                            const threeP2 = mathToThree(mathP2);
+                            
+                            const extendFactor = 5;
+                            const dir = new THREE.Vector3().subVectors(threeP2, threeP1).normalize();
+                            const startPoint = threeP1.clone().sub(dir.clone().multiplyScalar(extendFactor));
+                            const endPoint = threeP2.clone().add(dir.clone().multiplyScalar(extendFactor));
+                            const length = startPoint.distanceTo(endPoint);
+                            
+                            const midPoint = new THREE.Vector3().addVectors(startPoint, endPoint).multiplyScalar(0.5);
+                            line.mesh.position.copy(midPoint);
+                            line.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+                            
+                            // Update geometry
+                            if (line.mesh.geometry) {
+                                line.mesh.geometry.dispose();
+                                line.mesh.geometry = new THREE.CylinderGeometry(0.025, 0.025, length, 8);
+                            }
+                            
+                            // Move vizGroup if exists
+                            if (line.vizGroup) {
+                                line.vizGroup.position.add(frameOffset);
+                                
+                                if (line.vizGroup.userData.sphere && line.vizGroup.userData.sphere.userData) {
+                                    const sphereData = line.vizGroup.userData.sphere.userData;
+                                    if (sphereData.basePoint) {
+                                        sphereData.basePoint.add(frameOffset);
+                                    }
+                                }
+                                
+                                if (line.vizGroup.userData.basePoint) {
+                                    line.vizGroup.userData.basePoint.add(frameOffset);
+                                }
+                            }
                         }
                     });
                 }
@@ -977,7 +1016,6 @@
                 
                 // Update connected planes (SKIP if we're moving the plane itself to avoid double update)
                 if (obj.connectedPlanes && obj.connectedPlanes.length > 0) {
-                    console.log(`POINT UPDATE: Point ${obj.name} updating its ${obj.connectedPlanes.length} connected planes`);
                     obj.connectedPlanes.forEach(planeId => {
                         const plane = AppState.objects.find(pl => pl.id === planeId);
                         // SKIP if we're currently moving this plane to prevent double update
@@ -1068,13 +1106,21 @@
                 }
                 
                 const mathOffset = threeOffsetToMath(frameOffset);
+
+                // Check which lines exist with this plane's points
+                const allLines = AppState.objects.filter(o => o.type === 'line');
+                const planeLines = allLines.filter(line => {
+                    if (!line.sourcePoints || line.sourcePoints.length < 2) return false;
+                    const point1InPlane = obj.sourcePoints.includes(line.sourcePoints[0]);
+                    const point2InPlane = obj.sourcePoints.includes(line.sourcePoints[1]);
+                    return point1InPlane && point2InPlane;
+                });
                 
                 // Trigger update for each source point (cascade pattern)
                 if (obj.sourcePoints && obj.sourcePoints.length > 0) {
                     obj.sourcePoints.forEach(pointId => {
                         const point = AppState.objects.find(p => p.id === pointId);
                         if (point && point.type === 'point') {
-                            console.log(`PLANE UPDATE: Moving point ${point.name} by offset:`, mathOffset);
                             // Update coordinates
                             point.coords.x += mathOffset.x;
                             point.coords.y += mathOffset.y;
@@ -1095,7 +1141,6 @@
                     obj.center.add(frameOffset);
                 } else {
                     // Initialize center if it doesn't exist - calculate from ORIGINAL positions before transform
-                    console.warn("Plane center not initialized - this should happen during plane creation");
                 }
                 
                 // Rebuild plane mesh using center
@@ -1108,6 +1153,65 @@
                 const planeAccordion = document.querySelector(`.object-accordion[data-id="${obj.id}"]`);
                 if (planeAccordion && planeAccordion.classList.contains('expanded')) {
                     renderEquations(obj, planeAccordion);
+                }
+                
+                // Update connected lines of the plane in real-time (during dragging)
+                if (obj.connectedLines && obj.connectedLines.length > 0) {
+                    obj.connectedLines.forEach(lineId => {
+                        const line = AppState.objects.find(l => l.id === lineId);
+                        if (line && line.type === 'line' && line.sourcePoints && line.sourcePoints.length >= 2) {
+                            const point1 = AppState.objects.find(p => p.id === line.sourcePoints[0]);
+                            const point2 = AppState.objects.find(p => p.id === line.sourcePoints[1]);
+                            
+                            if (point1 && point2) {
+                                // Update line's base point and direction based on current point positions
+                                line.point = { ...point1.coords };
+                                line.direction = {
+                                    x: point2.coords.x - point1.coords.x,
+                                    y: point2.coords.y - point1.coords.y,
+                                    z: point2.coords.z - point1.coords.z
+                                };
+                                
+                                // Rebuild line mesh position in real-time
+                                const threeP1 = mathToThree(point1.coords);
+                                const threeP2 = mathToThree(point2.coords);
+                                
+                                const extendFactor = 5;
+                                const dir = new THREE.Vector3().subVectors(threeP2, threeP1).normalize();
+                                const startPoint = threeP1.clone().sub(dir.clone().multiplyScalar(extendFactor));
+                                const endPoint = threeP2.clone().add(dir.clone().multiplyScalar(extendFactor));
+                                const length = startPoint.distanceTo(endPoint);
+                                
+                                const midPoint = new THREE.Vector3().addVectors(startPoint, endPoint).multiplyScalar(0.5);
+                                line.mesh.position.copy(midPoint);
+                                line.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+                                
+                                // Update geometry
+                                if (line.mesh.geometry) {
+                                    line.mesh.geometry.dispose();
+                                    line.mesh.geometry = new THREE.CylinderGeometry(0.025, 0.025, length, 8);
+                                }
+                                
+                                // Move vizGroup if exists
+                                if (line.vizGroup) {
+                                    line.vizGroup.position.add(frameOffset);
+                                    
+                                    // Update basePoint in sphere userData
+                                    if (line.vizGroup.userData.sphere && line.vizGroup.userData.sphere.userData) {
+                                        const sphereData = line.vizGroup.userData.sphere.userData;
+                                        if (sphereData.basePoint) {
+                                            sphereData.basePoint.add(frameOffset);
+                                        }
+                                    }
+                                    
+                                    // Update basePoint in vizGroup userData
+                                    if (line.vizGroup.userData.basePoint) {
+                                        line.vizGroup.userData.basePoint.add(frameOffset);
+                                    }
+                                }
+                            }
+                        }
+                    });
                 }
             }
             
@@ -2129,7 +2233,7 @@
         function togglePlaneLines(planeId) {
             const plane = AppState.objects.find(obj => obj.id === planeId);
             if (!plane || plane.type !== 'plane') return;
-            
+
             if (plane.showingLines) {
                 // Hide lines - just toggle state, don't delete lines
                 plane.showingLines = false;
@@ -2171,6 +2275,7 @@
                     const confirmMsg = `Прямые ${lineNames} уже существуют. Привязать их к плоскости?`;
                     
                     if (confirm(confirmMsg)) {
+
                         // Link existing lines
                         if (!plane.connectedLines) plane.connectedLines = [];
                         linesToConnect.forEach(({ line }) => {
@@ -2192,9 +2297,11 @@
                         updateObjectsList();
                         updateInfoPanel(`Прямые привязаны к плоскости ${plane.name}`);
                     } else {
+
                         updateInfoPanel('Отменено');
                     }
                 } else {
+                    
                     // No existing lines - create both automatically
                     saveToHistory();
                     
@@ -2265,7 +2372,7 @@
                 direction: direction,
                 sourcePoints: [pointId1, pointId2],
                 mesh: cylinder,
-                id: Date.now()
+                id: `line_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
             };
             
             // Add bidirectional link: point -> line
@@ -3253,10 +3360,7 @@
                     } else {
                         // Regular visualization button
                         const vizType = vizBtn.dataset.vizType;
-                        const objId = parseInt(vizBtn.dataset.objId);
-                        
-                        // Debug: ensure we're calling correct object
-                        console.log('Viz button clicked:', { vizType, objId, currentObjId: obj.id, objName: obj.name });
+                        const objId = vizBtn.dataset.objId;
                         
                         toggleVisualization(objId, vizType);
                     }
