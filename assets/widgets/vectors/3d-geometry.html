@@ -265,6 +265,15 @@
         .viz-btn:active {
             transform: translateY(0);
         }
+        
+        .viz-btn.active {
+            background: #4caf50;
+        }
+        
+        .viz-btn.active:hover {
+            background: #388e3c;
+            box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+        }
 
         .viz-icon-btn {
             width: 28px;
@@ -568,6 +577,18 @@
                 z: threeCoords.y
             };
         }
+        
+        // IMPORTANT: For offsets/deltas, we need SAME transformation as positions
+        // Because when we move in Three.js space, the delta must be applied to math space with same axis mapping
+        function threeOffsetToMath(threeOffset) {
+            // Same transformation as positions - because offset in Three space 
+            // must translate to equivalent offset in Math space
+            return {
+                x: threeOffset.z,
+                y: threeOffset.x,
+                z: threeOffset.y
+            };
+        }
 
         // APP STATE
         const AppState = {
@@ -599,7 +620,11 @@
                     end: obj.end,
                     id: obj.id,
                     connectedLines: obj.connectedLines,
-                    sourcePoints: obj.sourcePoints
+                    connectedPlanes: obj.connectedPlanes,
+                    sourcePoints: obj.sourcePoints,
+                    v1: obj.v1,
+                    v2: obj.v2,
+                    showingLines: obj.showingLines
                 })))),
                 nextNames: { ...AppState.nextNames }
             };
@@ -732,9 +757,22 @@
             const currentPosition = transformHelper.position.clone();
             const frameOffset = new THREE.Vector3().subVectors(currentPosition, lastHelperPosition);
             
+            console.log(`=== TRANSFORM UPDATE: ${obj.type} ${obj.name}, frameOffset:`, frameOffset);
+            
+            // CRITICAL: Ignore very small offsets to avoid false updates from mesh recalculations
+            const offsetMagnitude = frameOffset.length();
+            if (offsetMagnitude < 0.0001) {
+                return; // Skip this frame - offset is too small (likely from mesh rebuilding)
+            }
+            
+            // Flag to prevent double update when moving plane
+            const isMovingPlane = (obj.type === 'plane');
+            
+
+            
             if (obj.type === 'line') {
                 // LINE TRANSLATE: Update line in real-time
-                const mathOffset = threeToMath(frameOffset);
+                const mathOffset = threeOffsetToMath(frameOffset);
                 
                 // Update source points positions
                 if (obj.sourcePoints && obj.sourcePoints.length > 0) {
@@ -937,11 +975,13 @@
                     });
                 }
                 
-                // Update connected planes
+                // Update connected planes (SKIP if we're moving the plane itself to avoid double update)
                 if (obj.connectedPlanes && obj.connectedPlanes.length > 0) {
+                    console.log(`POINT UPDATE: Point ${obj.name} updating its ${obj.connectedPlanes.length} connected planes`);
                     obj.connectedPlanes.forEach(planeId => {
                         const plane = AppState.objects.find(pl => pl.id === planeId);
-                        if (plane && plane.type === 'plane' && plane.sourcePoints) {
+                        // SKIP if we're currently moving this plane to prevent double update
+                        if (plane && plane.type === 'plane' && plane.sourcePoints && planeId !== AppState.selectedObject) {
                             // Get all 3 points
                             const point1 = AppState.objects.find(p => p.id === plane.sourcePoints[0]);
                             const point2 = AppState.objects.find(p => p.id === plane.sourcePoints[1]);
@@ -999,60 +1039,69 @@
                                         }
                                     }
                                 });
+                                
+                                // Update connected lines of the plane (if showing lines)
+                                if (plane.connectedLines && plane.connectedLines.length > 0) {
+                                    plane.connectedLines.forEach(lineId => {
+                                        const line = AppState.objects.find(l => l.id === lineId);
+                                        if (line && line.type === 'line') {
+                                            // Lines A-B and A-C are already updated via point.connectedLines
+                                            // This ensures equations are refreshed if panel is expanded
+                                            const lineAccordion = document.querySelector(`.object-accordion[data-id="${line.id}"]`);
+                                            if (lineAccordion && lineAccordion.classList.contains('expanded')) {
+                                                renderEquations(line, lineAccordion);
+                                            }
+                                        }
+                                    });
+                                }
                             }
                         }
                     });
                 }
             } else if (obj.type === 'plane') {
                 // PLANE TRANSLATE: Update plane and all source points in real-time
-                const mathOffset = threeToMath(frameOffset);
                 
-                // Update source points positions
+                // CRITICAL: Check offset magnitude BEFORE any updates
+                const offsetMagnitude = frameOffset.length();
+                if (offsetMagnitude < 0.0001) {
+                    return; // Skip - offset too small (false trigger from mesh rebuilding)
+                }
+                
+                const mathOffset = threeOffsetToMath(frameOffset);
+                
+                // Trigger update for each source point (cascade pattern)
                 if (obj.sourcePoints && obj.sourcePoints.length > 0) {
                     obj.sourcePoints.forEach(pointId => {
                         const point = AppState.objects.find(p => p.id === pointId);
                         if (point && point.type === 'point') {
+                            console.log(`PLANE UPDATE: Moving point ${point.name} by offset:`, mathOffset);
+                            // Update coordinates
                             point.coords.x += mathOffset.x;
                             point.coords.y += mathOffset.y;
                             point.coords.z += mathOffset.z;
                             
+                            // CRITICAL: Update point mesh position immediately
                             const newThreePos = mathToThree(point.coords);
                             point.mesh.position.copy(newThreePos);
-                            
-                            // Update point coordinates in panel if expanded
-                            const pointAccordion = document.querySelector(`.object-accordion[data-id="${pointId}"]`);
-                            if (pointAccordion && pointAccordion.classList.contains('expanded')) {
-                                const detailValue = pointAccordion.querySelector('.detail-value');
-                                if (detailValue) {
-                                    const formattedCoords = `${point.coords.x.toFixed(1)}, ${point.coords.y.toFixed(1)}, ${point.coords.z.toFixed(1)}`;
-                                    detailValue.textContent = `(${formattedCoords})`;
-                                }
-                            }
                         }
                     });
                 }
                 
-                // Update plane's base point
-                obj.point.x += mathOffset.x;
-                obj.point.y += mathOffset.y;
-                obj.point.z += mathOffset.z;
+                // NOTE: obj.point references the first source point, so it's already updated above
+                // No separate update needed to avoid double transformation
                 
-                // Rebuild plane mesh
-                if (obj.sourcePoints && obj.sourcePoints.length >= 3) {
-                    const point1 = AppState.objects.find(p => p.id === obj.sourcePoints[0]);
-                    const point2 = AppState.objects.find(p => p.id === obj.sourcePoints[1]);
-                    const point3 = AppState.objects.find(p => p.id === obj.sourcePoints[2]);
-                    
-                    if (point1 && point2 && point3) {
-                        const threeP1 = mathToThree(point1.coords);
-                        const threeP2 = mathToThree(point2.coords);
-                        const threeP3 = mathToThree(point3.coords);
-                        
-                        const center = new THREE.Vector3().addVectors(threeP1, threeP2).add(threeP3).divideScalar(3);
-                        
-                        obj.mesh.position.copy(center);
-                        obj.mesh.lookAt(center.clone().add(mathToThree(obj.normal)));
-                    }
+                // Update center by offset (don't recalculate from points during transform!)
+                if (obj.center) {
+                    obj.center.add(frameOffset);
+                } else {
+                    // Initialize center if it doesn't exist - calculate from ORIGINAL positions before transform
+                    console.warn("Plane center not initialized - this should happen during plane creation");
+                }
+                
+                // Rebuild plane mesh using center
+                if (obj.center) {
+                    obj.mesh.position.copy(obj.center);
+                    obj.mesh.lookAt(obj.center.clone().add(mathToThree(obj.normal)));
                 }
                 
                 // Update equations in real-time if properties panel is expanded
@@ -1235,11 +1284,77 @@
                     
                 } else if (obj && obj.type === 'plane' && transformHelper) {
                     // PLANE MOVED (translate)
-                    // All updates already done in 'change' event during dragging
                     // Update equations one final time
                     const planeAccordion = document.querySelector(`.object-accordion[data-id="${obj.id}"]`);
                     if (planeAccordion && planeAccordion.classList.contains('expanded')) {
                         renderEquations(obj, planeAccordion);
+                    }
+                    
+                    // Update all connected lines of plane's source points
+                    if (obj.sourcePoints) {
+                        obj.sourcePoints.forEach(pointId => {
+                            const point = AppState.objects.find(p => p.id === pointId);
+                            if (point && point.connectedLines && point.connectedLines.length > 0) {
+                                point.connectedLines.forEach(lineId => {
+                                    const line = AppState.objects.find(l => l.id === lineId);
+                                    if (line && line.type === 'line' && line.sourcePoints) {
+                                        const point1 = AppState.objects.find(p => p.id === line.sourcePoints[0]);
+                                        const point2 = AppState.objects.find(p => p.id === line.sourcePoints[1]);
+                                        
+                                        if (point1 && point2) {
+                                            // Recalculate line direction
+                                            line.point = { ...point1.coords };
+                                            line.direction = {
+                                                x: point2.coords.x - point1.coords.x,
+                                                y: point2.coords.y - point1.coords.y,
+                                                z: point2.coords.z - point1.coords.z
+                                            };
+                                            
+                                            // Rebuild line mesh
+                                            scene.remove(line.mesh);
+                                            if (line.mesh.geometry) line.mesh.geometry.dispose();
+                                            if (line.mesh.material) line.mesh.material.dispose();
+                                            
+                                            const threeP1 = mathToThree(point1.coords);
+                                            const threeP2 = mathToThree(point2.coords);
+                                            
+                                            const extendFactor = 5;
+                                            const dir = new THREE.Vector3().subVectors(threeP2, threeP1).normalize();
+                                            const startPoint = threeP1.clone().sub(dir.clone().multiplyScalar(extendFactor));
+                                            const endPoint = threeP2.clone().add(dir.clone().multiplyScalar(extendFactor));
+                                            const length = startPoint.distanceTo(endPoint);
+                                            
+                                            const geometry = new THREE.CylinderGeometry(0.025, 0.025, length, 8);
+                                            const material = new THREE.MeshBasicMaterial({ color: 0x333333 });
+                                            const cylinder = new THREE.Mesh(geometry, material);
+                                            
+                                            const midPoint = new THREE.Vector3().addVectors(startPoint, endPoint).multiplyScalar(0.5);
+                                            cylinder.position.copy(midPoint);
+                                            cylinder.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+                                            
+                                            scene.add(cylinder);
+                                            line.mesh = cylinder;
+                                            
+                                            // Update vizGroup if exists
+                                            if (line.vizGroup && line.visualizing) {
+                                                let savedTValue = null;
+                                                if (line.vizGroup.userData.sphere && line.vizGroup.userData.sphere.userData) {
+                                                    savedTValue = line.vizGroup.userData.sphere.userData.tValue;
+                                                }
+                                                hideVisualization(line);
+                                                showLineParameterVisualization(line, savedTValue);
+                                            }
+                                            
+                                            // Update equations if panel is expanded
+                                            const lineAccordion = document.querySelector(`.object-accordion[data-id="${line.id}"]`);
+                                            if (lineAccordion && lineAccordion.classList.contains('expanded')) {
+                                                renderEquations(line, lineAccordion);
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                        });
                     }
                     
                 } else {
@@ -1699,6 +1814,12 @@
                 });
             }
             
+            // If deleting a plane, just clear connectedLines (don't delete the lines themselves)
+            if (obj.type === 'plane' && obj.connectedLines) {
+                // Lines remain in scene, just unlink from plane
+                obj.connectedLines = [];
+            }
+            
             // Remove from array
             AppState.objects.splice(objIndex, 1);
             
@@ -2004,6 +2125,164 @@
             updateInfoPanel('Визуализация параметров плоскости - в разработке');
         }
         
+        // Toggle plane lines (A-B and A-C)
+        function togglePlaneLines(planeId) {
+            const plane = AppState.objects.find(obj => obj.id === planeId);
+            if (!plane || plane.type !== 'plane') return;
+            
+            if (plane.showingLines) {
+                // Hide lines - just toggle state, don't delete lines
+                plane.showingLines = false;
+                updateObjectsList();
+                updateInfoPanel('Прямые скрыты');
+            } else {
+                // Show lines - check if they exist
+                const point1 = AppState.objects.find(p => p.id === plane.sourcePoints[0]);
+                const point2 = AppState.objects.find(p => p.id === plane.sourcePoints[1]);
+                const point3 = AppState.objects.find(p => p.id === plane.sourcePoints[2]);
+                
+                if (!point1 || !point2 || !point3) {
+                    updateInfoPanel('Ошибка: точки плоскости не найдены');
+                    return;
+                }
+                
+                // Check if lines A-B and A-C exist
+                const lineAB = findLineBetweenPoints(point1.id, point2.id);
+                const lineAC = findLineBetweenPoints(point1.id, point3.id);
+                
+                let linesToConnect = [];
+                let linesToCreate = [];
+                
+                if (lineAB) {
+                    linesToConnect.push({ line: lineAB, name: `${point1.name}-${point2.name}` });
+                } else {
+                    linesToCreate.push({ p1: point1, p2: point2, name: `${point1.name}-${point2.name}` });
+                }
+                
+                if (lineAC) {
+                    linesToConnect.push({ line: lineAC, name: `${point1.name}-${point3.name}` });
+                } else {
+                    linesToCreate.push({ p1: point1, p2: point3, name: `${point1.name}-${point3.name}` });
+                }
+                
+                // If any lines exist, ask user for confirmation to link them
+                if (linesToConnect.length > 0) {
+                    const lineNames = linesToConnect.map(l => l.name).join(' и ');
+                    const confirmMsg = `Прямые ${lineNames} уже существуют. Привязать их к плоскости?`;
+                    
+                    if (confirm(confirmMsg)) {
+                        // Link existing lines
+                        if (!plane.connectedLines) plane.connectedLines = [];
+                        linesToConnect.forEach(({ line }) => {
+                            if (!plane.connectedLines.includes(line.id)) {
+                                plane.connectedLines.push(line.id);
+                            }
+                        });
+                        
+                        // Create missing lines
+                        saveToHistory();
+                        linesToCreate.forEach(({ p1, p2 }) => {
+                            const newLine = createLineFromPointsForPlane(p1.id, p2.id);
+                            if (newLine && !plane.connectedLines.includes(newLine.id)) {
+                                plane.connectedLines.push(newLine.id);
+                            }
+                        });
+                        
+                        plane.showingLines = true;
+                        updateObjectsList();
+                        updateInfoPanel(`Прямые привязаны к плоскости ${plane.name}`);
+                    } else {
+                        updateInfoPanel('Отменено');
+                    }
+                } else {
+                    // No existing lines - create both automatically
+                    saveToHistory();
+                    
+                    if (!plane.connectedLines) plane.connectedLines = [];
+                    
+                    linesToCreate.forEach(({ p1, p2 }) => {
+                        const newLine = createLineFromPointsForPlane(p1.id, p2.id);
+                        if (newLine && !plane.connectedLines.includes(newLine.id)) {
+                            plane.connectedLines.push(newLine.id);
+                        }
+                    });
+                    
+                    plane.showingLines = true;
+                    updateObjectsList();
+                    updateInfoPanel(`Прямые созданы для плоскости ${plane.name}`);
+                }
+            }
+        }
+        
+        // Helper: find line between two points
+        function findLineBetweenPoints(pointId1, pointId2) {
+            return AppState.objects.find(obj => {
+                if (obj.type !== 'line' || !obj.sourcePoints) return false;
+                return (obj.sourcePoints.includes(pointId1) && obj.sourcePoints.includes(pointId2));
+            });
+        }
+        
+        // Helper: create line for plane (silent, no tool switch)
+        function createLineFromPointsForPlane(pointId1, pointId2) {
+            const point1 = AppState.objects.find(p => p.id === pointId1);
+            const point2 = AppState.objects.find(p => p.id === pointId2);
+            
+            if (!point1 || !point2) return null;
+            
+            const name = `l_{${AppState.nextNames.line++}}`;
+            
+            const direction = {
+                x: point2.coords.x - point1.coords.x,
+                y: point2.coords.y - point1.coords.y,
+                z: point2.coords.z - point1.coords.z
+            };
+            
+            const threeP1 = mathToThree(point1.coords);
+            const threeP2 = mathToThree(point2.coords);
+            
+            // Create line as thick cylinder
+            const extendFactor = 5;
+            const dir = new THREE.Vector3().subVectors(threeP2, threeP1).normalize();
+            const startPoint = threeP1.clone().sub(dir.clone().multiplyScalar(extendFactor));
+            const endPoint = threeP2.clone().add(dir.clone().multiplyScalar(extendFactor));
+            const length = startPoint.distanceTo(endPoint);
+            
+            const geometry = new THREE.CylinderGeometry(0.025, 0.025, length, 8);
+            const material = new THREE.MeshBasicMaterial({ color: 0x333333 });
+            const cylinder = new THREE.Mesh(geometry, material);
+            
+            // Position and orient cylinder
+            const midPoint = new THREE.Vector3().addVectors(startPoint, endPoint).multiplyScalar(0.5);
+            cylinder.position.copy(midPoint);
+            cylinder.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+            
+            scene.add(cylinder);
+            
+            const lineObj = {
+                type: 'line',
+                name: name,
+                point: { ...point1.coords },
+                direction: direction,
+                sourcePoints: [pointId1, pointId2],
+                mesh: cylinder,
+                id: Date.now()
+            };
+            
+            // Add bidirectional link: point -> line
+            [point1, point2].forEach(point => {
+                if (point.connectedLines) {
+                    point.connectedLines.push(lineObj.id);
+                    // Change point color to gray (connected)
+                    if (point.mesh) {
+                        point.mesh.material.color.setHex(0x666666);
+                    }
+                }
+            });
+            
+            AppState.objects.push(lineObj);
+            return lineObj;
+        }
+        
         function updateObjectPosition(objectId, mesh) {
             const obj = AppState.objects.find(o => o.id === objectId);
             if (!obj) return;
@@ -2139,7 +2418,12 @@
                 point: data.point,
                 normal: data.normal,
                 mesh: plane,
-                id: data.id
+                id: data.id,
+                sourcePoints: data.sourcePoints || [],
+                v1: data.v1,
+                v2: data.v2,
+                connectedLines: data.connectedLines || [],
+                showingLines: data.showingLines || false
             });
         }
 
@@ -2621,10 +2905,13 @@
                 point: mathP1,
                 normal: normal,
                 mesh: plane,
+                center: center.clone(),  // Store center for updates
                 id: Date.now(),
                 sourcePoints: [pointId1, pointId2, pointId3],  // Store source points
                 v1: v1,  // Store base vectors for updates
-                v2: v2
+                v2: v2,
+                connectedLines: [],  // Lines connected to this plane (A-B and A-C)
+                showingLines: false  // Toggle state for showing lines
             };
             
             // Add this plane to each point's connectedPlanes
@@ -2887,6 +3174,14 @@
                                 </svg>
                             </button>
                         ` : ''}
+                        ${obj.type === 'plane' ? `
+                            <button class="viz-icon-btn ${obj.showingLines ? 'active' : ''}" data-obj-id="${obj.id}" data-action="toggle-plane-lines" title="Показать прямые в плоскости">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                    <line x1="2" y1="8" x2="14" y2="8"/>
+                                    <line x1="8" y1="2" x2="8" y2="14"/>
+                                </svg>
+                            </button>
+                        ` : ''}
                         <button class="delete-btn" data-id="${obj.id}" title="Удалить">🗑️</button>
                         <span class="expand-icon">▼</span>
                     </div>
@@ -2945,17 +3240,28 @@
                 }
             }
             
-            // Visualization button handler
-            const vizBtn = div.querySelector('.viz-icon-btn');
-            if (vizBtn) {
+            // Visualization button handler - FIXED: use querySelectorAll to handle ALL viz buttons
+            const vizBtns = div.querySelectorAll('.viz-icon-btn');
+            vizBtns.forEach(vizBtn => {
                 vizBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    const vizType = vizBtn.dataset.vizType;
-                    const objId = parseInt(vizBtn.dataset.objId);
-                    toggleVisualization(objId, vizType);
+                    
+                    // Check if this is plane lines button
+                    if (vizBtn.dataset.action === 'toggle-plane-lines') {
+                        togglePlaneLines(obj.id);
+                    } else {
+                        // Regular visualization button
+                        const vizType = vizBtn.dataset.vizType;
+                        const objId = parseInt(vizBtn.dataset.objId);
+                        
+                        // Debug: ensure we're calling correct object
+                        console.log('Viz button clicked:', { vizType, objId, currentObjId: obj.id, objName: obj.name });
+                        
+                        toggleVisualization(objId, vizType);
+                    }
                 });
-            }
+            });
             
             return div;
         }
@@ -3130,4 +3436,4 @@
         updateInfoPanel();
     </script>
 </body>
-</html>
+</html><!-- Version: 1760530883 -->
