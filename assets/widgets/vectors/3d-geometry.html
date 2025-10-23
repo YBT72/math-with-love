@@ -606,6 +606,11 @@
             maxHistorySize: 50
         };
 
+        // UNIFIED LINE ID GENERATION
+        function generateLineId() {
+            return `line_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        }
+
         // History management
         function saveToHistory() {
             const state = {
@@ -2389,7 +2394,7 @@
                 direction: direction,
                 sourcePoints: [pointId1, pointId2],
                 mesh: cylinder,
-                id: `line_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                id: generateLineId()
             };
             
             // Add bidirectional link: point -> line
@@ -2822,7 +2827,7 @@
                 direction: direction,
                 sourcePoints: [pointId1, pointId2],  // Store IDs directly
                 mesh: cylinder,
-                id: Date.now()
+                id: generateLineId()
             };
             
             // Add bidirectional link: point -> line
@@ -2906,7 +2911,7 @@
                 direction: direction,
                 sourcePoints: sourcePoints,  // Store IDs of source points
                 mesh: cylinder,
-                id: Date.now()
+                id: generateLineId()
             };
             
             // Add bidirectional link: point -> line
