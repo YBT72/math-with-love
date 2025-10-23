@@ -833,6 +833,23 @@
                 obj.point.y += mathOffset.y;
                 obj.point.z += mathOffset.z;
                 
+                // Update source points positions
+                if (obj.sourcePoints && obj.sourcePoints.length > 0) {
+                    obj.sourcePoints.forEach(pointId => {
+                        const point = AppState.objects.find(p => p.id === pointId);
+                        if (point && point.type === 'point') {
+                            // Update coordinates
+                            point.coords.x += mathOffset.x;
+                            point.coords.y += mathOffset.y;
+                            point.coords.z += mathOffset.z;
+                            
+                            // CRITICAL: Update point mesh position immediately
+                            const newThreePos = mathToThree(point.coords);
+                            point.mesh.position.copy(newThreePos);
+                        }
+                    });
+                }
+                
                 // Rebuild line mesh
                 const threeP1 = mathToThree(obj.point);
                 const mathP2 = {
@@ -1018,8 +1035,8 @@
                 if (obj.connectedPlanes && obj.connectedPlanes.length > 0) {
                     obj.connectedPlanes.forEach(planeId => {
                         const plane = AppState.objects.find(pl => pl.id === planeId);
-                        // SKIP if we're currently moving this plane to prevent double update
-                        if (plane && plane.type === 'plane' && plane.sourcePoints && planeId !== AppState.selectedObject) {
+                        // Update plane when any of its points moves
+                        if (plane && plane.type === 'plane' && plane.sourcePoints) {
                             // Get all 3 points
                             const point1 = AppState.objects.find(p => p.id === plane.sourcePoints[0]);
                             const point2 = AppState.objects.find(p => p.id === plane.sourcePoints[1]);
