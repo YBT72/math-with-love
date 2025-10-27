@@ -1143,20 +1143,46 @@
                     obj.sourcePoints.forEach(pointId => {
                         const point = AppState.objects.find(p => p.id === pointId);
                         if (point && point.type === 'point') {
-                            // Update coordinates
-                            point.coords.x += mathOffset.x;
-                            point.coords.y += mathOffset.y;
-                            point.coords.z += mathOffset.z;
+                            // CRITICAL: Update mesh position directly with Three.js frameOffset
+                            point.mesh.position.add(frameOffset);
                             
-                            // CRITICAL: Update point mesh position immediately
-                            const newThreePos = mathToThree(point.coords);
-                            point.mesh.position.copy(newThreePos);
+                            // Then update coordinates from the new mesh position
+                            point.coords = threeToMath(point.mesh.position);
                         }
                     });
                 }
                 
-                // NOTE: obj.point references the first source point, so it's already updated above
-                // No separate update needed to avoid double transformation
+                // Update obj.point from first source point and recalculate plane vectors
+                if (obj.sourcePoints && obj.sourcePoints.length >= 3) {
+                    const point1 = AppState.objects.find(p => p.id === obj.sourcePoints[0]);
+                    const point2 = AppState.objects.find(p => p.id === obj.sourcePoints[1]);
+                    const point3 = AppState.objects.find(p => p.id === obj.sourcePoints[2]);
+                    
+                    if (point1 && point2 && point3) {
+                        // Update base point
+                        obj.point = { ...point1.coords };
+                        
+                        // Recalculate plane vectors
+                        obj.v1 = {
+                            x: point2.coords.x - point1.coords.x,
+                            y: point2.coords.y - point1.coords.y,
+                            z: point2.coords.z - point1.coords.z
+                        };
+                        
+                        obj.v2 = {
+                            x: point3.coords.x - point1.coords.x,
+                            y: point3.coords.y - point1.coords.y,
+                            z: point3.coords.z - point1.coords.z
+                        };
+                        
+                        // Recalculate normal vector
+                        obj.normal = {
+                            x: obj.v1.y * obj.v2.z - obj.v1.z * obj.v2.y,
+                            y: obj.v1.z * obj.v2.x - obj.v1.x * obj.v2.z,
+                            z: obj.v1.x * obj.v2.y - obj.v1.y * obj.v2.x
+                        };
+                    }
+                }
                 
                 // Update center by offset (don't recalculate from points during transform!)
                 if (obj.center) {
