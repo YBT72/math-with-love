@@ -569,6 +569,38 @@
             return num.toString().split('').map(d => SUBSCRIPT_DIGITS[parseInt(d)]).join('');
         }
 
+        function generateVectorName() {
+            const totalVectors = AppState.objects.filter(obj => obj.type === 'vector').length;
+            
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const alphabetLength = alphabet.length;
+            
+            if (totalVectors < (alphabetLength * (alphabetLength - 1)) / 2) {
+                let pairIndex = 0;
+                for (let i = 0; i < alphabetLength; i++) {
+                    for (let j = i + 1; j < alphabetLength; j++) {
+                        if (pairIndex === totalVectors) {
+                            return alphabet[i] + alphabet[j];
+                        }
+                        pairIndex++;
+                    }
+                }
+            } else {
+                const cycleIndex = totalVectors - (alphabetLength * (alphabetLength - 1)) / 2;
+                let pairIndex = 0;
+                for (let i = 0; i < alphabetLength; i++) {
+                    for (let j = i + 1; j < alphabetLength; j++) {
+                        if (pairIndex === cycleIndex) {
+                            return alphabet[i] + "'" + alphabet[j] + "'";
+                        }
+                        pairIndex++;
+                    }
+                }
+            }
+            
+            return `V${totalVectors + 1}`;
+        }
+
         // COORDINATE SYSTEM CONVERSION RULES
         function mathToThree(mathCoords) {
             return new THREE.Vector3(
@@ -1545,7 +1577,72 @@
                     
                 } else {
                     // For other objects (vectors)
-                    updateObjectPosition(AppState.selectedObject, transformControls.object);
+                    if (obj.type === 'vector') {
+                        const mathOffset = threeOffsetToMath(frameOffset);
+                        
+                        obj.start.x += mathOffset.x;
+                        obj.start.y += mathOffset.y;
+                        obj.start.z += mathOffset.z;
+                        obj.end.x += mathOffset.x;
+                        obj.end.y += mathOffset.y;
+                        obj.end.z += mathOffset.z;
+                        
+                        if (obj.sourcePoints) {
+                            obj.sourcePoints.forEach(pointId => {
+                                const point = AppState.objects.find(p => p.id === pointId);
+                                if (point) {
+                                    point.coords.x += mathOffset.x;
+                                    point.coords.y += mathOffset.y;
+                                    point.coords.z += mathOffset.z;
+                                    
+                                    const newThreePos = mathToThree(point.coords);
+                                    point.mesh.position.copy(newThreePos);
+                                    
+                                    if (point.connectedVectors) {
+                                        point.connectedVectors.forEach(vectorId => {
+                                            if (vectorId !== obj.id) {
+                                                const connectedVector = AppState.objects.find(v => v.id === vectorId);
+                                                if (connectedVector && connectedVector.type === 'vector') {
+                                                    if (connectedVector.sourcePoints[0] === pointId) {
+                                                        connectedVector.start = { ...point.coords };
+                                                    } else if (connectedVector.sourcePoints[1] === pointId) {
+                                                        connectedVector.end = { ...point.coords };
+                                                    }
+                                                    rebuildVectorMesh(connectedVector);
+                                                }
+                                            }
+                                        });
+                                    }
+                                    
+                                    if (point.connectedLines) {
+                                        point.connectedLines.forEach(lineId => {
+                                            const line = AppState.objects.find(l => l.id === lineId);
+                                            if (line && line.type === 'line') {
+                                                const point1 = AppState.objects.find(p => p.id === line.sourcePoints[0]);
+                                                const point2 = AppState.objects.find(p => p.id === line.sourcePoints[1]);
+                                                
+                                                if (point1 && point2) {
+                                                    line.point = { ...point1.coords };
+                                                    line.direction = {
+                                                        x: point2.coords.x - point1.coords.x,
+                                                        y: point2.coords.y - point1.coords.y,
+                                                        z: point2.coords.z - point1.coords.z
+                                                    };
+                                                    rebuildLineMesh(line);
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                        }
+                        
+                        rebuildVectorMesh(obj);
+                        updateObjectsList();
+                        lastHelperPosition = currentPosition.clone();
+                    } else {
+                        updateObjectPosition(AppState.selectedObject, transformControls.object);
+                    }
                 }
                 
                 transformStartPosition = null;
@@ -1897,6 +1994,43 @@
             }
         }
 
+        function rebuildVectorMesh(vectorObj) {
+            if (vectorObj.mesh) {
+                scene.remove(vectorObj.mesh);
+                vectorObj.mesh.traverse((child) => {
+                    if (child.geometry) child.geometry.dispose();
+                    if (child.material) child.material.dispose();
+                });
+            }
+            
+            const threeStart = mathToThree(vectorObj.start);
+            const threeEnd = mathToThree(vectorObj.end);
+            const direction = new THREE.Vector3().subVectors(threeEnd, threeStart);
+            const length = direction.length();
+            direction.normalize();
+            
+            const group = new THREE.Group();
+            
+            const shaftLength = length - 0.4;
+            const shaftGeometry = new THREE.CylinderGeometry(0.04, 0.04, shaftLength, 8);
+            const shaftMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+            const shaft = new THREE.Mesh(shaftGeometry, shaftMaterial);
+            shaft.position.y = shaftLength / 2;
+            group.add(shaft);
+            
+            const headGeometry = new THREE.ConeGeometry(0.09, 0.3, 12);
+            const headMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = shaftLength + 0.15;
+            group.add(head);
+            
+            group.position.copy(threeStart);
+            group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+            
+            scene.add(group);
+            vectorObj.mesh = group;
+        }
+
         function clearAllScene() {
             if (AppState.objects.length === 0) {
                 updateInfoPanel('Сцена уже пуста');
@@ -2002,6 +2136,29 @@
                 obj.connectedLines = [];
             }
             
+            // If deleting a vector, clear source points' connections
+            if (obj.type === 'vector' && obj.sourcePoints) {
+                obj.sourcePoints.forEach(pointId => {
+                    const point = AppState.objects.find(p => p.id === pointId);
+                    if (point && point.connectedVectors) {
+                        const vectorIndex = point.connectedVectors.indexOf(obj.id);
+                        if (vectorIndex > -1) {
+                            point.connectedVectors.splice(vectorIndex, 1);
+                        }
+                        
+                        if (point.mesh) {
+                            if ((point.connectedLines && point.connectedLines.length > 0) || 
+                                (point.connectedPlanes && point.connectedPlanes.length > 0) ||
+                                (point.connectedVectors && point.connectedVectors.length > 0)) {
+                                point.mesh.material.color.setHex(0x666666);
+                            } else {
+                                point.mesh.material.color.setHex(0x1976d2);
+                            }
+                        }
+                    }
+                });
+            }
+
             // Remove from array
             AppState.objects.splice(objIndex, 1);
             
@@ -2081,6 +2238,23 @@
                     if (o.type === 'line' && o.id !== objectId && o.mesh) {
                         o.mesh.material.color.setHex(0x333333);
                     }
+
+                    // Highlight selected vector or reset other vectors
+                    if (o.type === 'vector' && o.mesh) {
+                        if (o.id === objectId) {
+                            o.mesh.traverse((child) => {
+                                if (child.material) {
+                                    child.material.color.setHex(0x2196f3);
+                                }
+                            });
+                        } else {
+                            o.mesh.traverse((child) => {
+                                if (child.material) {
+                                    child.material.color.setHex(0x0000ff);
+                                }
+                            });
+                        }
+                    }
                 });
             }
         }
@@ -2113,6 +2287,14 @@
                     // Reset line to default dark gray
                     obj.mesh.material.color.setHex(0x333333);
                 }
+                if (obj.type === 'vector' && obj.mesh) {
+                    // Reset vector to default blue
+                    obj.mesh.traverse((child) => {
+                        if (child.material) {
+                            child.material.color.setHex(0x0000ff);
+                        }
+                    });
+                }
             });
         }
         
@@ -2127,7 +2309,7 @@
                     updateInfoPanel(`Точка ${point.name} добавлена. ${AppState.tempPoints.length}/2`);
                     break;
                 case 'vector':
-                    handleVectorCreation(point.coords);
+                    handleVectorCreation(pointId);
                     updateInfoPanel(`Точка ${point.name} добавлена. ${AppState.tempPoints.length}/2`);
                     break;
                 case 'plane':
@@ -2614,22 +2796,19 @@
             const length = direction.length();
             direction.normalize();
             
-            // Create custom arrow with thick shaft
             const group = new THREE.Group();
             
-            // Shaft
             const shaftLength = length - 0.4;
-            const shaftGeometry = new THREE.CylinderGeometry(0.025, 0.025, shaftLength, 8);
-            const shaftMaterial = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+            const shaftGeometry = new THREE.CylinderGeometry(0.04, 0.04, shaftLength, 8);
+            const shaftMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
             const shaft = new THREE.Mesh(shaftGeometry, shaftMaterial);
             shaft.position.y = shaftLength / 2;
             group.add(shaft);
             
-            // Arrow head
-            const headGeometry = new THREE.ConeGeometry(0.08, 0.4, 12);
-            const headMaterial = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+            const headGeometry = new THREE.ConeGeometry(0.09, 0.3, 12);
+            const headMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
             const head = new THREE.Mesh(headGeometry, headMaterial);
-            head.position.y = shaftLength + 0.2;
+            head.position.y = shaftLength + 0.15;
             group.add(head);
             
             group.position.copy(threeStart);
@@ -2642,9 +2821,22 @@
                 name: data.name,
                 start: data.start,
                 end: data.end,
+                sourcePoints: data.sourcePoints || [],
                 mesh: group,
                 id: data.id
             });
+            
+            if (data.sourcePoints) {
+                data.sourcePoints.forEach(pointId => {
+                    const point = AppState.objects.find(p => p.id === pointId);
+                    if (point) {
+                        if (!point.connectedVectors) {
+                            point.connectedVectors = [];
+                        }
+                        point.connectedVectors.push(data.id);
+                    }
+                });
+            }
         }
 
         function handleCanvasClick(event) {
@@ -2731,7 +2923,7 @@
                                 handleLineCreation(clickedPoint.id);
                                 return;
                             case 'vector':
-                                handleVectorCreation(clickedPoint.coords);
+                                handleVectorCreation(clickedPoint.id);
                                 return;
                             case 'plane':
                                 handlePlaneCreation(clickedPoint.id);  // Changed: pass ID instead of coords
@@ -3095,50 +3287,78 @@
             updateInfoPanel(`Создана плоскость ${name}`);
         }
 
-        function handleVectorCreation(mathPoint) {
-            AppState.tempPoints.push(mathPoint);
+        function handleVectorCreation(pointId) {
+            AppState.tempPoints.push(pointId);
+            
+            const point = AppState.objects.find(p => p.id === pointId);
+            if (point && point.mesh) {
+                point.mesh.material.color.setHex(0xcccccc);
+            }
+            
+            updateObjectsList();
             
             if (AppState.tempPoints.length === 1) {
                 updateInfoPanel('Укажите конечную точку вектора');
-                createTempPointVisual(mathPoint);
             } else if (AppState.tempPoints.length === 2) {
                 saveToHistory();
-                createVector(AppState.tempPoints[0], AppState.tempPoints[1]);
+                
+                const point1 = AppState.objects.find(p => p.id === AppState.tempPoints[0]);
+                const point2 = AppState.objects.find(p => p.id === AppState.tempPoints[1]);
+                
+                if (point1 && point2) {
+                    createVectorFromPoints(point1.id, point2.id);
+                }
+                
+                const tempPointsCopy = [...AppState.tempPoints];
                 AppState.tempPoints = [];
-                clearTempVisuals();
+                
+                setTimeout(() => {
+                    tempPointsCopy.forEach(pid => {
+                        const pt = AppState.objects.find(p => p.id === pid);
+                        if (pt && pt.mesh) {
+                            if ((pt.connectedLines && pt.connectedLines.length > 0) || 
+                                (pt.connectedPlanes && pt.connectedPlanes.length > 0) ||
+                                (pt.connectedVectors && pt.connectedVectors.length > 0)) {
+                                pt.mesh.material.color.setHex(0x666666);
+                            } else {
+                                pt.mesh.material.color.setHex(0x1976d2);
+                            }
+                        }
+                    });
+                    updateObjectsList();
+                }, 2000);
             }
         }
 
-        function createVector(mathStart, mathEnd) {
-            const startName = String.fromCharCode(AppState.nextNames.point - 1);
-            const endName = String.fromCharCode(AppState.nextNames.point);
-            const name = `\\overrightarrow{${startName}${endName}}`;
+        function createVectorFromPoints(startPointId, endPointId) {
+            const startPoint = AppState.objects.find(p => p.id === startPointId);
+            const endPoint = AppState.objects.find(p => p.id === endPointId);
             
-            const threeStart = mathToThree(mathStart);
-            const threeEnd = mathToThree(mathEnd);
+            if (!startPoint || !endPoint) return;
+            
+            const name = generateVectorName();
+            
+            const threeStart = mathToThree(startPoint.coords);
+            const threeEnd = mathToThree(endPoint.coords);
             const direction = new THREE.Vector3().subVectors(threeEnd, threeStart);
             const length = direction.length();
             direction.normalize();
             
-            // Create custom arrow with thick shaft
             const group = new THREE.Group();
             
-            // Shaft (cylinder)
             const shaftLength = length - 0.4;
-            const shaftGeometry = new THREE.CylinderGeometry(0.025, 0.025, shaftLength, 8);
-            const shaftMaterial = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+            const shaftGeometry = new THREE.CylinderGeometry(0.04, 0.04, shaftLength, 8);
+            const shaftMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
             const shaft = new THREE.Mesh(shaftGeometry, shaftMaterial);
             shaft.position.y = shaftLength / 2;
             group.add(shaft);
             
-            // Arrow head (cone)
-            const headGeometry = new THREE.ConeGeometry(0.08, 0.4, 12);
-            const headMaterial = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+            const headGeometry = new THREE.ConeGeometry(0.09, 0.3, 12);
+            const headMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
             const head = new THREE.Mesh(headGeometry, headMaterial);
-            head.position.y = shaftLength + 0.2;
+            head.position.y = shaftLength + 0.15;
             group.add(head);
             
-            // Position and orient the group
             group.position.copy(threeStart);
             group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
             
@@ -3147,11 +3367,23 @@
             const vectorObj = {
                 type: 'vector',
                 name: name,
-                start: mathStart,
-                end: mathEnd,
+                start: { ...startPoint.coords },
+                end: { ...endPoint.coords },
+                sourcePoints: [startPointId, endPointId],
                 mesh: group,
                 id: Date.now()
             };
+            
+            [startPoint, endPoint].forEach(point => {
+                if (!point.connectedVectors) {
+                    point.connectedVectors = [];
+                }
+                point.connectedVectors.push(vectorObj.id);
+                
+                if (point.mesh) {
+                    point.mesh.material.color.setHex(0x666666);
+                }
+            });
             
             AppState.objects.push(vectorObj);
             updateObjectsList();
@@ -3292,7 +3524,9 @@
             groupDiv.appendChild(groupHeader);
             groupDiv.appendChild(groupContent);
             
-            groupHeader.addEventListener('click', () => {
+            const expandIcon = groupHeader.querySelector('.group-expand-icon');
+            expandIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
                 groupContent.classList.toggle('expanded');
                 groupDiv.classList.toggle('collapsed');
             });
@@ -3362,7 +3596,19 @@
             `;
             
             const katexContainer = div.querySelector('.katex-container');
-            katex.render(obj.name, katexContainer, { throwOnError: false });
+            
+            // For vectors, use KaTeX to render arrow over letters
+            // For lines and planes, use Unicode subscripts (already in correct format)
+            if (obj.type === 'vector') {
+                // Create LaTeX format for vector with arrow
+                const vectorLatex = `\\overrightarrow{${obj.name}}`;
+                katex.render(vectorLatex, katexContainer, { throwOnError: false });
+            } else {
+                // For lines (l₁) and planes (π₁), use text content directly
+                katexContainer.textContent = obj.name;
+                katexContainer.style.fontFamily = 'inherit';
+                katexContainer.style.fontSize = 'inherit';
+            }
             
             // Render equations if expanded
             setTimeout(() => {
@@ -3372,21 +3618,16 @@
             }, 50);
             
             const header = div.querySelector('.object-header');
-            header.addEventListener('click', (e) => {
-                // Don't toggle if clicking delete button or viz button
-                if (!e.target.classList.contains('delete-btn') && 
-                    !e.target.closest('.delete-btn') &&
-                    !e.target.classList.contains('viz-icon-btn') &&
-                    !e.target.closest('.viz-icon-btn')) {
-                    const wasExpanded = div.classList.contains('expanded');
-                    div.classList.toggle('expanded');
-                    
-                    // Render equations when expanding (but don't select for transform)
-                    if (!wasExpanded && (obj.type === 'line' || obj.type === 'plane')) {
-                        setTimeout(() => {
-                            renderEquations(obj, div);
-                        }, 50);
-                    }
+            const expandIcon = div.querySelector('.expand-icon');
+            expandIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const wasExpanded = div.classList.contains('expanded');
+                div.classList.toggle('expanded');
+                
+                if (!wasExpanded && (obj.type === 'line' || obj.type === 'plane')) {
+                    setTimeout(() => {
+                        renderEquations(obj, div);
+                    }, 50);
                 }
             });
             
@@ -3485,6 +3726,30 @@
                         <div class="detail-row">
                             <div class="detail-label">Конец:</div>
                             <div class="detail-value">(${formatCoords(obj.end)})</div>
+                        </div>
+                    `;
+                case 'vector':
+                    const startCoords = obj.start;
+                    const endCoords = obj.end;
+                    const vectorCoords = {
+                        x: endCoords.x - startCoords.x,
+                        y: endCoords.y - startCoords.y,
+                        z: endCoords.z - startCoords.z
+                    };
+                    const vectorLength = Math.sqrt(
+                        vectorCoords.x * vectorCoords.x + 
+                        vectorCoords.y * vectorCoords.y + 
+                        vectorCoords.z * vectorCoords.z
+                    );
+                    
+                    return `
+                        <div class="detail-row">
+                            <div class="detail-label">Координаты:</div>
+                            <div class="detail-value">(${vectorCoords.x.toFixed(1)}, ${vectorCoords.y.toFixed(1)}, ${vectorCoords.z.toFixed(1)})</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Длина:</div>
+                            <div class="detail-value">${vectorLength.toFixed(1)}</div>
                         </div>
                     `;
             }
