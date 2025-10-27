@@ -1177,19 +1177,86 @@
                     renderEquations(obj, planeAccordion);
                 }
                 
-                // NOTE: Connected lines are already updated via point.connectedLines above
-                // No need to update them again here to avoid double updates and vizGroup issues
-                // The lines A-B and A-C are updated when their source points (A, B, C) move
-                
-                // Only update equations if panels are expanded (no mesh/vizGroup updates needed)
+                // Update connected lines of the plane in real-time (during dragging)
+                // BUT avoid double vizGroup updates since points already updated their connected lines
                 if (obj.connectedLines && obj.connectedLines.length > 0) {
                     obj.connectedLines.forEach(lineId => {
                         const line = AppState.objects.find(l => l.id === lineId);
-                        if (line && line.type === 'line') {
-                            // Only update equations in DOM if panel is expanded
-                            const lineAccordion = document.querySelector(`.object-accordion[data-id="${line.id}"]`);
-                            if (lineAccordion && lineAccordion.classList.contains('expanded')) {
-                                renderEquations(line, lineAccordion);
+                        if (line && line.type === 'line' && line.sourcePoints && line.sourcePoints.length >= 2) {
+                            const point1 = AppState.objects.find(p => p.id === line.sourcePoints[0]);
+                            const point2 = AppState.objects.find(p => p.id === line.sourcePoints[1]);
+                            
+                            if (point1 && point2) {
+                                // Update line's base point and direction based on current point positions
+                                line.point = { ...point1.coords };
+                                line.direction = {
+                                    x: point2.coords.x - point1.coords.x,
+                                    y: point2.coords.y - point1.coords.y,
+                                    z: point2.coords.z - point1.coords.z
+                                };
+                                
+                                // Rebuild line mesh position in real-time
+                                const threeP1 = mathToThree(point1.coords);
+                                const threeP2 = mathToThree(point2.coords);
+                                
+                                const extendFactor = 5;
+                                const dir = new THREE.Vector3().subVectors(threeP2, threeP1).normalize();
+                                const startPoint = threeP1.clone().sub(dir.clone().multiplyScalar(extendFactor));
+                                const endPoint = threeP2.clone().add(dir.clone().multiplyScalar(extendFactor));
+                                const length = startPoint.distanceTo(endPoint);
+                                
+                                const midPoint = new THREE.Vector3().addVectors(startPoint, endPoint).multiplyScalar(0.5);
+                                line.mesh.position.copy(midPoint);
+                                line.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+                                
+                                // Update geometry
+                                if (line.mesh.geometry) {
+                                    line.mesh.geometry.dispose();
+                                    line.mesh.geometry = new THREE.CylinderGeometry(0.025, 0.025, length, 8);
+                                }
+                                
+                                // CRITICAL: Only update vizGroup if it wasn't already updated by point movement
+                                // We check if the vizGroup basePoint matches the current line point
+                                if (line.vizGroup && line.visualizing) {
+                                    const currentBasePoint = mathToThree(line.point);
+                                    const vizBasePoint = line.vizGroup.userData.basePoint;
+                                    
+                                    // If basePoint differs significantly, vizGroup needs update
+                                    const distance = currentBasePoint.distanceTo(vizBasePoint);
+                                    if (distance > 0.01) {  // Threshold to avoid floating point errors
+                                        // Save current t value before rebuilding
+                                        let savedTValue = null;
+                                        if (line.vizGroup.userData.sphere && line.vizGroup.userData.sphere.userData) {
+                                            savedTValue = line.vizGroup.userData.sphere.userData.tValue;
+                                        }
+                                        
+                                        hideVisualization(line);
+                                        showLineParameterVisualization(line, savedTValue);
+                                    }
+                                }
+                                
+                                // Update line equations in real-time if properties panel is expanded
+                                const lineAccordion = document.querySelector(`.object-accordion[data-id="${line.id}"]`);
+                                if (lineAccordion && lineAccordion.classList.contains('expanded')) {
+                                    renderEquations(line, lineAccordion);
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                // Update coordinates of plane source points in real-time if their panels are expanded
+                if (obj.sourcePoints) {
+                    obj.sourcePoints.forEach(pointId => {
+                        const point = AppState.objects.find(p => p.id === pointId);
+                        if (point) {
+                            const pointAccordion = document.querySelector(`.object-accordion[data-id="${pointId}"]`);
+                            if (pointAccordion && pointAccordion.classList.contains('expanded')) {
+                                const detailValue = pointAccordion.querySelector('.detail-value');
+                                if (detailValue) {
+                                    const formattedCoords = `${point.coords.x.toFixed(1)}, ${point.coords.y.toFixed(1)}, ${point.coords.z.toFixed(1)}`;
+                                    detailValue.textContent = `(${formattedCoords})`;
+                                }
                             }
                         }
                     });
