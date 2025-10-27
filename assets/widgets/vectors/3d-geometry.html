@@ -561,6 +561,14 @@
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
+        // Unicode subscript digits for beautiful object names
+        const SUBSCRIPT_DIGITS = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'];
+        
+        // Convert number to subscript (e.g., 1 -> ₁, 12 -> ₁₂)
+        function toSubscript(num) {
+            return num.toString().split('').map(d => SUBSCRIPT_DIGITS[parseInt(d)]).join('');
+        }
+
         // COORDINATE SYSTEM CONVERSION RULES
         function mathToThree(mathCoords) {
             return new THREE.Vector3(
@@ -1832,12 +1840,8 @@
             head.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
             orangeGroup.add(head);
             
-            // Convert number to subscript for label
-            const subscriptDigits = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'];
-            const subscript = lineNumber.split('').map(d => subscriptDigits[parseInt(d)]).join('');
-            
             // Label "t·u̲₁" with underline and subscript - dark color for contrast
-            const labelText = `${tValue.toFixed(1)}u̲${subscript}`;
+            const labelText = `${tValue.toFixed(1)}u̲${lineNumber}`;
             const label = createTextSprite(labelText, '#333333', 80);
             label.position.copy(newSpherePos.clone().add(new THREE.Vector3(0, 0.5, 0)));
             orangeGroup.add(label);
@@ -2221,16 +2225,11 @@
             blueHead.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dirNormalized);
             vizGroup.add(blueHead);
             
-            // Extract line number from line name (e.g., "l_{1}" -> "1")
-            const lineNumberMatch = lineObj.name.match(/l_\{(\d+)\}/);
-            const lineNumber = lineNumberMatch ? lineNumberMatch[1] : '';
-            
-            // Convert number to subscript digits for label
-            const subscriptDigits = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'];
-            const subscript = lineNumber.split('').map(d => subscriptDigits[parseInt(d)]).join('');
+            // Extract line number from line name (e.g., "l₁" -> "1")
+            const lineNumber = lineObj.name.replace('l', '');
             
             // Label "u̲₁" for blue vector (u with underline + subscript)
-            const blueLabel = createTextSprite(`u̲${subscript}`, '#1976d2', 64);
+            const blueLabel = createTextSprite(`u̲${lineNumber}`, '#1976d2', 64);
             blueLabel.position.copy(blueMid.clone().add(new THREE.Vector3(0, 0.4, 0)));
             vizGroup.add(blueLabel);
             
@@ -2410,7 +2409,7 @@
             
             if (!point1 || !point2) return null;
             
-            const name = `l_{${AppState.nextNames.line++}}`;
+            const name = `l${toSubscript(AppState.nextNames.line++)}`;
             
             const direction = {
                 x: point2.coords.x - point1.coords.x,
@@ -2843,7 +2842,7 @@
             
             if (!point1 || !point2) return;
             
-            const name = `l_{${AppState.nextNames.line++}}`;
+            const name = `l${toSubscript(AppState.nextNames.line++)}`;
             
             const direction = {
                 x: point2.coords.x - point1.coords.x,
@@ -2895,19 +2894,13 @@
             
             AppState.objects.push(lineObj);
             updateObjectsList();
-            
-            // Format line name for display: l_{1} -> l₁
-            const displayName = name.replace(/l_\{(\d+)\}/, (match, num) => {
-                const subscriptDigits = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'];
-                return 'l' + num.split('').map(d => subscriptDigits[parseInt(d)]).join('');
-            });
-            updateInfoPanel(`Создана прямая ${displayName}`);
+            updateInfoPanel(`Создана прямая ${name}`);
             
             // DON'T switch to select tool - keep line tool active for creating more lines
         }
 
         function createLine(mathPoint1, mathPoint2) {
-            const name = `l_{${AppState.nextNames.line++}}`;
+            const name = `l${toSubscript(AppState.nextNames.line++)}`;
             
             const direction = {
                 x: mathPoint2.x - mathPoint1.x,
@@ -2980,13 +2973,7 @@
             
             AppState.objects.push(lineObj);
             updateObjectsList();
-            
-            // Format line name for display: l_{1} -> l₁
-            const displayName = name.replace(/l_\{(\d+)\}/, (match, num) => {
-                const subscriptDigits = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'];
-                return 'l' + num.split('').map(d => subscriptDigits[parseInt(d)]).join('');
-            });
-            updateInfoPanel(`Создана прямая ${displayName}`);
+            updateInfoPanel(`Создана прямая ${name}`);
         }
 
         function handlePlaneCreation(pointId) {
@@ -3049,7 +3036,7 @@
             const mathP2 = point2.coords;
             const mathP3 = point3.coords;
             
-            const name = `\\pi_{${AppState.nextNames.plane++}}`;
+            const name = `π${toSubscript(AppState.nextNames.plane++)}`;
             
             const v1 = { x: mathP2.x - mathP1.x, y: mathP2.y - mathP1.y, z: mathP2.z - mathP1.z };
             const v2 = { x: mathP3.x - mathP1.x, y: mathP3.y - mathP1.y, z: mathP3.z - mathP1.z };
