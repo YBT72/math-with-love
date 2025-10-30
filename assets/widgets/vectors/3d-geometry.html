@@ -396,6 +396,15 @@
         .detail-row {
             margin-bottom: 10px;
         }
+        
+        .equation-row {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        
+        .equation-row .katex {
+            font-size: 14px;
+        }
 
         .detail-label {
             color: #666;
@@ -1158,6 +1167,34 @@
                         }
                     });
                 }
+                
+                // Update connected vectors
+                if (obj.connectedVectors && obj.connectedVectors.length > 0) {
+                    obj.connectedVectors.forEach(vectorId => {
+                        const vector = AppState.objects.find(v => v.id === vectorId);
+                        if (vector && vector.type === 'vector' && vector.sourcePoints) {
+                            // Get start and end points
+                            const startPoint = AppState.objects.find(p => p.id === vector.sourcePoints[0]);
+                            const endPoint = AppState.objects.find(p => p.id === vector.sourcePoints[1]);
+                            
+                            if (startPoint && endPoint) {
+                                // Update vector coordinates based on current point positions
+                                vector.start = { ...startPoint.coords };
+                                vector.end = { ...endPoint.coords };
+                                
+                                // Rebuild vector mesh in real-time
+                                rebuildVectorMesh(vector);
+                                
+                                // Update vector equations in real-time if properties panel is expanded
+                                const vectorAccordion = document.querySelector(`.object-accordion[data-id="${vector.id}"]`);
+                                if (vectorAccordion && vectorAccordion.classList.contains('expanded')) {
+                                    renderEquations(vector, vectorAccordion);
+                                }
+                            }
+                        }
+                    });
+                }
+                
             } else if (obj.type === 'plane') {
                 // PLANE TRANSLATE: Update plane and all source points in real-time
                 
@@ -1312,6 +1349,61 @@
                 }
                 
                 // Update coordinates of plane source points in real-time if their panels are expanded
+                if (obj.sourcePoints) {
+                    obj.sourcePoints.forEach(pointId => {
+                        const point = AppState.objects.find(p => p.id === pointId);
+                        if (point) {
+                            const pointAccordion = document.querySelector(`.object-accordion[data-id="${pointId}"]`);
+                            if (pointAccordion && pointAccordion.classList.contains('expanded')) {
+                                const detailValue = pointAccordion.querySelector('.detail-value');
+                                if (detailValue) {
+                                    const formattedCoords = `${point.coords.x.toFixed(1)}, ${point.coords.y.toFixed(1)}, ${point.coords.z.toFixed(1)}`;
+                                    detailValue.textContent = `(${formattedCoords})`;
+                                }
+                            }
+                        }
+                    });
+                }
+
+            } else if (obj.type === 'vector') {
+                // VECTOR TRANSLATE: Update vector in real-time
+                const mathOffset = threeOffsetToMath(frameOffset);
+                
+                // Update vector start and end coordinates
+                obj.start.x += mathOffset.x;
+                obj.start.y += mathOffset.y;
+                obj.start.z += mathOffset.z;
+                
+                obj.end.x += mathOffset.x;
+                obj.end.y += mathOffset.y;
+                obj.end.z += mathOffset.z;
+                
+                // Update source points positions if they exist
+                if (obj.sourcePoints) {
+                    obj.sourcePoints.forEach(pointId => {
+                        const point = AppState.objects.find(p => p.id === pointId);
+                        if (point && point.type === 'point') {
+                            point.coords.x += mathOffset.x;
+                            point.coords.y += mathOffset.y;
+                            point.coords.z += mathOffset.z;
+                            
+                            // Update point mesh position
+                            const newThreePos = mathToThree(point.coords);
+                            point.mesh.position.copy(newThreePos);
+                        }
+                    });
+                }
+                
+                // Rebuild vector mesh
+                rebuildVectorMesh(obj);
+                
+                // Update vector equations in real-time if properties panel is expanded
+                const vectorAccordion = document.querySelector(`.object-accordion[data-id="${obj.id}"]`);
+                if (vectorAccordion && vectorAccordion.classList.contains('expanded')) {
+                    renderEquations(obj, vectorAccordion);
+                }
+                
+                // Update coordinates of source points in real-time if their panels are expanded
                 if (obj.sourcePoints) {
                     obj.sourcePoints.forEach(pointId => {
                         const point = AppState.objects.find(p => p.id === pointId);
@@ -1575,74 +1667,36 @@
                         });
                     }
                     
-                } else {
-                    // For other objects (vectors)
-                    if (obj.type === 'vector') {
-                        const mathOffset = threeOffsetToMath(frameOffset);
-                        
-                        obj.start.x += mathOffset.x;
-                        obj.start.y += mathOffset.y;
-                        obj.start.z += mathOffset.z;
-                        obj.end.x += mathOffset.x;
-                        obj.end.y += mathOffset.y;
-                        obj.end.z += mathOffset.z;
-                        
-                        if (obj.sourcePoints) {
-                            obj.sourcePoints.forEach(pointId => {
-                                const point = AppState.objects.find(p => p.id === pointId);
-                                if (point) {
-                                    point.coords.x += mathOffset.x;
-                                    point.coords.y += mathOffset.y;
-                                    point.coords.z += mathOffset.z;
-                                    
-                                    const newThreePos = mathToThree(point.coords);
-                                    point.mesh.position.copy(newThreePos);
-                                    
-                                    if (point.connectedVectors) {
-                                        point.connectedVectors.forEach(vectorId => {
-                                            if (vectorId !== obj.id) {
-                                                const connectedVector = AppState.objects.find(v => v.id === vectorId);
-                                                if (connectedVector && connectedVector.type === 'vector') {
-                                                    if (connectedVector.sourcePoints[0] === pointId) {
-                                                        connectedVector.start = { ...point.coords };
-                                                    } else if (connectedVector.sourcePoints[1] === pointId) {
-                                                        connectedVector.end = { ...point.coords };
-                                                    }
-                                                    rebuildVectorMesh(connectedVector);
-                                                }
-                                            }
-                                        });
-                                    }
-                                    
-                                    if (point.connectedLines) {
-                                        point.connectedLines.forEach(lineId => {
-                                            const line = AppState.objects.find(l => l.id === lineId);
-                                            if (line && line.type === 'line') {
-                                                const point1 = AppState.objects.find(p => p.id === line.sourcePoints[0]);
-                                                const point2 = AppState.objects.find(p => p.id === line.sourcePoints[1]);
-                                                
-                                                if (point1 && point2) {
-                                                    line.point = { ...point1.coords };
-                                                    line.direction = {
-                                                        x: point2.coords.x - point1.coords.x,
-                                                        y: point2.coords.y - point1.coords.y,
-                                                        z: point2.coords.z - point1.coords.z
-                                                    };
-                                                    rebuildLineMesh(line);
-                                                }
-                                            }
-                                        });
+                } else if (obj && obj.type === 'vector' && transformHelper) {
+                    // VECTOR MOVED (translate)
+                    // All coordinate updates already done in 'change' event during dragging
+                    
+                    // Update equations in DOM if properties panel is expanded
+                    const vectorAccordion = document.querySelector(`.object-accordion[data-id="${obj.id}"]`);
+                    if (vectorAccordion && vectorAccordion.classList.contains('expanded')) {
+                        renderEquations(obj, vectorAccordion);
+                    }
+                    
+                    // Update coordinates of source points in their panels if expanded
+                    if (obj.sourcePoints) {
+                        obj.sourcePoints.forEach(pointId => {
+                            const point = AppState.objects.find(p => p.id === pointId);
+                            if (point) {
+                                const pointAccordion = document.querySelector(`.object-accordion[data-id="${pointId}"]`);
+                                if (pointAccordion && pointAccordion.classList.contains('expanded')) {
+                                    const detailValue = pointAccordion.querySelector('.detail-value');
+                                    if (detailValue) {
+                                        const formattedCoords = `${point.coords.x.toFixed(1)}, ${point.coords.y.toFixed(1)}, ${point.coords.z.toFixed(1)}`;
+                                        detailValue.textContent = `(${formattedCoords})`;
                                     }
                                 }
-                            });
-                        }
-                        
-                        rebuildVectorMesh(obj);
-                        updateObjectsList();
-                        lastHelperPosition = currentPosition.clone();
-                    } else {
-                        updateObjectPosition(AppState.selectedObject, transformControls.object);
+                            }
+                        });
                     }
+                    
+                } else {
+                    // For other objects
+                    updateObjectPosition(AppState.selectedObject, transformControls.object);
                 }
                 
                 transformStartPosition = null;
@@ -1917,24 +1971,37 @@
             }
             
             // Create orange vector t·ū
-            const length = basePoint.distanceTo(newSpherePos);
+            const fullLength = basePoint.distanceTo(newSpherePos);
             
-            // Shaft
-            const shaftGeom = new THREE.CylinderGeometry(0.04, 0.04, length, 8);
+            // Adjust length to account for sphere radius (0.15) plus small gap (0.15)
+            const sphereAndGap = 0.1;
+            const adjustedLength = Math.max(0.1, fullLength - sphereAndGap); // Minimum length to avoid issues
+            
+            // Calculate adjusted end position (closer to base point)
+            const directionToSphere = new THREE.Vector3().subVectors(newSpherePos, basePoint).normalize();
+            const adjustedEndPos = basePoint.clone().add(directionToSphere.clone().multiplyScalar(adjustedLength + sphereAndGap - 0.15));
+            
+            // Determine arrow direction based on t value sign using original direction
+            const arrowDirection = tValue >= 0 ? direction : direction.clone().negate();
+            
+            // Create shaft with adjusted length
+            const shaftLength = adjustedLength;
+            const shaftGeom = new THREE.CylinderGeometry(0.04, 0.04, shaftLength, 8);
             const shaftMat = new THREE.MeshBasicMaterial({ color: 0xff9800 });
             const shaft = new THREE.Mesh(shaftGeom, shaftMat);
             
-            const mid = new THREE.Vector3().addVectors(basePoint, newSpherePos).multiplyScalar(0.5);
+            // Position shaft between basePoint and adjustedEndPos
+            const mid = new THREE.Vector3().addVectors(basePoint, adjustedEndPos).multiplyScalar(0.5);
             shaft.position.copy(mid);
-            shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+            shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), arrowDirection);
             orangeGroup.add(shaft);
             
-            // Head
+            // Head positioned at adjustedEndPos
             const headGeom = new THREE.ConeGeometry(0.09, 0.3, 12);
             const headMat = new THREE.MeshBasicMaterial({ color: 0xff9800 });
             const head = new THREE.Mesh(headGeom, headMat);
-            head.position.copy(newSpherePos);
-            head.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+            head.position.copy(adjustedEndPos);
+            head.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), arrowDirection);
             orangeGroup.add(head);
             
             // Label "t·u̲₁" with underline and subscript - dark color for contrast
@@ -2389,21 +2456,29 @@
             const actualLength = threeDirVector.length();
             
             // === BLUE DIRECTION VECTOR ū (from point1 to point2) ===
+            // Adjust length to account for sphere radius and gap at the end
+            const sphereAndGap = 0.2; // Reduced gap to match orange arrow
+            const adjustedBlueLength = Math.max(0.1, actualLength - sphereAndGap);
+            
+            // Start from basePoint, end before the end sphere
+            const adjustedBlueStart = basePoint;
+            const adjustedBlueEnd = basePoint.clone().add(dirNormalized.clone().multiplyScalar(adjustedBlueLength));
+            
             // Shaft
-            const blueShaftGeom = new THREE.CylinderGeometry(0.04, 0.04, actualLength, 8);
+            const blueShaftGeom = new THREE.CylinderGeometry(0.04, 0.04, adjustedBlueLength, 8);
             const blueShaftMat = new THREE.MeshBasicMaterial({ color: 0x1976d2 });
             const blueShaft = new THREE.Mesh(blueShaftGeom, blueShaftMat);
             
-            const blueMid = new THREE.Vector3().addVectors(basePoint, endPoint).multiplyScalar(0.5);
+            const blueMid = new THREE.Vector3().addVectors(adjustedBlueStart, adjustedBlueEnd).multiplyScalar(0.5);
             blueShaft.position.copy(blueMid);
             blueShaft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dirNormalized);
             vizGroup.add(blueShaft);
             
-            // Arrow head (bigger to be visible over spheres)
-            const blueHeadGeom = new THREE.ConeGeometry(0.12, 0.35, 12);
+            // Arrow head (same size as independent vectors)
+            const blueHeadGeom = new THREE.ConeGeometry(0.09, 0.3, 12);
             const blueHeadMat = new THREE.MeshBasicMaterial({ color: 0x1976d2 });
             const blueHead = new THREE.Mesh(blueHeadGeom, blueHeadMat);
-            blueHead.position.copy(endPoint);
+            blueHead.position.copy(adjustedBlueEnd);
             blueHead.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dirNormalized);
             vizGroup.add(blueHead);
             
@@ -2415,12 +2490,12 @@
             blueLabel.position.copy(blueMid.clone().add(new THREE.Vector3(0, 0.4, 0)));
             vizGroup.add(blueLabel);
             
-            // === ORANGE DRAGGABLE SPHERE (1.1x bigger than regular points) ===
+            // === ORANGE DRAGGABLE SPHERE (same size as regular points) ===
             // Initial position: use preserved t value or default to 1.0
             const initialT = preservedT !== null ? preservedT : 1.0;
             const initialOrangePos = basePoint.clone().add(dirNormalized.clone().multiplyScalar(initialT * actualLength));
             
-            const sphereGeometry = new THREE.SphereGeometry(0.165, 16, 16); // 0.15 * 1.1 = 0.165
+            const sphereGeometry = new THREE.SphereGeometry(0.15, 16, 16); // Same as regular points
             const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff6600 });
             const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
             sphere.position.copy(initialOrangePos);
@@ -3624,7 +3699,7 @@
                 const wasExpanded = div.classList.contains('expanded');
                 div.classList.toggle('expanded');
                 
-                if (!wasExpanded && (obj.type === 'line' || obj.type === 'plane')) {
+                if (!wasExpanded && (obj.type === 'line' || obj.type === 'plane' || obj.type === 'vector')) {
                     setTimeout(() => {
                         renderEquations(obj, div);
                     }, 50);
@@ -3718,38 +3793,13 @@
                     `;
                 
                 case 'vector':
+                    // Vector equations will be rendered by KaTeX
                     return `
-                        <div class="detail-row">
-                            <div class="detail-label">Начало:</div>
-                            <div class="detail-value">(${formatCoords(obj.start)})</div>
+                        <div class="equation-row">
+                            <div data-eq-type="vector-eq"></div>
                         </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Конец:</div>
-                            <div class="detail-value">(${formatCoords(obj.end)})</div>
-                        </div>
-                    `;
-                case 'vector':
-                    const startCoords = obj.start;
-                    const endCoords = obj.end;
-                    const vectorCoords = {
-                        x: endCoords.x - startCoords.x,
-                        y: endCoords.y - startCoords.y,
-                        z: endCoords.z - startCoords.z
-                    };
-                    const vectorLength = Math.sqrt(
-                        vectorCoords.x * vectorCoords.x + 
-                        vectorCoords.y * vectorCoords.y + 
-                        vectorCoords.z * vectorCoords.z
-                    );
-                    
-                    return `
-                        <div class="detail-row">
-                            <div class="detail-label">Координаты:</div>
-                            <div class="detail-value">(${vectorCoords.x.toFixed(1)}, ${vectorCoords.y.toFixed(1)}, ${vectorCoords.z.toFixed(1)})</div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Длина:</div>
-                            <div class="detail-value">${vectorLength.toFixed(1)}</div>
+                        <div class="equation-row">
+                            <div data-eq-type="vector-magnitude"></div>
                         </div>
                     `;
             }
@@ -3843,6 +3893,24 @@
                         }
                     }
                 });
+            } else if (obj.type === 'vector') {
+                // Calculate vector components
+                const dx = obj.end.x - obj.start.x;
+                const dy = obj.end.y - obj.start.y;
+                const dz = obj.end.z - obj.start.z;
+                const magnitude = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                
+                // Render vector equation: AB = (dx, dy, dz)
+                const vectorEq = `\\overrightarrow{${obj.name}} = (${dx.toFixed(1)}, ${dy.toFixed(1)}, ${dz.toFixed(1)})`;
+                
+                // Render magnitude equation: |AB| = magnitude
+                const magnitudeEq = `|\\overrightarrow{${obj.name}}| = ${magnitude.toFixed(2)}`;
+                
+                const vectorEl = container.querySelector('[data-eq-type="vector-eq"]');
+                const magnitudeEl = container.querySelector('[data-eq-type="vector-magnitude"]');
+                
+                if (vectorEl) katex.render(vectorEq, vectorEl, { throwOnError: false });
+                if (magnitudeEl) katex.render(magnitudeEq, magnitudeEl, { throwOnError: false });
             }
         }
 
