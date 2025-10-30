@@ -2564,89 +2564,79 @@
             const plane = AppState.objects.find(obj => obj.id === planeId);
             if (!plane || plane.type !== 'plane') return;
 
+            // Initialize connected arrays if they don't exist
+            if (!plane.connectedLines) plane.connectedLines = [];
+            if (!plane.connectedVectors) plane.connectedVectors = [];
+
             if (plane.showingLines) {
-                // Hide lines - just toggle state, don't delete lines
+                // Hide connected objects (lines and vectors)
                 plane.showingLines = false;
-                updateObjectsList();
-                updateInfoPanel('Прямые скрыты');
-            } else {
-                // Show lines - check if they exist
-                const point1 = AppState.objects.find(p => p.id === plane.sourcePoints[0]);
-                const point2 = AppState.objects.find(p => p.id === plane.sourcePoints[1]);
-                const point3 = AppState.objects.find(p => p.id === plane.sourcePoints[2]);
                 
-                if (!point1 || !point2 || !point3) {
-                    updateInfoPanel('Ошибка: точки плоскости не найдены');
-                    return;
-                }
-                
-                // Check if lines A-B and A-C exist
-                const lineAB = findLineBetweenPoints(point1.id, point2.id);
-                const lineAC = findLineBetweenPoints(point1.id, point3.id);
-                
-                let linesToConnect = [];
-                let linesToCreate = [];
-                
-                if (lineAB) {
-                    linesToConnect.push({ line: lineAB, name: `${point1.name}-${point2.name}` });
-                } else {
-                    linesToCreate.push({ p1: point1, p2: point2, name: `${point1.name}-${point2.name}` });
-                }
-                
-                if (lineAC) {
-                    linesToConnect.push({ line: lineAC, name: `${point1.name}-${point3.name}` });
-                } else {
-                    linesToCreate.push({ p1: point1, p2: point3, name: `${point1.name}-${point3.name}` });
-                }
-                
-                // If any lines exist, ask user for confirmation to link them
-                if (linesToConnect.length > 0) {
-                    const lineNames = linesToConnect.map(l => l.name).join(' и ');
-                    const confirmMsg = `Прямые ${lineNames} уже существуют. Привязать их к плоскости?`;
-                    
-                    if (confirm(confirmMsg)) {
-
-                        // Link existing lines
-                        if (!plane.connectedLines) plane.connectedLines = [];
-                        linesToConnect.forEach(({ line }) => {
-                            if (!plane.connectedLines.includes(line.id)) {
-                                plane.connectedLines.push(line.id);
-                            }
-                        });
-                        
-                        // Create missing lines
-                        saveToHistory();
-                        linesToCreate.forEach(({ p1, p2 }) => {
-                            const newLine = createLineFromPointsForPlane(p1.id, p2.id);
-                            if (newLine && !plane.connectedLines.includes(newLine.id)) {
-                                plane.connectedLines.push(newLine.id);
-                            }
-                        });
-                        
-                        plane.showingLines = true;
-                        updateObjectsList();
-                        updateInfoPanel(`Прямые привязаны к плоскости ${plane.name}`);
-                    } else {
-
-                        updateInfoPanel('Отменено');
+                // Hide all connected lines
+                plane.connectedLines.forEach(lineId => {
+                    const lineObj = AppState.objects.find(obj => obj.id === lineId);
+                    if (lineObj && lineObj.mesh) {
+                        lineObj.mesh.visible = false;
                     }
-                } else {
+                });
+                
+                // Hide all connected vectors
+                plane.connectedVectors.forEach(vectorId => {
+                    const vectorObj = AppState.objects.find(obj => obj.id === vectorId);
+                    if (vectorObj && vectorObj.mesh) {
+                        vectorObj.mesh.visible = false;
+                    }
+                });
+                
+                updateObjectsList();
+                updateInfoPanel('Привязанные объекты скрыты');
+            } else {
+                // Show connected objects or create default lines if none exist
+                if (plane.connectedLines.length === 0 && plane.connectedVectors.length === 0) {
+                    // No connected objects - create default lines
+                    const point1 = AppState.objects.find(p => p.id === plane.sourcePoints[0]);
+                    const point2 = AppState.objects.find(p => p.id === plane.sourcePoints[1]);
+                    const point3 = AppState.objects.find(p => p.id === plane.sourcePoints[2]);
                     
-                    // No existing lines - create both automatically
+                    if (!point1 || !point2 || !point3) {
+                        updateInfoPanel('Ошибка: точки плоскости не найдены');
+                        return;
+                    }
+                    
                     saveToHistory();
                     
-                    if (!plane.connectedLines) plane.connectedLines = [];
+                    // Create two lines: AB and AC
+                    const lineAB = createLineFromPointsForPlane(point1.id, point2.id);
+                    const lineAC = createLineFromPointsForPlane(point1.id, point3.id);
                     
-                    linesToCreate.forEach(({ p1, p2 }) => {
-                        const newLine = createLineFromPointsForPlane(p1.id, p2.id);
-                        if (newLine && !plane.connectedLines.includes(newLine.id)) {
-                            plane.connectedLines.push(newLine.id);
-                        }
-                    });
+                    if (lineAB) plane.connectedLines.push(lineAB.id);
+                    if (lineAC) plane.connectedLines.push(lineAC.id);
                     
                     plane.showingLines = true;
                     updateObjectsList();
                     updateInfoPanel(`Прямые созданы для плоскости ${plane.name}`);
+                } else {
+                    // Show existing connected objects
+                    plane.showingLines = true;
+                    
+                    // Show all connected lines
+                    plane.connectedLines.forEach(lineId => {
+                        const lineObj = AppState.objects.find(obj => obj.id === lineId);
+                        if (lineObj && lineObj.mesh) {
+                            lineObj.mesh.visible = true;
+                        }
+                    });
+                    
+                    // Show all connected vectors
+                    plane.connectedVectors.forEach(vectorId => {
+                        const vectorObj = AppState.objects.find(obj => obj.id === vectorId);
+                        if (vectorObj && vectorObj.mesh) {
+                            vectorObj.mesh.visible = true;
+                        }
+                    });
+                    
+                    updateObjectsList();
+                    updateInfoPanel('Привязанные объекты показаны');
                 }
             }
         }
