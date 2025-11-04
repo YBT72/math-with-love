@@ -2760,6 +2760,24 @@
                 }
             });
             
+            // Auto-link line to planes that contain both points (this should happen automatically since this function is called for plane lines)
+            AppState.objects.forEach(plane => {
+                if (plane.type === 'plane' && plane.sourcePoints) {
+                    const containsPoint1 = plane.sourcePoints.includes(pointId1);
+                    const containsPoint2 = plane.sourcePoints.includes(pointId2);
+                    
+                    if (containsPoint1 && containsPoint2) {
+                        // Both points are in this plane - link line to plane
+                        if (!plane.connectedLines) {
+                            plane.connectedLines = [];
+                        }
+                        if (!plane.connectedLines.includes(lineObj.id)) {
+                            plane.connectedLines.push(lineObj.id);
+                        }
+                    }
+                }
+            });
+            
             AppState.objects.push(lineObj);
             return lineObj;
         }
@@ -2874,6 +2892,26 @@
                 id: data.id,
                 sourcePoints: data.sourcePoints || []
             });
+            
+            // Restore links to planes that contain both line points
+            if (data.sourcePoints && data.sourcePoints.length >= 2) {
+                AppState.objects.forEach(plane => {
+                    if (plane.type === 'plane' && plane.sourcePoints) {
+                        const containsPoint1 = plane.sourcePoints.includes(data.sourcePoints[0]);
+                        const containsPoint2 = plane.sourcePoints.includes(data.sourcePoints[1]);
+                        
+                        if (containsPoint1 && containsPoint2) {
+                            // Both points are in this plane - restore link to plane
+                            if (!plane.connectedLines) {
+                                plane.connectedLines = [];
+                            }
+                            if (!plane.connectedLines.includes(data.id)) {
+                                plane.connectedLines.push(data.id);
+                            }
+                        }
+                    }
+                });
+            }
         }
 
         function recreatePlane(data) {
@@ -3222,6 +3260,27 @@
                 }
             });
             
+            // Auto-link line to planes that contain both points
+            AppState.objects.forEach(plane => {
+                if (plane.type === 'plane' && plane.sourcePoints) {
+                    const containsPoint1 = plane.sourcePoints.includes(pointId1);
+                    const containsPoint2 = plane.sourcePoints.includes(pointId2);
+                    
+                    if (containsPoint1 && containsPoint2) {
+                        // Both points are in this plane - link line to plane
+                        if (!plane.connectedLines) {
+                            plane.connectedLines = [];
+                        }
+                        plane.connectedLines.push(lineObj.id);
+                        
+                        // If plane is currently showing lines, make this line visible immediately
+                        if (plane.showingLines && lineObj.mesh) {
+                            lineObj.mesh.visible = true;
+                        }
+                    }
+                }
+            });
+            
             AppState.objects.push(lineObj);
             updateObjectsList();
             updateInfoPanel(`Создана прямая ${name}`);
@@ -3300,6 +3359,29 @@
                     }
                 }
             });
+            
+            // Auto-link line to planes that contain both source points
+            if (sourcePoints.length >= 2) {
+                AppState.objects.forEach(plane => {
+                    if (plane.type === 'plane' && plane.sourcePoints) {
+                        const containsPoint1 = plane.sourcePoints.includes(sourcePoints[0]);
+                        const containsPoint2 = plane.sourcePoints.includes(sourcePoints[1]);
+                        
+                        if (containsPoint1 && containsPoint2) {
+                            // Both points are in this plane - link line to plane
+                            if (!plane.connectedLines) {
+                                plane.connectedLines = [];
+                            }
+                            plane.connectedLines.push(lineObj.id);
+                            
+                            // If plane is currently showing lines, make this line visible immediately
+                            if (plane.showingLines && lineObj.mesh) {
+                                lineObj.mesh.visible = true;
+                            }
+                        }
+                    }
+                });
+            }
             
             AppState.objects.push(lineObj);
             updateObjectsList();
