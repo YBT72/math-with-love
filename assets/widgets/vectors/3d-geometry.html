@@ -417,6 +417,58 @@
             font-family: 'Consolas', 'Monaco', monospace;
         }
 
+        .coords-editor {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .coords-editor span {
+            font-weight: 600;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .coord-input {
+            width: 60px;
+            padding: 4px 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            text-align: center;
+        }
+
+        .coord-input:focus {
+            outline: none;
+            border-color: #1976d2;
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+        }
+
+        .apply-coords-btn {
+            padding: 4px 8px;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .apply-coords-btn:hover {
+            background: #1565c0;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(25, 118, 210, 0.3);
+        }
+
+        .apply-coords-btn:active {
+            transform: translateY(0);
+        }
+
         .katex {
             font-size: 1.1em;
         }
@@ -2931,6 +2983,165 @@
             updateObjectsList();
         }
 
+        function updatePointCoordinates(pointId, newCoords) {
+            const point = AppState.objects.find(obj => obj.id === pointId && obj.type === 'point');
+            if (!point) return;
+            
+            // Save to history before making changes
+            saveToHistory();
+            
+            // Update point coordinates
+            point.coords = { ...newCoords };
+            
+            // Update point mesh position
+            const newThreePos = mathToThree(point.coords);
+            point.mesh.position.copy(newThreePos);
+            
+            // Update connected lines
+            if (point.connectedLines && point.connectedLines.length > 0) {
+                point.connectedLines.forEach(lineId => {
+                    const line = AppState.objects.find(l => l.id === lineId);
+                    if (line && line.type === 'line' && line.sourcePoints && line.sourcePoints.length >= 2) {
+                        const point1 = AppState.objects.find(p => p.id === line.sourcePoints[0]);
+                        const point2 = AppState.objects.find(p => p.id === line.sourcePoints[1]);
+                        
+                        if (point1 && point2) {
+                            // Update line's base point and direction
+                            line.point = { ...point1.coords };
+                            line.direction = {
+                                x: point2.coords.x - point1.coords.x,
+                                y: point2.coords.y - point1.coords.y,
+                                z: point2.coords.z - point1.coords.z
+                            };
+                            
+                            // Rebuild line mesh
+                            rebuildLineMesh(line);
+                            
+                            // Update vizGroup if exists
+                            if (line.vizGroup && line.visualizing) {
+                                let savedTValue = null;
+                                if (line.vizGroup.userData.sphere && line.vizGroup.userData.sphere.userData) {
+                                    savedTValue = line.vizGroup.userData.sphere.userData.tValue;
+                                }
+                                hideVisualization(line);
+                                showLineParameterVisualization(line, savedTValue);
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Update connected planes
+            if (point.connectedPlanes && point.connectedPlanes.length > 0) {
+                point.connectedPlanes.forEach(planeId => {
+                    const plane = AppState.objects.find(pl => pl.id === planeId);
+                    if (plane && plane.type === 'plane' && plane.sourcePoints && plane.sourcePoints.length >= 3) {
+                        const point1 = AppState.objects.find(p => p.id === plane.sourcePoints[0]);
+                        const point2 = AppState.objects.find(p => p.id === plane.sourcePoints[1]);
+                        const point3 = AppState.objects.find(p => p.id === plane.sourcePoints[2]);
+                        
+                        if (point1 && point2 && point3) {
+                            // Update base point
+                            plane.point = { ...point1.coords };
+                            
+                            // Recalculate plane vectors
+                            plane.v1 = {
+                                x: point2.coords.x - point1.coords.x,
+                                y: point2.coords.y - point1.coords.y,
+                                z: point2.coords.z - point1.coords.z
+                            };
+                            
+                            plane.v2 = {
+                                x: point3.coords.x - point1.coords.x,
+                                y: point3.coords.y - point1.coords.y,
+                                z: point3.coords.z - point1.coords.z
+                            };
+                            
+                            // Recalculate normal vector
+                            plane.normal = {
+                                x: plane.v1.y * plane.v2.z - plane.v1.z * plane.v2.y,
+                                y: plane.v1.z * plane.v2.x - plane.v1.x * plane.v2.z,
+                                z: plane.v1.x * plane.v2.y - plane.v1.y * plane.v2.x
+                            };
+                            
+                            // Update plane mesh
+                            const threeP1 = mathToThree(point1.coords);
+                            const threeP2 = mathToThree(point2.coords);
+                            const threeP3 = mathToThree(point3.coords);
+                            const center = new THREE.Vector3().addVectors(threeP1, threeP2).add(threeP3).divideScalar(3);
+                            
+                            plane.mesh.position.copy(center);
+                            plane.mesh.lookAt(center.clone().add(mathToThree(plane.normal)));
+                            
+                            // Update stored center
+                            if (plane.center) {
+                                plane.center.copy(center);
+                            }
+                            
+                            // Update connected lines of the plane
+                            if (plane.connectedLines && plane.connectedLines.length > 0) {
+                                plane.connectedLines.forEach(lineId => {
+                                    const line = AppState.objects.find(l => l.id === lineId);
+                                    if (line && line.type === 'line' && line.sourcePoints && line.sourcePoints.length >= 2) {
+                                        const linePoint1 = AppState.objects.find(p => p.id === line.sourcePoints[0]);
+                                        const linePoint2 = AppState.objects.find(p => p.id === line.sourcePoints[1]);
+                                        
+                                        if (linePoint1 && linePoint2) {
+                                            line.point = { ...linePoint1.coords };
+                                            line.direction = {
+                                                x: linePoint2.coords.x - linePoint1.coords.x,
+                                                y: linePoint2.coords.y - linePoint1.coords.y,
+                                                z: linePoint2.coords.z - linePoint1.coords.z
+                                            };
+                                            rebuildLineMesh(line);
+                                        }
+                                    }
+                                });
+                            }
+                            
+                            // Update connected vectors of the plane
+                            if (plane.connectedVectors && plane.connectedVectors.length > 0) {
+                                plane.connectedVectors.forEach(vectorId => {
+                                    const vector = AppState.objects.find(v => v.id === vectorId);
+                                    if (vector && vector.type === 'vector' && vector.sourcePoints && vector.sourcePoints.length >= 2) {
+                                        const startPoint = AppState.objects.find(p => p.id === vector.sourcePoints[0]);
+                                        const endPoint = AppState.objects.find(p => p.id === vector.sourcePoints[1]);
+                                        
+                                        if (startPoint && endPoint) {
+                                            vector.start = { ...startPoint.coords };
+                                            vector.end = { ...endPoint.coords };
+                                            rebuildVectorMesh(vector);
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Update connected vectors
+            if (point.connectedVectors && point.connectedVectors.length > 0) {
+                point.connectedVectors.forEach(vectorId => {
+                    const vector = AppState.objects.find(v => v.id === vectorId);
+                    if (vector && vector.type === 'vector' && vector.sourcePoints && vector.sourcePoints.length >= 2) {
+                        const startPoint = AppState.objects.find(p => p.id === vector.sourcePoints[0]);
+                        const endPoint = AppState.objects.find(p => p.id === vector.sourcePoints[1]);
+                        
+                        if (startPoint && endPoint) {
+                            vector.start = { ...startPoint.coords };
+                            vector.end = { ...endPoint.coords };
+                            rebuildVectorMesh(vector);
+                        }
+                    }
+                });
+            }
+            
+            // Update object list to refresh coordinates display
+            updateObjectsList();
+            updateInfoPanel(`Координаты точки ${point.name} обновлены`);
+        }
+
         function recreateObjectFromData(objData) {
             switch(objData.type) {
                 case 'point':
@@ -4019,6 +4230,32 @@
                 });
             });
             
+            // Apply coordinates button handler (for points)
+            if (obj.type === 'point') {
+                const applyBtn = div.querySelector('.apply-coords-btn');
+                if (applyBtn) {
+                    applyBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        
+                        const coordInputs = div.querySelectorAll('.coord-input');
+                        const newCoords = {};
+                        
+                        coordInputs.forEach(input => {
+                            const coord = input.dataset.coord;
+                            const value = parseFloat(input.value);
+                            if (!isNaN(value)) {
+                                newCoords[coord] = value;
+                            }
+                        });
+                        
+                        if (newCoords.x !== undefined && newCoords.y !== undefined && newCoords.z !== undefined) {
+                            updatePointCoordinates(obj.id, newCoords);
+                        }
+                    });
+                }
+            }
+            
             return div;
         }
 
@@ -4027,7 +4264,16 @@
                 case 'point':
                     return `
                         <div class="detail-row">
-                            <div class="detail-value">(${formatCoords(obj.coords)})</div>
+                            <div class="detail-label">Координаты:</div>
+                            <div class="coords-editor">
+                                <span>x:</span>
+                                <input type="number" class="coord-input" data-coord="x" value="${obj.coords.x.toFixed(1)}" step="0.1">
+                                <span>y:</span>
+                                <input type="number" class="coord-input" data-coord="y" value="${obj.coords.y.toFixed(1)}" step="0.1">
+                                <span>z:</span>
+                                <input type="number" class="coord-input" data-coord="z" value="${obj.coords.z.toFixed(1)}" step="0.1">
+                                <button class="apply-coords-btn" data-point-id="${obj.id}">Применить</button>
+                            </div>
                         </div>
                     `;
                 
