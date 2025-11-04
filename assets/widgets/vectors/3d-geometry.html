@@ -417,6 +417,85 @@
             font-family: 'Consolas', 'Monaco', monospace;
         }
 
+        .coords-inline-editor {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+        }
+
+        .coords-inline-editor .bracket,
+        .coords-inline-editor .comma {
+            color: #1a1a1a;
+            font-weight: 500;
+        }
+
+        .coord-inline-input {
+            width: 50px;
+            padding: 2px 4px;
+            border: 1px solid transparent;
+            border-radius: 3px;
+            font-size: 14px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            text-align: center;
+            background: transparent;
+            color: #1a1a1a;
+            transition: all 0.15s ease;
+        }
+
+        .coord-inline-input:hover {
+            background: #f8f8f8;
+            border-color: #ddd;
+        }
+
+        .coord-inline-input:focus {
+            outline: none;
+            background: white;
+            border-color: #1976d2;
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+        }
+
+        .coord-inline-input::-webkit-outer-spin-button,
+        .coord-inline-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .coord-inline-input[type=number] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        .coords-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .coords-text {
+            color: #1a1a1a;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+        }
+
+        .edit-coords-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 2px 4px;
+            border-radius: 3px;
+            opacity: 0.6;
+            transition: all 0.15s ease;
+        }
+
+        .edit-coords-btn:hover {
+            background: #f0f0f0;
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
         .coords-editor {
             display: flex;
             align-items: center;
@@ -449,23 +528,55 @@
 
         .apply-coords-btn {
             padding: 4px 8px;
-            background: #1976d2;
+            background: #4caf50;
             color: white;
             border: none;
             border-radius: 4px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.15s ease;
+            min-width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .apply-coords-btn:hover {
-            background: #1565c0;
+            background: #388e3c;
             transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(25, 118, 210, 0.3);
+            box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
         }
 
         .apply-coords-btn:active {
+            transform: translateY(0);
+        }
+
+        .cancel-coords-btn {
+            padding: 4px 8px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            min-width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cancel-coords-btn:hover {
+            background: #d32f2f;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
+        }
+
+        .cancel-coords-btn:active {
             transform: translateY(0);
         }
 
@@ -1033,14 +1144,7 @@
                     obj.sourcePoints.forEach(pointId => {
                         const point = AppState.objects.find(p => p.id === pointId);
                         if (point) {
-                            const pointAccordion = document.querySelector(`.object-accordion[data-id="${pointId}"]`);
-                            if (pointAccordion && pointAccordion.classList.contains('expanded')) {
-                                const detailValue = pointAccordion.querySelector('.detail-value');
-                                if (detailValue) {
-                                    const formattedCoords = `${point.coords.x.toFixed(1)}, ${point.coords.y.toFixed(1)}, ${point.coords.z.toFixed(1)}`;
-                                    detailValue.textContent = `(${formattedCoords})`;
-                                }
-                            }
+                            updatePointCoordinatesDisplay(pointId, point.coords);
                         }
                     });
                 }
@@ -1113,11 +1217,20 @@
                 // Update coordinates display in properties panel if expanded
                 const objectAccordion = document.querySelector(`.object-accordion[data-id="${obj.id}"]`);
                 if (objectAccordion && objectAccordion.classList.contains('expanded')) {
-                    const detailValue = objectAccordion.querySelector('.detail-value');
-                    if (detailValue) {
+                    const coordsText = objectAccordion.querySelector('.coords-text');
+                    if (coordsText) {
                         // Format coords inline since formatCoords function is declared later
                         const formattedCoords = `${newMathCoords.x.toFixed(1)}, ${newMathCoords.y.toFixed(1)}, ${newMathCoords.z.toFixed(1)}`;
-                        detailValue.textContent = `(${formattedCoords})`;
+                        coordsText.textContent = `(${formattedCoords})`;
+                    }
+                    
+                    // Also update input values if editor is open
+                    const coordInputs = objectAccordion.querySelectorAll('.coord-input');
+                    if (coordInputs.length > 0) {
+                        coordInputs.forEach(input => {
+                            const coord = input.dataset.coord;
+                            input.value = newMathCoords[coord].toFixed(1);
+                        });
                     }
                 }
                 
@@ -2983,6 +3096,26 @@
             updateObjectsList();
         }
 
+        function updatePointCoordinatesDisplay(pointId, coords) {
+            const pointAccordion = document.querySelector(`.object-accordion[data-id="${pointId}"]`);
+            if (pointAccordion && pointAccordion.classList.contains('expanded')) {
+                const coordsText = pointAccordion.querySelector('.coords-text');
+                if (coordsText) {
+                    const formattedCoords = `${coords.x.toFixed(1)}, ${coords.y.toFixed(1)}, ${coords.z.toFixed(1)}`;
+                    coordsText.textContent = `(${formattedCoords})`;
+                }
+                
+                // Also update input values if editor is open
+                const coordInputs = pointAccordion.querySelectorAll('.coord-input');
+                if (coordInputs.length > 0) {
+                    coordInputs.forEach(input => {
+                        const coord = input.dataset.coord;
+                        input.value = coords[coord].toFixed(1);
+                    });
+                }
+            }
+        }
+
         function updatePointCoordinates(pointId, newCoords) {
             const point = AppState.objects.find(obj => obj.id === pointId && obj.type === 'point');
             if (!point) return;
@@ -4232,6 +4365,30 @@
             
             // Apply coordinates button handler (for points)
             if (obj.type === 'point') {
+                // Edit button handler
+                const editBtn = div.querySelector('.edit-coords-btn');
+                if (editBtn) {
+                    editBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        
+                        const coordsDisplay = div.querySelector('.coords-display');
+                        const coordsEditor = div.querySelector('.coords-editor');
+                        
+                        // Hide display, show editor
+                        coordsDisplay.style.display = 'none';
+                        coordsEditor.style.display = 'flex';
+                        
+                        // Focus first input
+                        const firstInput = coordsEditor.querySelector('.coord-input');
+                        if (firstInput) {
+                            firstInput.focus();
+                            firstInput.select();
+                        }
+                    });
+                }
+                
+                // Apply button handler
                 const applyBtn = div.querySelector('.apply-coords-btn');
                 if (applyBtn) {
                     applyBtn.addEventListener('click', (e) => {
@@ -4251,9 +4408,57 @@
                         
                         if (newCoords.x !== undefined && newCoords.y !== undefined && newCoords.z !== undefined) {
                             updatePointCoordinates(obj.id, newCoords);
+                            
+                            // Hide editor, show display with updated values
+                            const coordsDisplay = div.querySelector('.coords-display');
+                            const coordsEditor = div.querySelector('.coords-editor');
+                            const coordsText = div.querySelector('.coords-text');
+                            
+                            coordsEditor.style.display = 'none';
+                            coordsDisplay.style.display = 'flex';
+                            
+                            // Update display text
+                            coordsText.textContent = `(${newCoords.x.toFixed(1)}, ${newCoords.y.toFixed(1)}, ${newCoords.z.toFixed(1)})`;
                         }
                     });
                 }
+                
+                // Cancel button handler
+                const cancelBtn = div.querySelector('.cancel-coords-btn');
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        
+                        const coordsDisplay = div.querySelector('.coords-display');
+                        const coordsEditor = div.querySelector('.coords-editor');
+                        
+                        // Reset input values to original
+                        const coordInputs = div.querySelectorAll('.coord-input');
+                        coordInputs.forEach(input => {
+                            const coord = input.dataset.coord;
+                            input.value = obj.coords[coord].toFixed(1);
+                        });
+                        
+                        // Hide editor, show display
+                        coordsEditor.style.display = 'none';
+                        coordsDisplay.style.display = 'flex';
+                    });
+                }
+                
+                // Enter key support for inputs
+                const coordInputs = div.querySelectorAll('.coord-input');
+                coordInputs.forEach(input => {
+                    input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            applyBtn.click();
+                        } else if (e.key === 'Escape') {
+                            e.preventDefault();
+                            cancelBtn.click();
+                        }
+                    });
+                });
             }
             
             return div;
@@ -4264,15 +4469,14 @@
                 case 'point':
                     return `
                         <div class="detail-row">
-                            <div class="detail-label">Координаты:</div>
-                            <div class="coords-editor">
-                                <span>x:</span>
-                                <input type="number" class="coord-input" data-coord="x" value="${obj.coords.x.toFixed(1)}" step="0.1">
-                                <span>y:</span>
-                                <input type="number" class="coord-input" data-coord="y" value="${obj.coords.y.toFixed(1)}" step="0.1">
-                                <span>z:</span>
-                                <input type="number" class="coord-input" data-coord="z" value="${obj.coords.z.toFixed(1)}" step="0.1">
-                                <button class="apply-coords-btn" data-point-id="${obj.id}">Применить</button>
+                            <div class="coords-inline-editor">
+                                <span class="bracket">(</span>
+                                <input type="number" class="coord-inline-input" data-coord="x" value="${obj.coords.x.toFixed(1)}" step="0.1">
+                                <span class="comma">,</span>
+                                <input type="number" class="coord-inline-input" data-coord="y" value="${obj.coords.y.toFixed(1)}" step="0.1">
+                                <span class="comma">,</span>
+                                <input type="number" class="coord-inline-input" data-coord="z" value="${obj.coords.z.toFixed(1)}" step="0.1">
+                                <span class="bracket">)</span>
                             </div>
                         </div>
                     `;
