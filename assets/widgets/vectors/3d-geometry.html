@@ -993,6 +993,63 @@
                     });
                 }
                 
+                // Update connected planes (planes that contain this line as element)
+                AppState.objects.forEach(plane => {
+                    if (plane.type === 'plane' && plane.connectedLines && plane.connectedLines.includes(obj.id)) {
+                        // This line is an element of this plane - update the plane
+                        if (plane.sourcePoints && plane.sourcePoints.length >= 3) {
+                            const point1 = AppState.objects.find(p => p.id === plane.sourcePoints[0]);
+                            const point2 = AppState.objects.find(p => p.id === plane.sourcePoints[1]);
+                            const point3 = AppState.objects.find(p => p.id === plane.sourcePoints[2]);
+                            
+                            if (point1 && point2 && point3) {
+                                // Update base point
+                                plane.point = { ...point1.coords };
+                                
+                                // Recalculate plane vectors
+                                plane.v1 = {
+                                    x: point2.coords.x - point1.coords.x,
+                                    y: point2.coords.y - point1.coords.y,
+                                    z: point2.coords.z - point1.coords.z
+                                };
+                                
+                                plane.v2 = {
+                                    x: point3.coords.x - point1.coords.x,
+                                    y: point3.coords.y - point1.coords.y,
+                                    z: point3.coords.z - point1.coords.z
+                                };
+                                
+                                // Recalculate normal vector
+                                plane.normal = {
+                                    x: plane.v1.y * plane.v2.z - plane.v1.z * plane.v2.y,
+                                    y: plane.v1.z * plane.v2.x - plane.v1.x * plane.v2.z,
+                                    z: plane.v1.x * plane.v2.y - plane.v1.y * plane.v2.x
+                                };
+                                
+                                // Update plane mesh position and orientation
+                                const threeP1 = mathToThree(point1.coords);
+                                const threeP2 = mathToThree(point2.coords);
+                                const threeP3 = mathToThree(point3.coords);
+                                const center = new THREE.Vector3().addVectors(threeP1, threeP2).add(threeP3).divideScalar(3);
+                                
+                                plane.mesh.position.copy(center);
+                                plane.mesh.lookAt(center.clone().add(mathToThree(plane.normal)));
+                                
+                                // Update stored center
+                                if (plane.center) {
+                                    plane.center.copy(center);
+                                }
+                                
+                                // Update plane equations in real-time if properties panel is expanded
+                                const planeAccordion = document.querySelector(`.object-accordion[data-id="${plane.id}"]`);
+                                if (planeAccordion && planeAccordion.classList.contains('expanded')) {
+                                    renderEquations(plane, planeAccordion);
+                                }
+                            }
+                        }
+                    }
+                });
+                
             } else if (obj.type === 'point') {
                 // Update point in real-time
                 const newThreePos = currentPosition.clone();
@@ -1612,6 +1669,63 @@
                             }
                         });
                     }
+                    
+                    // Update connected planes (planes that contain this line as element) - final update
+                    AppState.objects.forEach(plane => {
+                        if (plane.type === 'plane' && plane.connectedLines && plane.connectedLines.includes(obj.id)) {
+                            // This line is an element of this plane - update the plane
+                            if (plane.sourcePoints && plane.sourcePoints.length >= 3) {
+                                const point1 = AppState.objects.find(p => p.id === plane.sourcePoints[0]);
+                                const point2 = AppState.objects.find(p => p.id === plane.sourcePoints[1]);
+                                const point3 = AppState.objects.find(p => p.id === plane.sourcePoints[2]);
+                                
+                                if (point1 && point2 && point3) {
+                                    // Update base point
+                                    plane.point = { ...point1.coords };
+                                    
+                                    // Recalculate plane vectors
+                                    plane.v1 = {
+                                        x: point2.coords.x - point1.coords.x,
+                                        y: point2.coords.y - point1.coords.y,
+                                        z: point2.coords.z - point1.coords.z
+                                    };
+                                    
+                                    plane.v2 = {
+                                        x: point3.coords.x - point1.coords.x,
+                                        y: point3.coords.y - point1.coords.y,
+                                        z: point3.coords.z - point1.coords.z
+                                    };
+                                    
+                                    // Recalculate normal vector
+                                    plane.normal = {
+                                        x: plane.v1.y * plane.v2.z - plane.v1.z * plane.v2.y,
+                                        y: plane.v1.z * plane.v2.x - plane.v1.x * plane.v2.z,
+                                        z: plane.v1.x * plane.v2.y - plane.v1.y * plane.v2.x
+                                    };
+                                    
+                                    // Update plane mesh position and orientation
+                                    const threeP1 = mathToThree(point1.coords);
+                                    const threeP2 = mathToThree(point2.coords);
+                                    const threeP3 = mathToThree(point3.coords);
+                                    const center = new THREE.Vector3().addVectors(threeP1, threeP2).add(threeP3).divideScalar(3);
+                                    
+                                    plane.mesh.position.copy(center);
+                                    plane.mesh.lookAt(center.clone().add(mathToThree(plane.normal)));
+                                    
+                                    // Update stored center
+                                    if (plane.center) {
+                                        plane.center.copy(center);
+                                    }
+                                    
+                                    // Update plane equations in DOM if properties panel is expanded
+                                    const planeAccordion = document.querySelector(`.object-accordion[data-id="${plane.id}"]`);
+                                    if (planeAccordion && planeAccordion.classList.contains('expanded')) {
+                                        renderEquations(plane, planeAccordion);
+                                    }
+                                }
+                            }
+                        }
+                    });
                     
                 } else if (obj && obj.type === 'point' && transformHelper) {
                     // POINT MOVED
