@@ -675,6 +675,7 @@
                     id: obj.id,
                     connectedLines: obj.connectedLines,
                     connectedPlanes: obj.connectedPlanes,
+                    connectedVectors: obj.connectedVectors,
                     sourcePoints: obj.sourcePoints,
                     v1: obj.v1,
                     v2: obj.v2,
@@ -1348,6 +1349,32 @@
                     });
                 }
                 
+                // Update connected vectors of the plane in real-time (during dragging)
+                if (obj.connectedVectors && obj.connectedVectors.length > 0) {
+                    obj.connectedVectors.forEach(vectorId => {
+                        const vector = AppState.objects.find(v => v.id === vectorId);
+                        if (vector && vector.type === 'vector' && vector.sourcePoints && vector.sourcePoints.length >= 2) {
+                            const startPoint = AppState.objects.find(p => p.id === vector.sourcePoints[0]);
+                            const endPoint = AppState.objects.find(p => p.id === vector.sourcePoints[1]);
+                            
+                            if (startPoint && endPoint) {
+                                // Update vector coordinates based on current point positions
+                                vector.start = { ...startPoint.coords };
+                                vector.end = { ...endPoint.coords };
+                                
+                                // Rebuild vector mesh in real-time
+                                rebuildVectorMesh(vector);
+                                
+                                // Update vector equations in real-time if properties panel is expanded
+                                const vectorAccordion = document.querySelector(`.object-accordion[data-id="${vector.id}"]`);
+                                if (vectorAccordion && vectorAccordion.classList.contains('expanded')) {
+                                    renderEquations(vector, vectorAccordion);
+                                }
+                            }
+                        }
+                    });
+                }
+                
                 // Update coordinates of plane source points in real-time if their panels are expanded
                 if (obj.sourcePoints) {
                     obj.sourcePoints.forEach(pointId => {
@@ -1659,6 +1686,33 @@
                                             const lineAccordion = document.querySelector(`.object-accordion[data-id="${line.id}"]`);
                                             if (lineAccordion && lineAccordion.classList.contains('expanded')) {
                                                 renderEquations(line, lineAccordion);
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                            
+                            // Also update connected vectors of the point
+                            if (point && point.connectedVectors && point.connectedVectors.length > 0) {
+                                point.connectedVectors.forEach(vectorId => {
+                                    const vector = AppState.objects.find(v => v.id === vectorId);
+                                    if (vector && vector.type === 'vector' && vector.sourcePoints) {
+                                        // Get start and end points
+                                        const startPoint = AppState.objects.find(p => p.id === vector.sourcePoints[0]);
+                                        const endPoint = AppState.objects.find(p => p.id === vector.sourcePoints[1]);
+                                        
+                                        if (startPoint && endPoint) {
+                                            // Update vector coordinates based on current point positions
+                                            vector.start = { ...startPoint.coords };
+                                            vector.end = { ...endPoint.coords };
+                                            
+                                            // Rebuild vector mesh
+                                            rebuildVectorMesh(vector);
+                                            
+                                            // Update vector equations in real-time if properties panel is expanded
+                                            const vectorAccordion = document.querySelector(`.object-accordion[data-id="${vector.id}"]`);
+                                            if (vectorAccordion && vectorAccordion.classList.contains('expanded')) {
+                                                renderEquations(vector, vectorAccordion);
                                             }
                                         }
                                     }
@@ -2850,6 +2904,7 @@
                 v1: data.v1,
                 v2: data.v2,
                 connectedLines: data.connectedLines || [],
+                connectedVectors: data.connectedVectors || [],
                 showingLines: data.showingLines || false
             });
         }
@@ -2899,6 +2954,24 @@
                             point.connectedVectors = [];
                         }
                         point.connectedVectors.push(data.id);
+                    }
+                });
+                
+                // Restore links to planes that contain both vector points
+                AppState.objects.forEach(plane => {
+                    if (plane.type === 'plane' && plane.sourcePoints) {
+                        const containsStart = plane.sourcePoints.includes(data.sourcePoints[0]);
+                        const containsEnd = plane.sourcePoints.includes(data.sourcePoints[1]);
+                        
+                        if (containsStart && containsEnd) {
+                            // Both points are in this plane - restore link to plane
+                            if (!plane.connectedVectors) {
+                                plane.connectedVectors = [];
+                            }
+                            if (!plane.connectedVectors.includes(data.id)) {
+                                plane.connectedVectors.push(data.id);
+                            }
+                        }
                     }
                 });
             }
@@ -3447,6 +3520,22 @@
                 
                 if (point.mesh) {
                     point.mesh.material.color.setHex(0x666666);
+                }
+            });
+            
+            // Link vector to planes that contain both points
+            AppState.objects.forEach(plane => {
+                if (plane.type === 'plane' && plane.sourcePoints) {
+                    const containsStart = plane.sourcePoints.includes(startPointId);
+                    const containsEnd = plane.sourcePoints.includes(endPointId);
+                    
+                    if (containsStart && containsEnd) {
+                        // Both points are in this plane - link vector to plane
+                        if (!plane.connectedVectors) {
+                            plane.connectedVectors = [];
+                        }
+                        plane.connectedVectors.push(vectorObj.id);
+                    }
                 }
             });
             
