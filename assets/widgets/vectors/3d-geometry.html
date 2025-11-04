@@ -467,119 +467,6 @@
             appearance: textfield;
         }
 
-        .coords-display {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .coords-text {
-            color: #1a1a1a;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 14px;
-        }
-
-        .edit-coords-btn {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 12px;
-            padding: 2px 4px;
-            border-radius: 3px;
-            opacity: 0.6;
-            transition: all 0.15s ease;
-        }
-
-        .edit-coords-btn:hover {
-            background: #f0f0f0;
-            opacity: 1;
-            transform: scale(1.1);
-        }
-
-        .coords-editor {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-top: 4px;
-        }
-
-        .coords-editor span {
-            font-weight: 600;
-            color: #666;
-            font-size: 12px;
-        }
-
-        .coord-input {
-            width: 60px;
-            padding: 4px 6px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 12px;
-            font-family: 'Consolas', 'Monaco', monospace;
-            text-align: center;
-        }
-
-        .coord-input:focus {
-            outline: none;
-            border-color: #1976d2;
-            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
-        }
-
-        .apply-coords-btn {
-            padding: 4px 8px;
-            background: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            min-width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .apply-coords-btn:hover {
-            background: #388e3c;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
-        }
-
-        .apply-coords-btn:active {
-            transform: translateY(0);
-        }
-
-        .cancel-coords-btn {
-            padding: 4px 8px;
-            background: #f44336;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            min-width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .cancel-coords-btn:hover {
-            background: #d32f2f;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
-        }
-
-        .cancel-coords-btn:active {
-            transform: translateY(0);
-        }
-
         .katex {
             font-size: 1.1em;
         }
@@ -4365,97 +4252,45 @@
             
             // Apply coordinates button handler (for points)
             if (obj.type === 'point') {
-                // Edit button handler
-                const editBtn = div.querySelector('.edit-coords-btn');
-                if (editBtn) {
-                    editBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
+                // Add event handlers for inline coordinate editing
+                const coordInlineInputs = div.querySelectorAll('.coord-inline-input');
+                coordInlineInputs.forEach(input => {
+                    // Handle changes on input event (real-time)
+                    input.addEventListener('input', (e) => {
+                        const coord = e.target.dataset.coord;
+                        const value = parseFloat(e.target.value);
                         
-                        const coordsDisplay = div.querySelector('.coords-display');
-                        const coordsEditor = div.querySelector('.coords-editor');
-                        
-                        // Hide display, show editor
-                        coordsDisplay.style.display = 'none';
-                        coordsEditor.style.display = 'flex';
-                        
-                        // Focus first input
-                        const firstInput = coordsEditor.querySelector('.coord-input');
-                        if (firstInput) {
-                            firstInput.focus();
-                            firstInput.select();
-                        }
-                    });
-                }
-                
-                // Apply button handler
-                const applyBtn = div.querySelector('.apply-coords-btn');
-                if (applyBtn) {
-                    applyBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        
-                        const coordInputs = div.querySelectorAll('.coord-input');
-                        const newCoords = {};
-                        
-                        coordInputs.forEach(input => {
-                            const coord = input.dataset.coord;
-                            const value = parseFloat(input.value);
-                            if (!isNaN(value)) {
-                                newCoords[coord] = value;
-                            }
-                        });
-                        
-                        if (newCoords.x !== undefined && newCoords.y !== undefined && newCoords.z !== undefined) {
+                        if (!isNaN(value)) {
+                            const newCoords = { ...obj.coords };
+                            newCoords[coord] = value;
                             updatePointCoordinates(obj.id, newCoords);
-                            
-                            // Hide editor, show display with updated values
-                            const coordsDisplay = div.querySelector('.coords-display');
-                            const coordsEditor = div.querySelector('.coords-editor');
-                            const coordsText = div.querySelector('.coords-text');
-                            
-                            coordsEditor.style.display = 'none';
-                            coordsDisplay.style.display = 'flex';
-                            
-                            // Update display text
-                            coordsText.textContent = `(${newCoords.x.toFixed(1)}, ${newCoords.y.toFixed(1)}, ${newCoords.z.toFixed(1)})`;
                         }
                     });
-                }
-                
-                // Cancel button handler
-                const cancelBtn = div.querySelector('.cancel-coords-btn');
-                if (cancelBtn) {
-                    cancelBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        
-                        const coordsDisplay = div.querySelector('.coords-display');
-                        const coordsEditor = div.querySelector('.coords-editor');
-                        
-                        // Reset input values to original
-                        const coordInputs = div.querySelectorAll('.coord-input');
-                        coordInputs.forEach(input => {
-                            const coord = input.dataset.coord;
-                            input.value = obj.coords[coord].toFixed(1);
-                        });
-                        
-                        // Hide editor, show display
-                        coordsEditor.style.display = 'none';
-                        coordsDisplay.style.display = 'flex';
-                    });
-                }
-                
-                // Enter key support for inputs
-                const coordInputs = div.querySelectorAll('.coord-input');
-                coordInputs.forEach(input => {
+                    
+                    // Handle Enter and Escape keys
                     input.addEventListener('keydown', (e) => {
                         if (e.key === 'Enter') {
-                            e.preventDefault();
-                            applyBtn.click();
+                            e.target.blur(); // Apply changes and lose focus
                         } else if (e.key === 'Escape') {
-                            e.preventDefault();
-                            cancelBtn.click();
+                            e.target.value = obj.coords[e.target.dataset.coord].toFixed(1);
+                            e.target.blur();
+                        }
+                    });
+                    
+                    // Update display when losing focus
+                    input.addEventListener('blur', (e) => {
+                        const coord = e.target.dataset.coord;
+                        const value = parseFloat(e.target.value);
+                        
+                        if (!isNaN(value)) {
+                            // Update the input value to match the actual object coordinates
+                            const currentPoint = AppState.objects.find(p => p.id === obj.id);
+                            if (currentPoint) {
+                                e.target.value = currentPoint.coords[coord].toFixed(1);
+                            }
+                        } else {
+                            // Reset to current value if invalid
+                            e.target.value = obj.coords[coord].toFixed(1);
                         }
                     });
                 });
