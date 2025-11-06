@@ -305,6 +305,20 @@
             color: white;
         }
 
+        .viz-icon-btn.disabled {
+            background: #f5f5f5;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .viz-icon-btn.disabled svg {
+            color: #ccc;
+        }
+
+        .viz-icon-btn.disabled:hover {
+            background: #f5f5f5;
+        }
+
         .use-point-icon-btn {
             width: 28px;
             height: 28px;
@@ -1088,6 +1102,17 @@
                                 if (planeAccordion && planeAccordion.classList.contains('expanded')) {
                                     renderEquations(plane, planeAccordion);
                                 }
+                                
+                                // IMPORTANT: Update purple vector system if it exists
+                                if (plane.purpleVectorGroup && plane.visualizing) {
+                                    console.log('🔄 Plane geometry changed - updating purple vector system for:', plane.name);
+                                    // Remove old purple vector system
+                                    removePurpleSumVector(plane);
+                                    // Recreate with new geometry
+                                    setTimeout(() => {
+                                        createPurpleVectorSystem(plane);
+                                    }, 50); // Small delay to ensure plane mesh is updated
+                                }
                             }
                         }
                     }
@@ -1245,6 +1270,17 @@
                                 const planeAccordion = document.querySelector(`.object-accordion[data-id="${plane.id}"]`);
                                 if (planeAccordion && planeAccordion.classList.contains('expanded')) {
                                     renderEquations(plane, planeAccordion);
+                                }
+                                
+                                // IMPORTANT: Update purple vector system if it exists
+                                if (plane.purpleVectorGroup && plane.visualizing) {
+                                    console.log('🔄 Plane geometry changed - updating purple vector system for:', plane.name);
+                                    // Remove old purple vector system
+                                    removePurpleSumVector(plane);
+                                    // Recreate with new geometry
+                                    setTimeout(() => {
+                                        createPurpleVectorSystem(plane);
+                                    }, 50); // Small delay to ensure plane mesh is updated
                                 }
                                 
                                 // Update coordinates of all 3 source points in their panels if expanded
@@ -2840,14 +2876,23 @@
         
         // Visualization system
         function toggleVisualization(objId, vizType) {
+            console.log('🚨 TOGGLE VISUALIZATION called with:', { objId, vizType });
+            
             const obj = AppState.objects.find(o => o.id === objId);
-            if (!obj) return;
+            if (!obj) {
+                console.log('❌ Object not found:', objId);
+                console.log('📋 Available objects:', AppState.objects.map(o => ({ id: o.id, type: o.type, name: o.name })));
+                return;
+            }
+            console.log('✅ Found object:', obj.type, obj.name);
             
             if (obj.visualizing) {
                 // Hide visualization
+                console.log('🔄 Hiding visualization for:', obj.name);
                 hideVisualization(obj);
             } else {
                 // Show visualization
+                console.log('🔄 Showing visualization for:', obj.name, 'type:', vizType);
                 showVisualization(obj, vizType);
             }
             
@@ -2855,9 +2900,11 @@
         }
         
         function showVisualization(obj, vizType) {
+            console.log('🚨 SHOW VISUALIZATION called with:', obj.name, vizType);
             if (vizType === 'line-param') {
                 showLineParameterVisualization(obj);
             } else if (vizType === 'plane-param') {
+                console.log('🔄 Calling showPlaneParameterVisualization for:', obj.name);
                 showPlaneParameterVisualization(obj);
             }
         }
@@ -2883,6 +2930,12 @@
                 scene.remove(obj.vizGroup);
                 obj.vizGroup = null;
             }
+            
+            // Special handling for plane vector system
+            if (obj.type === 'plane') {
+                hidePlaneVectorSystem(obj);
+            }
+            
             obj.visualizing = false;
         }
         
@@ -3004,9 +3057,66 @@
         }
         
         function showPlaneParameterVisualization(planeObj) {
-            // TODO: Implement plane parameter visualization
+            console.log('� BUTTON CLICKED! showPlaneParameterVisualization called for:', planeObj);
+            console.log('�🔄 Plane vectors button clicked for:', planeObj.name);
+            
+            // DETAILED DEBUG: Check plane state
+            console.log('🔍 PLANE STATE DEBUG:', {
+                showingLines: planeObj.showingLines,
+                connectedLines: planeObj.connectedLines,
+                connectedLinesLength: planeObj.connectedLines ? planeObj.connectedLines.length : 'undefined',
+                hasConnectedLines: !!planeObj.connectedLines,
+                sourcePoints: planeObj.sourcePoints
+            });
+            
+            // Check if there are at least 2 connected lines
+            if (!planeObj.connectedLines || planeObj.connectedLines.length < 2) {
+                const message = '❌ Сначала активируйте кнопку "прямые" плоскости (знак +)';
+                updateInfoPanel(message);
+                
+                setTimeout(() => {
+                    updateInfoPanel('');
+                }, 2000);
+                
+                console.log('❌ Cannot activate vectors: need at least 2 connected lines');
+                return;
+            }
+            
+            console.log('✅ Found', planeObj.connectedLines.length, 'connected lines');
+            
+            // Activate plane vectors button (blue color)
             planeObj.visualizing = true;
-            updateInfoPanel('Визуализация параметров плоскости - в разработке');
+            console.log('✅ Activated plane vectors button (visualizing = true)');
+            
+            // Activate vector buttons for first 2 lines and create orange vectors
+            const firstTwoLines = planeObj.connectedLines.slice(0, 2);
+            console.log('🎯 Activating vectors for first 2 lines:', firstTwoLines);
+            
+            firstTwoLines.forEach((lineId, index) => {
+                const lineObj = AppState.objects.find(l => l.id === lineId);
+                if (lineObj) {
+                    // Activate line vector button
+                    lineObj.visualizing = true;
+                    console.log(`✅ Activated vector button for line ${lineObj.name} (${index + 1}/2)`);
+                    
+                    // Create orange vector visualization
+                    showLineParameterVisualization(lineObj);
+                    console.log(`✅ Created orange vector for line ${lineObj.name}`);
+                } else {
+                    console.log(`❌ Line object not found for ID: ${lineId}`);
+                }
+            });
+            
+            // Create purple vector system
+            console.log('🚀 Creating purple vector system...');
+            setTimeout(() => {
+                createPurpleVectorSystem(planeObj);
+            }, 100); // Small delay to ensure orange vectors are ready
+            
+            // Update UI to show button as active
+            updateObjectsList();
+            updateInfoPanel('🔹 Активируются направляющие векторы плоскости...');
+            console.log('✅ Plane vectors activation initiated');
         }
         
         // Toggle plane lines (A-B and A-C)
@@ -3129,11 +3239,358 @@
             }
         }
         
+        // Create complete plane vector system
+        function createPlaneVectorSystem(plane) {
+            console.log('🔄 Creating plane vector system for:', plane.name);
+            console.log('Connected lines:', plane.connectedLines);
+            
+            // Step 1: Activate direction vectors for connected lines
+            activateLineVectors(plane);
+            
+            // Update UI after activating line vectors
+            updateObjectsList();
+            
+            // Step 2: Calculate direction vectors from the first 2 connected lines
+            const directionVectors = getPlaneDirectionVectors(plane);
+            if (!directionVectors || directionVectors.length < 2) {
+                updateInfoPanel('❌ Не удалось получить направляющие векторы из прямых');
+                console.log('❌ Direction vectors not found');
+                return;
+            }
+            
+            console.log('✅ Found direction vectors:', directionVectors.length);
+            
+            // Step 3: Create purple sum vector and point
+            createPurpleSumVector(plane, directionVectors);
+            
+            // Step 4: Create dashed connecting lines
+            createDashedConnectingLines(plane, directionVectors);
+            
+            console.log('✅ Plane vector system created');
+        }
+        
+        // Hide complete plane vector system
+        function hidePlaneVectorSystem(plane) {
+            console.log('🔄 Hiding plane vector system for:', plane.name);
+            
+            // Step 1: Deactivate direction vectors for connected lines
+            deactivateLineVectors(plane);
+            
+            // Step 2: Remove purple sum vector and point
+            removePurpleSumVector(plane);
+            
+            // Step 3: Remove dashed connecting lines
+            removeDashedConnectingLines(plane);
+            
+            console.log('✅ Plane vector system hidden');
+        }
+        
+        // STEP 1: Activate direction vectors for all connected lines
+        function activateLineVectors(plane) {
+            console.log('🔄 Activating vectors for plane lines');
+            
+            if (!plane.connectedLines || plane.connectedLines.length === 0) return;
+            
+            // Activate visualization for each connected line
+            plane.connectedLines.forEach(lineId => {
+                const lineObj = AppState.objects.find(obj => obj.id === lineId);
+                if (lineObj) {
+                    if (!lineObj.visualizing) {
+                        showLineParameterVisualization(lineObj);
+                        console.log(`✅ Activated vector for line: ${lineObj.name}`);
+                    } else {
+                        console.log(`ℹ️ Vector already active for line: ${lineObj.name}`);
+                    }
+                }
+            });
+        }
+        
+        // STEP 1: Deactivate direction vectors for all connected lines
+        function deactivateLineVectors(plane) {
+            console.log('🔄 Deactivating vectors for plane lines');
+            
+            if (!plane.connectedLines || plane.connectedLines.length === 0) return;
+            
+            // Deactivate visualization for each connected line
+            plane.connectedLines.forEach(lineId => {
+                const lineObj = AppState.objects.find(obj => obj.id === lineId);
+                if (lineObj && lineObj.visualizing) {
+                    hideVisualization(lineObj);
+                    console.log(`✅ Deactivated vector for line: ${lineObj.name}`);
+                }
+            });
+        }
+        
+        // STEP 2: Get direction vectors from the first 2 connected lines
+        function getPlaneDirectionVectors(plane) {
+            console.log('🔄 Getting direction vectors from plane lines');
+            
+            if (!plane.connectedLines || plane.connectedLines.length < 2) {
+                console.log('❌ Not enough connected lines');
+                return null;
+            }
+            
+            const directionVectors = [];
+            
+            // Get first 2 connected lines
+            for (let i = 0; i < Math.min(2, plane.connectedLines.length); i++) {
+                const lineId = plane.connectedLines[i];
+                const lineObj = AppState.objects.find(obj => obj.id === lineId);
+                
+                if (lineObj && lineObj.vizGroup) {
+                    // Extract direction vector from line visualization
+                    const dirVector = lineObj.vizGroup.userData?.originalDirection;
+                    if (dirVector) {
+                        directionVectors.push({
+                            lineId: lineId,
+                            direction: dirVector.clone(),
+                            startPoint: lineObj.sourcePoints[0] // Base point of vector
+                        });
+                        console.log(`✅ Got direction vector from line ${lineObj.name}`);
+                    }
+                }
+            }
+            
+            return directionVectors.length >= 2 ? directionVectors : null;
+        }
+        
+        // STEP 3: Create purple sum vector and point
+        function createPurpleSumVector(plane, directionVectors) {
+            console.log('🔄 Creating purple sum vector');
+            
+            // TODO: ЭТАП 3 - Создать фиолетовый вектор суммы
+            // 1. Вычислить сумму направляющих векторов
+            // 2. Создать фиолетовую точку в позиции базовая_точка + сумма_векторов
+            // 3. Создать фиолетовый вектор от базовой точки к фиолетовой точке
+            
+            console.log('⏳ Purple sum vector creation - TODO');
+        }
+        
+        // STEP 4: Create dashed connecting lines
+        function createDashedConnectingLines(plane, directionVectors) {
+            console.log('🔄 Creating dashed connecting lines');
+            
+            // TODO: ЭТАП 4 - Создать пунктирные соединительные линии
+            // От концов направляющих векторов к фиолетовой точке
+            
+            console.log('⏳ Dashed connecting lines creation - TODO');
+        }
+        
+        // Hide purple sum vector
+        function removePurpleSumVector(plane) {
+            console.log('🔄 Removing purple sum vector for:', plane.name);
+            
+            if (plane.purpleVectorGroup) {
+                // Dispose all geometry and materials in purple group
+                plane.purpleVectorGroup.traverse((child) => {
+                    if (child.geometry) child.geometry.dispose();
+                    if (child.material) {
+                        if (Array.isArray(child.material)) {
+                            child.material.forEach(mat => mat.dispose());
+                        } else {
+                            child.material.dispose();
+                        }
+                    }
+                });
+                
+                // Remove from parent (plane group or scene)
+                if (plane.purpleVectorGroup.parent) {
+                    plane.purpleVectorGroup.parent.remove(plane.purpleVectorGroup);
+                }
+                
+                plane.purpleVectorGroup = null;
+                console.log('✅ Purple vector group removed and disposed');
+            }
+        }
+        
+        // Hide dashed connecting lines
+        function removeDashedConnectingLines(plane) {
+            console.log('🔄 Removing dashed connecting lines');
+            
+            // TODO: ЭТАП 4 - Удалить пунктирные линии
+            
+            console.log('⏳ Dashed connecting lines removal - TODO');
+        }
+        
         // Helper: find line between two points
         function findLineBetweenPoints(pointId1, pointId2) {
             return AppState.objects.find(obj => {
                 if (obj.type !== 'line' || !obj.sourcePoints) return false;
                 return (obj.sourcePoints.includes(pointId1) && obj.sourcePoints.includes(pointId2));
+            });
+        }
+        
+        // NEW: Create purple vector system (sum vector + purple point + dashed lines)
+        function createPurpleVectorSystem(plane) {
+            console.log('🚀 Creating purple vector system for:', plane.name);
+            
+            // Get direction vectors from first 2 connected lines
+            const firstTwoLines = plane.connectedLines.slice(0, 2);
+            const directionVectors = [];
+            
+            firstTwoLines.forEach(lineId => {
+                const lineObj = AppState.objects.find(l => l.id === lineId);
+                if (lineObj && lineObj.vizGroup) {
+                    const dirVector = lineObj.vizGroup.userData?.originalDirection;
+                    if (dirVector) {
+                        directionVectors.push({
+                            lineId: lineId,
+                            direction: dirVector.clone(),
+                            lineObj: lineObj
+                        });
+                        console.log(`✅ Got direction vector from line ${lineObj.name}`);
+                    }
+                }
+            });
+            
+            if (directionVectors.length < 2) {
+                console.log('❌ Need at least 2 direction vectors for purple system');
+                return;
+            }
+            
+            // Calculate sum of direction vectors
+            const sumVector = new THREE.Vector3()
+                .addVectors(directionVectors[0].direction, directionVectors[1].direction);
+            console.log('✅ Calculated sum vector:', sumVector);
+            
+            // Get base point (first point of plane) in GLOBAL coordinates
+            const basePointObj = AppState.objects.find(p => p.id === plane.sourcePoints[0]);
+            const basePointGlobal = mathToThree(basePointObj.coords);
+            
+            // Calculate purple point position in GLOBAL coordinates
+            const purplePointGlobal = basePointGlobal.clone().add(sumVector);
+            
+            // CRITICAL: Convert to LOCAL coordinates relative to plane mesh
+            const basePointLocal = new THREE.Vector3();
+            const purplePointLocal = new THREE.Vector3();
+            
+            if (plane.mesh) {
+                // Transform global positions to local plane mesh coordinates
+                plane.mesh.worldToLocal(basePointLocal.copy(basePointGlobal));
+                plane.mesh.worldToLocal(purplePointLocal.copy(purplePointGlobal));
+                console.log('✅ Converted to local coordinates:', { basePointLocal, purplePointLocal });
+            } else {
+                // Fallback: use global coordinates if no mesh
+                basePointLocal.copy(basePointGlobal);
+                purplePointLocal.copy(purplePointGlobal);
+                console.log('⚠️ Using global coordinates (no plane mesh)');
+            }
+            
+            // Calculate local sum vector
+            const sumVectorLocal = new THREE.Vector3().subVectors(purplePointLocal, basePointLocal);
+            
+            // Create purple vector visualization group - ATTACH TO PLANE MESH
+            if (!plane.purpleVectorGroup) {
+                plane.purpleVectorGroup = new THREE.Group();
+                plane.purpleVectorGroup.name = 'purpleVectors';
+                
+                // IMPORTANT: Add to plane's MESH for transformation synchronization
+                if (plane.mesh) {
+                    plane.mesh.add(plane.purpleVectorGroup);
+                    console.log('✅ Purple vector group attached to plane mesh');
+                } else {
+                    // Fallback: add to scene if plane mesh doesn't exist
+                    scene.add(plane.purpleVectorGroup);
+                    console.log('⚠️ Purple vector group added to scene (plane mesh not found)');
+                }
+            }
+            
+            // 1. Create purple vector (shaft + head) using LOCAL coordinates
+            createPurpleVector(plane.purpleVectorGroup, basePointLocal, purplePointLocal, sumVectorLocal);
+            
+            // 2. Create purple point at end using LOCAL coordinates
+            createPurplePoint(plane.purpleVectorGroup, purplePointLocal);
+            
+            // 3. Create dashed lines from orange vector ends to purple point using LOCAL coordinates
+            createDashedLinesToPurplePoint(plane.purpleVectorGroup, directionVectors, basePointLocal, purplePointLocal, plane.mesh);
+            
+            updateInfoPanel('🟣 Фиолетовый вектор суммы создан');
+            console.log('✅ Purple vector system created successfully with local coordinates');
+        }
+        
+        // Helper: Create purple vector (shaft + arrow head)
+        function createPurpleVector(group, startPos, endPos, direction) {
+            const vectorLength = startPos.distanceTo(endPos);
+            const sphereAndGap = 0.2; // Account for sphere radius (0.15) + small gap (0.05)
+            const adjustedLength = Math.max(0.1, vectorLength - sphereAndGap);
+            
+            // Calculate adjusted end position (closer to start point, before sphere)
+            const directionNormalized = direction.clone().normalize();
+            const adjustedEndPos = startPos.clone().add(directionNormalized.clone().multiplyScalar(adjustedLength));
+            
+            // Purple color
+            const purpleColor = 0x8B008B; // Dark purple
+            
+            // Create shaft
+            const shaftLength = adjustedLength - 0.2; // Leave space for arrow head
+            const shaftGeom = new THREE.CylinderGeometry(0.05, 0.05, shaftLength, 8);
+            const shaftMat = new THREE.MeshBasicMaterial({ color: purpleColor });
+            const shaft = new THREE.Mesh(shaftGeom, shaftMat);
+            
+            // Position shaft between start and adjusted end (minus arrow head)
+            const shaftMid = new THREE.Vector3().addVectors(startPos, adjustedEndPos.clone().sub(directionNormalized.clone().multiplyScalar(0.1))).multiplyScalar(0.5);
+            shaft.position.copy(shaftMid);
+            shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), directionNormalized);
+            group.add(shaft);
+            
+            // Create arrow head at adjusted position (before sphere)
+            const headGeom = new THREE.ConeGeometry(0.1, 0.4, 12);
+            const headMat = new THREE.MeshBasicMaterial({ color: purpleColor });
+            const head = new THREE.Mesh(headGeom, headMat);
+            head.position.copy(adjustedEndPos);
+            head.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), directionNormalized);
+            group.add(head);
+            
+            console.log('✅ Created purple vector shaft and head (not inside sphere)');
+        }
+        
+        // Helper: Create purple point at vector end
+        function createPurplePoint(group, position) {
+            const purpleColor = 0x8B008B;
+            
+            const sphereGeom = new THREE.SphereGeometry(0.15, 16, 16);
+            const sphereMat = new THREE.MeshBasicMaterial({ color: purpleColor });
+            const sphere = new THREE.Mesh(sphereGeom, sphereMat);
+            sphere.position.copy(position);
+            group.add(sphere);
+            
+            console.log('✅ Created purple point at:', position);
+        }
+        
+        // Helper: Create dashed lines from orange vector ends to purple point
+        function createDashedLinesToPurplePoint(group, directionVectors, basePointLocal, purplePointLocal, planeMesh) {
+            directionVectors.forEach((dirVec, index) => {
+                // Calculate end position of orange vector in GLOBAL coordinates
+                const basePointObj = AppState.objects.find(p => p.id === dirVec.lineObj.sourcePoints[0]);
+                const basePointGlobal = mathToThree(basePointObj.coords);
+                const orangeVectorEndGlobal = basePointGlobal.clone().add(dirVec.direction);
+                
+                // Convert orange vector end to LOCAL coordinates relative to plane mesh
+                const orangeVectorEndLocal = new THREE.Vector3();
+                if (planeMesh) {
+                    planeMesh.worldToLocal(orangeVectorEndLocal.copy(orangeVectorEndGlobal));
+                } else {
+                    orangeVectorEndLocal.copy(orangeVectorEndGlobal);
+                }
+                
+                // Create dashed line geometry in LOCAL coordinates
+                const points = [orangeVectorEndLocal, purplePointLocal];
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                
+                // Dashed line material
+                const material = new THREE.LineDashedMaterial({
+                    color: 0x666666, // Gray color
+                    linewidth: 2,
+                    scale: 1,
+                    dashSize: 0.2,
+                    gapSize: 0.1
+                });
+                
+                const dashedLine = new THREE.Line(geometry, material);
+                dashedLine.computeLineDistances(); // Required for dashed lines
+                group.add(dashedLine);
+                
+                console.log(`✅ Created dashed line from orange vector ${index + 1} to purple point (local coords)`);
             });
         }
         
@@ -4500,19 +4957,44 @@
             
             // Visualization button handler - FIXED: use querySelectorAll to handle ALL viz buttons
             const vizBtns = div.querySelectorAll('.viz-icon-btn');
-            vizBtns.forEach(vizBtn => {
+            console.log('🔧 DEBUGGING: Found', vizBtns.length, 'viz buttons for', obj.name);
+            
+            vizBtns.forEach((vizBtn, index) => {
+                console.log(`🔧 Button ${index}:`, {
+                    action: vizBtn.dataset.action,
+                    vizType: vizBtn.dataset.vizType,
+                    objId: vizBtn.dataset.objId,
+                    className: vizBtn.className,
+                    title: vizBtn.title
+                });
+                
                 vizBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     e.preventDefault();
                     
+                    console.log('🚨 VIZ BUTTON CLICKED!', {
+                        buttonIndex: index,
+                        action: vizBtn.dataset.action,
+                        vizType: vizBtn.dataset.vizType,
+                        objId: vizBtn.dataset.objId,
+                        objType: obj.type,
+                        objName: obj.name
+                    });
+                    
                     // Check if this is plane lines button
                     if (vizBtn.dataset.action === 'toggle-plane-lines') {
+                        console.log('🔄 Calling togglePlaneLines');
                         togglePlaneLines(obj.id);
+                    } else if (vizBtn.dataset.vizType === 'plane-param') {
+                        // Direct call for plane vectors - no ID lookup needed
+                        console.log('🔄 Direct call to showPlaneParameterVisualization');
+                        showPlaneParameterVisualization(obj);
                     } else {
-                        // Regular visualization button
+                        // Regular visualization button for other objects
                         const vizType = vizBtn.dataset.vizType;
                         const objId = vizBtn.dataset.objId;
                         
+                        console.log('🔄 Calling toggleVisualization with:', { objId, vizType });
                         toggleVisualization(objId, vizType);
                     }
                 });
@@ -4760,6 +5242,18 @@
         });
 
         updateInfoPanel();
+
+        // DEBUG: General click handler to see what's being clicked
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('viz-icon-btn')) {
+                console.log('🎯 CLICK DETECTED on viz-icon-btn:', {
+                    className: e.target.className,
+                    dataset: e.target.dataset,
+                    title: e.target.title,
+                    parentElement: e.target.parentElement.className
+                });
+            }
+        }, true); // Use capture phase
     </script>
 </body>
 </html><!-- Version: 1760530883 -->
