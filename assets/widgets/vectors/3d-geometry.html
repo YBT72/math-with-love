@@ -2371,7 +2371,225 @@
             updateInfoPanel(`Сцена очищена: удалено ${count} объект(ов)`);
         }
 
+        function checkObjectDependencies(objectId) {
+            const obj = AppState.objects.find(o => o.id === objectId);
+            if (!obj || obj.type !== 'point') return null;
+            
+            const dependencies = {
+                vectors: [],
+                lines: [],
+                planes: []
+            };
+            
+            // Check all objects that depend on this point
+            AppState.objects.forEach(otherObj => {
+                if (otherObj.id === objectId) return;
+                
+                if (otherObj.sourcePoints && otherObj.sourcePoints.includes(objectId)) {
+                    if (otherObj.type === 'vector') {
+                        dependencies.vectors.push(otherObj.name);
+                    } else if (otherObj.type === 'line') {
+                        dependencies.lines.push(otherObj.name);
+                    } else if (otherObj.type === 'plane') {
+                        dependencies.planes.push(otherObj.name);
+                    }
+                }
+            });
+            
+            // Return null if no dependencies found
+            if (dependencies.vectors.length === 0 && dependencies.lines.length === 0 && dependencies.planes.length === 0) {
+                return null;
+            }
+            
+            return dependencies;
+        }
+        
+        function showDeleteWarningDialog(pointName, dependencies, onConfirm, onCancel) {
+            // Create modal overlay
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            // Create dialog
+            const dialog = document.createElement('div');
+            dialog.style.cssText = `
+                background: white;
+                border-radius: 8px;
+                padding: 24px;
+                max-width: 400px;
+                width: 90%;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            `;
+            
+            // Build warning message
+            let message = `Удаление точки <strong>${pointName}</strong> приведёт к удалению следующих объектов:\n\n`;
+            
+            if (dependencies.vectors.length > 0) {
+                message += `📐 <strong>Векторы:</strong> ${dependencies.vectors.join(', ')}\n`;
+            }
+            if (dependencies.lines.length > 0) {
+                message += `📏 <strong>Прямые:</strong> ${dependencies.lines.join(', ')}\n`;
+            }
+            if (dependencies.planes.length > 0) {
+                message += `🔲 <strong>Плоскости:</strong> ${dependencies.planes.join(', ')}\n`;
+            }
+            
+            message += '\nВы уверены, что хотите продолжить?';
+            
+            dialog.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <div style="font-size: 18px; font-weight: 600; color: #d32f2f; margin-bottom: 12px;">
+                        ⚠️ Предупреждение
+                    </div>
+                    <div style="color: #333; line-height: 1.5; white-space: pre-line;">
+                        ${message}
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button id="cancel-delete" style="
+                        padding: 8px 16px;
+                        background: #f5f5f5;
+                        border: 1px solid #ddd;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-weight: 500;
+                        color: #333;
+                        transition: all 0.15s ease;
+                    ">Отмена</button>
+                    <button id="confirm-delete" style="
+                        padding: 8px 16px;
+                        background: #d32f2f;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-weight: 500;
+                        color: white;
+                        transition: all 0.15s ease;
+                    ">Удалить всё</button>
+                </div>
+            `;
+            
+            overlay.appendChild(dialog);
+            document.body.appendChild(overlay);
+            
+            // Add hover effects
+            const cancelBtn = dialog.querySelector('#cancel-delete');
+            const confirmBtn = dialog.querySelector('#confirm-delete');
+            
+            cancelBtn.addEventListener('mouseenter', () => {
+                cancelBtn.style.background = '#e0e0e0';
+                cancelBtn.style.borderColor = '#ccc';
+            });
+            cancelBtn.addEventListener('mouseleave', () => {
+                cancelBtn.style.background = '#f5f5f5';
+                cancelBtn.style.borderColor = '#ddd';
+            });
+            
+            confirmBtn.addEventListener('mouseenter', () => {
+                confirmBtn.style.background = '#b71c1c';
+                confirmBtn.style.transform = 'translateY(-1px)';
+                confirmBtn.style.boxShadow = '0 2px 8px rgba(211, 47, 47, 0.3)';
+            });
+            confirmBtn.addEventListener('mouseleave', () => {
+                confirmBtn.style.background = '#d32f2f';
+                confirmBtn.style.transform = 'translateY(0)';
+                confirmBtn.style.boxShadow = 'none';
+            });
+            
+            // Add event listeners
+            cancelBtn.addEventListener('click', () => {
+                document.body.removeChild(overlay);
+                if (onCancel) onCancel();
+            });
+            
+            confirmBtn.addEventListener('click', () => {
+                document.body.removeChild(overlay);
+                if (onConfirm) onConfirm();
+            });
+            
+            // Close on overlay click
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    document.body.removeChild(overlay);
+                    if (onCancel) onCancel();
+                }
+            });
+            
+            // Close on Escape key
+            const handleKeyDown = (e) => {
+                if (e.key === 'Escape') {
+                    document.body.removeChild(overlay);
+                    document.removeEventListener('keydown', handleKeyDown);
+                    if (onCancel) onCancel();
+                }
+            };
+            document.addEventListener('keydown', handleKeyDown);
+        }
+
         function deleteObject(objectId) {
+            const objIndex = AppState.objects.findIndex(obj => obj.id === objectId);
+            if (objIndex === -1) return;
+            
+            const obj = AppState.objects[objIndex];
+            
+            // Check for dependencies if it's a point
+            if (obj.type === 'point') {
+                const dependencies = checkObjectDependencies(objectId);
+                if (dependencies) {
+                    // Show warning dialog
+                    showDeleteWarningDialog(
+                        obj.name,
+                        dependencies,
+                        () => {
+                            // User confirmed - proceed with deletion
+                            performDeleteWithDependencies(objectId);
+                        },
+                        () => {
+                            // User cancelled - do nothing
+                            console.log('Deletion cancelled by user');
+                        }
+                    );
+                    return; // Exit early, actual deletion will happen in callback
+                }
+            }
+            
+            // No dependencies or not a point - proceed with normal deletion
+            performActualDelete(objectId);
+        }
+        
+        function performDeleteWithDependencies(pointId) {
+            // First delete all dependent objects
+            const dependentObjects = [];
+            
+            AppState.objects.forEach(obj => {
+                if (obj.sourcePoints && obj.sourcePoints.includes(pointId)) {
+                    dependentObjects.push(obj.id);
+                }
+            });
+            
+            // Delete dependent objects first (without dependency check)
+            dependentObjects.forEach(objId => {
+                performActualDelete(objId);
+            });
+            
+            // Then delete the point itself
+            performActualDelete(pointId);
+        }
+        
+        function performActualDelete(objectId) {
             const objIndex = AppState.objects.findIndex(obj => obj.id === objectId);
             if (objIndex === -1) return;
             
@@ -2412,6 +2630,18 @@
                             if (point.connectedLines.length === 0 && point.mesh) {
                                 point.mesh.material.color.setHex(0x1976d2);
                             }
+                        }
+                    }
+                });
+                
+                // PATCH: Remove this line from all planes' connectedLines
+                AppState.objects.forEach(plane => {
+                    if (plane.type === 'plane' && plane.connectedLines) {
+                        plane.connectedLines = plane.connectedLines.filter(id => id !== obj.id);
+                        
+                        // PATCH: If plane has no connected lines/vectors, reset showingLines flag
+                        if (plane.connectedLines.length === 0 && (!plane.connectedVectors || plane.connectedVectors.length === 0)) {
+                            plane.showingLines = false;
                         }
                     }
                 });
@@ -2836,27 +3066,65 @@
                     updateObjectsList();
                     updateInfoPanel(`Прямые созданы для плоскости ${plane.name}`);
                 } else {
-                    // Show existing connected objects
-                    plane.showingLines = true;
+                    // PATCH: Clean up non-existent objects before trying to show them
+                    const existingLines = plane.connectedLines.filter(lineId => 
+                        AppState.objects.find(obj => obj.id === lineId)
+                    );
+                    const existingVectors = plane.connectedVectors.filter(vectorId => 
+                        AppState.objects.find(obj => obj.id === vectorId)
+                    );
                     
-                    // Show all connected lines
-                    plane.connectedLines.forEach(lineId => {
-                        const lineObj = AppState.objects.find(obj => obj.id === lineId);
-                        if (lineObj && lineObj.mesh) {
-                            lineObj.mesh.visible = true;
+                    // Update arrays with only existing objects
+                    plane.connectedLines = existingLines;
+                    plane.connectedVectors = existingVectors;
+                    
+                    // If no existing objects found, create new lines instead
+                    if (existingLines.length === 0 && existingVectors.length === 0) {
+                        // No real connected objects - create default lines
+                        const point1 = AppState.objects.find(p => p.id === plane.sourcePoints[0]);
+                        const point2 = AppState.objects.find(p => p.id === plane.sourcePoints[1]);
+                        const point3 = AppState.objects.find(p => p.id === plane.sourcePoints[2]);
+                        
+                        if (!point1 || !point2 || !point3) {
+                            updateInfoPanel('Ошибка: точки плоскости не найдены');
+                            return;
                         }
-                    });
-                    
-                    // Show all connected vectors
-                    plane.connectedVectors.forEach(vectorId => {
-                        const vectorObj = AppState.objects.find(obj => obj.id === vectorId);
-                        if (vectorObj && vectorObj.mesh) {
-                            vectorObj.mesh.visible = true;
-                        }
-                    });
-                    
-                    updateObjectsList();
-                    updateInfoPanel('Привязанные объекты показаны');
+                        
+                        saveToHistory();
+                        
+                        // Create two lines: AB and AC
+                        const lineAB = createLineFromPointsForPlane(point1.id, point2.id);
+                        const lineAC = createLineFromPointsForPlane(point1.id, point3.id);
+                        
+                        if (lineAB) plane.connectedLines.push(lineAB.id);
+                        if (lineAC) plane.connectedLines.push(lineAC.id);
+                        
+                        plane.showingLines = true;
+                        updateObjectsList();
+                        updateInfoPanel(`Прямые восстановлены для плоскости ${plane.name}`);
+                    } else {
+                        // Show existing connected objects
+                        plane.showingLines = true;
+                        
+                        // Show all connected lines
+                        plane.connectedLines.forEach(lineId => {
+                            const lineObj = AppState.objects.find(obj => obj.id === lineId);
+                            if (lineObj && lineObj.mesh) {
+                                lineObj.mesh.visible = true;
+                            }
+                        });
+                        
+                        // Show all connected vectors
+                        plane.connectedVectors.forEach(vectorId => {
+                            const vectorObj = AppState.objects.find(obj => obj.id === vectorId);
+                            if (vectorObj && vectorObj.mesh) {
+                                vectorObj.mesh.visible = true;
+                            }
+                        });
+                        
+                        updateObjectsList();
+                        updateInfoPanel('Привязанные объекты показаны');
+                    }
                 }
             }
         }
