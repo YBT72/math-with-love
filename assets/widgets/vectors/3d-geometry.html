@@ -2126,6 +2126,10 @@
                     const sphere = obj.vizGroup.userData.sphere;
                     if (sphere) draggableSpheres.push(sphere);
                 }
+                // Add purple drag spheres
+                if (obj.purpleDragSphere) {
+                    draggableSpheres.push(obj.purpleDragSphere);
+                }
             });
             
             const intersects = raycaster.intersectObjects(draggableSpheres, false);
@@ -2194,8 +2198,252 @@
                     
                     userData.tValue = tClamped;
                 }
+            } else if (userData.type === 'purpleDragPoint') {
+                // Purple sphere dragging logic
+                handlePurpleDragging(userData, draggedObject);
             }
         });
+        
+        // Purple sphere dragging handler - CONSTRAINED TO MATHEMATICAL PLANE
+        function handlePurpleDragging(userData, draggedSphere) {
+            const plane = userData.plane;
+            if (!plane || !plane.mesh || !plane.normal) return;
+            
+            // Create mathematical plane from plane's normal vector and a point on the plane
+            const planeNormal = mathToThree(plane.normal).normalize();
+            const planePoint = mathToThree(plane.point); // Base point of the plane
+            
+            // Create THREE.js Plane object representing the mathematical plane
+            const mathPlane = new THREE.Plane().setFromNormalAndCoplanarPoint(planeNormal, planePoint);
+            
+            // Project mouse ray onto the mathematical plane (not camera plane!)
+            const intersection = new THREE.Vector3();
+            const intersected = raycaster.ray.intersectPlane(mathPlane, intersection);
+            
+            if (!intersected) {
+                return;
+            }
+            
+            // Convert intersection to local coordinates of the plane mesh
+            const newLocalPos = new THREE.Vector3();
+            plane.mesh.worldToLocal(newLocalPos.copy(intersection));
+            
+            // Update purple sphere position (in local coordinates)
+            draggedSphere.position.copy(newLocalPos);
+            
+            // Update the entire purple system
+            updatePurpleSystemPosition(plane, newLocalPos, userData.orangeVectors);
+        }
+        
+        // Update purple system when dragged
+        function updatePurpleSystemPosition(plane, newPurplePos, orangeVectors) {
+            if (!plane.purpleVectorGroup) return;
+            
+            // Get base point from orange vectors (should be same for both)
+            const basePointGlobal = orangeVectors[0].basePosition.clone();
+            const basePointLocal = new THREE.Vector3();
+            plane.mesh.worldToLocal(basePointLocal.copy(basePointGlobal));
+            
+            // Calculate new sum vector in local coordinates
+            const newSumVectorLocal = new THREE.Vector3().subVectors(newPurplePos, basePointLocal);
+            
+            // Rebuild purple vector (shaft + head)
+            const purpleChildren = [...plane.purpleVectorGroup.children];
+            purpleChildren.forEach(child => {
+                if (child.geometry && (child.geometry.type === 'CylinderGeometry' || child.geometry.type === 'ConeGeometry')) {
+                    plane.purpleVectorGroup.remove(child);
+                    child.geometry.dispose();
+                    child.material.dispose();
+                }
+            });
+            
+            // Recreate purple vector shaft and head
+            createPurpleVector(plane.purpleVectorGroup, basePointLocal, newPurplePos, newSumVectorLocal);
+            
+            // Update dashed lines to new position
+            updateDashedLinesToPurplePoint(plane.purpleVectorGroup, orangeVectors, basePointLocal, newPurplePos, plane.mesh);
+            
+            // Update orange vectors positions based on new purple position
+            updateOrangeVectorsFromPurple(plane, basePointLocal, newPurplePos, orangeVectors);
+        }
+        
+        // Update dashed lines to new purple position  
+        function updateDashedLinesToPurplePoint(group, orangeVectors, basePointLocal, newPurplePointLocal, planeMesh) {
+            // Remove old dashed lines
+            const dashedLines = group.children.filter(child => child.type === 'Line');
+            dashedLines.forEach(line => {
+                group.remove(line);
+                line.geometry.dispose();
+                line.material.dispose();
+            });
+            
+            // Create new dashed lines using CURRENT orange sphere positions (not static endPosition)
+            orangeVectors.forEach((orangeVec, index) => {
+                const lineObj = orangeVec.lineObj;
+                if (!lineObj || !lineObj.vizGroup) return;
+                
+                // Get CURRENT orange sphere position (updated by vector system solving)
+                const orangeSphere = lineObj.vizGroup.userData.sphere;
+                if (!orangeSphere) {
+                    console.log(`❌ No orange sphere found for line ${lineObj.name}`);
+                    return;
+                }
+                
+                // Use actual current position of orange sphere (in global coordinates)
+                const orangeSphereGlobalPos = orangeSphere.position.clone();
+                
+                // Convert current orange sphere position to LOCAL coordinates relative to plane mesh
+                const orangeSphereLocalPos = new THREE.Vector3();
+                if (planeMesh) {
+                    planeMesh.worldToLocal(orangeSphereLocalPos.copy(orangeSphereGlobalPos));
+                } else {
+                    orangeSphereLocalPos.copy(orangeSphereGlobalPos);
+                }
+                
+                // Create dashed line from CURRENT orange position to purple position
+                const points = [orangeSphereLocalPos, newPurplePointLocal];
+                const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                
+                // Dashed line material
+                const material = new THREE.LineDashedMaterial({
+                    color: 0x666666, // Gray color
+                    linewidth: 2,
+                    scale: 1,
+                    dashSize: 0.2,
+                    gapSize: 0.1
+                });
+                
+                const dashedLine = new THREE.Line(geometry, material);
+                dashedLine.computeLineDistances(); // Required for dashed lines
+                group.add(dashedLine);
+            });
+        }
+        
+        // Update orange vectors to follow purple dragging with correct vector math
+        function updateOrangeVectorsFromPurple(plane, basePointLocal, newPurplePointLocal, orangeVectors) {
+            if (orangeVectors.length < 2) {
+                return;
+            }
+            
+            // Get original direction vectors from the lines (in math coordinates)
+            const lineObj1 = orangeVectors[0].lineObj;
+            const lineObj2 = orangeVectors[1].lineObj;
+            
+            if (!lineObj1 || !lineObj2) {
+                return;
+            }
+            
+            // Get direction vectors in math coordinates from line objects
+            const dir1_math = lineObj1.direction; // {x, y, z} in math space
+            const dir2_math = lineObj2.direction; // {x, y, z} in math space
+            
+            // Convert to THREE.js coordinates for calculations
+            const dir1_three = mathToThree(dir1_math);
+            const dir2_three = mathToThree(dir2_math);
+            
+            // Convert base point and target to global coordinates for system solving
+            const basePointGlobal = new THREE.Vector3();
+            const targetPointGlobal = new THREE.Vector3();
+            
+            plane.mesh.localToWorld(basePointGlobal.copy(basePointLocal));
+            plane.mesh.localToWorld(targetPointGlobal.copy(newPurplePointLocal));
+            
+            // Get base point in math coordinates
+            const baseMath = threeToMath(basePointGlobal);
+            const targetMath = threeToMath(targetPointGlobal);
+            
+            // Solve system: base + t₁*dir₁ + t₂*dir₂ = target
+            // This becomes: t₁*dir₁ + t₂*dir₂ = (target - base)
+            const rhs = {
+                x: targetMath.x - baseMath.x,
+                y: targetMath.y - baseMath.y,
+                z: targetMath.z - baseMath.z
+            };
+            
+            // Solve the 3x2 overdetermined system using least squares
+            // We'll use the X and Y components (assuming Z is the "up" direction)
+            const result = solveVectorSystem(dir1_math, dir2_math, rhs);
+            
+            if (result) {
+                const { t1, t2 } = result;
+                
+                // Update orange vectors with new t values
+                updateOrangeVectorVisualization(lineObj1, t1, 0);
+                updateOrangeVectorVisualization(lineObj2, t2, 1);
+            }
+        }
+        
+        // Solve the vector system: t₁*dir₁ + t₂*dir₂ = rhs
+        function solveVectorSystem(dir1, dir2, rhs) {
+            // Use X and Y components for 2x2 system (most stable)
+            const a11 = dir1.x, a12 = dir2.x; // X equation coefficients
+            const a21 = dir1.y, a22 = dir2.y; // Y equation coefficients
+            const b1 = rhs.x, b2 = rhs.y;     // Right-hand side
+            
+            // Calculate determinant
+            const det = a11 * a22 - a12 * a21;
+            
+            if (Math.abs(det) < 1e-10) {
+                // Vectors are nearly collinear, try X and Z components
+                const det_xz = dir1.x * dir2.z - dir2.x * dir1.z;
+                if (Math.abs(det_xz) < 1e-10) {
+                    // Try Y and Z components
+                    const det_yz = dir1.y * dir2.z - dir2.y * dir1.z;
+                    if (Math.abs(det_yz) < 1e-10) {
+                        return null;
+                    } else {
+                        // Solve using Y and Z
+                        const t1 = (rhs.y * dir2.z - rhs.z * dir2.y) / det_yz;
+                        const t2 = (dir1.y * rhs.z - dir1.z * rhs.y) / det_yz;
+                        return { t1, t2 };
+                    }
+                } else {
+                    // Solve using X and Z
+                    const t1 = (rhs.x * dir2.z - rhs.z * dir2.x) / det_xz;
+                    const t2 = (dir1.x * rhs.z - dir1.z * rhs.x) / det_xz;
+                    return { t1, t2 };
+                }
+            }
+            
+            // Solve 2x2 system using Cramer's rule
+            const t1 = (b1 * a22 - b2 * a12) / det;
+            const t2 = (a11 * b2 - a21 * b1) / det;
+            
+            // Verify solution using Z component (if available)
+            const z_check = t1 * dir1.z + t2 * dir2.z;
+            const z_error = Math.abs(z_check - rhs.z);
+            
+            return { t1, t2 };
+        }
+        
+        // Update orange vector visualization with new t value
+        function updateOrangeVectorVisualization(lineObj, newT, vectorIndex) {
+            if (!lineObj.vizGroup) return;
+            
+            const vizGroup = lineObj.vizGroup;
+            const basePoint = vizGroup.userData.basePoint;
+            const direction = vizGroup.userData.direction; // normalized
+            const originalDirection = vizGroup.userData.originalDirection;
+            const lineNumber = vizGroup.userData.lineNumber || '';
+            
+            if (!basePoint || !direction || !originalDirection) {
+                return;
+            }
+            
+            // Calculate new sphere position
+            const distanceAlongLine = newT * originalDirection.length();
+            const newSpherePos = basePoint.clone().add(direction.clone().multiplyScalar(distanceAlongLine));
+            
+            // Update sphere position
+            const sphere = vizGroup.userData.sphere;
+            if (sphere) {
+                sphere.position.copy(newSpherePos);
+                sphere.userData.tValue = newT;
+            }
+            
+            // Update orange vector visualization
+            updateLineVisualization(vizGroup, basePoint, newSpherePos, direction, newT, lineNumber);
+        }
         
         canvas.addEventListener('mouseup', (event) => {
             if (isDragging) {
@@ -2265,8 +2513,53 @@
             const label = createTextSprite(labelText, '#333333', 80);
             label.position.copy(newSpherePos.clone().add(new THREE.Vector3(0, 0.5, 0)));
             orangeGroup.add(label);
+            
+            // Check if this line is part of a plane's purple vector system and update it
+            updatePurpleVectorIfNeeded(vizGroup);
         }
         
+        // Function to update purple vector system if current line is part of it
+        function updatePurpleVectorIfNeeded(lineVizGroup) {
+            // Find all planes that might have purple vector systems
+            const planes = AppState.objects.filter(obj => obj.type === 'plane');
+            
+            for (const plane of planes) {
+                if (!plane.mesh || !plane.mesh.userData.purpleVectorSystem) {
+                    continue; // No purple system for this plane
+                }
+                
+                // Check if current line is one of the plane's source lines
+                const planeSourceLines = plane.sourceLines || [];
+                const currentLineObj = AppState.objects.find(line => line.vizGroup === lineVizGroup);
+                
+                if (!currentLineObj || !planeSourceLines.includes(currentLineObj.id)) {
+                    continue; // This line is not part of this plane
+                }
+                
+                console.log('🔄 Updating purple vector system for plane', plane.name, 'due to line', currentLineObj.name, 'change');
+                
+                // Remove old purple system
+                const oldPurpleSystem = plane.mesh.userData.purpleVectorSystem;
+                plane.mesh.remove(oldPurpleSystem);
+                
+                // Dispose of old geometry and materials
+                oldPurpleSystem.traverse(child => {
+                    if (child.geometry) child.geometry.dispose();
+                    if (child.material) child.material.dispose();
+                });
+                
+                // Create new purple system with updated orange vectors
+                const newPurpleSystem = createPurpleVectorSystem(plane);
+                if (newPurpleSystem) {
+                    plane.mesh.add(newPurpleSystem);
+                    plane.mesh.userData.purpleVectorSystem = newPurpleSystem;
+                    console.log('✅ Purple vector system updated for plane', plane.name);
+                }
+                
+                break; // Found the relevant plane, no need to check others
+            }
+        }
+
         function rebuildLineMesh(lineObj) {
             // Save current t value if visualization exists
             let savedTValue = null;
@@ -3060,6 +3353,32 @@
             console.log('� BUTTON CLICKED! showPlaneParameterVisualization called for:', planeObj);
             console.log('�🔄 Plane vectors button clicked for:', planeObj.name);
             
+            // TOGGLE LOGIC: Check if vectors are already active
+            if (planeObj.visualizing) {
+                console.log('🔄 Vectors already active - deactivating all (purple + orange)');
+                
+                // Hide purple vector system
+                hidePlaneVectorSystem(planeObj);
+                
+                // Deactivate orange vectors for connected lines
+                if (planeObj.connectedLines && planeObj.connectedLines.length > 0) {
+                    planeObj.connectedLines.forEach(lineId => {
+                        const lineObj = AppState.objects.find(l => l.id === lineId);
+                        if (lineObj && lineObj.visualizing) {
+                            hideVisualization(lineObj);
+                            console.log(`✅ Deactivated orange vector for line: ${lineObj.name}`);
+                        }
+                    });
+                }
+                
+                // Mark plane as not visualizing
+                planeObj.visualizing = false;
+                
+                updateObjectsList();
+                updateInfoPanel('🔹 Векторы плоскости деактивированы');
+                return;
+            }
+            
             // DETAILED DEBUG: Check plane state
             console.log('🔍 PLANE STATE DEBUG:', {
                 showingLines: planeObj.showingLines,
@@ -3088,24 +3407,39 @@
             planeObj.visualizing = true;
             console.log('✅ Activated plane vectors button (visualizing = true)');
             
-            // Activate vector buttons for first 2 lines and create orange vectors
+            // Check and activate vector buttons for first 2 lines - avoid duplication
             const firstTwoLines = planeObj.connectedLines.slice(0, 2);
-            console.log('🎯 Activating vectors for first 2 lines:', firstTwoLines);
+            console.log('🎯 Checking vectors for first 2 lines:', firstTwoLines);
             
+            const existingVectors = [];
+            const linesToActivate = [];
+            
+            // First pass: check which lines already have vector visualization
             firstTwoLines.forEach((lineId, index) => {
                 const lineObj = AppState.objects.find(l => l.id === lineId);
                 if (lineObj) {
-                    // Activate line vector button
-                    lineObj.visualizing = true;
-                    console.log(`✅ Activated vector button for line ${lineObj.name} (${index + 1}/2)`);
-                    
-                    // Create orange vector visualization
-                    showLineParameterVisualization(lineObj);
-                    console.log(`✅ Created orange vector for line ${lineObj.name}`);
+                    if (lineObj.visualizing && lineObj.vizGroup) {
+                        // Line already has vector visualization - reuse it
+                        existingVectors.push(lineObj);
+                        console.log(`✅ Found existing vector for line ${lineObj.name} (${index + 1}/2) - reusing`);
+                    } else {
+                        // Line needs vector activation
+                        linesToActivate.push(lineObj);
+                        console.log(`🔄 Line ${lineObj.name} needs vector activation`);
+                    }
                 } else {
                     console.log(`❌ Line object not found for ID: ${lineId}`);
                 }
             });
+            
+            // Second pass: activate vectors only for lines that need it
+            linesToActivate.forEach((lineObj, index) => {
+                lineObj.visualizing = true;
+                showLineParameterVisualization(lineObj);
+                console.log(`✅ Activated new vector for line ${lineObj.name} (avoiding duplication)`);
+            });
+            
+            console.log(`📊 Vector status: ${existingVectors.length} existing, ${linesToActivate.length} newly activated`);
             
             // Create purple vector system
             console.log('🚀 Creating purple vector system...');
@@ -3273,8 +3607,8 @@
         function hidePlaneVectorSystem(plane) {
             console.log('🔄 Hiding plane vector system for:', plane.name);
             
-            // Step 1: Deactivate direction vectors for connected lines
-            deactivateLineVectors(plane);
+            // Step 1: SKIP deactivating orange vectors - keep them for individual lines
+            console.log('ℹ️ Keeping orange vectors for individual lines (as per requirement)');
             
             // Step 2: Remove purple sum vector and point
             removePurpleSumVector(plane);
@@ -3282,7 +3616,7 @@
             // Step 3: Remove dashed connecting lines
             removeDashedConnectingLines(plane);
             
-            console.log('✅ Plane vector system hidden');
+            console.log('✅ Plane vector system hidden - orange vectors preserved');
         }
         
         // STEP 1: Activate direction vectors for all connected lines
@@ -3424,38 +3758,40 @@
         function createPurpleVectorSystem(plane) {
             console.log('🚀 Creating purple vector system for:', plane.name);
             
-            // Get direction vectors from first 2 connected lines
+            // Get orange vectors from first 2 connected lines (NOT blue direction vectors)
             const firstTwoLines = plane.connectedLines.slice(0, 2);
-            const directionVectors = [];
+            const orangeVectors = [];
             
             firstTwoLines.forEach(lineId => {
                 const lineObj = AppState.objects.find(l => l.id === lineId);
-                if (lineObj && lineObj.vizGroup) {
-                    const dirVector = lineObj.vizGroup.userData?.originalDirection;
-                    if (dirVector) {
-                        directionVectors.push({
+                if (lineObj) {
+                    const orangeVector = getOrangeVectorFromVisualization(lineObj);
+                    if (orangeVector) {
+                        orangeVectors.push({
                             lineId: lineId,
-                            direction: dirVector.clone(),
-                            lineObj: lineObj
+                            lineObj: lineObj,
+                            ...orangeVector
                         });
-                        console.log(`✅ Got direction vector from line ${lineObj.name}`);
+                        console.log(`✅ Got orange vector from line ${lineObj.name}`);
+                    } else {
+                        console.log(`❌ Failed to get orange vector from line ${lineObj.name}`);
                     }
                 }
             });
             
-            if (directionVectors.length < 2) {
-                console.log('❌ Need at least 2 direction vectors for purple system');
+            if (orangeVectors.length < 2) {
+                console.log('❌ Need at least 2 orange vectors for purple system, got:', orangeVectors.length);
                 return;
             }
             
-            // Calculate sum of direction vectors
+            // Calculate sum of ORANGE vectors (not direction vectors)
             const sumVector = new THREE.Vector3()
-                .addVectors(directionVectors[0].direction, directionVectors[1].direction);
-            console.log('✅ Calculated sum vector:', sumVector);
+                .addVectors(orangeVectors[0].direction, orangeVectors[1].direction);
+            console.log('✅ Calculated sum of orange vectors:', sumVector);
             
-            // Get base point (first point of plane) in GLOBAL coordinates
-            const basePointObj = AppState.objects.find(p => p.id === plane.sourcePoints[0]);
-            const basePointGlobal = mathToThree(basePointObj.coords);
+            // Use base point from first orange vector (should be same for both)
+            const basePointGlobal = orangeVectors[0].basePosition.clone();
+            console.log('✅ Base point from orange vector:', basePointGlobal);
             
             // Calculate purple point position in GLOBAL coordinates
             const purplePointGlobal = basePointGlobal.clone().add(sumVector);
@@ -3498,11 +3834,11 @@
             // 1. Create purple vector (shaft + head) using LOCAL coordinates
             createPurpleVector(plane.purpleVectorGroup, basePointLocal, purplePointLocal, sumVectorLocal);
             
-            // 2. Create purple point at end using LOCAL coordinates
-            createPurplePoint(plane.purpleVectorGroup, purplePointLocal);
+            // 2. Create purple point at end using LOCAL coordinates - DRAGGABLE
+            const purpleSphere = createPurplePoint(plane.purpleVectorGroup, purplePointLocal, plane, orangeVectors);
             
             // 3. Create dashed lines from orange vector ends to purple point using LOCAL coordinates
-            createDashedLinesToPurplePoint(plane.purpleVectorGroup, directionVectors, basePointLocal, purplePointLocal, plane.mesh);
+            createDashedLinesToPurplePoint(plane.purpleVectorGroup, orangeVectors, basePointLocal, purplePointLocal, plane.mesh);
             
             updateInfoPanel('🟣 Фиолетовый вектор суммы создан');
             console.log('✅ Purple vector system created successfully with local coordinates');
@@ -3544,37 +3880,61 @@
             console.log('✅ Created purple vector shaft and head (not inside sphere)');
         }
         
-        // Helper: Create purple point at vector end
-        function createPurplePoint(group, position) {
+        // Helper: Create purple point at vector end - DRAGGABLE
+        function createPurplePoint(group, position, plane, orangeVectors) {
             const purpleColor = 0x8B008B;
             
             const sphereGeom = new THREE.SphereGeometry(0.15, 16, 16);
             const sphereMat = new THREE.MeshBasicMaterial({ color: purpleColor });
             const sphere = new THREE.Mesh(sphereGeom, sphereMat);
             sphere.position.copy(position);
+            
+            // Add dragging functionality
+            sphere.userData = {
+                type: 'purpleDragPoint',
+                plane: plane,
+                orangeVectors: orangeVectors,
+                basePointLocal: position.clone(), // Store initial position for reference
+                isDraggable: true,
+                originalPosition: position.clone()
+            };
+            
+            // Store reference to purple sphere in plane for easy access
+            if (plane) {
+                plane.purpleDragSphere = sphere;
+            }
+            
             group.add(sphere);
             
-            console.log('✅ Created purple point at:', position);
+            console.log('✅ Created draggable purple point at:', position);
+            return sphere;
         }
         
         // Helper: Create dashed lines from orange vector ends to purple point
-        function createDashedLinesToPurplePoint(group, directionVectors, basePointLocal, purplePointLocal, planeMesh) {
-            directionVectors.forEach((dirVec, index) => {
-                // Calculate end position of orange vector in GLOBAL coordinates
-                const basePointObj = AppState.objects.find(p => p.id === dirVec.lineObj.sourcePoints[0]);
-                const basePointGlobal = mathToThree(basePointObj.coords);
-                const orangeVectorEndGlobal = basePointGlobal.clone().add(dirVec.direction);
+        function createDashedLinesToPurplePoint(group, orangeVectors, basePointLocal, purplePointLocal, planeMesh) {
+            orangeVectors.forEach((orangeVec, index) => {
+                const lineObj = orangeVec.lineObj;
+                if (!lineObj || !lineObj.vizGroup) return;
                 
-                // Convert orange vector end to LOCAL coordinates relative to plane mesh
-                const orangeVectorEndLocal = new THREE.Vector3();
-                if (planeMesh) {
-                    planeMesh.worldToLocal(orangeVectorEndLocal.copy(orangeVectorEndGlobal));
-                } else {
-                    orangeVectorEndLocal.copy(orangeVectorEndGlobal);
+                // Get CURRENT orange sphere position (not static endPosition)
+                const orangeSphere = lineObj.vizGroup.userData.sphere;
+                if (!orangeSphere) {
+                    return;
                 }
                 
-                // Create dashed line geometry in LOCAL coordinates
-                const points = [orangeVectorEndLocal, purplePointLocal];
+                // Use actual current position of orange sphere (in global coordinates)
+                const orangeSphereGlobalPos = orangeSphere.position.clone();
+                
+                // Convert current orange sphere position to LOCAL coordinates relative to plane mesh
+                const orangeSphereLocalPos = new THREE.Vector3();
+                if (planeMesh) {
+                    planeMesh.worldToLocal(orangeSphereLocalPos.copy(orangeSphereGlobalPos));
+                } else {
+                    orangeSphereLocalPos.copy(orangeSphereGlobalPos);
+                }
+                
+                // Create dashed line geometry from CURRENT orange position to purple point
+                const points = [orangeSphereLocalPos, purplePointLocal];
                 const geometry = new THREE.BufferGeometry().setFromPoints(points);
                 
                 // Dashed line material
@@ -3589,9 +3949,96 @@
                 const dashedLine = new THREE.Line(geometry, material);
                 dashedLine.computeLineDistances(); // Required for dashed lines
                 group.add(dashedLine);
-                
-                console.log(`✅ Created dashed line from orange vector ${index + 1} to purple point (local coords)`);
             });
+        }
+        
+        // Helper: Get orange vector direction and magnitude from line visualization
+        function getOrangeVectorFromVisualization(lineObj) {
+            if (!lineObj.vizGroup) {
+                console.log('❌ No visualization group for line:', lineObj.name);
+                return null;
+            }
+            
+            console.log('🔍 Searching for orange sphere in line:', lineObj.name);
+            console.log('🔍 VizGroup children:', lineObj.vizGroup.children.length);
+            
+            // Debug: log all children
+            lineObj.vizGroup.children.forEach((child, index) => {
+                console.log(`Child ${index}:`, {
+                    type: child.type,
+                    geometry: child.geometry?.type,
+                    material: child.material?.type,
+                    color: child.material?.color?.getHex(),
+                    position: child.position
+                });
+            });
+            
+            // Find orange sphere in visualization - more flexible search
+            let orangeSphere = null;
+            
+            // First try: exact color match (0xff6600 - actual orange color used)
+            orangeSphere = lineObj.vizGroup.children.find(child => 
+                child.geometry && child.geometry.type === 'SphereGeometry' && 
+                child.material && child.material.color && child.material.color.getHex() === 0xff6600
+            );
+            
+            // Second try: any orange-ish color (in case of slight color differences)
+            if (!orangeSphere) {
+                orangeSphere = lineObj.vizGroup.children.find(child => 
+                    child.geometry && child.geometry.type === 'SphereGeometry' && 
+                    child.material && child.material.color
+                );
+                if (orangeSphere) {
+                    const color = orangeSphere.material.color.getHex();
+                    console.log('🔍 Found sphere with color:', color.toString(16));
+                    // Accept orange colors: 0xff6600, 0xff9800, 0xff8800, 0xffa500
+                    if (color === 0xff6600 || color === 0xff9800 || color === 0xff8800 || color === 0xffa500) {
+                        console.log('✅ Accepting sphere as orange');
+                    } else {
+                        console.log('❌ Sphere color not orange, rejecting');
+                        orangeSphere = null;
+                    }
+                }
+            }
+            
+            // Third try: just take any sphere (last resort)
+            if (!orangeSphere) {
+                orangeSphere = lineObj.vizGroup.children.find(child => 
+                    child.geometry && child.geometry.type === 'SphereGeometry'
+                );
+                if (orangeSphere) {
+                    console.log('⚠️ Using any available sphere as fallback');
+                }
+            }
+            
+            if (!orangeSphere) {
+                console.log('❌ No orange sphere found in line visualization:', lineObj.name);
+                console.log('❌ Available spheres:', lineObj.vizGroup.children.filter(c => c.geometry?.type === 'SphereGeometry'));
+                return null;
+            }
+            
+            console.log('✅ Found orange sphere:', orangeSphere.position);
+            
+            // Get base point (first source point of line)
+            const basePointObj = AppState.objects.find(p => p.id === lineObj.sourcePoints[0]);
+            if (!basePointObj) {
+                console.log('❌ Base point not found for line:', lineObj.name);
+                return null;
+            }
+            
+            const basePoint = mathToThree(basePointObj.coords);
+            const orangeSpherePos = orangeSphere.position.clone();
+            
+            // Calculate orange vector (from base point to orange sphere)
+            const orangeVector = new THREE.Vector3().subVectors(orangeSpherePos, basePoint);
+            
+            console.log(`✅ Got orange vector from ${lineObj.name}:`, orangeVector);
+            return {
+                direction: orangeVector,
+                magnitude: orangeVector.length(),
+                endPosition: orangeSpherePos.clone(),
+                basePosition: basePoint.clone()
+            };
         }
         
         // Helper: create line for plane (silent, no tool switch)
