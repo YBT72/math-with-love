@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>חיזוי וקטורים</title>
+    <title>פעולות וקטוריות</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Math&display=swap" rel="stylesheet">
@@ -19,8 +19,9 @@
         body {
             height: 100vh;
             background: linear-gradient(135deg, #f3f4f6 0%, #f9fafb 50%, #eff6ff 100%);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans Hebrew', sans-serif;
             padding: 10px;
+            direction: rtl;
         }
 
         .container {
@@ -700,6 +701,20 @@
             text-align: center;
             padding: 0 !important; /* Force remove padding */
             margin: 0 !important; /* Remove all margins */
+        }
+
+        /* Ensure mathematical content is always LTR */
+        .math-content, .vector-formula, .vector-coordinates, canvas {
+            direction: ltr !important;
+            text-align: left !important;
+        }
+        
+        .vector-item {
+            text-align: right; /* Hebrew text right-aligned */
+        }
+        
+        .vector-name {
+            text-align: right; /* Hebrew label right-aligned */
         }
 
         /* Mobile devices - blocks in column */
@@ -2207,12 +2222,14 @@
             ctx.fillStyle = AXIS_LABEL_COLOR;
             ctx.font = 'bold 16px Arial';
             ctx.textAlign = 'left';
+            ctx.direction = 'ltr'; // Force LTR for mathematical content
             ctx.fillText('x', canvas.width - 20, centerY - 10);
             ctx.fillText('y', centerX + 10, 20);
             
             // Numeric labels every 2 units (40 pixels)
             ctx.font = '12px Arial';
             ctx.fillStyle = AXIS_LABEL_COLOR;
+            ctx.direction = 'ltr'; // Force LTR for numbers
             
             // Labels on X axis
             for (let i = -20; i <= 20; i += 2) {
@@ -2494,7 +2511,8 @@
         function drawLabels() {
             ctx.fillStyle = LABEL_COLOR;
             ctx.font = 'bold 16px "STIX Two Math", "Times New Roman", serif';
-            ctx.textAlign = 'left'; // Explicitly set alignment
+            ctx.textAlign = 'left';
+            ctx.direction = 'ltr'; // Force LTR for mathematical content
 
             // Draw point labels with smart offset
             const drawnPointLabels = new Set(); // To avoid duplicating labels of same point
@@ -2531,7 +2549,11 @@
                     offset = getLabelOffset(point, 0); // Normal offset considering usageCount
                 }
                 
+                // Ensure LTR rendering for mathematical labels
+                ctx.save();
+                ctx.direction = 'ltr';
                 ctx.fillText(labelText, point.x + offset.x, point.y + offset.y);
+                ctx.restore();
                 
                 drawnPointLabels.add(point);
             });
@@ -2585,7 +2607,11 @@
                             displayText += `(${coords.x}; ${coords.y})`;
                         }
                         
+                        // Ensure LTR rendering for mathematical labels
+                        ctx.save();
+                        ctx.direction = 'ltr';
                         ctx.fillText(displayText, labelX, labelY);
+                        ctx.restore();
                         drawVectorArrow(displayText, labelX, labelY, true); // Arrow only over letters
                     } else {
                         // Single-letter format with coefficient and underline
@@ -2603,7 +2629,11 @@
                             displayText += `(${coords.x}; ${coords.y})`;
                         }
                         
+                        // Ensure LTR rendering for mathematical labels
+                        ctx.save();
+                        ctx.direction = 'ltr';
                         ctx.fillText(displayText, labelX, labelY);
+                        ctx.restore();
                         // Underline only letter, NOT coefficient
                         drawVectorUnderline(displayText, labelX, labelY, true);
                     }
@@ -2618,7 +2648,11 @@
                             displayText += `(${coords.x}; ${coords.y})`;
                         }
                         
+                        // Ensure LTR rendering for mathematical labels
+                        ctx.save();
+                        ctx.direction = 'ltr';
                         ctx.fillText(displayText, labelX, labelY);
+                        ctx.restore();
                         drawVectorArrow(displayText, labelX, labelY);
                     } else {
                         // Single-letter format with underline
@@ -2630,7 +2664,11 @@
                             displayText += `(${coords.x}; ${coords.y})`;
                         }
                         
+                        // Ensure LTR rendering for mathematical labels
+                        ctx.save();
+                        ctx.direction = 'ltr';
                         ctx.fillText(displayText, labelX, labelY);
+                        ctx.restore();
                         
                         // For operation result vectors underline individual letters like on buttons
                         if (vector.name && (vector.name.includes('+') || vector.name.includes('-'))) {

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Визуализация векторов</title>
+    <title>הדמיית וקטורים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=STIX+Two+Math&display=swap" rel="stylesheet">
@@ -19,8 +19,9 @@
         body {
             height: 100vh;
             background: linear-gradient(135deg, #f3f4f6 0%, #f9fafb 50%, #eff6ff 100%);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans Hebrew', sans-serif;
             padding: 10px;
+            direction: rtl;
         }
 
         .container {
@@ -167,7 +168,7 @@
             background-color: #fef2f2;
         }
 
-        /* Кнопка очистки */
+        /* כפתור ניקוי */
         .clear-button {
             width: 100%;
             padding: 12px 20px;
@@ -190,7 +191,7 @@
             transform: translateY(1px);
         }
 
-        /* Информационная панель с векторами */
+        /* פאנל מידע על וקטורים */
         .vectors-info {
             margin-top: 20px;
             padding: 15px;
@@ -274,7 +275,21 @@
             padding: 20px;
         }
 
-        /* Мобильные устройства - блоки в столбец */
+        /* Ensure mathematical content is always LTR */
+        .math-content, .vector-formula, .vector-coordinates, canvas {
+            direction: ltr !important;
+            text-align: left !important;
+        }
+        
+        .vector-item {
+            text-align: right; /* Hebrew text right-aligned */
+        }
+        
+        .vector-name {
+            text-align: right; /* Hebrew label right-aligned */
+        }
+
+        /* מכשירים ניידים - בלוקים בעמודה */
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
@@ -287,28 +302,28 @@
 </head>
 <body>
     <div class="container">
-        <!-- Блок визуализации (фото) -->
+        <!-- בלוק הדמיה -->
         <div class="photo-block">
             <canvas id="canvas"></canvas>
         </div>
 
-        <!-- Блок управления (настройки) -->
+        <!-- בלוק בקרה (הגדרות) -->
         <div class="settings-block">
-            <div class="settings-title">Настройки</div>
+            <div class="settings-title">הגדרות</div>
             
             <div class="checkbox-container">
                 <input type="checkbox" id="showGrid">
-                <label for="showGrid">Показать координатную сетку</label>
+                <label for="showGrid">הצג רשת קואורדינטות</label>
             </div>
             
             <div class="checkbox-container">
                 <input type="checkbox" id="showAxes">
-                <label for="showAxes">Показать координатные оси</label>
+                <label for="showAxes">הצג צירי קואורדינטות</label>
             </div>
             
             <div class="checkbox-container">
                 <input type="checkbox" id="showLines">
-                <label for="showLines">Показать прямые векторов</label>
+                <label for="showLines">הצג קווי וקטורים</label>
             </div>
             
             <div class="switch-container">
@@ -319,13 +334,13 @@
                 <div id="vectorNamingLabel" class="switch-label"></div>
             </div>
             
-            <button id="clearCanvas" class="clear-button">Очистить канвас</button>
+            <button id="clearCanvas" class="clear-button">נקה לוח</button>
             
-            <!-- Информационная панель с векторами -->
+            <!-- פאנל מידע על וקטורים -->
             <div class="vectors-info">
-                <div class="vectors-info-title">Векторы</div>
+                <div class="vectors-info-title">וקטורים</div>
                 <div id="vectorsList">
-                    <div class="no-vectors">Нет построенных векторов</div>
+                    <div class="no-vectors">אין וקטורים מוגדרים</div>
                 </div>
             </div>
         </div>
@@ -363,11 +378,11 @@
         const GRID_SIZE = 20;
 
         function clearCanvas() {
-            // Очищаем все массивы
+            // מנקה את כל המערכים
             vectors = [];
             points = [];
             
-            // Сбрасываем состояние
+            // מאפס את המצב
             isDrawing = false;
             dragMode = null;
             activeVector = null;
@@ -376,13 +391,13 @@
             vectorCounter = 0;
             pointCounter = 0;
             
-            // Скрываем контекстное меню если оно открыто
+            // מסתיר תפריט הקשר אם הוא פתוח
             hideContextMenu();
             
-            // Обновляем список векторов
+            // מעדכן רשימת וקטורים
             updateVectorsList();
             
-            // Перерисовываем пустой канвас
+            // מצייר מחדש לוח ריק
             draw();
         }
 
@@ -605,7 +620,7 @@
             
             const deleteItem = document.createElement('div');
             deleteItem.className = 'context-menu-item danger';
-            deleteItem.textContent = 'Удалить вектор';
+            deleteItem.textContent = 'מחק וקטור';
             deleteItem.onclick = () => {
                 deleteVector(vector);
                 hideContextMenu();
@@ -687,12 +702,14 @@
             ctx.fillStyle = AXIS_LABEL_COLOR;
             ctx.font = 'bold 16px Arial';
             ctx.textAlign = 'left';
+            ctx.direction = 'ltr'; // Force LTR for mathematical content
             ctx.fillText('x', canvas.width - 20, centerY - 10);
             ctx.fillText('y', centerX + 10, 20);
             
             // Числовые метки через каждые 2 единицы (40 пикселей)
             ctx.font = '12px Arial';
             ctx.fillStyle = AXIS_LABEL_COLOR;
+            ctx.direction = 'ltr'; // Force LTR for numbers
             
             // Метки на оси X
             for (let i = -20; i <= 20; i += 2) {
@@ -937,7 +954,8 @@
         function drawLabels() {
             ctx.fillStyle = LABEL_COLOR;
             ctx.font = 'bold 16px "STIX Two Math", "Times New Roman", serif';
-            ctx.textAlign = 'left'; // Явно устанавливаем выравнивание
+            ctx.textAlign = 'left';
+            ctx.direction = 'ltr'; // Ensure LTR for mathematical content
 
             points.forEach(point => {
                 let labelText = point.name;
@@ -955,7 +973,11 @@
                     labelText = `${point.name}(${coordX}; ${coordY})`;
                 }
                 
+                // Ensure LTR rendering for mathematical labels
+                ctx.save();
+                ctx.direction = 'ltr';
                 ctx.fillText(labelText, point.x + 8, point.y - 8);
+                ctx.restore();
             });
 
             vectors.forEach(vector => {
@@ -993,7 +1015,11 @@
                             displayText += `(${coords.x}; ${coords.y})`;
                         }
                         
+                        // Ensure LTR rendering for mathematical labels
+                        ctx.save();
+                        ctx.direction = 'ltr';
                         ctx.fillText(displayText, labelX, labelY);
+                        ctx.restore();
                         drawVectorArrow(displayText, labelX, labelY, true); // Стрелка только над буквами
                     } else {
                         // Однобуквенный формат с коэффициентом и подчеркиванием
@@ -1011,7 +1037,11 @@
                             displayText += `(${coords.x}; ${coords.y})`;
                         }
                         
+                        // Ensure LTR rendering for mathematical labels
+                        ctx.save();
+                        ctx.direction = 'ltr';
                         ctx.fillText(displayText, labelX, labelY);
+                        ctx.restore();
                         // Подчеркиваем только букву, НЕ коэффициент
                         drawVectorUnderline(displayText, labelX, labelY, true);
                     }
@@ -1026,7 +1056,11 @@
                             displayText += `(${coords.x}; ${coords.y})`;
                         }
                         
+                        // Ensure LTR rendering for mathematical labels
+                        ctx.save();
+                        ctx.direction = 'ltr';
                         ctx.fillText(displayText, labelX, labelY);
+                        ctx.restore();
                         drawVectorArrow(displayText, labelX, labelY);
                     } else {
                         // Однобуквенный формат с подчеркиванием
@@ -1038,7 +1072,11 @@
                             displayText += `(${coords.x}; ${coords.y})`;
                         }
                         
+                        // Ensure LTR rendering for mathematical labels
+                        ctx.save();
+                        ctx.direction = 'ltr';
                         ctx.fillText(displayText, labelX, labelY);
+                        ctx.restore();
                         drawVectorUnderline(displayText, labelX, labelY);
                     }
                 }
@@ -1080,7 +1118,7 @@
             const vectorsList = document.getElementById('vectorsList');
             
             if (vectors.length === 0) {
-                vectorsList.innerHTML = '<div class="no-vectors">Нет построенных векторов</div>';
+                vectorsList.innerHTML = '<div class="no-vectors">אין וקטורים מוגדרים</div>';
                 return;
             }
             
@@ -1142,11 +1180,11 @@
                 
                 html += `
                     <div class="vector-item">
-                        <div class="vector-name">Вектор <span id="${vectorTitleId}"></span></div>
-                        <div class="vector-formula">
+                        <div class="vector-name" dir="rtl">וקטור <span id="${vectorTitleId}" class="math-content"></span></div>
+                        <div class="vector-formula math-content">
                             <span id="${vectorFormulaId}"></span>
                         </div>
-                        <div class="vector-coordinates"><span id="${vectorCoordsId}"></span></div>
+                        <div class="vector-coordinates math-content"><span id="${vectorCoordsId}"></span></div>
                     </div>
                 `;
                 
