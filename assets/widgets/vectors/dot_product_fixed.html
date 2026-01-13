@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מכפלה סקלרית של וקטורים</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useRef, useEffect, useCallback } = React;
+
+        const VectorDotProduct = () => {
+          const canvasRef = useRef(null);
+          const [vectorAScreen, setVectorAScreen] = useState({ start: { x: 200, y: 300 }, end: { x: 400, y: 300 } });
+          const [vectorBScreen, setVectorBScreen] = useState({ start: { x: 200, y: 300 }, end: { x: 340, y: 220 } });
+          const [showGrid, setShowGrid] = useState(false);
+          const [dragging, setDragging] = useState(null);
+          
+          const coordOrigin = { x: 300, y: 300 };
+          const scale = 40;
+
+          // Screen to world coordinate conversion
+          const screenToWorld = (screenPos) => ({
+            x: (screenPos.x - coordOrigin.x) / scale,
+            y: -(screenPos.y - coordOrigin.y) / scale
+          });
+
+          // Get vectors in world coordinates
+          const getWorldVectors = () => {
+            const aStart = screenToWorld(vectorAScreen.start);
+            const aEnd = screenToWorld(vectorAScreen.end);
+            const bStart = screenToWorld(vectorBScreen.start);
+            const bEnd = screenToWorld(vectorBScreen.end);
+            
+            return {
+              a: { x: aEnd.x - aStart.x, y: aEnd.y - aStart.y },
+              b: { x: bEnd.x - bStart.x, y: bEnd.y - bStart.y }
+            };
+          };
+
+          const magnitude = (v) => Math.sqrt(v.x * v.x + v.y * v.y);
+          const dotProduct = (a, b) => a.x * b.x + a.y * b.y;
+          
+          const angle = (a, b) => {
+            const dot = dotProduct(a, b);
+            const magA = magnitude(a);
+            const magB = magnitude(b);
+            if (magA === 0 || magB === 0) return 0;
+            return Math.acos(Math.max(-1, Math.min(1, dot / (magA * magB))));
+          };
+
+          const projection = (a, b) => {
+            const magA = magnitude(a);
+            if (magA === 0) return { x: 0, y: 0 };
+            const scalar = dotProduct(a, b) / (magA * magA);
+            return { x: a.x * scalar, y: a.y * scalar };
+          };
+
+          // Mouse interaction
+          const getMousePos = useCallback((e) => {
+            const canvas = canvasRef.current;
+            if (!canvas) return { x: 0, y: 0 };
+            const rect = canvas.getBoundingClientRect();
+            return {
+              x: e.clientX - rect.left,
+              y: e.clientY - rect.top
+            };
+          }, []);
+
+          const findClickTarget = useCallback((mousePos) => {
+            const threshold = 25;
+            
+            const distToOrigin = Math.sqrt(
+              (mousePos.x - vectorAScreen.start.x) ** 2 + 
+              (mousePos.y - vectorAScreen.start.y) ** 2
+            );
+            if (distToOrigin < threshold) return 'origin';
+            
+            const distToA = Math.sqrt(
+              (mousePos.x - vectorAScreen.end.x) ** 2 + 
+              (mousePos.y - vectorAScreen.end.y) ** 2
+            );
+            if (distToA < threshold) return 'a';
+            
+            const distToB = Math.sqrt(
+              (mousePos.x - vectorBScreen.end.x) ** 2 + 
+              (mousePos.y - vectorBScreen.end.y) ** 2
+            );
+            if (distToB < threshold) return 'b';
+            
+            return null;
+          }, [vectorAScreen, vectorBScreen]);
+
+          const handleMouseDown = useCallback((e) => {
+            e.preventDefault();
+            const mousePos = getMousePos(e);
+            const target = findClickTarget(mousePos);
+            
+            if (target) {
+              setDragging({ type: target, lastPos: mousePos });
+            }
+          }, [getMousePos, findClickTarget]);
+
+          const handleMouseMove = useCallback((e) => {
+            if (!dragging) return;
+            
+            const mousePos = getMousePos(e);
+            const dx = mousePos.x - dragging.lastPos.x;
+            const dy = mousePos.y - dragging.lastPos.y;
+            
+            if (dragging.type === 'origin') {
+              setVectorAScreen(prev => ({
+                start: { x: prev.start.x + dx, y: prev.start.y + dy },
+                end: { x: prev.end.x + dx, y: prev.end.y + dy }
+              }));
+              setVectorBScreen(prev => ({
+                start: { x: prev.start.x + dx, y: prev.start.y + dy },
+                end: { x: prev.end.x + dx, y: prev.end.y + dy }
+              }));
+            } else if (dragging.type === 'a') {
+              setVectorAScreen(prev => ({ ...prev, end: mousePos }));
+            } else if (dragging.type === 'b') {
+              setVectorBScreen(prev => ({ ...prev, end: mousePos }));
+            }
+            
+            setDragging(prev => ({ ...prev, lastPos: mousePos }));
+          }, [dragging, getMousePos]);
+
+          const handleMouseUp = useCallback(() => {
+            setDragging(null);
+          }, []);
+
+          // Canvas drawing
+          useEffect(() => {
+            const canvas = canvasRef.current;
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.direction = 'ltr';
+
+            // Draw grid
+            if (showGrid) {
+              ctx.strokeStyle = '#e0e0e0';
+              ctx.lineWidth = 1;
+              
+              for (let i = -15; i <= 15; i++) {
+                const x = coordOrigin.x + i * scale;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+                
+                const y = coordOrigin.y - i * scale;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+              }
+
+              // Axes
+              ctx.strokeStyle = '#666';
+              ctx.lineWidth = 2;
+              
+              ctx.beginPath();
+              ctx.moveTo(0, coordOrigin.y);
+              ctx.lineTo(canvas.width, coordOrigin.y);
+              ctx.stroke();
+              
+              ctx.beginPath();
+              ctx.moveTo(coordOrigin.x, 0);
+              ctx.lineTo(coordOrigin.x, canvas.height);
+              ctx.stroke();
+
+              // Axis labels
+              ctx.fillStyle = '#666';
+              ctx.font = '12px sans-serif';
+              ctx.fillText('X', canvas.width - 20, coordOrigin.y - 10);
+              ctx.fillText('Y', coordOrigin.x + 10, 20);
+            }
+
+            const { a, b } = getWorldVectors();
+            
+            // Draw projection
+            const proj = projection(a, b);
+            const projEndScreen = {
+              x: vectorAScreen.start.x + proj.x * scale,
+              y: vectorAScreen.start.y - proj.y * scale
+            };
+
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(vectorBScreen.end.x, vectorBScreen.end.y);
+            ctx.lineTo(projEndScreen.x, projEndScreen.y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw angle
+            const ang = angle(a, b);
+            if (ang > 0.01) {
+              ctx.fillStyle = 'rgba(34, 197, 94, 0.2)';
+              ctx.beginPath();
+              ctx.moveTo(vectorAScreen.start.x, vectorAScreen.start.y);
+              const angleA = Math.atan2(a.y, a.x);
+              const angleB = Math.atan2(b.y, b.x);
+              ctx.arc(vectorAScreen.start.x, vectorAScreen.start.y, 50, -angleA, -angleB, angleA < angleB);
+              ctx.closePath();
+              ctx.fill();
+
+              const midAngle = -(angleA + angleB) / 2;
+              const labelX = vectorAScreen.start.x + Math.cos(midAngle) * 70;
+              const labelY = vectorAScreen.start.y + Math.sin(midAngle) * 70;
+              
+              ctx.fillStyle = '#000';
+              ctx.font = '14px sans-serif';
+              ctx.fillText(`θ = ${(ang * 180 / Math.PI).toFixed(1)}°`, labelX - 30, labelY);
+            }
+
+            // Draw vectors
+            const drawVector = (vector, color, arrowColor) => {
+              ctx.strokeStyle = color;
+              ctx.lineWidth = 3;
+              ctx.beginPath();
+              ctx.moveTo(vector.start.x, vector.start.y);
+              ctx.lineTo(vector.end.x, vector.end.y);
+              ctx.stroke();
+
+              const angle = Math.atan2(vector.end.y - vector.start.y, vector.end.x - vector.start.x);
+              ctx.fillStyle = arrowColor;
+              ctx.beginPath();
+              ctx.moveTo(vector.end.x, vector.end.y);
+              ctx.lineTo(
+                vector.end.x - 15 * Math.cos(angle - Math.PI / 6),
+                vector.end.y - 15 * Math.sin(angle - Math.PI / 6)
+              );
+              ctx.lineTo(
+                vector.end.x - 15 * Math.cos(angle + Math.PI / 6),
+                vector.end.y - 15 * Math.sin(angle + Math.PI / 6)
+              );
+              ctx.closePath();
+              ctx.fill();
+            };
+
+            drawVector(vectorAScreen, '#3b82f6', '#3b82f6');
+            drawVector(vectorBScreen, '#ef4444', '#ef4444');
+
+            // Draw projection vector
+            ctx.strokeStyle = '#22c55e';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(vectorAScreen.start.x, vectorAScreen.start.y);
+            ctx.lineTo(projEndScreen.x, projEndScreen.y);
+            ctx.stroke();
+
+            // Draw origin point
+            ctx.fillStyle = '#8b5cf6';
+            ctx.beginPath();
+            ctx.arc(vectorAScreen.start.x, vectorAScreen.start.y, 8, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Labels
+            ctx.fillStyle = '#3b82f6';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText('a', (vectorAScreen.start.x + vectorAScreen.end.x) / 2 - 20, (vectorAScreen.start.y + vectorAScreen.end.y) / 2 - 10);
+            
+            ctx.fillStyle = '#ef4444';
+            ctx.fillText('b', (vectorBScreen.start.x + vectorBScreen.end.x) / 2 - 20, (vectorBScreen.start.y + vectorBScreen.end.y) / 2 - 10);
+          }, [vectorAScreen, vectorBScreen, showGrid]);
+
+          // Event listeners
+          useEffect(() => {
+            const canvas = canvasRef.current;
+            if (!canvas) return;
+            
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            canvas.addEventListener('mouseleave', handleMouseUp);
+            
+            return () => {
+              canvas.removeEventListener('mousedown', handleMouseDown);
+              canvas.removeEventListener('mousemove', handleMouseMove);
+              canvas.removeEventListener('mouseup', handleMouseUp);
+              canvas.removeEventListener('mouseleave', handleMouseUp);
+            };
+          }, [handleMouseDown, handleMouseMove, handleMouseUp]);
+
+          const { a, b } = getWorldVectors();
+          const magA = magnitude(a);
+          const magB = magnitude(b);
+          const ang = angle(a, b);
+          const cosAng = Math.cos(ang);
+          const dot = dotProduct(a, b);
+          const geomResult = magA * magB * cosAng;
+
+          return React.createElement('div', {
+            className: "w-full max-w-6xl mx-auto p-4 bg-white",
+            dir: "rtl"
+          }, [
+            React.createElement('h1', {
+              key: "title",
+              className: "text-2xl font-bold text-center mb-2"
+            }, "מכפלה סקלרית של וקטורים"),
+            
+            React.createElement('div', {
+              key: "hint",
+              className: "bg-blue-50 p-3 rounded mb-4 flex items-center justify-between"
+            }, [
+              React.createElement('div', {
+                key: "text",
+                className: "text-sm flex-1"
+              }, [
+                React.createElement('p', { key: "p1" }, "💡 גררו את קצוות הוקטורים לשינוי"),
+                React.createElement('p', { key: "p2", className: "mr-5" }, "גררו את הנקודה המרכזית להזזת הקבוצה")
+              ]),
+              React.createElement('button', {
+                key: "btn",
+                onClick: () => setShowGrid(!showGrid),
+                className: `p-2 rounded transition-colors flex-shrink-0 mr-4 ${showGrid ? 'bg-blue-500' : 'bg-gray-400'}`,
+                title: showGrid ? 'הסתר רשת' : 'הצג רשת'
+              }, "⊞")
+            ]),
+
+            React.createElement('div', {
+              key: "main",
+              className: "flex gap-4"
+            }, [
+              React.createElement('div', {
+                key: "sidebar",
+                className: "w-80 flex flex-col justify-center space-y-6 border border-gray-300 rounded-xl p-4 shadow-lg bg-white"
+              }, [
+                React.createElement('div', {
+                  key: "geom",
+                  className: "bg-gray-50 p-4 rounded-xl shadow-lg"
+                }, [
+                  React.createElement('h3', {
+                    key: "title",
+                    className: "font-bold mb-2"
+                  }, "נוסחה גיאומטרית"),
+                  React.createElement('p', {
+                    key: "formula",
+                    className: "font-mono mb-2",
+                    dir: "ltr"
+                  }, "a · b = |a| · |b| · cos(θ)"),
+                  React.createElement('hr', { key: "hr", className: "my-2" }),
+                  React.createElement('p', { key: "maga", dir: "ltr" }, `|a| = ${magA.toFixed(1)}`),
+                  React.createElement('p', { key: "magb", dir: "ltr" }, `|b| = ${magB.toFixed(1)}`),
+                  React.createElement('p', { key: "cos", dir: "ltr" }, `cos(θ) = ${cosAng.toFixed(2)}`),
+                  React.createElement('div', {
+                    key: "result",
+                    className: "border-2 border-blue-500 bg-blue-50 p-2 mt-2 rounded-lg shadow-sm"
+                  }, React.createElement('p', {
+                    className: "font-bold"
+                  }, [
+                    React.createElement('span', { key: "label" }, "תוצאה: "),
+                    React.createElement('span', { key: "value", dir: "ltr" }, geomResult.toFixed(1))
+                  ]))
+                ]),
+
+                React.createElement('div', {
+                  key: "alg",
+                  className: "bg-gray-50 p-4 rounded-xl shadow-lg"
+                }, [
+                  React.createElement('h3', {
+                    key: "title",
+                    className: "font-bold mb-2"
+                  }, "נוסחה אלגברית"),
+                  React.createElement('p', {
+                    key: "formula",
+                    className: "font-mono mb-2",
+                    dir: "ltr"
+                  }, "a · b = aₓ · bₓ + aᵧ · bᵧ"),
+                  React.createElement('hr', { key: "hr", className: "my-2" }),
+                  React.createElement('p', { key: "a", dir: "ltr" }, `a = (${a.x.toFixed(1)}, ${a.y.toFixed(1)})`),
+                  React.createElement('p', { key: "b", dir: "ltr" }, `b = (${b.x.toFixed(1)}, ${b.y.toFixed(1)})`),
+                  React.createElement('p', {
+                    key: "calc",
+                    className: "text-sm",
+                    dir: "ltr"
+                  }, `(${a.x.toFixed(1)} × ${b.x.toFixed(1)}) + (${a.y.toFixed(1)} × ${b.y.toFixed(1)})`),
+                  React.createElement('div', {
+                    key: "result",
+                    className: "border-2 border-blue-500 bg-blue-50 p-2 mt-2 rounded-lg shadow-sm"
+                  }, React.createElement('p', {
+                    className: "font-bold"
+                  }, [
+                    React.createElement('span', { key: "label" }, "תוצאה: "),
+                    React.createElement('span', { key: "value", dir: "ltr" }, dot.toFixed(1))
+                  ]))
+                ])
+              ]),
+
+              React.createElement('canvas', {
+                key: "canvas",
+                ref: canvasRef,
+                width: 600,
+                height: 600,
+                className: "border border-gray-300 flex-1 object-contain rounded-xl shadow-lg",
+                style: { maxHeight: '600px', cursor: 'default' }
+              })
+            ])
+          ]);
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(VectorDotProduct));
+    </script>
+</body>
+</html>

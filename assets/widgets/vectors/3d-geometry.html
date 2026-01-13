@@ -2228,6 +2228,10 @@
             const newLocalPos = new THREE.Vector3();
             plane.mesh.worldToLocal(newLocalPos.copy(intersection));
             
+            // CRITICAL: Force object to stay ON plane surface (z=0 in local coordinates)
+            // PlaneGeometry lies in XY plane (z=0), so all objects must have z=0
+            newLocalPos.z = 0;
+            
             // Update purple sphere position (in local coordinates)
             draggedSphere.position.copy(newLocalPos);
             
@@ -2239,10 +2243,16 @@
         function updatePurpleSystemPosition(plane, newPurplePos, orangeVectors) {
             if (!plane.purpleVectorGroup) return;
             
-            // Get base point from orange vectors (should be same for both)
-            const basePointGlobal = orangeVectors[0].basePosition.clone();
+            // Get CURRENT base point from plane's first source point (dynamic, not static)
+            const firstSourcePoint = AppState.objects.find(p => p.id === plane.sourcePoints[0]);
+            if (!firstSourcePoint) return;
+            
+            const basePointGlobal = mathToThree(firstSourcePoint.coords);
             const basePointLocal = new THREE.Vector3();
             plane.mesh.worldToLocal(basePointLocal.copy(basePointGlobal));
+            
+            // CRITICAL: Force base point to stay ON plane surface (z=0 in local coordinates)
+            basePointLocal.z = 0;
             
             // Calculate new sum vector in local coordinates
             const newSumVectorLocal = new THREE.Vector3().subVectors(newPurplePos, basePointLocal);
@@ -2342,10 +2352,12 @@
             const dir2_three = mathToThree(dir2_math);
             
             // Convert base point and target to global coordinates for system solving
-            const basePointGlobal = new THREE.Vector3();
-            const targetPointGlobal = new THREE.Vector3();
+            // Use CURRENT base point from plane geometry (not static orangeVector basePosition)
+            const firstSourcePoint = AppState.objects.find(p => p.id === plane.sourcePoints[0]);
+            if (!firstSourcePoint) return;
             
-            plane.mesh.localToWorld(basePointGlobal.copy(basePointLocal));
+            const basePointGlobal = mathToThree(firstSourcePoint.coords);
+            const targetPointGlobal = new THREE.Vector3();
             plane.mesh.localToWorld(targetPointGlobal.copy(newPurplePointLocal));
             
             // Get base point in math coordinates
@@ -3784,14 +3796,20 @@
                 return;
             }
             
-            // Calculate sum of ORANGE vectors (not direction vectors)
+            // Calculate sum of orange vectors (not direction vectors)
             const sumVector = new THREE.Vector3()
                 .addVectors(orangeVectors[0].direction, orangeVectors[1].direction);
             console.log('✅ Calculated sum of orange vectors:', sumVector);
             
-            // Use base point from first orange vector (should be same for both)
-            const basePointGlobal = orangeVectors[0].basePosition.clone();
-            console.log('✅ Base point from orange vector:', basePointGlobal);
+            // Get CURRENT base point from plane's first source point (dynamic, not static)
+            const firstSourcePoint = AppState.objects.find(p => p.id === plane.sourcePoints[0]);
+            if (!firstSourcePoint) {
+                console.log('❌ First source point not found');
+                return;
+            }
+            
+            const basePointGlobal = mathToThree(firstSourcePoint.coords);
+            console.log('✅ Base point from current plane geometry:', basePointGlobal);
             
             // Calculate purple point position in GLOBAL coordinates
             const purplePointGlobal = basePointGlobal.clone().add(sumVector);
@@ -3804,7 +3822,13 @@
                 // Transform global positions to local plane mesh coordinates
                 plane.mesh.worldToLocal(basePointLocal.copy(basePointGlobal));
                 plane.mesh.worldToLocal(purplePointLocal.copy(purplePointGlobal));
-                console.log('✅ Converted to local coordinates:', { basePointLocal, purplePointLocal });
+                
+                // CRITICAL: Force objects to lie ON plane surface (z=0 in local coordinates)
+                // PlaneGeometry lies in XY plane (z=0), so all objects must have z=0
+                basePointLocal.z = 0;
+                purplePointLocal.z = 0;
+                
+                console.log('✅ Converted to local coordinates (forced z=0):', { basePointLocal, purplePointLocal });
             } else {
                 // Fallback: use global coordinates if no mesh
                 basePointLocal.copy(basePointGlobal);
@@ -3880,7 +3904,7 @@
             console.log('✅ Created purple vector shaft and head (not inside sphere)');
         }
         
-        // Helper: Create purple point at vector end - DRAGGABLE
+        // Create draggable purple point at vector end
         function createPurplePoint(group, position, plane, orangeVectors) {
             const purpleColor = 0x8B008B;
             
@@ -3894,7 +3918,7 @@
                 type: 'purpleDragPoint',
                 plane: plane,
                 orangeVectors: orangeVectors,
-                basePointLocal: position.clone(), // Store initial position for reference
+                basePointLocal: position.clone(),
                 isDraggable: true,
                 originalPosition: position.clone()
             };
@@ -3905,8 +3929,6 @@
             }
             
             group.add(sphere);
-            
-            console.log('✅ Created draggable purple point at:', position);
             return sphere;
         }
         

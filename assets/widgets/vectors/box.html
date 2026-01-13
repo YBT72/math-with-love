@@ -147,6 +147,29 @@
             background: #E8E8E8;
         }
 
+        /* Selectable items for angle measurement */
+        .object-list li[onclick] {
+            border-left: 3px solid #4A9EFF;
+            padding-left: 0.6rem;
+            background: #F0F8FF;
+        }
+
+        .object-list li[onclick]:hover {
+            background: #E6F3FF;
+            border-left: 3px solid #2D7DD2;
+        }
+
+        /* Selected items for angle measurement */
+        .object-list li.selected {
+            background: #E8F4FD;
+            border-left: 3px solid #2D7DD2;
+            font-weight: bold;
+        }
+
+        .object-list li.selected:hover {
+            background: #D4ECFC;
+        }
+
         .vertex-item {
             display: flex;
             justify-content: space-between;
@@ -275,6 +298,10 @@
                     <span>▼</span>
                 </div>
                 <div class="accordion-content">
+                    <div id="angle-tool-hint" style="display: none; background: #E6F3FF; padding: 10px; margin: 5px 0; border-radius: 5px; border-left: 4px solid #4A9EFF;">
+                        <strong>כלי מדידת זוויות פעיל</strong><br>
+                        <small>לחץ על שני אובייקטים ברשימה למטה כדי לחשב את הזווית ביניהם</small>
+                    </div>
                     <ul class="object-list">
                         <li><strong>▼ Параллелепипед</strong></li>
                         <li class="vertex-item"><span>&nbsp;&nbsp;• Точка A</span><span>(0, 0, 0)</span></li>
@@ -396,6 +423,11 @@
         // Selection and dragging state
         let isDraggingSelected = false;
         let dragStartPosition = null;
+
+        // === INTERSECTION VISUALIZATION STATE ===
+        let intersectionLines = []; // Green lines for mesh-mesh intersections
+        let intersectionPoints = []; // Points for vector-vector and vector-mesh intersections
+        let intersectionSpheres = []; // Visual spheres for intersection points
 
         // Coordinate axes with correct orientation
         const axisLength = Math.max(a, b, c) * 1.3;
@@ -778,23 +810,194 @@
         // Angle between two vectors (in degrees)
         // Uses formula: cos(θ) = (v1 · v2) / (|v1| × |v2|)
         function angleBetweenVectors(v1, v2) {
+            console.log('📐 Computing angle between vectors:', v1, v2);
+            
             const dot = dotProduct(v1, v2);
+            console.log('🔹 Dot product:', dot);
+            
             const len1 = vectorLength(v1);
             const len2 = vectorLength(v2);
+            console.log('🔹 Vector lengths:', len1, len2);
             
             if (len1 < 0.0001 || len2 < 0.0001) {
-                console.warn('One of the vectors has near-zero length');
+                console.warn('⚠️ One of the vectors has near-zero length');
                 return 0;
             }
             
             // Clamp to prevent rounding errors (arccos is only defined on [-1, 1])
-            const cosTheta = clamp(dot / (len1 * len2), -1, 1);
-            const radians = Math.acos(cosTheta);
+            const cosTheta = dot / (len1 * len2);
+            console.log('🔹 cos(theta):', cosTheta);
+            
+            const clampedCosTheta = clamp(cosTheta, -1, 1);
+            console.log('🔹 clamped cos(theta):', clampedCosTheta);
+            
+            const radians = Math.acos(clampedCosTheta);
             const degrees = radians * (180 / Math.PI);
+            
+            console.log('🔹 Final angle (degrees):', degrees);
             
             return degrees;
         }
 
+        // === INTERSECTION CALCULATION FUNCTIONS ===
+        
+        // Calculate intersection line between two planes
+        function calculatePlaneIntersection(plane1, plane2) {
+            // Extract normal and d from plane objects
+            // Planes can have: {normal, d}, {equation}, or {a, b, c, d} format
+            let n1, n2, d1, d2;
+            
+            if (plane1.normal && plane1.normal.x !== undefined) {
+                n1 = plane1.normal;
+                d1 = plane1.d;
+            } else if (plane1.equation) {
+                // Check if equation is an array [a,b,c,d] or object {a,b,c,d}
+                if (Array.isArray(plane1.equation)) {
+                    n1 = { x: plane1.equation[0], y: plane1.equation[1], z: plane1.equation[2] };
+                    d1 = plane1.equation[3];
+                } else {
+                    n1 = { x: plane1.equation.a, y: plane1.equation.b, z: plane1.equation.c };
+                    d1 = plane1.equation.d;
+                }
+            } else if (plane1.a !== undefined) {
+                n1 = { x: plane1.a, y: plane1.b, z: plane1.c };
+                d1 = plane1.d;
+            } else {
+                console.error('❌ plane1 missing normal/equation/abcd data');
+                return null;
+            }
+            
+            if (plane2.normal && plane2.normal.x !== undefined) {
+                n2 = plane2.normal;
+                d2 = plane2.d;
+            } else if (plane2.equation) {
+                // Check if equation is an array [a,b,c,d] or object {a,b,c,d}
+                if (Array.isArray(plane2.equation)) {
+                    n2 = { x: plane2.equation[0], y: plane2.equation[1], z: plane2.equation[2] };
+                    d2 = plane2.equation[3];
+                } else {
+                    n2 = { x: plane2.equation.a, y: plane2.equation.b, z: plane2.equation.c };
+                    d2 = plane2.equation.d;
+                }
+            } else if (plane2.a !== undefined) {
+                n2 = { x: plane2.a, y: plane2.b, z: plane2.c };
+                d2 = plane2.d;
+            } else {
+                console.error('❌ plane2 missing normal/equation/abcd data');
+                return null;
+            }
+            
+            // Direction vector of intersection line is cross product of normals
+            const direction = {
+                x: n1.y * n2.z - n1.z * n2.y,
+                y: n1.z * n2.x - n1.x * n2.z,
+                z: n1.x * n2.y - n1.y * n2.x
+            };
+            
+            // Check if planes are parallel
+            const dirLength = Math.sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+            if (dirLength < 0.0001) {
+                return null; // Planes are parallel
+            }
+            
+            // Find a point on the intersection line
+            // We'll set one coordinate to 0 and solve for the other two
+            let point = { x: 0, y: 0, z: 0 };
+            
+            // Choose the coordinate with largest direction component to set to 0
+            const absDir = { x: Math.abs(direction.x), y: Math.abs(direction.y), z: Math.abs(direction.z) };
+            
+            if (absDir.z >= absDir.x && absDir.z >= absDir.y) {
+                // Set z = 0, solve for x and y
+                const det = n1.x * n2.y - n1.y * n2.x;
+                if (Math.abs(det) > 0.0001) {
+                    point.x = (-d1 * n2.y + d2 * n1.y) / det;
+                    point.y = (-d2 * n1.x + d1 * n2.x) / det;
+                    point.z = 0;
+                }
+            } else if (absDir.y >= absDir.x && absDir.y >= absDir.z) {
+                // Set y = 0, solve for x and z
+                const det = n1.x * n2.z - n1.z * n2.x;
+                if (Math.abs(det) > 0.0001) {
+                    point.x = (-d1 * n2.z + d2 * n1.z) / det;
+                    point.y = 0;
+                    point.z = (-d2 * n1.x + d1 * n2.x) / det;
+                }
+            } else {
+                // Set x = 0, solve for y and z
+                const det = n1.y * n2.z - n1.z * n2.y;
+                if (Math.abs(det) > 0.0001) {
+                    point.x = 0;
+                    point.y = (-d1 * n2.z + d2 * n1.z) / det;
+                    point.z = (-d2 * n1.y + d1 * n2.y) / det;
+                }
+            }
+            
+            return {
+                point: point,
+                direction: direction,
+                dirLength: dirLength
+            };
+        }
+        
+        // Calculate intersection point between two vectors (lines)
+        function calculateVectorIntersection(vector1, vector2) {
+            // Use existing findLinesIntersection function
+            const P = { x: vector1.start.x, y: vector1.start.y, z: vector1.start.z };
+            const U = { 
+                x: vector1.end.x - vector1.start.x,
+                y: vector1.end.y - vector1.start.y,
+                z: vector1.end.z - vector1.start.z
+            };
+            
+            const Q = { x: vector2.start.x, y: vector2.start.y, z: vector2.start.z };
+            const V = { 
+                x: vector2.end.x - vector2.start.x,
+                y: vector2.end.y - vector2.start.y,
+                z: vector2.end.z - vector2.start.z
+            };
+            
+            return findLinesIntersection(P, U, Q, V, 0.5); // 0.5 tolerance
+        }
+        
+        // Calculate intersection point between vector and plane
+        function calculateVectorPlaneIntersection(vector, plane) {
+            // Vector: P + t * D
+            const P = { x: vector.start.x, y: vector.start.y, z: vector.start.z };
+            const D = { 
+                x: vector.end.x - vector.start.x,
+                y: vector.end.y - vector.start.y,
+                z: vector.end.z - vector.start.z
+            };
+            
+            // Plane: normal · (X - point) = 0 or normal · X + d = 0
+            const n = plane.normal;
+            const d = plane.d;
+            
+            // Check if vector is parallel to plane
+            const denominator = n.x * D.x + n.y * D.y + n.z * D.z;
+            if (Math.abs(denominator) < 0.0001) {
+                return null; // Vector is parallel to plane
+            }
+            
+            // Calculate parameter t for intersection
+            const numerator = -(n.x * P.x + n.y * P.y + n.z * P.z + d);
+            const t = numerator / denominator;
+            
+            // Calculate intersection point
+            const intersection = {
+                x: P.x + t * D.x,
+                y: P.y + t * D.y,
+                z: P.z + t * D.z
+            };
+            
+            return {
+                point: intersection,
+                t: t,
+                onSegment: t >= 0 && t <= 1 // Check if intersection is on the vector segment
+            };
+        }
+        
         // Angle between vector and plane (in degrees)
         // Formula: φ = 90° - β, where β is angle between vector and normal
         function angleBetweenVectorAndPlane(vectorDir, planeNormal) {
@@ -1166,6 +1369,237 @@
             return dotProduct < 0; // Face is facing camera
         }
 
+        // === INTERSECTION VISUALIZATION FUNCTIONS ===
+        
+        // Create visual representation of intersection line clipped to box bounds
+        function createIntersectionLine(point, direction, length = 20) {
+            // Normalize direction vector
+            const dirLength = Math.sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+            if (dirLength < 0.0001) {
+                return null;
+            }
+            
+            const normalizedDir = {
+                x: direction.x / dirLength,
+                y: direction.y / dirLength,
+                z: direction.z / dirLength
+            };
+            
+            // Find intersection points with box faces (in math coordinates)
+            const boxBounds = {
+                xMin: 0, xMax: a,  // a = 4
+                yMin: 0, yMax: b,  // b = 6  
+                zMin: 0, zMax: c   // c = 5
+            };
+            
+            const intersectionPoints = [];
+            
+            // Check intersection with each face of the box
+            // X faces: x = 0 and x = a
+            if (Math.abs(normalizedDir.x) > 0.0001) {
+                const t1 = (boxBounds.xMin - point.x) / normalizedDir.x;
+                const t2 = (boxBounds.xMax - point.x) / normalizedDir.x;
+                
+                // Check if intersection points are within face bounds
+                const p1 = { x: boxBounds.xMin, y: point.y + t1 * normalizedDir.y, z: point.z + t1 * normalizedDir.z };
+                const p2 = { x: boxBounds.xMax, y: point.y + t2 * normalizedDir.y, z: point.z + t2 * normalizedDir.z };
+                
+                if (p1.y >= boxBounds.yMin && p1.y <= boxBounds.yMax && p1.z >= boxBounds.zMin && p1.z <= boxBounds.zMax) {
+                    intersectionPoints.push({ point: p1, t: t1 });
+                }
+                if (p2.y >= boxBounds.yMin && p2.y <= boxBounds.yMax && p2.z >= boxBounds.zMin && p2.z <= boxBounds.zMax) {
+                    intersectionPoints.push({ point: p2, t: t2 });
+                }
+            }
+            
+            // Y faces: y = 0 and y = b
+            if (Math.abs(normalizedDir.y) > 0.0001) {
+                const t1 = (boxBounds.yMin - point.y) / normalizedDir.y;
+                const t2 = (boxBounds.yMax - point.y) / normalizedDir.y;
+                
+                const p1 = { x: point.x + t1 * normalizedDir.x, y: boxBounds.yMin, z: point.z + t1 * normalizedDir.z };
+                const p2 = { x: point.x + t2 * normalizedDir.x, y: boxBounds.yMax, z: point.z + t2 * normalizedDir.z };
+                
+                if (p1.x >= boxBounds.xMin && p1.x <= boxBounds.xMax && p1.z >= boxBounds.zMin && p1.z <= boxBounds.zMax) {
+                    intersectionPoints.push({ point: p1, t: t1 });
+                }
+                if (p2.x >= boxBounds.xMin && p2.x <= boxBounds.xMax && p2.z >= boxBounds.zMin && p2.z <= boxBounds.zMax) {
+                    intersectionPoints.push({ point: p2, t: t2 });
+                }
+            }
+            
+            // Z faces: z = 0 and z = c
+            if (Math.abs(normalizedDir.z) > 0.0001) {
+                const t1 = (boxBounds.zMin - point.z) / normalizedDir.z;
+                const t2 = (boxBounds.zMax - point.z) / normalizedDir.z;
+                
+                const p1 = { x: point.x + t1 * normalizedDir.x, y: point.y + t1 * normalizedDir.y, z: boxBounds.zMin };
+                const p2 = { x: point.x + t2 * normalizedDir.x, y: point.y + t2 * normalizedDir.y, z: boxBounds.zMax };
+                
+                if (p1.x >= boxBounds.xMin && p1.x <= boxBounds.xMax && p1.y >= boxBounds.yMin && p1.y <= boxBounds.yMax) {
+                    intersectionPoints.push({ point: p1, t: t1 });
+                }
+                if (p2.x >= boxBounds.xMin && p2.x <= boxBounds.xMax && p2.y >= boxBounds.yMin && p2.y <= boxBounds.yMax) {
+                    intersectionPoints.push({ point: p2, t: t2 });
+                }
+            }
+            
+            // Remove duplicate points (within tolerance)
+            const uniquePoints = [];
+            for (let i = 0; i < intersectionPoints.length; i++) {
+                let isDuplicate = false;
+                for (let j = 0; j < uniquePoints.length; j++) {
+                    const dist = Math.sqrt(
+                        Math.pow(intersectionPoints[i].point.x - uniquePoints[j].point.x, 2) +
+                        Math.pow(intersectionPoints[i].point.y - uniquePoints[j].point.y, 2) +
+                        Math.pow(intersectionPoints[i].point.z - uniquePoints[j].point.z, 2)
+                    );
+                    if (dist < 0.001) {
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+                if (!isDuplicate) {
+                    uniquePoints.push(intersectionPoints[i]);
+                }
+            }
+            
+            // Need exactly 2 intersection points to draw a line segment
+            if (uniquePoints.length < 2) {
+                return null; // Line doesn't pass through the box properly
+            }
+            
+            // Sort by parameter t and take the first two (entry and exit points)
+            uniquePoints.sort((a, b) => a.t - b.t);
+            const startPoint = uniquePoints[0].point;
+            const endPoint = uniquePoints[1].point;
+            
+            // Apply coordinate transformation
+            const transformedStart = mathToThreeJS(startPoint.x, startPoint.y, startPoint.z);
+            const transformedEnd = mathToThreeJS(endPoint.x, endPoint.y, endPoint.z);
+            
+            const geometry = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(transformedStart[0], transformedStart[1], transformedStart[2]),
+                new THREE.Vector3(transformedEnd[0], transformedEnd[1], transformedEnd[2])
+            ]);
+            
+            const material = new THREE.LineBasicMaterial({ 
+                color: 0x006600, // Darker green color for better visibility
+                linewidth: 16,   // Thicker line for better visibility
+                transparent: false,
+                opacity: 1.0
+            });
+            
+            const line = new THREE.Line(geometry, material);
+            line.userData.isIntersectionLine = true;
+            
+            return line;
+        }
+        
+        // Create visual representation of intersection point
+        function createIntersectionPoint(point) {
+            // Apply coordinate transformation
+            const transformedPoint = mathToThreeJS(point.x, point.y, point.z);
+            
+            const geometry = new THREE.SphereGeometry(0.15, 16, 16); // Make it a bit bigger
+            const material = new THREE.MeshBasicMaterial({ 
+                color: 0xff4444, // Red color
+                transparent: false,
+                opacity: 1.0
+            });
+            
+            const sphere = new THREE.Mesh(geometry, material);
+            sphere.position.set(transformedPoint[0], transformedPoint[1], transformedPoint[2]);
+            sphere.userData.isIntersectionPoint = true;
+            return sphere;
+        }
+        
+        // Clear all intersection visualizations
+        function clearIntersections() {
+            // Remove intersection lines
+            intersectionLines.forEach(line => {
+                scene.remove(line);
+                line.geometry.dispose();
+                line.material.dispose();
+            });
+            intersectionLines = [];
+            
+            // Remove intersection points
+            intersectionSpheres.forEach(sphere => {
+                scene.remove(sphere);
+                sphere.geometry.dispose();
+                sphere.material.dispose();
+            });
+            intersectionSpheres = [];
+            intersectionPoints = [];
+        }
+        
+        // Update all intersections
+        function updateIntersections() {
+            clearIntersections();
+            
+            let intersectionCount = 0;
+            
+            // Calculate mesh-mesh intersections (plane-plane intersections)
+            for (let i = 0; i < userPlanes.length; i++) {
+                for (let j = i + 1; j < userPlanes.length; j++) {
+                    const plane1 = userPlanes[i];
+                    const plane2 = userPlanes[j];
+                    
+                    if (plane1.equation && plane2.equation) {
+                        const intersection = calculatePlaneIntersection(plane1.equation, plane2.equation);
+                        if (intersection) {
+                            const line = createIntersectionLine(intersection.point, intersection.direction);
+                            if (line) {
+                                scene.add(line);
+                                intersectionLines.push(line);
+                                intersectionCount++;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Calculate vector-vector intersections
+            for (let i = 0; i < userVectors.length; i++) {
+                for (let j = i + 1; j < userVectors.length; j++) {
+                    const vector1 = userVectors[i];
+                    const vector2 = userVectors[j];
+                    
+                    const intersection = calculateVectorIntersection(vector1, vector2);
+                    if (intersection && intersection.intersects) {
+                        const sphere = createIntersectionPoint(intersection.point);
+                        scene.add(sphere);
+                        intersectionSpheres.push(sphere);
+                        intersectionPoints.push({
+                            type: 'vector-vector',
+                            point: intersection.point,
+                            objects: [vector1, vector2]
+                        });
+                    }
+                }
+            }
+            
+            // Calculate vector-plane intersections
+            for (let vector of userVectors) {
+                for (let plane of userPlanes) {
+                    if (plane.equation) {
+                        const intersection = calculateVectorPlaneIntersection(vector, plane.equation);
+                        if (intersection && intersection.onSegment) {
+                            const sphere = createIntersectionPoint(intersection.point);
+                            scene.add(sphere);
+                            intersectionSpheres.push(sphere);
+                            intersectionPoints.push({
+                                type: 'vector-plane',
+                                point: intersection.point,
+                                objects: [vector, plane]
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        
         // Update plane creation status display
         function updatePlaneCreationStatus() {
             const statusDiv = document.getElementById('plane-status');
@@ -1215,11 +1649,24 @@
                 // Reset colors of selected angle objects
                 selectedAngleObjects.forEach(obj => resetAngleObjectColor(obj));
                 selectedAngleObjects = [];
+                
+                // Hide angle tool hint
+                const angleToolHint = document.getElementById('angle-tool-hint');
+                if (angleToolHint) angleToolHint.style.display = 'none';
             }
             
             activeTool = tool;
             document.querySelectorAll('.tool-icon').forEach(icon => icon.classList.remove('active'));
             document.getElementById('tool-' + tool)?.classList.add('active');
+            
+            // Show angle tool hint when angle tool is activated
+            if (tool === 'angle') {
+                const angleToolHint = document.getElementById('angle-tool-hint');
+                if (angleToolHint) angleToolHint.style.display = 'block';
+            }
+            
+            // Update objects list to show/hide selection options
+            updateUserObjectsList();
             
             // If switching away from plane tool while creating plane, cancel creation
             if (isCreatingPlane && tool !== 'plane') {
@@ -1257,22 +1704,32 @@
         function resetAngleObjectColor(obj) {
             if (!obj) return;
             
-            if (obj.type === 'vector') {
+            console.log('🎨 Resetting color for object:', obj.type);
+            
+            if (obj.type === 'vector' && obj.arrow) {
                 // Reset vector arrow to original pink
                 obj.arrow.traverse(child => {
-                    if (child.material) {
+                    if (child.material && child.material.color) {
                         child.material.color.setHex(0xFF0080);
+                        child.material.needsUpdate = true;
                     }
                 });
-            } else if (obj.type === 'edge') {
+            } else if (obj.type === 'edge' && obj.edgeObject) {
                 // Reset edge to dark gray
-                obj.edgeObject.material.color.setHex(0x404040);
+                if (obj.edgeObject.material && obj.edgeObject.material.color) {
+                    obj.edgeObject.material.color.setHex(0x404040);
+                    obj.edgeObject.material.needsUpdate = true;
+                }
             } else if (obj.type === 'plane') {
                 // Reset plane to original color
-                if (obj.isFace) {
-                    obj.mesh.material.color.setHex(obj.isClosestToCamera ? 0x0088FF : 0x90EE90);
-                } else {
-                    obj.mesh.material.color.setHex(0xFF8C00);
+                const planeObj = obj.object || obj;
+                if (planeObj.mesh && planeObj.mesh.material && planeObj.mesh.material.color) {
+                    if (planeObj.isFace) {
+                        planeObj.mesh.material.color.setHex(planeObj.isClosestToCamera ? 0x0088FF : 0x90EE90);
+                    } else {
+                        planeObj.mesh.material.color.setHex(0xFF8C00);
+                    }
+                    planeObj.mesh.material.needsUpdate = true;
                 }
             }
         }
@@ -1437,6 +1894,56 @@
             };
         }
 
+        // Handle selection of object for angle measurement from the list
+        function selectObjectForAngle(objectType, index) {
+            console.log('📋 Selecting from list:', objectType, index);
+            console.log('📋 Current selectedAngleObjects.length:', selectedAngleObjects.length);
+            
+            if (activeTool !== 'angle') {
+                alert('אנא הפעל תחילה את כלי מדידת הזוויות (🔺)');
+                return;
+            }
+            
+            let objectData = null;
+            
+            if (objectType === 'vector' && userVectors[index]) {
+                const vector = userVectors[index];
+                objectData = {
+                    type: 'vector',
+                    object: vector,
+                    arrow: vector.arrow, // Add arrow reference for highlighting
+                    start: vector.start,
+                    end: vector.end,
+                    direction: {
+                        x: vector.end.x - vector.start.x,
+                        y: vector.end.y - vector.start.y,  
+                        z: vector.end.z - vector.start.z
+                    },
+                    name: vector.name || `Vector ${index + 1}`
+                };
+            } else if (objectType === 'plane' && userPlanes[index]) {
+                const plane = userPlanes[index];
+                console.log('📋 Creating plane objectData for plane:', plane);
+                objectData = {
+                    type: 'plane',
+                    object: plane,
+                    mesh: plane.mesh, // Add mesh reference for highlighting
+                    normal: plane.normal,
+                    d: plane.d,
+                    name: plane.name || `Plane ${index + 1}`
+                };
+                console.log('📋 Created objectData:', objectData);
+            }
+            
+            if (objectData) {
+                console.log('🎯 Calling handleAngleObjectSelection with:', objectData);
+                handleAngleObjectSelection(objectData);
+                // Update the list to show current selection state
+                console.log('📋 Updating user objects list...');
+                updateUserObjectsList();
+            }
+        }
+
         // Handle selection of object for angle measurement
         function handleAngleObjectSelection(objectData) {
             console.log('🎯 Selection attempt:', selectedAngleObjects.length, objectData?.type);
@@ -1492,17 +1999,21 @@
 
         // Highlight object with specified color
         function highlightAngleObject(obj, color) {
-            if (obj.type === 'vector') {
+            console.log('🎨 Highlighting object:', obj.type, color.toString(16));
+            if (obj.type === 'vector' && obj.arrow) {
                 obj.arrow.traverse(child => {
-                    if (child.material) {
+                    if (child.material && child.material.color) {
                         child.material.color.setHex(color);
                     }
                 });
-            } else if (obj.type === 'edge') {
+            } else if (obj.type === 'edge' && obj.edgeObject) {
                 obj.edgeObject.material.color.setHex(color);
-            } else if (obj.type === 'plane') {
-                obj.mesh.material.color.setHex(color);
-                obj.mesh.material.opacity = 0.3;
+            } else if (obj.type === 'plane' && obj.mesh) {
+                if (obj.mesh.material && obj.mesh.material.color) {
+                    obj.mesh.material.color.setHex(color);
+                    obj.mesh.material.opacity = 0.3;
+                    obj.mesh.material.needsUpdate = true;
+                }
             }
         }
 
@@ -1913,21 +2424,102 @@
 
         // Handle angle calculation between two planes
         function handlePlanePlaneAngle(plane1, plane2) {
-            const normal1 = {
-                x: plane1.normal.x,
-                y: plane1.normal.y,
-                z: plane1.normal.z
-            };
+            console.log('🎯 handlePlanePlaneAngle called with:');
+            console.log('   plane1:', plane1);
+            console.log('   plane2:', plane2);
             
-            const normal2 = {
-                x: plane2.normal.x,
-                y: plane2.normal.y,
-                z: plane2.normal.z
-            };
+            // Extract plane objects - with better debugging
+            const planeObj1 = plane1.object || plane1;
+            const planeObj2 = plane2.object || plane2;
+            
+            console.log('🔍 Extracted plane objects:');
+            console.log('   planeObj1:', planeObj1);
+            console.log('   planeObj1 keys:', Object.keys(planeObj1));
+            console.log('   planeObj1.normal:', planeObj1.normal);
+            console.log('   planeObj1.equation:', planeObj1.equation);
+            console.log('   planeObj1.a, b, c, d:', planeObj1.a, planeObj1.b, planeObj1.c, planeObj1.d);
+            
+            console.log('   planeObj2:', planeObj2);
+            console.log('   planeObj2 keys:', Object.keys(planeObj2));
+            console.log('   planeObj2.normal:', planeObj2.normal);
+            console.log('   planeObj2.equation:', planeObj2.equation);
+            console.log('   planeObj2.a, b, c, d:', planeObj2.a, planeObj2.b, planeObj2.c, planeObj2.d);
+            
+            // Extract normals properly - handle all possible data structures
+            let normal1, normal2;
+            
+            // For plane1
+            if (planeObj1.normal && planeObj1.normal.x !== undefined) {
+                normal1 = planeObj1.normal;
+            } else if (planeObj1.equation && typeof planeObj1.equation === 'object') {
+                if (Array.isArray(planeObj1.equation)) {
+                    normal1 = { x: planeObj1.equation[0], y: planeObj1.equation[1], z: planeObj1.equation[2] };
+                } else if (planeObj1.equation.a !== undefined) {
+                    normal1 = { x: planeObj1.equation.a, y: planeObj1.equation.b, z: planeObj1.equation.c };
+                } else {
+                    console.error('❌ plane1.equation has wrong structure:', planeObj1.equation);
+                    return;
+                }
+            } else if (planeObj1.a !== undefined) {
+                normal1 = { x: planeObj1.a, y: planeObj1.b, z: planeObj1.c };
+            } else {
+                console.error('❌ Cannot extract normal from plane1 - no valid data found');
+                return;
+            }
+            
+            // For plane2  
+            if (planeObj2.normal && planeObj2.normal.x !== undefined) {
+                normal2 = planeObj2.normal;
+            } else if (planeObj2.equation && typeof planeObj2.equation === 'object') {
+                if (Array.isArray(planeObj2.equation)) {
+                    normal2 = { x: planeObj2.equation[0], y: planeObj2.equation[1], z: planeObj2.equation[2] };
+                } else if (planeObj2.equation.a !== undefined) {
+                    normal2 = { x: planeObj2.equation.a, y: planeObj2.equation.b, z: planeObj2.equation.c };
+                } else {
+                    console.error('❌ plane2.equation has wrong structure:', planeObj2.equation);
+                    return;
+                }
+            } else if (planeObj2.a !== undefined) {
+                normal2 = { x: planeObj2.a, y: planeObj2.b, z: planeObj2.c };
+            } else {
+                console.error('❌ Cannot extract normal from plane2 - no valid data found');
+                return;
+            }
+            
+            console.log('🧭 Extracted normals:');
+            console.log('   normal1:', normal1);
+            console.log('   normal2:', normal2);
+            
+            // Check if normals exist and are valid
+            if (!normal1 || !normal2) {
+                console.error('❌ Missing normal vectors after extraction');
+                return;
+            }
+            
+            if (normal1.x === undefined || normal1.y === undefined || normal1.z === undefined) {
+                console.error('❌ Invalid normal1 structure:', normal1);
+                return;
+            }
+            
+            if (normal2.x === undefined || normal2.y === undefined || normal2.z === undefined) {
+                console.error('❌ Invalid normal2 structure:', normal2);
+                return;
+            }
+            
+            // Set different colors for the two planes
+            if (planeObj1.mesh && planeObj1.mesh.material) {
+                planeObj1.mesh.material.color.setHex(0x4169E1); // Royal Blue
+                planeObj1.mesh.material.needsUpdate = true;
+            }
+            if (planeObj2.mesh && planeObj2.mesh.material) {
+                planeObj2.mesh.material.color.setHex(0xFF6347); // Tomato Red
+                planeObj2.mesh.material.needsUpdate = true;
+            }
             
             const angle = angleBetweenVectors(normal1, normal2);
+            console.log('📐 Calculated angle:', angle);
             
-            const visuals = visualizePlanePlaneAngle(plane1, plane2, angle);
+            const visuals = visualizePlanePlaneAngle(planeObj1, planeObj2, angle);
             
             const calcData = {
                 type: 'plane-plane',
@@ -2291,55 +2883,82 @@
 
         // Visualize angle between two planes
         function visualizePlanePlaneAngle(plane1, plane2, angle) {
+            console.log('🎯 Visualizing plane-plane angle:', angle);
+            
+            // Ensure acute angle (always minimum angle between planes)
+            let adjustedAngle = angle;
+            let normal1 = { x: plane1.normal.x, y: plane1.normal.y, z: plane1.normal.z };
+            let normal2 = { x: plane2.normal.x, y: plane2.normal.y, z: plane2.normal.z };
+            
+            if (angle > 90) {
+                adjustedAngle = 180 - angle;
+                // Flip second normal to show acute angle
+                normal2 = { x: -normal2.x, y: -normal2.y, z: -normal2.z };
+                console.log('📐 Flipped to acute angle:', adjustedAngle);
+            }
+            
             // Find visualization point (intersection or center)
             const visualPoint = findVisualizationPoint(plane1, plane2);
+            console.log('📍 Visual point:', visualPoint);
             
-            // Create first normal (purple)
+            // Create first normal (darker blue - matching plane1 color)
+            // Convert normal to Three.js coordinates
+            const normal1ThreeJS = mathToThreeJS(normal1.x, normal1.y, normal1.z);
             const normal1End = visualPoint.clone().add(
-                new THREE.Vector3(plane1.normal.x, plane1.normal.y, plane1.normal.z).multiplyScalar(2)
+                new THREE.Vector3(normal1ThreeJS[0], normal1ThreeJS[1], normal1ThreeJS[2]).multiplyScalar(2)
             );
+            console.log('🔵 Creating normal1 from', visualPoint, 'to', normal1End);
             const normal1Arrow = createHelperArrow(visualPoint, normal1End, 'normal');
             normal1Arrow.traverse(child => {
-                if (child.material) {
-                    child.material.color.setHex(0x9370DB); // MediumPurple
+                if (child.material && child.material.color) {
+                    child.material.color.setHex(0x1E3A8A); // Darker blue (matching plane1)
+                    child.material.needsUpdate = true;
                 }
             });
             scene.add(normal1Arrow);
             
-            // Create second normal (orange)
+            // Create second normal (darker red - matching plane2 color)
+            // Convert normal to Three.js coordinates
+            const normal2ThreeJS = mathToThreeJS(normal2.x, normal2.y, normal2.z);
             const normal2End = visualPoint.clone().add(
-                new THREE.Vector3(plane2.normal.x, plane2.normal.y, plane2.normal.z).multiplyScalar(2)
+                new THREE.Vector3(normal2ThreeJS[0], normal2ThreeJS[1], normal2ThreeJS[2]).multiplyScalar(2)
             );
+            console.log('🔴 Creating normal2 from', visualPoint, 'to', normal2End);
             const normal2Arrow = createHelperArrow(visualPoint, normal2End, 'normal');
             normal2Arrow.traverse(child => {
-                if (child.material) {
-                    child.material.color.setHex(0xFF8C00); // DarkOrange
+                if (child.material && child.material.color) {
+                    child.material.color.setHex(0xB91C1C); // Darker red (matching plane2)
+                    child.material.needsUpdate = true;
                 }
             });
             scene.add(normal2Arrow);
             
             // Create sector between normals
+            console.log('🌙 Creating angle sector with acute angle:', adjustedAngle);
+            // Convert normals to Three.js coordinates for sector creation
+            const normal1ThreeJS_sector = mathToThreeJS(normal1.x, normal1.y, normal1.z);
+            const normal2ThreeJS_sector = mathToThreeJS(normal2.x, normal2.y, normal2.z);
+            const normal1Dir = { x: normal1ThreeJS_sector[0], y: normal1ThreeJS_sector[1], z: normal1ThreeJS_sector[2] };
+            const normal2Dir = { x: normal2ThreeJS_sector[0], y: normal2ThreeJS_sector[1], z: normal2ThreeJS_sector[2] };
+            
             const arc = createAngleSector(
                 visualPoint,
                 1.5,
-                plane1.normal,
-                plane2.normal,
-                angle,
+                normal1Dir,
+                normal2Dir,
+                adjustedAngle,
                 0xFFD700
             );
-            scene.add(arc);
+            if (arc) {
+                scene.add(arc);
+                console.log('✅ Arc added to scene');
+            } else {
+                console.log('❌ Failed to create arc');
+            }
             
-            // Calculate label position
-            const n1Normalized = normalizeVector({
-                x: plane1.normal.x,
-                y: plane1.normal.y,
-                z: plane1.normal.z
-            });
-            const n2Normalized = normalizeVector({
-                x: plane2.normal.x,
-                y: plane2.normal.y,
-                z: plane2.normal.z
-            });
+            // Calculate label position using adjusted normals
+            const n1Normalized = normalizeVector(normal1);
+            const n2Normalized = normalizeVector(normal2);
             
             const midDir = {
                 x: (n1Normalized.x + n2Normalized.x) / 2,
@@ -2349,20 +2968,20 @@
             const midDirNormalized = normalizeVector(midDir);
             
             const labelPos = new THREE.Vector3(
-                visualPoint.x + midDirNormalized.x * 1.2,
-                visualPoint.y + midDirNormalized.y * 1.2,
-                visualPoint.z + midDirNormalized.z * 1.2
+                visualPoint.x + midDirNormalized.x * 0.8,
+                visualPoint.y + midDirNormalized.y * 0.8,
+                visualPoint.z + midDirNormalized.z * 0.8
             );
             
             // Determine if special case
             let additionalText = null;
-            if (Math.abs(angle) < 0.5) {
+            if (Math.abs(adjustedAngle) < 0.5) {
                 additionalText = 'Planes parallel';
-            } else if (Math.abs(angle - 90) < 0.5) {
+            } else if (Math.abs(adjustedAngle - 90) < 0.5) {
                 additionalText = 'Planes perpendicular';
             }
             
-            const label = createAngleLabel(angle, labelPos, additionalText);
+            const label = createAngleLabel(adjustedAngle, labelPos, additionalText);
             scene.add(label);
             
             return {
@@ -2376,10 +2995,62 @@
 
         // Helper: Find point for visualizing plane-plane angle
         function findVisualizationPoint(plane1, plane2) {
-            // Try to find intersection line within parallelepiped bounds
-            // For simplicity, use center of parallelepiped
-            // TODO: Calculate actual intersection line if needed
-            return new THREE.Vector3(a/2, c/2, b/2);
+            console.log('🔍 Finding visualization point for planes:', plane1, plane2);
+            
+            // Calculate actual intersection line between the two planes
+            const intersection = calculatePlaneIntersection(plane1, plane2);
+            console.log('🔗 Plane intersection result:', intersection);
+            
+            if (intersection && intersection.point) {
+                // Find intersection points with box boundaries
+                const linePoint = intersection.point;
+                const lineDir = intersection.direction;
+                
+                // Box boundaries in math coordinates
+                const boxMin = { x: 0, y: 0, z: 0 };
+                const boxMax = { x: a, y: b, z: c };
+                
+                let tMin = -Infinity;
+                let tMax = Infinity;
+                
+                // Check intersections with each face
+                ['x', 'y', 'z'].forEach(axis => {
+                    if (Math.abs(lineDir[axis]) > 0.0001) {
+                        const t1 = (boxMin[axis] - linePoint[axis]) / lineDir[axis];
+                        const t2 = (boxMax[axis] - linePoint[axis]) / lineDir[axis];
+                        
+                        const tAxisMin = Math.min(t1, t2);
+                        const tAxisMax = Math.max(t1, t2);
+                        
+                        tMin = Math.max(tMin, tAxisMin);
+                        tMax = Math.min(tMax, tAxisMax);
+                    }
+                });
+                
+                // Middle parameter for intersection segment
+                const tMid = (tMin + tMax) / 2;
+                
+                const visualPoint = {
+                    x: linePoint.x + lineDir.x * tMid,
+                    y: linePoint.y + lineDir.y * tMid,
+                    z: linePoint.z + lineDir.z * tMid
+                };
+                
+                console.log('📏 Math coordinates visualPoint (middle of intersection):', visualPoint);
+                console.log('🎯 t range:', tMin, 'to', tMax, 'middle t:', tMid);
+                
+                // Convert to Three.js coordinates
+                const threePoint = mathToThreeJS(visualPoint.x, visualPoint.y, visualPoint.z);
+                const result = new THREE.Vector3(threePoint[0], threePoint[1], threePoint[2]);
+                console.log('🎯 Three.js coordinates result:', result);
+                return result;
+            } else {
+                // Fallback to center if intersection calculation fails
+                console.log('⚠️ Using fallback center point');
+                const center = new THREE.Vector3(a/2, c/2, b/2);
+                console.log('📍 Fallback center:', center);
+                return center;
+            }
         }
 
         // ============================================================================
@@ -2898,6 +3569,7 @@
             isCreatingPlane = false;
             selectedPlanePoints = [];
             
+            clearIntersections(); // Clear intersection visualizations
             updateUserObjectsList();
         }
 
@@ -3234,22 +3906,33 @@
         // Create angle sector (filled semi-transparent area) between two directions
         // Returns THREE.Group containing the sector mesh
         function createAngleSector(center, radius, direction1, direction2, angleDegrees, color = 0xFFD700) {
+            console.log('🌙 createAngleSector called:');
+            console.log('   center:', center);
+            console.log('   direction1:', direction1);
+            console.log('   direction2:', direction2);
+            console.log('   angleDegrees:', angleDegrees);
+            
             const group = new THREE.Group();
             
             // Normalize directions
             const dir1 = new THREE.Vector3(direction1.x, direction1.y, direction1.z).normalize();
             const dir2 = new THREE.Vector3(direction2.x, direction2.y, direction2.z).normalize();
+            console.log('   normalized dir1:', dir1);
+            console.log('   normalized dir2:', dir2);
             
             // Calculate rotation axis (perpendicular to both directions)
             let axis = new THREE.Vector3().crossVectors(dir1, dir2);
+            console.log('   cross product axis:', axis);
+            console.log('   axis length:', axis.length());
             
             // Check if vectors are parallel (axis length ≈ 0)
             if (axis.length() < 0.0001) {
-                console.log('Vectors are parallel, no sector created');
+                console.log('❌ Vectors are parallel, no sector created');
                 return group;
             }
             
             axis.normalize();
+            console.log('✅ Creating sector with normalized axis:', axis);
             
             // ✅ ИСПРАВЛЕНИЕ: Проверяем направление вращения
             // Если угол получается больше 90°, значит мы вращаемся в неправильную сторону
@@ -3348,33 +4031,33 @@
         function createAngleLabel(angleDegrees, position, additionalText = null) {
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
-            canvas.width = 128;
-            canvas.height = additionalText ? 96 : 64;
+            canvas.width = 160;
+            canvas.height = additionalText ? 120 : 80;
             
             // NO BACKGROUND - transparent
             
             // Draw angle text with outline
-            context.font = 'Bold 36px Arial';
+            context.font = 'Bold 48px Arial';
             context.textAlign = 'center';
             context.textBaseline = 'middle';
             
-            // Black outline (thicker for better visibility)
-            context.strokeStyle = 'black';
-            context.lineWidth = 4;
-            context.strokeText(angleDegrees.toFixed(1) + '°', canvas.width / 2, additionalText ? 32 : canvas.height / 2);
+            // White outline (thicker for better visibility)
+            context.strokeStyle = 'white';
+            context.lineWidth = 6;
+            context.strokeText(angleDegrees.toFixed(1) + '°', canvas.width / 2, additionalText ? 40 : canvas.height / 2);
             
-            // White fill
-            context.fillStyle = 'white';
-            context.fillText(angleDegrees.toFixed(1) + '°', canvas.width / 2, additionalText ? 32 : canvas.height / 2);
+            // Black fill
+            context.fillStyle = 'black';
+            context.fillText(angleDegrees.toFixed(1) + '°', canvas.width / 2, additionalText ? 40 : canvas.height / 2);
             
             // Draw additional text if provided (smaller)
             if (additionalText) {
-                context.font = 'Bold 16px Arial';
-                context.strokeStyle = 'black';
-                context.lineWidth = 3;
-                context.strokeText(additionalText, canvas.width / 2, 70);
-                context.fillStyle = 'white';
-                context.fillText(additionalText, canvas.width / 2, 70);
+                context.font = 'Bold 20px Arial';
+                context.strokeStyle = 'white';
+                context.lineWidth = 4;
+                context.strokeText(additionalText, canvas.width / 2, 80);
+                context.fillStyle = 'black';
+                context.fillText(additionalText, canvas.width / 2, 80);
             }
             
             const texture = new THREE.CanvasTexture(canvas);
@@ -3394,11 +4077,19 @@
         // Create helper arrow (reuses existing createVectorArrow function)
         // type: 'ghost' | 'normal' | 'projection'
         function createHelperArrow(start, end, type) {
+            console.log('🏹 Creating helper arrow from', start, 'to', end, 'type:', type);
             const arrow = createVectorArrow(start, end, false);
+            
+            if (!arrow) {
+                console.error('❌ createVectorArrow returned null');
+                return null;
+            }
+            console.log('✅ createVectorArrow succeeded:', arrow);
             
             // Apply styling based on type
             arrow.traverse(child => {
                 if (child.material) {
+                    console.log('🎨 Styling child material:', child.type);
                     switch(type) {
                         case 'ghost':
                             // Cyan dashed semi-transparent
@@ -3427,9 +4118,11 @@
                             break;
                             
                         case 'normal':
-                            // Purple solid
+                            // Purple solid - will be overridden later
                             child.material = child.material.clone();
                             child.material.color.setHex(0x9370DB); // MediumPurple
+                            child.material.transparent = false;
+                            child.material.opacity = 1.0;
                             break;
                             
                         case 'projection':
@@ -3955,6 +4648,13 @@
                 intersectionLines: [], // No intersection lines for faces
                 equation: face.equation,
                 equationString: formatEquation(face.equation),
+                // Add normal and d from equation (ax + by + cz + d = 0)
+                normal: {
+                    x: face.equation.a, // a
+                    y: face.equation.b, // b
+                    z: face.equation.c  // c
+                },
+                d: face.equation.d, // d
                 isFace: true,
                 faceName: face.name,
                 isClosestToCamera: isClosestFace, // Save current visibility
@@ -3968,6 +4668,7 @@
             // Increment counter and update objects list
             planeCounter++;
             updateUserObjectsList();
+            updateIntersections(); // Update intersection visualizations
             
             // Update info panel
             updatePlaneInfo(`Плоскость (${face.name})`, face.equation);
@@ -4397,11 +5098,19 @@
                 intersectionLines: [],
                 equation: equation,
                 equationString: formatEquation(equation),
+                // Add normal and d from equation (ax + by + cz + d = 0)
+                normal: {
+                    x: equation.a, // a
+                    y: equation.b, // b
+                    z: equation.c  // c
+                },
+                d: equation.d, // d
                 isFace: false
             });
             
             planeCounter++;
             updateUserObjectsList();
+            updateIntersections(); // Update intersection visualizations
             
             const t1 = performance.now();
             console.log(`Polygon created in ${(t1 - t0).toFixed(2)}ms`);
@@ -4536,7 +5245,17 @@
                     // Use KaTeX for vector arrow notation
                     const vectorNameDisplay = v.name ? `<strong>${v.name}</strong> (<span id="katex-vec-${i}"></span>)` : `<span id="katex-vec-${i}"></span>`;
                     
-                    content += `<li>&nbsp;&nbsp;• Вектор ${vectorNameDisplay} |${magnitude}| <small>${startCoords}→${endCoords}</small> <button onclick="deleteVector(${i})" style="font-size: 0.8em;">🗑️</button></li>`;
+                    // Check if this vector is selected for angle measurement
+                    const isSelected = activeTool === 'angle' && selectedAngleObjects.some(obj => 
+                        obj.type === 'vector' && obj.object === v);
+                    const selectedClass = isSelected ? 'selected' : '';
+                    const selectedIndicator = isSelected ? '✓ ' : '';
+                    
+                    // Make the entire item clickable for angle measurement
+                    const clickHandler = activeTool === 'angle' ? 
+                        `onclick="selectObjectForAngle('vector', ${i})" style="cursor: pointer;" title="לחץ לבחירה לחישוב זווית"` : '';
+                    
+                    content += `<li ${clickHandler} class="${selectedClass}">&nbsp;&nbsp;• ${selectedIndicator}Вектор ${vectorNameDisplay} |${magnitude}| <small>${startCoords}→${endCoords}</small> <button onclick="event.stopPropagation(); deleteVector(${i})" style="font-size: 0.8em;">🗑️</button></li>`;
                 });
             }
             
@@ -4547,7 +5266,18 @@
                     const colorIndicator = plane.isClosestToCamera ? '🔵' : '🟢'; // Blue for closest, green for farthest
                     // NEW: Use plane.name (which contains vertex labels) for ALL planes
                     const displayName = plane.name;
-                    content += `<li>&nbsp;&nbsp;• ${colorIndicator} Плоскость <strong>${displayName}</strong>${faceInfo}<br>&nbsp;&nbsp;&nbsp;&nbsp;<small>${plane.equationString}</small> <button onclick="deletePlane(${i})" style="font-size: 0.8em;">🗑️</button></li>`;
+                    
+                    // Check if this plane is selected for angle measurement
+                    const isSelected = activeTool === 'angle' && selectedAngleObjects.some(obj => 
+                        obj.type === 'plane' && obj.object === plane);
+                    const selectedClass = isSelected ? 'selected' : '';
+                    const selectedIndicator = isSelected ? '✓ ' : '';
+                    
+                    // Make the entire item clickable for angle measurement
+                    const clickHandler = activeTool === 'angle' ? 
+                        `onclick="selectObjectForAngle('plane', ${i})" style="cursor: pointer;" title="לחץ לבחירה לחישוב זווית"` : '';
+                    
+                    content += `<li ${clickHandler} class="${selectedClass}">&nbsp;&nbsp;• ${selectedIndicator}${colorIndicator} Плоскость <strong>${displayName}</strong>${faceInfo}<br>&nbsp;&nbsp;&nbsp;&nbsp;<small>${plane.equationString}</small> <button onclick="event.stopPropagation(); deletePlane(${i})" style="font-size: 0.8em;">🗑️</button></li>`;
                 });
             }
             
@@ -4916,6 +5646,7 @@
             }
             userVectors.splice(index, 1);
             updateUserObjectsList();
+            updateIntersections(); // Update intersection visualizations
         }
 
         // Delete plane and all its vertex points
@@ -4991,6 +5722,7 @@
             
             // Update UI
             updateUserObjectsList();
+            updateIntersections(); // Update intersection visualizations
         }
 
         // Keyboard shortcuts
@@ -5339,6 +6071,7 @@
 
                             vectorCounter++;
                             updateUserObjectsList();
+                            updateIntersections(); // Update intersection visualizations
                         });
                 }
                 

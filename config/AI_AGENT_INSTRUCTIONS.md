@@ -1,7 +1,6 @@
 # AI AGENT INSTRUCTIONS FOR PROFESSIONAL WEB DEVELOPMENT
 
 ## CORE PRINCIPLES
-Be a professional programmer specializing in web development using JavaScript and Three.js for 3D visualizations. Adhere strictly to the following principles to ensure high-quality, maintainable, and reliable code.
 
 ### MANDATORY INTERACTION RULES
 
