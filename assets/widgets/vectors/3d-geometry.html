@@ -1320,6 +1320,7 @@
                 
                 // Update connected vectors
                 if (obj.connectedVectors && obj.connectedVectors.length > 0) {
+                    console.log('🔄 Point moved - updating', obj.connectedVectors.length, 'connected vectors for point', obj.name);
                     obj.connectedVectors.forEach(vectorId => {
                         const vector = AppState.objects.find(v => v.id === vectorId);
                         if (vector && vector.type === 'vector' && vector.sourcePoints) {
@@ -1328,6 +1329,7 @@
                             const endPoint = AppState.objects.find(p => p.id === vector.sourcePoints[1]);
                             
                             if (startPoint && endPoint) {
+                                console.log('✅ Updating vector', vector.name, 'in real-time');
                                 // Update vector coordinates based on current point positions
                                 vector.start = { ...startPoint.coords };
                                 vector.end = { ...endPoint.coords };
@@ -1343,6 +1345,8 @@
                             }
                         }
                     });
+                } else if (obj.type === 'point') {
+                    console.log('⚠️ Point', obj.name, 'has no connected vectors to update');
                 }
                 
             } else if (obj.type === 'plane') {
@@ -2640,6 +2644,8 @@
         }
 
         function rebuildVectorMesh(vectorObj) {
+            console.log('🔄 Rebuilding vector mesh for', vectorObj.name, 'from', vectorObj.start, 'to', vectorObj.end);
+            
             if (vectorObj.mesh) {
                 scene.remove(vectorObj.mesh);
                 vectorObj.mesh.traverse((child) => {
@@ -5157,6 +5163,7 @@
                     point.connectedVectors = [];
                 }
                 point.connectedVectors.push(vectorObj.id);
+                console.log('🔗 Vector', vectorObj.name, 'connected to point', point.name, '- total connected vectors:', point.connectedVectors.length);
                 
                 if (point.mesh) {
                     point.mesh.material.color.setHex(0x666666);
