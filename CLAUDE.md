@@ -29,3 +29,13 @@
 - No any types
 - Russian UI strings go in /frontend/locales/ru.json
 - Hebrew UI strings go in /frontend/locales/he.json
+
+## Professor Yosi (Mascot)
+Cartoon professor character — MWL guide and logo.
+Assets location: `frontend/public/professor/`
+- `yosi-present.png` — default, presenting vector arrow
+- `yosi-happy.png` — correct answer reaction
+- `yosi-thinking.png` — new problem / loading
+- `yosi-encourage.png` — wrong answer, keep trying
+- `yosi-icon.png` — head only, for avatar/favicon
+Color palette derived from character: teal (#22D3EE), amber (#FBBF24)
