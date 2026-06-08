@@ -118,17 +118,53 @@ md:flex-row md:items-center md:text-left
 ### Header
 
 ```
-// Structure (LTR — Russian)
-[Logo circle] [Site name]        [RU|HE toggle] [Login] [Register button]
+// Structure desktop/tablet (LTR — Russian)
+[Logo circle] [Site name]        [RU|HE toggle] [Login btn] [Register btn]
 
-// Structure (RTL — Hebrew)
-[Register button] [Login] [RU|HE toggle]        [Site name] [Logo circle]
+// Structure desktop/tablet (RTL — Hebrew)
+[Register btn] [Login btn] [RU|HE toggle]        [Site name] [Logo circle]
+
+// Structure mobile (LTR — Russian)
+[Logo circle] [Site name]        [RU|HE toggle] [Login icon] [Register icon]
+
+// Structure mobile (RTL — Hebrew)
+[Register icon] [Login icon] [RU|HE toggle]        [Site name] [Logo circle]
 ```
 
-- Height: `h-14` (56px)
+- Height: `h-14` (56px) desktop/tablet / `h-12` (48px) mobile
 - Background: dark `slate-900` / light `slate-50`
 - Border bottom: dark `slate-800` / light `slate-200`
-- Mobile: hide "Register" button, show only "Login" (full registration via landing CTA)
+
+**Desktop/tablet buttons:**
+```
+// Login — ghost
+border border-slate-700 (dark) / border-slate-300 (light)
+text-slate-400 (dark) / text-slate-500 (light)
+px-4 py-1.5 rounded-lg text-sm
+
+// Register — primary
+bg-cyan-400 text-slate-950 font-medium
+px-4 py-1.5 rounded-lg text-sm
+```
+
+**Mobile icon buttons (Tabler Icons webfont):**
+```
+// Login icon — ti-login
+w-[34px] h-[34px] rounded-lg
+border border-slate-700 (dark) / border-slate-200 (light)
+text-slate-400 (dark) / text-slate-500 (light)
+icon size: 18px
+
+// Register icon — ti-user-plus
+w-[34px] h-[34px] rounded-lg
+bg-cyan-400 border-cyan-400 text-slate-950
+icon size: 18px
+
+// Tooltip on hover
+bg-slate-700 (dark) / bg-slate-800 (light) text-slate-100
+text-[10px] px-2 py-1 rounded-md
+appears below icon with small arrow
+```
 
 ### Language toggle
 
@@ -158,25 +194,35 @@ mobile: w-full
 ### Tag / Badge (Bagrut label, module tags)
 
 ```
-// Dark theme
-bg-cyan-900 border border-cyan-400/20 rounded-full
-text-cyan-400 text-xs
+// Dark theme — dark bg + cyan border + cyan text
+bg-slate-950 border border-cyan-400 rounded-full
+text-cyan-400 text-xs px-3 py-0.5
 
-// Light theme
+// Light theme — cyan-100 bg + cyan-200 border + cyan-700 text
 bg-cyan-100 border border-cyan-200 rounded-full
-text-cyan-700 text-xs font-medium
+text-cyan-700 text-xs font-medium px-3 py-0.5
 ```
 
 ### Formula block
 
-```
-// Dark theme
-bg-slate-950 border border-cyan-900 rounded
-font-mono text-cyan-400
+Outer card wraps label + highlight block + description text.
 
-// Light theme
-bg-cyan-100 border border-cyan-200 rounded
-font-mono text-cyan-700
+```
+// Outer card
+// Dark: bg-slate-900 border border-slate-800 rounded-xl p-5
+// Light: bg-white border border-slate-200 rounded-xl p-5
+
+// Inner highlight block (formula itself)
+// Dark: bg-slate-950 border border-cyan-900 rounded-lg p-4
+//   font-mono text-cyan-400 (main formula, 18px)
+//   font-mono text-cyan-300 (alt row, 14px)
+// Light: bg-cyan-100 border border-cyan-200 rounded-lg p-4
+//   font-mono text-cyan-700 (main formula, 18px)
+//   font-mono text-cyan-600 (alt row, 14px)
+
+// Description text below highlight
+// Dark: text-slate-400 text-sm
+// Light: text-slate-500 text-sm
 ```
 
 ### Course card
@@ -200,18 +246,39 @@ h-1 bg-slate-950 (dark) / bg-slate-100 (light) rounded-full
 inner: bg-cyan-400 rounded-full
 ```
 
-### Professor Yosi bubble
+### Professor Yosi — landing card
+
+On landing page hero, Yosi appears as a card (not a bubble):
 
 ```
-// Appears bottom-right during lesson, bottom-center on landing (mobile)
+// Card structure
+[Image area — cyan-900 bg (dark) / cyan-100 bg (light)]
+[Name + greeting text]
+
+// Dark: bg-slate-900 border border-slate-800 rounded-xl overflow-hidden
+// Light: bg-white border border-slate-200 rounded-xl overflow-hidden
+
+// Name: text-cyan-400 (dark) / text-cyan-700 (light) text-sm font-medium
+// Text: text-slate-400 (dark) / text-slate-500 (light) text-xs
+
+// Sizes by breakpoint:
+// mobile:  width 100px, image height 90px
+// tablet:  width 180px, image height 150px
+// desktop: width 210px, image height 190px
+```
+
+### Professor Yosi — lesson bubble
+
+### Professor Yosi — lesson bubble
+
+```
+// Appears bottom-right during lesson
 Image: /professor/yosi-{state}.png  (present | happy | thinking | encourage)
 Bubble: bg-slate-900 (dark) / bg-white (light)
         border border-slate-800 (dark) / border-slate-200 (light)
         rounded-2xl p-3 text-xs
 Name:   text-cyan-400 (dark) / text-cyan-700 (light) font-medium text-xs
 ```
-
-### Answer states (correct / wrong)
 
 ```
 // Correct
@@ -231,12 +298,15 @@ Yosi: yosi-encourage.png
 
 ### Landing page
 
-| Section | Mobile | Tablet (md) | Desktop (lg) |
+| Section | Mobile (<768px) | Tablet (768–1023px) | Desktop (1024px+) |
 |---|---|---|---|
-| Hero | 1 col, centered, Yosi below text | 2 col, Yosi right (medium) | 2 col, Yosi right (large) |
-| CTA buttons | Full width, stacked | Side by side | Side by side |
+| Header | Logo + name + lang toggle + 2 icon buttons | Logo + name + lang toggle + 2 text buttons | Logo + name + lang toggle + 2 text buttons |
+| Hero | 1 col centered: badge → h1+Yosi side-by-side → full-width buttons | 2 col: left text+buttons / right Yosi card | 2 col: left text+buttons / right Yosi card |
+| Professor Yosi | Compact card (100px wide) right of h1+text, above buttons | Medium card (180px) right column | Large card (210px) right column |
+| CTA buttons | Full width, stacked vertically | Side by side | Side by side |
 | Courses | 1 col stacked | 2 col grid | 3 col grid |
-| Lesson preview | Formula full width, 3D placeholder below | Formula + 3D side by side | Formula + 3D side by side |
+| Lesson preview | Formula full width, 3D below | Formula + 3D side by side | Formula + 3D side by side |
+| Gamification | 1 col stacked | 3 col grid | 3 col grid |
 
 ### Lesson page (TBD)
 
@@ -305,4 +375,4 @@ Yosi **never appears** on: auth pages (login/register), error pages (404/500).
 
 ---
 
-*Last updated: June 2026. Approved: landing page (desktop + mobile), both themes.*
+*Last updated: June 2026. Approved: landing page (desktop + tablet + mobile), both themes.*
