@@ -379,7 +379,8 @@ CDN: https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.
 
 ---
 
-## 10. Open Questions
+## 10. Dashboard
+
 
 - [ ] 3D visualization on mobile: simplified WebGL / static image fallback / toggle button?
 - [ ] Platform name: "Math With Love" is temporary
@@ -390,3 +391,105 @@ CDN: https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.
 ---
 
 *Last updated: June 2026. Approved: landing page (desktop + tablet + mobile), login/register modal — both themes.*
+
+### Layout by breakpoint
+
+| Element | Desktop (1024px+) | Tablet (768–1023px) | Mobile (<768px) |
+|---|---|---|---|
+| Sidebar | Left, collapsible 52→180px | Left, collapsible 44→170px | Hidden |
+| Bottom nav | — | — | Fixed bottom, 5 tabs |
+| Content | 2-col grid | 2-col grid | 1-col stack |
+
+### Header (authenticated)
+
+```
+[Logo] [Site name] [Search field ——————] [Lang] [Bell] [User]
+Search icon: right-aligned inside field
+```
+
+### Sidebar — 3 groups, no divider lines, only spacing
+
+```
+[Toggle btn]           ← expand/collapse
+Group 1 (top):
+  [ti-home     Dashboard]   ← active
+  [ti-books    Модули]
+
+Group 2 (margin: auto 0 — vertically centered):
+  [ti-math          Формулы]
+  [ti-cube-3d-sphere Лаборатория]
+
+Group 3 (bottom):
+  [ti-settings  Настройки]
+```
+
+Nav item states:
+```
+active dark:  bg #164e63 / color #22D3EE
+active light: bg #cffafe / color #0e7490
+hover dark:   bg #334155 / color #f1f5f9
+hover light:  bg #e2e8f0 / color #0f172a
+```
+
+### Bottom navigation (mobile only)
+
+Height 52px. 5 tabs: Главная | Модули | Формулы | Лаборатория | Настройки
+Active tab: cyan-400 (dark) / cyan-700 (light). Label 8px below icon.
+
+### Welcome section structure
+
+```
+[Avatar] [Greeting + subtitle]          [Yosi card]
+
+[Action buttons — bottom-aligned with Yosi card height]
+```
+
+Left column: `flex-direction:column; justify-content:space-between`
+
+**Avatar (initials, auto-generated):**
+- 44px desktop / 36px tablet / 32px mobile, border-radius 50%
+- bg cyan-400, color slate-950, font-weight 600
+
+**Greeting:**
+- "Добрый день/утро/вечер, [Имя] 👋" — time-based
+- Subtitle: "Что сегодня делаем?" — indented under avatar
+
+**Action buttons:**
+- desktop/tablet: flex-row — [▶ Продолжить] [↺ Повторить] [→ Новая тема]
+- mobile: flex-col, full width
+
+**Yosi card sizes:**
+- desktop: 200px wide, image 110px tall
+- tablet: 160px wide, image 85px tall
+- mobile: 90px wide, image auto
+
+### Stats row
+
+3 cards: 🔥 Серия дней | ⭐ Очки | ✓ Пройдено тем
+No % signs on any numeric values across dashboard.
+
+### Average score badge
+
+```
+bg rgba(74,222,128,0.1) border rgba(74,222,128,0.3) color #4ade80
+light: bg rgba(22,163,74,0.08) color #16a34a
+label "ср. балл" 9px + number without %
+```
+
+### User avatar
+
+- Registration: auto-generated initials, cyan-400 bg
+- Settings: option to upload photo
+- Fallback: always initials
+
+---
+
+## 11. Open Questions
+
+- [ ] 3D visualization on mobile: simplified WebGL / static image fallback / toggle button?
+- [ ] Platform name: "Math With Love" is temporary
+- [ ] Favicon: based on yosi-icon.png (needs 32×32 and 180×180 versions)
+- [ ] Dark/light theme toggle: user preference saved in Supabase profile or localStorage?
+- [ ] KaTeX rendering: inline vs block, font size on mobile
+
+*Last updated: June 2026. Approved: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile) — both themes.*
