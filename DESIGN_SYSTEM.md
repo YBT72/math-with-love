@@ -349,6 +349,25 @@ Same style as primary/ghost buttons:
 // Icon inside field: right-aligned, slate-500
 ```
 
+### Answer input fields (lesson page only)
+
+Different from auth form inputs — high contrast for math entry.
+
+```
+// Active fields (student enters answer):
+//   Dark:  bg #c8e8f4  border #6ab8d4  color #0b2233
+//   Light: bg #e0f4fa  border #6ac8e0  color #0b3a4a
+//   Both:  border-radius 6px, width 64–68px (desktop) / 62px (tablet/mobile)
+//          height 34–36px, text-align center, font-family monospace
+
+// Readonly fields (pre-filled, e.g. y=0, z=0):
+//   Dark:  bg #1a3a4e  border #1e3040  color #334a5a
+//   Light: bg #f0f8fb  border #c0dde8  color #99aabb
+
+// IMPORTANT: apply via element.style (inline) — CSS classes are overridden
+//            by claude.ai iframe environment during development/mockup phase
+```
+
 ### Google button
 
 ```
@@ -484,7 +503,166 @@ label "ср. балл" 9px + number without %
 
 ---
 
-## 11. Open Questions
+## 11. Lesson Page
+
+Approved: desktop + tablet + mobile — both themes (June 2026).
+
+### Layout structure — 3 vertical zones
+
+```
+┌─────────────────────────────────────────────┐
+│  TOPBAR                                     │
+├──────────────────┬──────────────────────────┤
+│  ZONE 1 LEFT     │  ZONE 1 RIGHT            │
+│  Task condition  │  Three.js visualization  │
+│  + subquestion   │                          │
+├──────────────────┴──────────────────────────┤
+│  ZONE 2 — Collapsible: "Show solution"      │
+├─────────────────────────────────────────────┤
+│  ZONE 3 — Self-answer input + check button  │
+└─────────────────────────────────────────────┘
+```
+
+### Topbar
+
+| Breakpoint | Content |
+|---|---|
+| Desktop (1024px+) | `[Topic chip] [Lesson title]` · · · `[Step А] — [Step Б] — [Step В] — [Step Г]` · · · `[✕ Exit]` |
+| Tablet (768–1023px) | `[Topic chip]` · · · `[Steps]` · · · `[✕ Exit]` (title hidden) |
+| Mobile (<768px) | `[Topic chip]` · · · `[Steps]` · · · `[✕ Exit]` (title hidden) |
+
+Height: 46px desktop / 42px tablet / 40px mobile.
+
+**Step indicators:**
+```
+done:   bg cyan-400, color slate-950, no border
+active: bg transparent, color cyan-400, border 1.5px cyan-400
+locked: bg transparent, color slate-500, border 1px slate-800
+size:   26px desktop+tablet / 22px mobile, border-radius 50%
+```
+
+**Exit button (all themes visible):**
+```
+dark:  border #334a5a  color #556677  bg transparent
+light: border #b0c8d8  color #445566  bg transparent
+border-radius 6px, font-size 12px (desktop/tablet) / 10px (mobile)
+```
+
+### Zone 1 — Task condition + visualization
+
+Two columns side by side on desktop and tablet. Single column on mobile (condition first, viz below).
+
+**Left column — task condition:**
+```
+padding: 18px 20px (desktop) / 14px 16px (tablet) / 12px 14px (mobile)
+border-right: 1px slate-800 (dark) / slate-200 (light)
+```
+
+- Section label (УСЛОВИЕ ЗАДАЧИ): 11px uppercase, slate-600 (dark) / slate-400 (light)
+- Task text: 13px (desktop) / 12px (tablet/mobile), line-height 1.75
+- Given data rows: key in slate-500, value in slate-100 (dark) / slate-900 (light)
+- Formula tokens (inline `math-tag`): font-mono 12px, cyan-400 bg-cyan-900/10
+
+**Subquestion block:**
+```
+bg slate-900 (dark) / slate-50 (light)
+border-left 3px solid cyan-400 (dark) / cyan-700 (light)
+border-radius 6–7px, padding 9–10px 12–13px
+tag: 11px cyan-400 / cyan-700
+text: 13px (desktop) / 12px (tablet/mobile)
+```
+
+**Right column — Three.js visualization:**
+```
+bg: dark #060e18 / light #e8f2f8
+viz-bar: border-bottom 1px rgba(255,255,255,0.08) (dark) / #c0d8e8 (light)
+caption: 10px, slate-600 (dark) / slate-400 (light)
+```
+
+SVG/Three.js element colors:
+```
+dark:  edges cyan-400, base lines #334a5a, secondary #445566
+       vectors: u⃗ #a78bfa, v⃗ cyan-400, midpoint #6ee7b7
+light: edges #0891b2, base #8aabbb, secondary #aabbcc
+       vectors: u⃗ #7c3aed, v⃗ #0891b2, midpoint #059669
+```
+
+Visualization size:
+```
+desktop: 210×210px  |  tablet: 185×185px  |  mobile: 200×170px
+```
+
+Mobile: visualization stacked below condition (not side by side).
+
+### Zone 2 — Collapsible solution
+
+```
+trigger bg: dark #0e1c2a / light #fffbf0
+trigger: 💡 icon (amber-400) + label + ▾ chevron
+label: 13px (desktop/tablet) / 12px (mobile)
+body: slides open (max-height transition 0.25s)
+step: font-size 13px / 12px mobile, border-left 2px solid amber-400/30
+      color slate-400 (dark) / slate-500 (light)
+```
+
+**Auto-close behavior:** when student starts typing in Zone 3, Zone 2 closes automatically.
+
+### Zone 3 — Self-answer input
+
+```
+padding: 16px 20px (desktop) / 12px 14–16px (tablet/mobile)
+title: 13px font-weight 500
+subtitle: 11px (auto-close note), slate-600 (dark) / slate-400 (light)
+```
+
+**Coordinate input layout:**
+```
+desktop: two separate rows, each row: [Point label] [x field] [y field] [z field]
+         fields wrap if needed
+tablet:  same as desktop but fields in one strict row (no wrap)
+mobile:  same as tablet — one row per point, no wrap, field width 62px
+```
+
+**Check button:**
+```
+dark:  bg cyan-400, color slate-950, border none
+       padding 9px 26–28px, border-radius 6–7px, font-size 14px (desktop/tablet) / 13px (mobile)
+light: bg transparent, color slate-900, border 1.5px #b0c8d8
+       hover: bg cyan-600, color white
+IMPORTANT: apply via element.style inline (not CSS class) to avoid iframe override
+```
+
+**Answer result states:**
+```
+correct: bg green-400/10, border green-400/30, color green-400 (dark)
+         bg green-50, border green-600/30, color green-700 (light)
+wrong:   bg red-400/10, border red-400/20, color red-400 (dark)
+         bg red-50, border red-600/20, color red-700 (light)
+```
+
+**Professor Yosi hint (toggleable):**
+```
+trigger: "Подсказка от Профессора Йоси" link, cyan-400 / cyan-700, underline
+bubble:  bg slate-900 (dark) / slate-50 (light)
+         border 1px dashed cyan-400/30
+         avatar 30–32px, border-radius 50%
+text:    12px / 11px mobile, slate-400 (dark) / slate-500 (light)
+```
+
+### Responsive summary
+
+| Element | Desktop | Tablet | Mobile |
+|---|---|---|---|
+| Zone 1 layout | 2 columns | 2 columns (narrower) | 1 column stacked |
+| Lesson title in topbar | Visible | Hidden | Hidden |
+| Font sizes | 13px base | 12px base | 11–12px base |
+| Viz size | 210px | 185px | 200×170px |
+| Field width | 64–68px | 58px | 62px |
+| Fields per row | Wrap OK | No wrap | No wrap |
+
+---
+
+## 12. Open Questions
 
 - [ ] 3D visualization on mobile: simplified WebGL / static image fallback / toggle button?
 - [ ] Platform name: "Math With Love" is temporary
@@ -492,4 +670,4 @@ label "ср. балл" 9px + number without %
 - [ ] Dark/light theme toggle: user preference saved in Supabase profile or localStorage?
 - [ ] KaTeX rendering: inline vs block, font size on mobile
 
-*Last updated: June 2026. Approved: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile) — both themes.*
+*Last updated: June 2026. Approved: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile), lesson page (desktop + tablet + mobile) — both themes.*
