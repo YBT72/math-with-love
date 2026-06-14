@@ -1064,13 +1064,132 @@ Clicking re-shows exam (student can still change answers while timer runs)
 
 ### Responsive — Exam Page
 
-Tablet and mobile follow same breakpoint rules as lesson page and test page (see sections 11, 12).
+#### Tablet (768–1023px)
 
-**Key mobile differences:**
-- Zone 1: single column (question above, viz below)
-- Points row stays (very important — students need to see points)
-- Exit dialog: centered, max-width 92% of screen
-- Navigation row wraps: [← Пред] [Счётчик] [Сл →] on first row, [Завершить ✓] full-width below
+**Topbar (42px):**
+```
+[chip 10px] [🎓 9px badge]   [circles 24px + pts 7px]   [timer 13px] [✕ Выйти 10px]
+```
+
+**Exam badge** — shortened but text kept: "🎓 Экзамен" (9px)
+
+**Question circles** — 24px diameter, points label 7px below
+
+**Points row** — compact labels:
+```
+"Вопрос:" + "3 из 5"   |   "Баллов:" + ★ 5 / 25
+```
+
+**Zone 1** — two columns (same as desktop), narrower proportions:
+```
+grid-template-columns: 1fr 1fr, min-height 185px
+font-size 12px, viz 175×148px
+```
+
+**Yosi note** — inside left column, bottom, shorter text: "Йоси — только теория"
+
+**Answer zone** — same types, slightly smaller:
+```
+numeric fields: 58px width, 32px height
+choice grid: gap 7px, padding 9px 12px
+text textarea: min-height 76px
+```
+
+**Save note** — shortened: "✓ Ответ сохранён"
+
+**Navigation row** — single row (fits on tablet):
+```
+[← Пред]  [Заполнено N из M]  [Следующий →]  [Завершить ✓]
+← Пред / Следующий: visibility:hidden on first/last question
+font-size 12px, padding 8px 14px
+```
+
+**Results screen** — score circle 60px, font-sizes reduced ~1–2px
+
+**Exit dialog** — max-width 300px, padding 20px
+
+---
+
+#### Mobile (<768px)
+
+**Topbar (40px):**
+```
+[chip 10px] [🎓 only emoji, no text]   [circles 22px + pts 7px]   [timer 13px] [✕ only]
+```
+
+Exam badge collapses to emoji only to save space. Exit button shows only "✕" (no "Выйти" text).
+
+**Question circles** — 22px diameter, points label 7px
+
+**Points row** — single line, ultra-compact:
+```
+"Вопрос 3 из 5"   |   ★ 5 / 25
+No labels ("Вопрос:" / "Баллов:") — values only
+```
+
+**Zone 1 — single column (key mobile difference):**
+```
+1A: Question text block (padding 10px 12px)
+    font-size 12px, line-height 1.7
+1B: Visualization block below (200×145px SVG)
+    border-top + border-bottom
+```
+
+**Yosi note** — separate row below viz, outside column layout:
+```
+margin 0 10px 6px, padding 5px 8px, border-radius 5px
+"🧑‍🏫 Йоси — только теория на экзамене"
+font-size 10px
+```
+
+**Answer zone:**
+```
+numeric fields: 56px width, 32px height — one row, no wrap
+choice grid: gap 6px, padding 9px 10px
+text textarea: min-height 72px
+char counter: 9px right-aligned
+```
+
+**Save note** — ultra-short: "✓ Сохранено"
+
+**Navigation — two rows (key mobile difference):**
+```
+Row 1: [← Пред] [N из M заполнено — center] [Сл →]
+         visibility:hidden on first/last question
+         font-size 12px, padding 8px 12px
+
+Row 2: [Завершить экзамен ✓]
+         full width (width:100%), padding 10px
+         font-size 14px font-weight 600
+         inactive: bg #1a3a4e / #e8f0f8, color slate-400
+         active:   bg cyan-400, color slate-950, box-shadow glow
+```
+
+**Results screen** — score circle 56px, everything ~1px smaller, gap reduced to 11px
+
+**Exit dialog** — width 88%, padding 18px
+
+---
+
+#### Breakpoint comparison table
+
+| Element | Desktop | Tablet | Mobile |
+|---|---|---|---|
+| Topbar height | 48px | 42px | 40px |
+| Exam badge | 🎓 Экзамен | 🎓 Экзамен | 🎓 only |
+| Exit button | ✕ Выйти | ✕ Выйти | ✕ |
+| Zone 1 layout | 2 columns | 2 columns | 1 column stacked |
+| Viz size | 185×158px | 175×148px | 200×145px |
+| Yosi note location | Left column bottom | Left column bottom | Below viz, full width |
+| Q circles size | 28px | 24px | 22px |
+| Points label | 8px | 7px | 7px |
+| Numeric field | 64×34px | 58×32px | 56×32px |
+| Timer font | 15px | 13px | 13px |
+| Nav layout | Single row | Single row | Two rows |
+| "Завершить" | Inline in nav row | Inline in nav row | Full-width below nav |
+| Save note | "✓ Ответ сохранён — можно перейти к другому вопросу" | "✓ Ответ сохранён" | "✓ Сохранено" |
+| Score circle | 72px | 60px | 56px |
+| Exit dialog width | 320px max | 300px max | 88% screen |
 
 ---
 
@@ -1082,4 +1201,4 @@ Tablet and mobile follow same breakpoint rules as lesson page and test page (see
 - [ ] Dark/light theme toggle: user preference saved in Supabase profile or localStorage?
 - [ ] KaTeX rendering: inline vs block, font size on mobile
 
-*Last updated: June 2026. Approved: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile), lesson page (desktop + tablet + mobile), test page (desktop + tablet + mobile, 3 answer types), exam page (desktop, both themes), AI chat drawer (all pages, both themes, RU/HE) — both themes.*
+*Last updated: June 2026. Approved: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile), lesson page (desktop + tablet + mobile), test page (desktop + tablet + mobile, 3 answer types), exam page (desktop + tablet + mobile, both themes), AI chat drawer (all pages, both themes, RU/HE) — both themes.*
