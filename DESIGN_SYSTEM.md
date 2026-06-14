@@ -349,25 +349,6 @@ Same style as primary/ghost buttons:
 // Icon inside field: right-aligned, slate-500
 ```
 
-### Answer input fields (lesson page only)
-
-Different from auth form inputs — high contrast for math entry.
-
-```
-// Active fields (student enters answer):
-//   Dark:  bg #c8e8f4  border #6ab8d4  color #0b2233
-//   Light: bg #e0f4fa  border #6ac8e0  color #0b3a4a
-//   Both:  border-radius 6px, width 64–68px (desktop) / 62px (tablet/mobile)
-//          height 34–36px, text-align center, font-family monospace
-
-// Readonly fields (pre-filled, e.g. y=0, z=0):
-//   Dark:  bg #1a3a4e  border #1e3040  color #334a5a
-//   Light: bg #f0f8fb  border #c0dde8  color #99aabb
-
-// IMPORTANT: apply via element.style (inline) — CSS classes are overridden
-//            by claude.ai iframe environment during development/mockup phase
-```
-
 ### Google button
 
 ```
@@ -503,166 +484,212 @@ label "ср. балл" 9px + number without %
 
 ---
 
-## 11. Lesson Page
+## 12. Test Page
 
-Approved: desktop + tablet + mobile — both themes (June 2026).
+Approved: desktop — both themes (June 2026).
 
-### Layout structure — 3 vertical zones
-
-```
-┌─────────────────────────────────────────────┐
-│  TOPBAR                                     │
-├──────────────────┬──────────────────────────┤
-│  ZONE 1 LEFT     │  ZONE 1 RIGHT            │
-│  Task condition  │  Three.js visualization  │
-│  + subquestion   │                          │
-├──────────────────┴──────────────────────────┤
-│  ZONE 2 — Collapsible: "Show solution"      │
-├─────────────────────────────────────────────┤
-│  ZONE 3 — Self-answer input + check button  │
-└─────────────────────────────────────────────┘
-```
-
-### Topbar
-
-| Breakpoint | Content |
-|---|---|
-| Desktop (1024px+) | `[Topic chip] [Lesson title]` · · · `[Step А] — [Step Б] — [Step В] — [Step Г]` · · · `[✕ Exit]` |
-| Tablet (768–1023px) | `[Topic chip]` · · · `[Steps]` · · · `[✕ Exit]` (title hidden) |
-| Mobile (<768px) | `[Topic chip]` · · · `[Steps]` · · · `[✕ Exit]` (title hidden) |
-
-Height: 46px desktop / 42px tablet / 40px mobile.
-
-**Step indicators:**
-```
-done:   bg cyan-400, color slate-950, no border
-active: bg transparent, color cyan-400, border 1.5px cyan-400
-locked: bg transparent, color slate-500, border 1px slate-800
-size:   26px desktop+tablet / 22px mobile, border-radius 50%
-```
-
-**Exit button (all themes visible):**
-```
-dark:  border #334a5a  color #556677  bg transparent
-light: border #b0c8d8  color #445566  bg transparent
-border-radius 6px, font-size 12px (desktop/tablet) / 10px (mobile)
-```
-
-### Zone 1 — Task condition + visualization
-
-Two columns side by side on desktop and tablet. Single column on mobile (condition first, viz below).
-
-**Left column — task condition:**
-```
-padding: 18px 20px (desktop) / 14px 16px (tablet) / 12px 14px (mobile)
-border-right: 1px slate-800 (dark) / slate-200 (light)
-```
-
-- Section label (УСЛОВИЕ ЗАДАЧИ): 11px uppercase, slate-600 (dark) / slate-400 (light)
-- Task text: 13px (desktop) / 12px (tablet/mobile), line-height 1.75
-- Given data rows: key in slate-500, value in slate-100 (dark) / slate-900 (light)
-- Formula tokens (inline `math-tag`): font-mono 12px, cyan-400 bg-cyan-900/10
-
-**Subquestion block:**
-```
-bg slate-900 (dark) / slate-50 (light)
-border-left 3px solid cyan-400 (dark) / cyan-700 (light)
-border-radius 6–7px, padding 9–10px 12–13px
-tag: 11px cyan-400 / cyan-700
-text: 13px (desktop) / 12px (tablet/mobile)
-```
-
-**Right column — Three.js visualization:**
-```
-bg: dark #060e18 / light #e8f2f8
-viz-bar: border-bottom 1px rgba(255,255,255,0.08) (dark) / #c0d8e8 (light)
-caption: 10px, slate-600 (dark) / slate-400 (light)
-```
-
-SVG/Three.js element colors:
-```
-dark:  edges cyan-400, base lines #334a5a, secondary #445566
-       vectors: u⃗ #a78bfa, v⃗ cyan-400, midpoint #6ee7b7
-light: edges #0891b2, base #8aabbb, secondary #aabbcc
-       vectors: u⃗ #7c3aed, v⃗ #0891b2, midpoint #059669
-```
-
-Visualization size:
-```
-desktop: 210×210px  |  tablet: 185×185px  |  mobile: 200×170px
-```
-
-Mobile: visualization stacked below condition (not side by side).
-
-### Zone 2 — Collapsible solution
+### Layout structure
 
 ```
-trigger bg: dark #0e1c2a / light #fffbf0
-trigger: 💡 icon (amber-400) + label + ▾ chevron
-label: 13px (desktop/tablet) / 12px (mobile)
-body: slides open (max-height transition 0.25s)
-step: font-size 13px / 12px mobile, border-left 2px solid amber-400/30
-      color slate-400 (dark) / slate-500 (light)
+┌─────────────────────────────────────────────────┐
+│  TOPBAR: [chip] [Q1][Q2]...[Q7] [timer] [exit]  │
+├─────────────────────────────────────────────────┤
+│  PROGRESS BAR (full width, color matches timer) │
+├─────────────────────────────────────────────────┤
+│  STATS BLOCK: ✓ верно | ~ частично | ✗ ошибок  │
+│               → пропущен | ★ очков (amber)      │
+├──────────────────┬──────────────────────────────┤
+│  ZONE 1 LEFT     │  ZONE 1 RIGHT                │
+│  Question text   │  Three.js visualization      │
+├──────────────────┴──────────────────────────────┤
+│  ZONE 2 — Answer input (numeric or A/B/C/D)    │
+│  + result + Skip / Check / Next buttons         │
+└─────────────────────────────────────────────────┘
 ```
 
-**Auto-close behavior:** when student starts typing in Zone 3, Zone 2 closes automatically.
+### Topbar — question number circles
 
-### Zone 3 — Self-answer input
+Center of topbar. Strictly round: `width=height=28px`, `border-radius:50%`. Clickable — navigate to that question.
 
-```
-padding: 16px 20px (desktop) / 12px 14–16px (tablet/mobile)
-title: 13px font-weight 500
-subtitle: 11px (auto-close note), slate-600 (dark) / slate-400 (light)
-```
-
-**Coordinate input layout:**
-```
-desktop: two separate rows, each row: [Point label] [x field] [y field] [z field]
-         fields wrap if needed
-tablet:  same as desktop but fields in one strict row (no wrap)
-mobile:  same as tablet — one row per point, no wrap, field width 62px
-```
-
-**Check button:**
-```
-dark:  bg cyan-400, color slate-950, border none
-       padding 9px 26–28px, border-radius 6–7px, font-size 14px (desktop/tablet) / 13px (mobile)
-light: bg transparent, color slate-900, border 1.5px #b0c8d8
-       hover: bg cyan-600, color white
-IMPORTANT: apply via element.style inline (not CSS class) to avoid iframe override
-```
-
-**Answer result states:**
-```
-correct: bg green-400/10, border green-400/30, color green-400 (dark)
-         bg green-50, border green-600/30, color green-700 (light)
-wrong:   bg red-400/10, border red-400/20, color red-400 (dark)
-         bg red-50, border red-600/20, color red-700 (light)
-```
-
-**Professor Yosi hint (toggleable):**
-```
-trigger: "Подсказка от Профессора Йоси" link, cyan-400 / cyan-700, underline
-bubble:  bg slate-900 (dark) / slate-50 (light)
-         border 1px dashed cyan-400/30
-         avatar 30–32px, border-radius 50%
-text:    12px / 11px mobile, slate-400 (dark) / slate-500 (light)
-```
-
-### Responsive summary
-
-| Element | Desktop | Tablet | Mobile |
+| Status | bg | border | color |
 |---|---|---|---|
-| Zone 1 layout | 2 columns | 2 columns (narrower) | 1 column stacked |
-| Lesson title in topbar | Visible | Hidden | Hidden |
-| Font sizes | 13px base | 12px base | 11–12px base |
-| Viz size | 210px | 185px | 200×170px |
-| Field width | 64–68px | 58px | 62px |
-| Fields per row | Wrap OK | No wrap | No wrap |
+| Unanswered | transparent | slate-700/slate-300 | slate-500 |
+| Correct | green-400/13 | green-400/40 | green-400 |
+| Partial | amber-400/13 | amber-400/40 | amber-400 |
+| Wrong | red-400/13 | red-400/40 | red-400 |
+| Skipped | slate-700/13 | slate-600/30 | slate-500 |
+| Active | cyan-400/13 | cyan-400 2px | cyan-400, fw 700 |
+
+### Adaptive timer (optional)
+
+Pill shape (`border-radius:20px`), no icons — digits only. Color transitions automatically:
+
+```
+> 2 min:  green  #4ade80 — calm
+< 2 min:  amber  #FBBF24 — hurry
+< 30 sec: red    #f87171 — critical + bg pulses between #f8717133↔#f8717118
+```
+
+Progress bar fill color mirrors timer state.
+
+### Stats block
+
+```
+bg dark #0c1926 / light #f8fafc, border top+bottom slate-800/slate-200
+
+5 items (icon circle 26px border-radius:50%):
+  ✓ верно     green-400
+  ~ частично  amber-400
+  ✗ ошибок    red-400
+  → пропущен  slate-500
+  ★ очков     amber-400, value text also amber-400
+```
+
+### Answer types
+
+**Numeric fields** — same colors as lesson page answer fields (see section 11).
+
+**Choice A/B/C/D** — 2×2 grid:
+```
+default:  dark bg #0f1e2e border slate-800  |  light bg #f5f7fa border slate-200
+selected: dark bg cyan-400/13 border cyan-400 1.5px color cyan-400
+          light bg #e0f4fa border #0891b2 color #0891b2
+```
+
+**Result states:**
+```
+correct: dark bg #08251a color #4ade80  |  light bg #ecfdf5 color #065f46
+partial: dark bg #2a1f00 color #FBBF24  |  light bg #fffbeb color #92400e
+wrong:   dark bg #250808 color #f87171  |  light bg #fef2f2 color #dc2626
+```
+
+### Action buttons
+
+```
+Skip:  ghost — transparent, border slate-700/b0c8d8, secondary color
+Check: dark bg cyan-400 color slate-950 | light transparent border 1.5px #b0c8d8 color slate-900
+Next:  bg cyan-400/0891b2, color white — display:none until answer checked
+IMPORTANT: apply via element.style inline (not CSS class)
+```
 
 ---
 
-## 12. Open Questions
+## 13. AI Chat Drawer (Professor Yosi)
+
+Approved: all pages, both themes, RU (LTR) + HE (RTL) (June 2026).
+
+### Concept
+
+Single unified `AIChatPanel` component on all pages. Only `systemPrompt` changes per context. One interface for text and voice — no separate voice screen.
+
+| Page | Behaviour |
+|---|---|
+| Lesson | Task context + subquestion. Hints only, no direct answers. |
+| Test | Question context. Hints only. |
+| Exam | Theory questions only. |
+| Dashboard | General course assistant. |
+
+### Trigger button
+
+```
+dark:  bg #FBBF2418, border 1.5px #FBBF2455, color #FBBF24
+light: bg #FEF9EC,   border 1.5px #FBBF2488, color #92400e
+icon 🧑‍🏫 + text "Спросить Йоси" / "שאל את יוסי"
+border-radius: 24px
+```
+
+### Drawer
+
+Slides up from bottom, `transform: translateY`, `cubic-bezier(0.32,0.72,0,1)`, 350ms. Dim overlay behind (click to close). Max-height 90%. Handle: 36×4px pill, slate-700/slate-300.
+
+### Header
+
+```
+[🧑‍🏫 34px avatar] [Title 14px fw600 | subtitle 11px]  [RU|HE toggle] [✕ 28px circle]
+
+avatar:  bg amber-400/10, border amber-400/27
+toggle active:   bg cyan-400, color slate-950
+toggle inactive: dark bg #1a3a4e color #7a9ab0 | light bg #f0f4f8 color #445566
+close:   dark bg #1a3a4e border #334a5a | light bg #f0f4f8 border #c0ccd8
+```
+
+### Context strip
+
+```
+bg dark #0b1622 border slate-800 | light #f5f7fa border slate-200, border-radius 7px
+label 10px uppercase slate-600/slate-400
+text  11px slate-400/slate-500
+badge cyan-400 pill (same as chip style)
+```
+
+### Messages
+
+**LTR (RU):** Yosi left, student right. **RTL (HE):** fully mirrored.
+
+```
+Yosi bubble:
+  dark  bg #2a1e0a border #FBBF2433 color #e8d5a0
+  light bg #fffbeb border #FBBF2466 color #78350f
+  border-radius LTR 3px 10px 10px 10px | RTL 10px 3px 10px 10px
+
+Student bubble:
+  dark  bg #1e3040 border #334a5a color #94a3b8
+  light bg #f0f4f8 border #c0ccd8 color #475569
+  border-radius LTR 10px 3px 10px 10px | RTL 3px 10px 10px 10px
+
+Yosi avatar:   26px, bg amber-400/10, border amber-400/27
+Student avatar: 26px, bg slate-800/e2e8f0, border slate-700/b0c8d8
+Typing indicator: 3 amber dots, bounce 1.2s
+```
+
+### Input field
+
+```
+Container: border-radius 16px, border 1.5px
+           dark bg #0b1622 border #334a5a | light bg #f5f7fa border #c0ccd8
+           focus: border-color cyan-400
+           padding LTR 10px 8px 8px 14px | RTL 10px 14px 8px 8px
+
+Textarea: flex:1, transparent bg, font-size 13px, line-height 1.5
+          min-height 20px, max-height 120px (~5 lines), then scroll inside
+          auto-resize on input, resets after send
+          RTL: dir="rtl", text-align right
+
+Right group (LTR) / Left group (RTL): mic 🎤 + send ↑
+
+Send button:
+  active:   bg #FBBF24, color #0a0a00, cursor pointer
+  inactive: bg slate-700/d0dde8, opacity 0.5, cursor not-allowed
+  inactive when: no text OR recording OR text > 500 chars
+  IMPORTANT: apply via element.style inline
+
+Char counter (appears after 200 chars):
+  10px right-aligned, slate-600 → amber-400 (<50 left) → red-400 (over limit)
+```
+
+### Voice recording
+
+```
+Trigger: click 🎤 mic button
+Recording: mic shows 🔴, bg #f8717122, border #f87171, pulse animation
+           send button blocked (inactive)
+Below field: red dot + wave bars (7, animation) + timer + "✕ отмена"/"✕ ביטול"
+Auto-send on final speech result
+Cancel: clear input, restore all to default
+```
+
+### RTL full mirror (HE mode)
+
+- `drawer`, `ctx-strip` → `dir="rtl"`
+- Input padding swaps, buttons group moves before textarea in DOM
+- `textarea` → `dir="rtl"`, `text-align:right`
+- Bubble border-radius flips (see above)
+- Yosi right side, student left side
+- Typing indicator: `flex-direction: row-reverse`
+
+---
+
+## 14. Open Questions
 
 - [ ] 3D visualization on mobile: simplified WebGL / static image fallback / toggle button?
 - [ ] Platform name: "Math With Love" is temporary
@@ -670,4 +697,4 @@ text:    12px / 11px mobile, slate-400 (dark) / slate-500 (light)
 - [ ] Dark/light theme toggle: user preference saved in Supabase profile or localStorage?
 - [ ] KaTeX rendering: inline vs block, font size on mobile
 
-*Last updated: June 2026. Approved: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile), lesson page (desktop + tablet + mobile) — both themes.*
+*Last updated: June 2026. Approved: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile), lesson page (desktop + tablet + mobile), test page (desktop), AI chat drawer (all pages, both themes, RU/HE) — both themes.*
