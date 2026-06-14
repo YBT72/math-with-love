@@ -776,7 +776,305 @@ Renderer automatically selects the correct answer zone based on `type`. No code 
 
 ---
 
-## 14. Open Questions
+## 14. Exam Page
+
+Approved: desktop — both themes (June 2026).
+
+### Concept — how exam differs from test
+
+| Feature | Test | Exam |
+|---|---|---|
+| Result after each answer | ✓ Immediate | ✗ Only at the end |
+| Skip button | ✓ Yes | ✗ No — free navigation via circles |
+| Hints (Yosi) | Hints allowed | Theory questions only |
+| Ready solution | ✗ No | ✗ No |
+| Timer | Optional | **Required, auto-starts** |
+| Points per question | Not shown | Shown on circle + in row |
+| Check button | ✓ Per question | ✗ Replaced by "Finish Exam" |
+| Navigation | Next only | ← Previous + Next → |
+| "Exit" button | Closes immediately | **Confirmation dialog** (progress saved) |
+| Answer save indicator | ✗ No | ✓ "Answer saved" note appears |
+| Text answer AI check | Immediate | After all answers submitted |
+
+---
+
+### Layout structure
+
+```
+┌──────────────────────────────────────────────────────┐
+│  TOPBAR: [chip] [🎓 Экзамен]  [Q1·4б][Q2·6б]...  [timer] [✕ Выйти] │
+├──────────────────────────────────────────────────────┤
+│  PROGRESS BAR (full width, color = timer state)      │
+├──────────────────────────────────────────────────────┤
+│  POINTS ROW: "Вопрос 3 из 5"    ★ 5 / 25 итого      │
+├──────────────────┬───────────────────────────────────┤
+│  ZONE 1 LEFT     │  ZONE 1 RIGHT                     │
+│  Question text   │  Three.js visualization           │
+│  + Yosi note     │                                   │
+├──────────────────┴───────────────────────────────────┤
+│  ZONE 2 — Answer input (numeric / choice / text)     │
+│  + "Answer saved" note                               │
+│  + [← Предыдущий] [Заполнено N из M] [Следующий →] [Завершить ✓] │
+└──────────────────────────────────────────────────────┘
+```
+
+---
+
+### Topbar
+
+Same height as test (46–48px). Two badges on the left:
+
+```
+[chip: тема]  [🎓 Экзамен badge]    [Q circles]    [timer]  [✕ Выйти]
+
+Exam badge:
+  dark:  bg #a78bfa22, color #a78bfa, border #a78bfa44
+  light: bg #ede9fe,   color #7c3aed, border #a78bfa55
+  border-radius 4px (pill slightly squared vs chip)
+  font-size 10px, font-weight 600
+```
+
+---
+
+### Question circles (topbar)
+
+Same as test circles (28px, border-radius 50%), but with **points label below each**:
+
+```
+┌──┐
+│ 3 │   ← circle (28px)
+└──┘
+ 5б     ← points label, 8px, slate-600 (dark) / slate-400 (light)
+```
+
+Circle states on exam — simpler than test (no green/red during exam):
+```
+unanswered: transparent bg, border slate-700/slate-300, color slate-500
+answered:   bg cyan-400/10, border cyan-400/33, color cyan-400 — student filled something
+active:     bg cyan-400/13, border cyan-400 2px, color cyan-400, font-weight 700
+```
+Note: no green/red/yellow until results screen — student doesn't see correctness during exam.
+
+---
+
+### Timer — required, auto-starts
+
+Same adaptive timer as test (see section 12), but:
+- Starts automatically when exam loads (no toggle)
+- Thresholds adjusted for longer exam time:
+  ```
+  > 5 min:  green  #4ade80
+  < 5 min:  amber  #FBBF24
+  < 1 min:  red    #f87171 + pulse
+  ```
+- On timer = 0: auto-submits exam → shows results screen
+
+---
+
+### Points row
+
+Replaces stats block from test. Shows current question info + points:
+
+```
+bg dark #0c1926 / light #f8fafc
+border top+bottom slate-800/slate-200
+
+Left:  "Текущий вопрос:" label (11px slate-400) + "Вопрос 3 из 5" (13px fw600)
+Right: "Баллов за вопрос:" label (11px slate-400) + amber pill badge:
+         ★ [N] / [total] итого
+         bg amber-400/10, border amber-400/27
+         font-size 14px font-weight 700, color amber-400
+```
+
+Question label in zone 1 also shows points: "ВОПРОС 3 · 5 БАЛЛОВ"
+
+---
+
+### Zone 1 — Yosi note
+
+Instead of hint link, a locked note at bottom of left panel:
+
+```
+bg dark #0f1e2e / light #f5f7fa
+border slate-800/slate-200, border-radius 6px
+padding 6px 9px
+icon 🧑‍🏫 + text: "На экзамене Йоси отвечает только на теоретические вопросы"
+color slate-600 (dark) / slate-400 (light), font-size 11px, opacity 0.7
+```
+
+---
+
+### Answer zone — no Skip, no Check
+
+Same answer types as test (numeric / choice / text — see section 12 for colors).
+
+**Text type badge** — different label:
+```
+"🤖 Проверка AI после экзамена"  (not "Проверка AI")
+```
+
+**Save indicator** — appears after student inputs anything:
+```
+dark:  bg #0f1e2e, color cyan-400, border cyan-400/20
+light: bg #f5f7fa, color #0891b2, border #0891b244
+font-size 12px, border-radius 6px, padding 7px 12px
+text: "✓ Ответ сохранён — можно перейти к другому вопросу"
+Hides on question switch, reappears on new input.
+```
+
+---
+
+### Navigation buttons row
+
+```
+[← Предыдущий]   [Заполнено N из M — center]   [Следующий →]   [Завершить ✓]
+
+Layout: flex row, items center, gap 8px
+"Заполнено" counter: flex:1, text-align center, font-size 12px, slate-400
+```
+
+**← Предыдущий:**
+```
+visibility:hidden on question 1 (not display:none — preserves layout spacing)
+style: bg dark #1a3a4e / light #f0f4f8, color slate-400, border none
+padding 9px 16px, border-radius 6px, font-size 13px fw500
+```
+
+**Следующий →:**
+```
+visibility:hidden on last question
+same style as ← Предыдущий
+```
+
+**Завершить ✓ (always visible):**
+```
+Inactive (not all answered):
+  dark:  bg #1a3a4e, color #7a9ab0
+  light: bg #e8f0f8, color #8899aa
+
+Active (all answered):
+  dark+light: bg cyan-400, color slate-950, box-shadow 0 0 0 2px cyan-400/27
+  font-weight 600
+
+IMPORTANT: button is always clickable (student can submit partial exam)
+           — only visual state changes, not disabled attribute
+padding 9px 20px, border-radius 6px, font-size 14px
+```
+
+---
+
+### Exit confirmation dialog
+
+Triggered by "✕ Выйти" button. Modal overlay over exam content.
+
+```
+Overlay: rgba(0,0,0,0.6), covers entire shell (position:absolute inset:0)
+z-index: 20 (above results screen)
+
+Dialog card:
+  dark:  bg #0f1e2e, border slate-800
+  light: bg #ffffff,  border slate-200
+  border-radius 12px, padding 24px
+  max-width 320px, width 90%
+  box-shadow 0 8px 32px rgba(0,0,0,0.5)
+  display:flex flex-direction:column gap:14px
+
+Content:
+  ⚠️ icon (24px, centered)
+  Title: "Выйти из экзамена?" — 15px fw600, slate-100/slate-900
+  Body:  "Ваши ответы будут сохранены. Вы сможете вернуться и продолжить,
+          но таймер продолжит идти." — 13px, slate-400/slate-500
+
+Buttons row (flex, gap 8px):
+  "Остаться" (flex:1): dark bg #1a3a4e border #334a5a | light bg #f0f4f8 border #c0ccd8
+  "Выйти"    (flex:1): bg #f87171, color white, border none — always red
+  padding 9px, border-radius 7px, font-size 13px
+```
+
+---
+
+### Results screen
+
+Full-screen overlay (position:absolute inset:0, z-index:10) that slides over exam content.
+
+```
+bg dark #0b1622 / light #ffffff
+overflow-y: auto
+padding 22px 20px
+display: flex flex-direction:column gap:14px
+```
+
+**Score header:**
+```
+Left: "Экзамен завершён" (18px fw700) + subtitle (12px slate-400)
+Right: Score circle (72px, border-radius 50%, border 3px cyan-400):
+         number: 22px fw700 cyan-400
+         "/max": 10px slate-400
+```
+
+**Score progress bar:**
+```
+label "Итоговый балл" (12px) + percentage (12px fw600 cyan-400)
+track: 8px height, border-radius 4px, bg slate-800/slate-200
+fill:  bg cyan-400, animated width 0.8s
+```
+
+**Per-question breakdown:**
+```
+Section label: 11px uppercase slate-600/slate-400
+
+Each row: flex, align-items center, gap 10px
+  bg dark #0f1e2e / light #f5f7fa
+  border slate-800/slate-200, border-radius 7px, padding 9px 12px
+
+  Left:  26px circle with question number + status color (same as test)
+         type icon below: 🔢 numeric, ☑ choice, ✍ text
+
+  Middle: comment text — 12px slate-100/slate-900
+          e.g. "✍ AI проверяет..." / "☑ Верно: вариант B"
+
+  Right: earned/total points badge
+    correct:    color green-400 / green-600
+    partial:    color amber-400 / amber-700
+    wrong:      color red-400   / red-600
+    ai-pending: color cyan-400, shows "⏳" instead of number
+    empty:      color red-400, shows "0/N"
+    font-size 13px fw700
+    sub-label "баллов" 9px slate-500
+```
+
+**AI status block (for text answers):**
+```
+bg dark #0f1e2e / light #f0f8fb
+border cyan-400/20
+border-radius 8px, padding 10px 13px
+🤖 icon + "AI проверяет текстовые ответы..." (13px fw500) + "Обычно 10–30 секунд" (11px)
+3 amber bounce dots (right-aligned)
+Hides and updates when AI returns results.
+```
+
+**"← Вернуться к обзору" button:**
+```
+full width, bg dark #1a3a4e / light #f0f4f8, color slate-400
+border-radius 8px, padding 10px, font-size 14px fw500
+Clicking re-shows exam (student can still change answers while timer runs)
+```
+
+---
+
+### Responsive — Exam Page
+
+Tablet and mobile follow same breakpoint rules as lesson page and test page (see sections 11, 12).
+
+**Key mobile differences:**
+- Zone 1: single column (question above, viz below)
+- Points row stays (very important — students need to see points)
+- Exit dialog: centered, max-width 92% of screen
+- Navigation row wraps: [← Пред] [Счётчик] [Сл →] on first row, [Завершить ✓] full-width below
+
+---
+
+## 15. Open Questions
 
 - [ ] 3D visualization on mobile: simplified WebGL / static image fallback / toggle button?
 - [ ] Platform name: "Math With Love" is temporary
@@ -784,4 +1082,4 @@ Renderer automatically selects the correct answer zone based on `type`. No code 
 - [ ] Dark/light theme toggle: user preference saved in Supabase profile or localStorage?
 - [ ] KaTeX rendering: inline vs block, font size on mobile
 
-*Last updated: June 2026. Approved: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile), lesson page (desktop + tablet + mobile), test page (desktop + tablet + mobile, 3 answer types), AI chat drawer (all pages, both themes, RU/HE) — both themes.*
+*Last updated: June 2026. Approved: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile), lesson page (desktop + tablet + mobile), test page (desktop + tablet + mobile, 3 answer types), exam page (desktop, both themes), AI chat drawer (all pages, both themes, RU/HE) — both themes.*
