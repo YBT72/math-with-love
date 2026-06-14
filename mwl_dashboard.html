@@ -1,0 +1,338 @@
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif}
+
+.controls{display:flex;gap:8px;padding:10px 16px;justify-content:center;background:#111827}
+.ctrl-btn{padding:5px 14px;border-radius:7px;font-size:12px;cursor:pointer;user-select:none;font-weight:500}
+.ctrl-btn.on{background:#22D3EE;color:#0f172a;border:1px solid #22D3EE}
+.ctrl-btn.off{border:1px solid #334155;color:#94a3b8;background:transparent}
+
+.app{display:flex;flex-direction:column;height:600px;overflow:hidden}
+.app.dark{background:#0f172a;color:#f1f5f9}
+.app.light{background:#ffffff;color:#0f172a}
+
+.hdr{height:52px;display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;z-index:10}
+.dark .hdr{background:#1e293b;border-bottom:1px solid #334155}
+.light .hdr{background:#f8fafc;border-bottom:1px solid #e2e8f0}
+.logo-c{width:28px;height:28px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-c svg{width:14px;height:14px;fill:#0f172a}
+.hdr-name{font-size:13px;font-weight:500;flex-shrink:0}
+.hdr-name span{color:#22D3EE}
+.search-wrap{flex:1;max-width:320px;position:relative;margin:0 12px}
+.search-input{width:100%;border-radius:8px;padding:7px 34px 7px 12px;font-size:13px;outline:none;font-family:system-ui,sans-serif}
+.dark .search-input{background:#334155;border:1px solid #475569;color:#f1f5f9}
+.dark .search-input::placeholder{color:#64748b}
+.dark .search-input:focus{border-color:#22D3EE}
+.light .search-input{background:#ffffff;border:1px solid #cbd5e1;color:#0f172a}
+.light .search-input::placeholder{color:#94a3b8}
+.light .search-input:focus{border-color:#22D3EE}
+.search-icon{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none}
+.dark .search-icon{color:#64748b}
+.light .search-icon{color:#94a3b8}
+.hdr-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.lang{display:flex;border-radius:6px;overflow:hidden}
+.dark .lang{border:1px solid #334155}
+.light .lang{border:1px solid #e2e8f0}
+.lb{padding:3px 8px;font-size:11px;cursor:pointer;user-select:none}
+.dark .lb{color:#94a3b8}
+.light .lb{color:#64748b}
+.lb.on{background:#22D3EE;color:#0f172a;font-weight:500}
+.hdr-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px}
+.dark .hdr-icon{border:1px solid #334155;color:#94a3b8}
+.light .hdr-icon{border:1px solid #e2e8f0;color:#64748b}
+
+.body{display:flex;flex:1;overflow:hidden}
+
+.sidebar{width:52px;display:flex;flex-direction:column;padding:8px 6px;flex-shrink:0;transition:width 0.2s;overflow:hidden}
+.dark .sidebar{background:#1e293b;border-right:1px solid #334155}
+.light .sidebar{background:#f8fafc;border-right:1px solid #e2e8f0}
+.sidebar.open{width:180px}
+.toggle-btn{display:flex;align-items:center;justify-content:center;padding:8px;border-radius:8px;cursor:pointer;margin-bottom:8px;font-size:16px}
+.dark .toggle-btn{color:#475569}
+.light .toggle-btn{color:#94a3b8}
+.dark .toggle-btn:hover{background:#334155;color:#94a3b8}
+.light .toggle-btn:hover{background:#e2e8f0}
+.sidebar-top{display:flex;flex-direction:column;gap:2px}
+.sidebar-mid{display:flex;flex-direction:column;gap:2px;margin:auto 0}
+.sidebar-bot{display:flex;flex-direction:column;gap:2px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden}
+.dark .nav-item{color:#94a3b8}
+.light .nav-item{color:#64748b}
+.dark .nav-item:hover{background:#334155;color:#f1f5f9}
+.light .nav-item:hover{background:#e2e8f0;color:#0f172a}
+.dark .nav-item.active{background:#164e63;color:#22D3EE}
+.light .nav-item.active{background:#cffafe;color:#0e7490}
+.nav-item i{font-size:18px;flex-shrink:0;width:20px;text-align:center}
+.nav-label{font-size:12px;font-weight:500;opacity:0;transition:opacity 0.15s}
+.sidebar.open .nav-label{opacity:1}
+
+.main{flex:1;overflow-y:auto;padding:20px}
+
+.welcome{margin-bottom:20px}
+.welcome-name{font-size:22px;font-weight:500;margin-bottom:4px}
+.dark .welcome-name{color:#f1f5f9}
+.light .welcome-name{color:#0f172a}
+.welcome-name span{color:#22D3EE}
+.welcome-sub{font-size:13px;margin-bottom:16px}
+.dark .welcome-sub{color:#94a3b8}
+.light .welcome-sub{color:#64748b}
+.action-btns{display:flex;gap:8px;flex-wrap:wrap}
+.act-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer}
+.act-btn.primary{background:#22D3EE;color:#0f172a;border:1px solid #22D3EE}
+.dark .act-btn.ghost{border:1px solid #334155;color:#94a3b8;background:transparent}
+.light .act-btn.ghost{border:1px solid #e2e8f0;color:#64748b;background:transparent}
+
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.stat-card{border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px}
+.dark .stat-card{background:#1e293b;border:1px solid #334155}
+.light .stat-card{background:#f8fafc;border:1px solid #e2e8f0}
+.stat-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.stat-icon.fire{background:rgba(251,191,36,0.12)}
+.stat-icon.star{background:#164e63}
+.light .stat-icon.star{background:#cffafe}
+.stat-icon.check{background:rgba(74,222,128,0.1)}
+.stat-val{font-size:20px;font-weight:500}
+.dark .stat-val{color:#f1f5f9}
+.light .stat-val{color:#0f172a}
+.stat-lbl{font-size:11px;margin-top:1px}
+.dark .stat-lbl{color:#94a3b8}
+.light .stat-lbl{color:#64748b}
+
+.section-title{font-size:14px;font-weight:500;margin-bottom:12px}
+.dark .section-title{color:#f1f5f9}
+.light .section-title{color:#0f172a}
+
+.module-card{border-radius:12px;padding:16px;margin-bottom:20px}
+.dark .module-card{background:#1e293b;border:1px solid #334155}
+.light .module-card{background:#f8fafc;border:1px solid #e2e8f0}
+.module-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.mod-tag{background:#0f172a;border:1px solid #22D3EE;border-radius:999px;padding:2px 10px;font-size:10px;color:#22D3EE;flex-shrink:0}
+.light .mod-tag{background:#cffafe;border-color:#a5f3fc;color:#0e7490}
+.mod-title{font-size:14px;font-weight:500;flex:1}
+.dark .mod-title{color:#f1f5f9}
+.light .mod-title{color:#0f172a}
+
+/* AVERAGE SCORE — no % sign */
+.avg-score{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:500;flex-shrink:0;border:1px solid}
+.avg-score.good{background:rgba(74,222,128,0.12);color:#4ade80;border-color:rgba(74,222,128,0.3)}
+.light .avg-score.good{background:rgba(22,163,74,0.08);color:#16a34a;border-color:rgba(22,163,74,0.3)}
+.avg-lbl{font-size:10px;font-weight:400;opacity:0.7}
+
+.prog-bar{height:4px;border-radius:999px;margin-bottom:4px}
+.dark .prog-bar{background:#0f172a}
+.light .prog-bar{background:#e2e8f0}
+.prog-fill{height:4px;background:#22D3EE;border-radius:999px}
+.prog-lbl{font-size:10px;margin-bottom:12px}
+.dark .prog-lbl{color:#475569}
+.light .prog-lbl{color:#94a3b8}
+
+.topics-list{display:flex;flex-direction:column;gap:6px}
+.topic-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px}
+.dark .topic-item{background:#0f172a}
+.light .topic-item{background:#ffffff;border:1px solid #e2e8f0}
+.topic-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.topic-dot.done{background:#4ade80}
+.topic-dot.current{background:#22D3EE}
+.topic-dot.locked{background:#334155}
+.light .topic-dot.locked{background:#cbd5e1}
+.topic-name{font-size:12px;flex:1}
+.dark .topic-name{color:#94a3b8}
+.light .topic-name{color:#64748b}
+.dark .topic-name.active{color:#f1f5f9}
+.light .topic-name.active{color:#0f172a}
+.topic-badge{font-size:9px;padding:1px 6px;border-radius:999px}
+.topic-badge.done{background:rgba(74,222,128,0.1);color:#4ade80}
+.light .topic-badge.done{color:#16a34a}
+.topic-badge.current{background:#164e63;color:#22D3EE}
+.light .topic-badge.current{background:#cffafe;color:#0e7490}
+.topic-badge.locked{color:#475569}
+
+.results-list{display:flex;flex-direction:column;gap:6px}
+.result-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px}
+.dark .result-item{background:#1e293b;border:1px solid #334155}
+.light .result-item{background:#f8fafc;border:1px solid #e2e8f0}
+.result-icon{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.result-icon.ok{background:rgba(74,222,128,0.1);color:#4ade80}
+.result-icon.fail{background:rgba(248,113,113,0.1);color:#f87171}
+.light .result-icon.ok{color:#16a34a}
+.light .result-icon.fail{color:#dc2626}
+.result-name{font-size:12px;flex:1}
+.dark .result-name{color:#94a3b8}
+.light .result-name{color:#64748b}
+.result-date{font-size:10px}
+.dark .result-date{color:#475569}
+.light .result-date{color:#94a3b8}
+.result-score{font-size:11px;font-weight:500}
+.result-score.ok{color:#4ade80}
+.result-score.fail{color:#f87171}
+.light .result-score.ok{color:#16a34a}
+.light .result-score.fail{color:#dc2626}
+
+.yosi-card{border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;margin-top:16px}
+.dark .yosi-card{background:#1e293b;border:1px solid #334155}
+.light .yosi-card{background:#cffafe;border:1px solid #a5f3fc}
+.yosi-avatar{width:44px;height:44px;border-radius:10px;background:#164e63;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.light .yosi-avatar{background:#a5f3fc}
+.yosi-avatar svg{width:28px;height:28px;stroke:#22D3EE;fill:none;stroke-width:1.5;opacity:0.8}
+.light .yosi-avatar svg{stroke:#0e7490}
+.yosi-name{font-size:11px;font-weight:500;margin-bottom:3px}
+.dark .yosi-name{color:#22D3EE}
+.light .yosi-name{color:#0e7490}
+.yosi-text{font-size:11px;line-height:1.5}
+.dark .yosi-text{color:#94a3b8}
+.light .yosi-text{color:#0e7490}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+</style>
+
+<div class="controls">
+  <div class="ctrl-btn on" id="btn-dark" onclick="setTheme('dark')">🌙 Тёмная</div>
+  <div class="ctrl-btn off" id="btn-light" onclick="setTheme('light')">☀ Светлая</div>
+</div>
+
+<div class="app dark" id="app">
+
+  <div class="hdr">
+    <div class="logo-c"><svg viewBox="0 0 24 24"><path d="M12 2L8 8H4l4 4-2 6 6-3 6 3-2-6 4-4h-4z"/></svg></div>
+    <div class="hdr-name">Math <span>With Love</span></div>
+    <div class="search-wrap">
+      <input class="search-input" type="text" placeholder="Поиск тем, формул...">
+      <i class="ti ti-search search-icon"></i>
+    </div>
+    <div class="hdr-right">
+      <div class="lang"><span class="lb on">RU</span><span class="lb">HE</span></div>
+      <div class="hdr-icon"><i class="ti ti-bell"></i></div>
+      <div class="hdr-icon"><i class="ti ti-user-circle"></i></div>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="sidebar" id="sidebar">
+      <div class="toggle-btn" onclick="toggleSidebar()"><i class="ti ti-layout-sidebar"></i></div>
+      <div class="sidebar-top">
+        <div class="nav-item active"><i class="ti ti-home"></i><span class="nav-label">Dashboard</span></div>
+        <div class="nav-item"><i class="ti ti-books"></i><span class="nav-label">Модули</span></div>
+      </div>
+      <div class="sidebar-mid">
+        <div class="nav-item"><i class="ti ti-math"></i><span class="nav-label">Формулы</span></div>
+        <div class="nav-item"><i class="ti ti-cube-3d-sphere"></i><span class="nav-label">Лаборатория</span></div>
+      </div>
+      <div class="sidebar-bot">
+        <div class="nav-item"><i class="ti ti-settings"></i><span class="nav-label">Настройки</span></div>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="welcome">
+        <div class="welcome-name">Добрый день, <span>Игаль</span> 👋</div>
+        <div class="welcome-sub">Что сегодня делаем?</div>
+        <div class="action-btns">
+          <div class="act-btn primary"><i class="ti ti-player-play"></i> Продолжить</div>
+          <div class="act-btn ghost"><i class="ti ti-rotate-clockwise"></i> Повторить</div>
+          <div class="act-btn ghost"><i class="ti ti-arrow-right"></i> Новая тема</div>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon fire">🔥</div>
+          <div><div class="stat-val">7</div><div class="stat-lbl">Серия дней</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon star"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2"><path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg></div>
+          <div><div class="stat-val">340</div><div class="stat-lbl">Очки</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon check">✓</div>
+          <div><div class="stat-val">6</div><div class="stat-lbl">Пройдено тем</div></div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <div class="section-title">Текущий модуль</div>
+          <div class="module-card">
+            <div class="module-header">
+              <span class="mod-tag">Модуль 1</span>
+              <span class="mod-title">Основы векторов</span>
+              <span class="avg-score good"><span class="avg-lbl">средний балл</span> 93</span>
+            </div>
+            <div class="prog-bar"><div class="prog-fill" style="width:60%"></div></div>
+            <div class="prog-lbl">60% завершено · 4 из 7 тем</div>
+            <div class="topics-list">
+              <div class="topic-item">
+                <div class="topic-dot done"></div>
+                <span class="topic-name">Определение вектора</span>
+                <span class="topic-badge done">✓</span>
+              </div>
+              <div class="topic-item">
+                <div class="topic-dot done"></div>
+                <span class="topic-name">Длина вектора</span>
+                <span class="topic-badge done">✓</span>
+              </div>
+              <div class="topic-item">
+                <div class="topic-dot current"></div>
+                <span class="topic-name active">Сложение векторов</span>
+                <span class="topic-badge current">Сейчас</span>
+              </div>
+              <div class="topic-item">
+                <div class="topic-dot locked"></div>
+                <span class="topic-name">Умножение на число</span>
+                <span class="topic-badge locked">🔒</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-title">Последние результаты</div>
+          <div class="results-list">
+            <div class="result-item">
+              <div class="result-icon ok">✓</div>
+              <div class="result-name">Длина вектора</div>
+              <div class="result-date">Сегодня</div>
+              <div class="result-score ok">100</div>
+            </div>
+            <div class="result-item">
+              <div class="result-icon ok">✓</div>
+              <div class="result-name">Определение вектора</div>
+              <div class="result-date">Вчера</div>
+              <div class="result-score ok">90</div>
+            </div>
+            <div class="result-item">
+              <div class="result-icon fail">✗</div>
+              <div class="result-name">Координаты вектора</div>
+              <div class="result-date">3 дня назад</div>
+              <div class="result-score fail">70</div>
+            </div>
+          </div>
+
+          <div class="yosi-card">
+            <div class="yosi-avatar">
+              <svg viewBox="0 0 80 100"><ellipse cx="40" cy="30" rx="20" ry="22"/><path d="M14 95 Q14 65 40 65 Q66 65 66 95"/><rect x="30" y="52" width="20" height="14" rx="3"/></svg>
+            </div>
+            <div>
+              <div class="yosi-name">Профессор Йоси</div>
+              <div class="yosi-text">7 дней подряд — так держать! Сегодня разберём сложение векторов 🎯</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let sidebarOpen=false;
+function toggleSidebar(){
+  sidebarOpen=!sidebarOpen;
+  document.getElementById('sidebar').className='sidebar'+(sidebarOpen?' open':'');
+}
+function setTheme(t){
+  document.getElementById('app').className='app '+t;
+  document.getElementById('btn-dark').className='ctrl-btn '+(t==='dark'?'on':'off');
+  document.getElementById('btn-light').className='ctrl-btn '+(t==='light'?'on':'off');
+}
+</script>

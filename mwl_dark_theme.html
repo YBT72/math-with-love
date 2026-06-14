@@ -1,0 +1,209 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9;min-width:320px}
+
+.hdr{background:#1e293b;border-bottom:1px solid #334155;height:56px;display:flex;align-items:center;padding:0 32px;gap:12px;position:sticky;top:0;z-index:50}
+.logo{width:34px;height:34px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo svg{width:18px;height:18px;fill:#0f172a}
+.sitename{font-size:15px;font-weight:500;flex:1}
+.sitename span{color:#22D3EE}
+.lang{display:flex;border-radius:7px;overflow:hidden;border:1px solid #334155}
+.lb{padding:5px 11px;font-size:12px;background:transparent;color:#94a3b8;border:none;cursor:pointer;line-height:1}
+.lb.on{background:#22D3EE;color:#0f172a;font-weight:500}
+.hbtn{background:transparent;border:1px solid #334155;border-radius:7px;padding:6px 16px;font-size:13px;color:#94a3b8;cursor:pointer}
+.hbtn.reg{background:#22D3EE;border-color:#22D3EE;color:#0f172a;font-weight:500}
+
+.hero{max-width:1100px;margin:0 auto;padding:56px 32px 40px;display:flex;align-items:flex-start;gap:40px}
+.hero-l{flex:1}
+.badge{display:inline-flex;align-items:center;gap:6px;background:#0f172a;border:1px solid #22D3EE;border-radius:999px;padding:5px 14px;font-size:12px;color:#22D3EE;margin-bottom:20px}
+.h1{font-size:40px;font-weight:500;line-height:1.2;margin-bottom:14px}
+.h1 em{color:#22D3EE;font-style:normal}
+.hero-p{font-size:14px;color:#94a3b8;line-height:1.7;margin-bottom:28px;max-width:420px}
+.btns{display:flex;gap:12px}
+.bp{background:#22D3EE;color:#0f172a;border:none;border-radius:9px;padding:12px 24px;font-size:14px;font-weight:500;cursor:pointer}
+.bs{background:transparent;color:#94a3b8;border:1px solid #334155;border-radius:9px;padding:12px 24px;font-size:14px;cursor:pointer}
+
+.prof{width:210px;flex-shrink:0;background:#1e293b;border:1px solid #334155;border-radius:14px;overflow:hidden}
+.prof-img{height:190px;background:#164e63;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #334155}
+.prof-img svg{width:80px;height:80px;stroke:#22D3EE;fill:none;stroke-width:1.2;opacity:0.6}
+.prof-body{padding:14px 16px}
+.prof-name{font-size:14px;font-weight:500;color:#22D3EE;margin-bottom:6px}
+.prof-text{font-size:12px;color:#94a3b8;line-height:1.6}
+
+.stats{background:#1e293b;border-top:1px solid #334155;border-bottom:1px solid #334155}
+.stats-in{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+.stat{text-align:center;padding:18px 8px;border-right:1px solid #334155}
+.stat:last-child{border-right:none}
+.stat-n{font-size:28px;font-weight:500;color:#22D3EE}
+.stat-l{font-size:12px;color:#94a3b8;margin-top:4px}
+
+.sec{max-width:1100px;margin:0 auto;padding:40px 32px 0}
+.slbl{font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#475569;margin-bottom:6px}
+.stit{font-size:20px;font-weight:500;margin-bottom:5px}
+.ssub{font-size:13px;color:#94a3b8;margin-bottom:20px}
+
+.cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.cc{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px;position:relative}
+.cc.act{border:2px solid #22D3EE}
+.cc.lck{opacity:0.45}
+.cc-ico{width:36px;height:36px;background:#164e63;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.cc-ico svg{width:18px;height:18px;stroke:#22D3EE;fill:none;stroke-width:2}
+.cc-tag{background:#0f172a;border:1px solid #22D3EE;border-radius:999px;padding:4px 12px;font-size:11px;color:#22D3EE;display:inline-block;margin-bottom:7px}
+.cc-tit{font-size:13px;font-weight:500;margin-bottom:4px}
+.cc-desc{font-size:12px;color:#94a3b8;line-height:1.55;margin-bottom:14px}
+.prog{height:3px;background:#0f172a;border-radius:999px;margin-bottom:6px}
+.prog-f{height:3px;background:#22D3EE;border-radius:999px}
+.prog-l{font-size:10px;color:#475569}
+.abadge{position:absolute;top:12px;right:12px;background:#22D3EE;color:#0f172a;font-size:9px;font-weight:500;padding:2px 8px;border-radius:999px}
+.lbadge{position:absolute;top:12px;right:12px;font-size:14px;color:#475569}
+
+.lesson-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+
+/* FORMULA BOX — по DESIGN_SYSTEM: bg slate-900, border cyan-900, text cyan-400 */
+.fbox{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px}
+.f-lbl{font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:#475569;margin-bottom:14px}
+.f-highlight{background:#0f172a;border:1px solid #164e63;border-radius:8px;padding:16px 18px;margin-bottom:14px}
+.f-main{font-family:monospace;font-size:18px;color:#22D3EE;margin-bottom:8px;line-height:1.6;white-space:nowrap}
+.f-alt{font-family:monospace;font-size:14px;color:#67e8f9;line-height:1.6}
+.f-desc{font-size:12px;color:#94a3b8;line-height:1.65}
+
+.vbox{background:#1e293b;border:1px solid #334155;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#475569;min-height:180px}
+.vbox svg{width:36px;height:36px;stroke:currentColor;fill:none;stroke-width:1.5;opacity:0.3}
+.vbox span{font-size:12px}
+.vbox small{font-size:10px;opacity:0.5}
+
+.ggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+.gc{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px}
+.gi{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.gi.a{background:rgba(251,191,36,0.12)}
+.gi.c{background:#164e63}
+.gi.g{background:rgba(74,222,128,0.1)}
+.gc-tit{font-size:12px;font-weight:500}
+.gc-sub{font-size:11px;color:#94a3b8;margin-top:3px}
+
+.cta{background:#1e293b;border-top:1px solid #334155;margin-top:40px;padding:48px 32px;text-align:center}
+.cta h2{font-size:26px;font-weight:500;margin-bottom:10px}
+.cta p{font-size:13px;color:#94a3b8;margin-bottom:28px}
+
+.ftr{padding:18px 32px;text-align:center;font-size:11px;color:#475569;border-top:1px solid #334155}
+</style>
+
+<div class="hdr">
+  <div class="logo"><svg viewBox="0 0 24 24"><path d="M12 2L8 8H4l4 4-2 6 6-3 6 3-2-6 4-4h-4z"/></svg></div>
+  <div class="sitename">Math <span>With Love</span></div>
+  <div class="lang"><span class="lb on">RU</span><span class="lb">HE</span></div>
+  <button class="hbtn">Войти</button>
+  <button class="hbtn reg">Регистрация</button>
+</div>
+
+<div class="hero">
+  <div class="hero-l">
+    <div class="badge">★ Багрут 572 · Векторная математика</div>
+    <div class="h1">Математика,<br>которую хочется<br><em>понять</em></div>
+    <div class="hero-p">Интерактивная платформа для изучения векторов. 3D визуализации, умные задачи, прогресс шаг за шагом.</div>
+    <div class="btns">
+      <button class="bp">Начать бесплатно</button>
+      <button class="bs">Посмотреть курсы</button>
+    </div>
+  </div>
+  <div class="prof">
+    <div class="prof-img">
+      <svg viewBox="0 0 80 100">
+        <ellipse cx="40" cy="30" rx="20" ry="22"/>
+        <path d="M14 95 Q14 65 40 65 Q66 65 66 95"/>
+        <rect x="30" y="52" width="20" height="14" rx="3"/>
+        <line x1="26" y1="40" x2="20" y2="46"/>
+        <line x1="54" y1="40" x2="60" y2="46"/>
+        <path d="M32 74 L40 88 L48 74"/>
+      </svg>
+    </div>
+    <div class="prof-body">
+      <div class="prof-name">Профессор Йоси</div>
+      <div class="prof-text">Твой проводник в мире векторов. Объяснит, подскажет и порадуется вместе с тобой!</div>
+    </div>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stats-in">
+    <div class="stat"><div class="stat-n">4</div><div class="stat-l">модуля курса</div></div>
+    <div class="stat"><div class="stat-n">40+</div><div class="stat-l">интерактивных задач</div></div>
+    <div class="stat"><div class="stat-n">3D</div><div class="stat-l">визуализации</div></div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="slbl">Программа</div>
+  <div class="stit">Курсы платформы</div>
+  <div class="ssub">Следующий модуль открывается после 100% правильных ответов.</div>
+  <div class="cgrid">
+    <div class="cc act">
+      <span class="abadge">Активный</span>
+      <div class="cc-ico"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+      <div class="cc-tag">Модуль 1</div>
+      <div class="cc-tit">Основы векторов</div>
+      <div class="cc-desc">Длина вектора, направление, линейные операции. Геометрический и координатный подходы.</div>
+      <div class="prog"><div class="prog-f" style="width:60%"></div></div>
+      <div class="prog-l">60% завершено</div>
+    </div>
+    <div class="cc lck">
+      <span class="lbadge">🔒</span>
+      <div class="cc-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></div>
+      <div class="cc-tag">Модуль 2</div>
+      <div class="cc-tit">Скалярное произведение</div>
+      <div class="cc-desc">Угол между векторами, перпендикулярность, проекции.</div>
+      <div class="prog"><div class="prog-f" style="width:0%"></div></div>
+      <div class="prog-l">Заблокировано</div>
+    </div>
+    <div class="cc lck">
+      <span class="lbadge">🔒</span>
+      <div class="cc-ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+      <div class="cc-tag">Модуль 3</div>
+      <div class="cc-tit">Прямые и плоскости</div>
+      <div class="cc-desc">Уравнения прямых и плоскостей в пространстве.</div>
+      <div class="prog"><div class="prog-f" style="width:0%"></div></div>
+      <div class="prog-l">Заблокировано</div>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="slbl">Как это выглядит</div>
+  <div class="stit">Урок изнутри</div>
+  <div class="ssub">Формула + 3D визуализация + задача на одном экране.</div>
+  <div class="lesson-grid">
+    <div class="fbox">
+      <div class="f-lbl">Скалярное произведение</div>
+      <div class="f-highlight">
+        <div class="f-main">a&#8407; &middot; b&#8407; = |a&#8407;| &middot; |b&#8407;| &middot; cos &theta;</div>
+        <div class="f-alt">= a&#8321;b&#8321; + a&#8322;b&#8322; + a&#8323;b&#8323;</div>
+      </div>
+      <div class="f-desc">Скалярное произведение двух векторов равно произведению их длин на косинус угла между ними. Результат — число, не вектор.</div>
+    </div>
+    <div class="vbox">
+      <svg viewBox="0 0 24 24"><path d="M3 17L9 11L13 15L21 7"/><path d="M17 7h4v4"/></svg>
+      <span>3D визуализация</span>
+      <small>React Three Fiber</small>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <div class="slbl">Мотивация</div>
+  <div class="stit">Игровые элементы</div>
+  <div class="ssub">Только твой личный прогресс — без таблицы лидеров.</div>
+  <div class="ggrid">
+    <div class="gc"><div class="gi a">🔥</div><div><div class="gc-tit">Серия дней</div><div class="gc-sub">Занимайся каждый день</div></div></div>
+    <div class="gc"><div class="gi c"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2"><path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg></div><div><div class="gc-tit">Очки XP</div><div class="gc-sub">За каждый правильный ответ</div></div></div>
+    <div class="gc"><div class="gi g">✓</div><div><div class="gc-tit">100% прогресс</div><div class="gc-sub">Тема открыта — идёшь дальше</div></div></div>
+  </div>
+</div>
+
+<div class="cta">
+  <h2>Готов начать?</h2>
+  <p>Бесплатно. Без рекламы. Только математика, которую хочется понять.</p>
+  <button class="bp" style="padding:14px 32px;font-size:15px">Создать аккаунт</button>
+</div>
+
+<div class="ftr">Math With Love · Багрут 572 · Векторная математика</div>

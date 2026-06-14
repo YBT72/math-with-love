@@ -1,0 +1,256 @@
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#111827;padding:16px}
+.outer{display:flex;gap:16px;align-items:flex-start}
+.col{flex:1;min-width:0}
+.tlabel{text-align:center;font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#6b7280;margin-bottom:8px}
+
+.d{--bg:#0f172a;--card:#1e293b;--brd:#334155;--tp:#f1f5f9;--ts:#94a3b8;--tm:#475569;--cy:#22D3EE;--cy-bg:#164e63;--cy-br:rgba(34,211,238,0.2);--cy-t:#22D3EE}
+.l{--bg:#ffffff;--card:#f8fafc;--brd:#e2e8f0;--tp:#0f172a;--ts:#64748b;--tm:#94a3b8;--cy:#22D3EE;--cy-bg:#cffafe;--cy-br:#a5f3fc;--cy-t:#0e7490}
+
+.app{background:var(--bg);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.d.app{border:1px solid rgba(255,255,255,0.07)}
+.l.app{border:1px solid rgba(0,0,0,0.1)}
+
+.hdr{height:46px;display:flex;align-items:center;padding:0 12px;gap:8px;background:var(--card);border-bottom:1px solid var(--brd);flex-shrink:0}
+.logo-c{width:24px;height:24px;border-radius:50%;background:var(--cy);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-c svg{width:12px;height:12px;fill:#0f172a}
+.hdr-name{font-size:12px;font-weight:500;color:var(--tp);flex:1}
+.hdr-name span{color:var(--cy)}
+.lang{display:flex;border-radius:5px;overflow:hidden;border:1px solid var(--brd);flex-shrink:0}
+.lb{padding:3px 7px;font-size:10px;color:var(--ts);user-select:none}
+.lb.on{background:var(--cy);color:#0f172a;font-weight:500}
+.icon-btn{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;border:1px solid var(--brd);color:var(--ts);flex-shrink:0}
+.icon-btn.cta{background:var(--cy);border-color:var(--cy);color:#0f172a}
+
+.main{flex:1;overflow-y:auto;padding:12px}
+
+/* WELCOME ROW */
+.welcome-row{display:flex;align-items:stretch;gap:10px;margin-bottom:12px}
+.welcome-l{flex:1;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+.welcome-top{margin-bottom:8px}
+.welcome-identity{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--cy);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#0f172a;flex-shrink:0}
+.welcome-name{font-size:15px;font-weight:500;color:var(--tp)}
+.welcome-name span{color:var(--cy)}
+.welcome-sub{font-size:10px;color:var(--ts);margin-left:40px}
+
+.act-btns{display:flex;flex-direction:column;gap:5px}
+.act-btn{display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;border-radius:7px;font-size:11px;font-weight:500;cursor:pointer}
+.act-btn.primary{background:var(--cy);color:#0f172a;border:1px solid var(--cy)}
+.act-btn.ghost{background:transparent;color:var(--ts);border:1px solid var(--brd)}
+
+/* YOSI mini */
+.yosi-mini{width:90px;flex-shrink:0;background:var(--card);border:1px solid var(--brd);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.l .yosi-mini{background:var(--cy-bg);border-color:var(--cy-br)}
+.yosi-img{flex:1;min-height:70px;background:var(--cy-bg);display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--brd)}
+.l .yosi-img{background:var(--cy-br);border-color:var(--cy-br)}
+.yosi-img svg{width:38px;height:38px;stroke:var(--cy-t);fill:none;stroke-width:1.4;opacity:0.75}
+.yosi-info{padding:6px 7px}
+.yosi-name{font-size:9px;font-weight:500;color:var(--cy-t);margin-bottom:2px}
+.yosi-txt{font-size:8px;color:var(--ts);line-height:1.4}
+.l .yosi-txt{color:var(--cy-t)}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--brd);border-radius:8px;padding:8px;text-align:center}
+.stat-ico{font-size:14px;margin-bottom:2px}
+.stat-val{font-size:15px;font-weight:500;color:var(--tp)}
+.stat-lbl{font-size:9px;color:var(--ts);margin-top:1px}
+
+/* MODULE */
+.sec-title{font-size:12px;font-weight:500;color:var(--tp);margin-bottom:7px}
+.mod-card{background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:12px;margin-bottom:12px}
+.mod-hdr{display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.mod-tag{background:var(--bg);border:1px solid var(--cy);border-radius:999px;padding:2px 7px;font-size:9px;color:var(--cy-t);flex-shrink:0}
+.l .mod-tag{background:var(--cy-bg);border-color:var(--cy-br)}
+.mod-title{font-size:11px;font-weight:500;color:var(--tp);flex:1}
+.avg{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:500;border:1px solid rgba(74,222,128,0.3);background:rgba(74,222,128,0.1);color:#4ade80;flex-shrink:0}
+.l .avg{color:#16a34a;background:rgba(22,163,74,0.08);border-color:rgba(22,163,74,0.3)}
+.avg-lbl{font-size:8px;opacity:0.7;font-weight:400}
+.pbar{height:3px;background:var(--bg);border-radius:999px;margin-bottom:3px}
+.l .pbar{background:var(--brd)}
+.pfill{height:3px;background:var(--cy);border-radius:999px}
+.plbl{font-size:9px;color:var(--tm);margin-bottom:8px}
+.topics{display:flex;flex-direction:column;gap:4px}
+.topic{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:6px;background:var(--bg)}
+.l .topic{background:#fff;border:1px solid var(--brd)}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.dot.done{background:#4ade80}
+.dot.cur{background:var(--cy)}
+.dot.lck{background:var(--brd)}
+.tname{font-size:10px;color:var(--ts);flex:1}
+.tname.cur{color:var(--tp)}
+.tbadge{font-size:8px;padding:1px 5px;border-radius:999px}
+.tbadge.done{background:rgba(74,222,128,0.1);color:#4ade80}
+.l .tbadge.done{color:#16a34a}
+.tbadge.cur{background:var(--cy-bg);color:var(--cy-t)}
+.tbadge.lck{color:var(--tm)}
+
+/* RESULTS */
+.results{display:flex;flex-direction:column;gap:5px}
+.res{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:var(--card);border:1px solid var(--brd)}
+.res-ico{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.res-ico.ok{background:rgba(74,222,128,0.1);color:#4ade80}
+.res-ico.fail{background:rgba(248,113,113,0.1);color:#f87171}
+.l .res-ico.ok{color:#16a34a}
+.l .res-ico.fail{color:#dc2626}
+.res-name{font-size:10px;color:var(--ts);flex:1}
+.res-date{font-size:9px;color:var(--tm)}
+.res-score{font-size:10px;font-weight:500}
+.res-score.ok{color:#4ade80}
+.res-score.fail{color:#f87171}
+.l .res-score.ok{color:#16a34a}
+.l .res-score.fail{color:#dc2626}
+
+/* BOTTOM NAV */
+.bot-nav{height:52px;display:flex;align-items:center;background:var(--card);border-top:1px solid var(--brd);flex-shrink:0}
+.nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;padding:4px 0;color:var(--ts)}
+.nav-tab.active{color:var(--cy-t)}
+.nav-tab i{font-size:18px}
+.nav-tab span{font-size:8px;font-weight:500}
+</style>
+
+<div class="outer">
+  <!-- DARK -->
+  <div class="col">
+    <div class="tlabel">🌙 Тёмная</div>
+    <div class="app d">
+      <div class="hdr">
+        <div class="logo-c"><svg viewBox="0 0 24 24"><path d="M12 2L8 8H4l4 4-2 6 6-3 6 3-2-6 4-4h-4z"/></svg></div>
+        <div class="hdr-name">Math <span>With Love</span></div>
+        <div class="lang"><span class="lb on">RU</span><span class="lb">HE</span></div>
+        <div class="icon-btn"><i class="ti ti-search"></i></div>
+        <div class="icon-btn"><i class="ti ti-login"></i></div>
+        <div class="icon-btn cta"><i class="ti ti-user-plus"></i></div>
+      </div>
+      <div class="main">
+        <div class="welcome-row">
+          <div class="welcome-l">
+            <div class="welcome-top">
+              <div class="welcome-identity">
+                <div class="avatar">ИГ</div>
+                <div class="welcome-name">Добрый день, <span>Игаль</span> 👋</div>
+              </div>
+              <div class="welcome-sub">Что сегодня делаем?</div>
+            </div>
+            <div class="act-btns">
+              <div class="act-btn primary"><i class="ti ti-player-play"></i> Продолжить с того места</div>
+              <div class="act-btn ghost"><i class="ti ti-rotate-clockwise"></i> Повторить пройденное</div>
+              <div class="act-btn ghost"><i class="ti ti-arrow-right"></i> Новая тема</div>
+            </div>
+          </div>
+          <div class="yosi-mini">
+            <div class="yosi-img"><svg viewBox="0 0 80 100"><ellipse cx="40" cy="30" rx="20" ry="22"/><path d="M14 95 Q14 65 40 65 Q66 65 66 95"/><rect x="30" y="52" width="20" height="14" rx="3"/></svg></div>
+            <div class="yosi-info">
+              <div class="yosi-name">Проф. Йоси</div>
+              <div class="yosi-txt">7 дней подряд! Разберём сложение 🎯</div>
+            </div>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="stat-ico">🔥</div><div class="stat-val">7</div><div class="stat-lbl">Серия дней</div></div>
+          <div class="stat"><div class="stat-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2"><path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg></div><div class="stat-val">340</div><div class="stat-lbl">Очки</div></div>
+          <div class="stat"><div class="stat-ico">✓</div><div class="stat-val">6</div><div class="stat-lbl">Пройдено тем</div></div>
+        </div>
+        <div class="sec-title">Текущий модуль</div>
+        <div class="mod-card">
+          <div class="mod-hdr"><span class="mod-tag">Модуль 1</span><span class="mod-title">Основы векторов</span><span class="avg"><span class="avg-lbl">ср. балл</span> 93</span></div>
+          <div class="pbar"><div class="pfill" style="width:60%"></div></div>
+          <div class="plbl">60% · 4 из 7 тем</div>
+          <div class="topics">
+            <div class="topic"><div class="dot done"></div><span class="tname">Определение вектора</span><span class="tbadge done">✓</span></div>
+            <div class="topic"><div class="dot done"></div><span class="tname">Длина вектора</span><span class="tbadge done">✓</span></div>
+            <div class="topic"><div class="dot cur"></div><span class="tname cur">Сложение векторов</span><span class="tbadge cur">Сейчас</span></div>
+            <div class="topic"><div class="dot lck"></div><span class="tname">Умножение на число</span><span class="tbadge lck">🔒</span></div>
+          </div>
+        </div>
+        <div class="sec-title">Последние результаты</div>
+        <div class="results">
+          <div class="res"><div class="res-ico ok">✓</div><div class="res-name">Длина вектора</div><div class="res-date">Сегодня</div><div class="res-score ok">100</div></div>
+          <div class="res"><div class="res-ico ok">✓</div><div class="res-name">Определение вектора</div><div class="res-date">Вчера</div><div class="res-score ok">90</div></div>
+          <div class="res"><div class="res-ico fail">✗</div><div class="res-name">Координаты вектора</div><div class="res-date">3 дня назад</div><div class="res-score fail">70</div></div>
+        </div>
+      </div>
+      <div class="bot-nav">
+        <div class="nav-tab active"><i class="ti ti-home"></i><span>Главная</span></div>
+        <div class="nav-tab"><i class="ti ti-books"></i><span>Модули</span></div>
+        <div class="nav-tab"><i class="ti ti-math"></i><span>Формулы</span></div>
+        <div class="nav-tab"><i class="ti ti-cube-3d-sphere"></i><span>Лаборатория</span></div>
+        <div class="nav-tab"><i class="ti ti-settings"></i><span>Настройки</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHT -->
+  <div class="col">
+    <div class="tlabel">☀ Светлая</div>
+    <div class="app l">
+      <div class="hdr">
+        <div class="logo-c"><svg viewBox="0 0 24 24"><path d="M12 2L8 8H4l4 4-2 6 6-3 6 3-2-6 4-4h-4z"/></svg></div>
+        <div class="hdr-name">Math <span>With Love</span></div>
+        <div class="lang"><span class="lb on">RU</span><span class="lb">HE</span></div>
+        <div class="icon-btn"><i class="ti ti-search"></i></div>
+        <div class="icon-btn"><i class="ti ti-login"></i></div>
+        <div class="icon-btn cta"><i class="ti ti-user-plus"></i></div>
+      </div>
+      <div class="main">
+        <div class="welcome-row">
+          <div class="welcome-l">
+            <div class="welcome-top">
+              <div class="welcome-identity">
+                <div class="avatar">ИГ</div>
+                <div class="welcome-name">Добрый день, <span>Игаль</span> 👋</div>
+              </div>
+              <div class="welcome-sub">Что сегодня делаем?</div>
+            </div>
+            <div class="act-btns">
+              <div class="act-btn primary"><i class="ti ti-player-play"></i> Продолжить с того места</div>
+              <div class="act-btn ghost"><i class="ti ti-rotate-clockwise"></i> Повторить пройденное</div>
+              <div class="act-btn ghost"><i class="ti ti-arrow-right"></i> Новая тема</div>
+            </div>
+          </div>
+          <div class="yosi-mini">
+            <div class="yosi-img"><svg viewBox="0 0 80 100"><ellipse cx="40" cy="30" rx="20" ry="22"/><path d="M14 95 Q14 65 40 65 Q66 65 66 95"/><rect x="30" y="52" width="20" height="14" rx="3"/></svg></div>
+            <div class="yosi-info">
+              <div class="yosi-name">Проф. Йоси</div>
+              <div class="yosi-txt">7 дней подряд! Разберём сложение 🎯</div>
+            </div>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="stat-ico">🔥</div><div class="stat-val">7</div><div class="stat-lbl">Серия дней</div></div>
+          <div class="stat"><div class="stat-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2"><path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg></div><div class="stat-val">340</div><div class="stat-lbl">Очки</div></div>
+          <div class="stat"><div class="stat-ico">✓</div><div class="stat-val">6</div><div class="stat-lbl">Пройдено тем</div></div>
+        </div>
+        <div class="sec-title">Текущий модуль</div>
+        <div class="mod-card">
+          <div class="mod-hdr"><span class="mod-tag">Модуль 1</span><span class="mod-title">Основы векторов</span><span class="avg"><span class="avg-lbl">ср. балл</span> 93</span></div>
+          <div class="pbar"><div class="pfill" style="width:60%"></div></div>
+          <div class="plbl">60% · 4 из 7 тем</div>
+          <div class="topics">
+            <div class="topic"><div class="dot done"></div><span class="tname">Определение вектора</span><span class="tbadge done">✓</span></div>
+            <div class="topic"><div class="dot done"></div><span class="tname">Длина вектора</span><span class="tbadge done">✓</span></div>
+            <div class="topic"><div class="dot cur"></div><span class="tname cur">Сложение векторов</span><span class="tbadge cur">Сейчас</span></div>
+            <div class="topic"><div class="dot lck"></div><span class="tname">Умножение на число</span><span class="tbadge lck">🔒</span></div>
+          </div>
+        </div>
+        <div class="sec-title">Последние результаты</div>
+        <div class="results">
+          <div class="res"><div class="res-ico ok">✓</div><div class="res-name">Длина вектора</div><div class="res-date">Сегодня</div><div class="res-score ok">100</div></div>
+          <div class="res"><div class="res-ico ok">✓</div><div class="res-name">Определение вектора</div><div class="res-date">Вчера</div><div class="res-score ok">90</div></div>
+          <div class="res"><div class="res-ico fail">✗</div><div class="res-name">Координаты вектора</div><div class="res-date">3 дня назад</div><div class="res-score fail">70</div></div>
+        </div>
+      </div>
+      <div class="bot-nav">
+        <div class="nav-tab active"><i class="ti ti-home"></i><span>Главная</span></div>
+        <div class="nav-tab"><i class="ti ti-books"></i><span>Модули</span></div>
+        <div class="nav-tab"><i class="ti ti-math"></i><span>Формулы</span></div>
+        <div class="nav-tab"><i class="ti ti-cube-3d-sphere"></i><span>Лаборатория</span></div>
+        <div class="nav-tab"><i class="ti ti-settings"></i><span>Настройки</span></div>
+      </div>
+    </div>
+  </div>
+</div>

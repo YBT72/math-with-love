@@ -1,0 +1,197 @@
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif}
+
+.controls{display:flex;gap:8px;padding:12px 16px;justify-content:center;background:#111827;flex-wrap:wrap}
+.ctrl-btn{padding:6px 16px;border-radius:8px;font-size:13px;cursor:pointer;user-select:none;font-weight:500;transition:all 0.15s}
+.ctrl-btn.on{background:#22D3EE;color:#0f172a;border:1px solid #22D3EE}
+.ctrl-btn.off{border:1px solid #334155;color:#94a3b8;background:transparent}
+.sep{width:1px;background:#374151;margin:0 4px;align-self:stretch}
+
+.backdrop{min-height:520px;display:flex;align-items:center;justify-content:center;padding:24px;position:relative}
+.backdrop.dark{background:#0f172a}
+.backdrop.light{background:#f1f5f9}
+.backdrop::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(34,211,238,0.03) 40px,rgba(34,211,238,0.03) 80px)}
+
+.modal{width:100%;max-width:420px;border-radius:16px;overflow:hidden;position:relative;z-index:1}
+.dark .modal{background:#1e293b;border:1px solid #334155;box-shadow:0 24px 64px rgba(0,0,0,0.5)}
+.light .modal{background:#ffffff;border:1px solid #e2e8f0;box-shadow:0 24px 64px rgba(0,0,0,0.12)}
+
+.modal-close{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;z-index:2}
+.dark .modal-close{background:#334155;color:#94a3b8}
+.light .modal-close{background:#f1f5f9;color:#64748b}
+
+.modal-top{padding:28px 28px 0;text-align:center}
+.modal-logo{width:44px;height:44px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.modal-logo svg{width:22px;height:22px;fill:#0f172a}
+.modal-title{font-size:20px;font-weight:500;margin-bottom:6px}
+.dark .modal-title{color:#f1f5f9}
+.light .modal-title{color:#0f172a}
+.modal-sub{font-size:13px}
+.dark .modal-sub{color:#94a3b8}
+.light .modal-sub{color:#64748b}
+
+.tabs{display:flex;gap:8px;margin:20px 28px 0}
+.tab{flex:1;text-align:center;padding:8px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;user-select:none;transition:all 0.15s}
+.tab.on{background:#22D3EE;color:#0f172a;border:1px solid #22D3EE}
+.dark .tab.off{border:1px solid #334155;color:#94a3b8;background:transparent}
+.light .tab.off{border:1px solid #e2e8f0;color:#64748b;background:transparent}
+
+.modal-body{padding:24px 28px 28px}
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;font-weight:500;margin-bottom:6px;display:block}
+.dark .form-label{color:#94a3b8}
+.light .form-label{color:#64748b}
+.form-input{width:100%;border-radius:8px;padding:10px 40px 10px 14px;font-size:14px;outline:none;font-family:system-ui,sans-serif;transition:border-color 0.15s,background 0.15s}
+
+/* DARK: slate-700 bg — clearly lighter than slate-800 card */
+.dark .form-input{background:#334155;border:1px solid #475569;color:#f1f5f9}
+.dark .form-input::placeholder{color:#64748b}
+.dark .form-input:focus{border-color:#22D3EE;background:#3d4f66}
+
+/* LIGHT: pure white bg, slate-300 border */
+.light .form-input{background:#ffffff;border:1px solid #cbd5e1;color:#0f172a}
+.light .form-input::placeholder{color:#94a3b8}
+.light .form-input:focus{border-color:#22D3EE}
+
+.input-wrap{position:relative}
+.input-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:16px;cursor:pointer}
+.dark .input-icon{color:#64748b}
+.light .input-icon{color:#94a3b8}
+
+.forgot{text-align:right;margin-top:-10px;margin-bottom:16px}
+.forgot a{font-size:12px;color:#22D3EE;cursor:pointer}
+
+.divider{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.divider-line{flex:1;height:1px}
+.dark .divider-line{background:#334155}
+.light .divider-line{background:#e2e8f0}
+.divider-text{font-size:11px}
+.dark .divider-text{color:#475569}
+.light .divider-text{color:#94a3b8}
+
+.btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:8px;padding:10px;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:16px}
+.dark .btn-google{background:#334155;border:1px solid #475569;color:#f1f5f9}
+.light .btn-google{background:#ffffff;border:1px solid #cbd5e1;color:#0f172a}
+.google-icon{width:18px;height:18px;flex-shrink:0}
+
+.btn-submit{width:100%;display:flex;align-items:center;justify-content:center;background:#22D3EE;color:#0f172a;border-radius:8px;padding:11px;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:16px;border:1px solid #22D3EE}
+
+.switch-text{text-align:center;font-size:12px}
+.dark .switch-text{color:#64748b}
+.light .switch-text{color:#94a3b8}
+.switch-text a{color:#22D3EE;cursor:pointer}
+
+.register-only{display:none}
+.register-only.show{display:block}
+</style>
+
+<div class="controls">
+  <div class="ctrl-btn on" id="btn-dark" onclick="setTheme('dark')">🌙 Тёмная</div>
+  <div class="ctrl-btn off" id="btn-light" onclick="setTheme('light')">☀ Светлая</div>
+  <div class="sep"></div>
+  <div class="ctrl-btn on" id="btn-login" onclick="setMode('login')">Войти</div>
+  <div class="ctrl-btn off" id="btn-register" onclick="setMode('register')">Регистрация</div>
+</div>
+
+<div class="backdrop dark" id="backdrop">
+  <div class="modal">
+    <div class="modal-close"><i class="ti ti-x"></i></div>
+
+    <div class="modal-top">
+      <div class="modal-logo">
+        <svg viewBox="0 0 24 24"><path d="M12 2L8 8H4l4 4-2 6 6-3 6 3-2-6 4-4h-4z"/></svg>
+      </div>
+      <div class="modal-title" id="modal-title">Добро пожаловать</div>
+      <div class="modal-sub" id="modal-sub">Войдите в свой аккаунт</div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab on" id="tab-login" onclick="setMode('login')">Войти</div>
+      <div class="tab off" id="tab-register" onclick="setMode('register')">Регистрация</div>
+    </div>
+
+    <div class="modal-body">
+      <div class="btn-google">
+        <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Продолжить через Google
+      </div>
+
+      <div class="divider">
+        <div class="divider-line"></div>
+        <div class="divider-text">или</div>
+        <div class="divider-line"></div>
+      </div>
+
+      <div class="form-group register-only" id="field-name">
+        <label class="form-label">Имя</label>
+        <div class="input-wrap">
+          <input class="form-input" type="text" placeholder="Как тебя зовут?">
+          <i class="ti ti-user input-icon"></i>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <div class="input-wrap">
+          <input class="form-input" type="email" placeholder="your@email.com">
+          <i class="ti ti-mail input-icon"></i>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Пароль</label>
+        <div class="input-wrap">
+          <input class="form-input" type="password" placeholder="••••••••">
+          <i class="ti ti-eye input-icon"></i>
+        </div>
+      </div>
+
+      <div class="form-group register-only" id="field-confirm">
+        <label class="form-label">Подтвердите пароль</label>
+        <div class="input-wrap">
+          <input class="form-input" type="password" placeholder="••••••••">
+          <i class="ti ti-eye input-icon"></i>
+        </div>
+      </div>
+
+      <div class="forgot" id="forgot-wrap"><a>Забыли пароль?</a></div>
+
+      <div class="btn-submit" id="btn-submit">Войти</div>
+
+      <div class="switch-text" id="switch-text">
+        Нет аккаунта? <a onclick="setMode('register')">Зарегистрироваться</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let theme='dark', mode='login';
+function setTheme(t){
+  theme=t;
+  document.getElementById('backdrop').className='backdrop '+t;
+  document.getElementById('btn-dark').className='ctrl-btn '+(t==='dark'?'on':'off');
+  document.getElementById('btn-light').className='ctrl-btn '+(t==='light'?'on':'off');
+}
+function setMode(m){
+  mode=m;
+  const isLogin=m==='login';
+  document.getElementById('tab-login').className='tab '+(isLogin?'on':'off');
+  document.getElementById('tab-register').className='tab '+(!isLogin?'on':'off');
+  document.getElementById('btn-login').className='ctrl-btn '+(isLogin?'on':'off');
+  document.getElementById('btn-register').className='ctrl-btn '+(!isLogin?'on':'off');
+  document.getElementById('modal-title').textContent=isLogin?'Добро пожаловать':'Создать аккаунт';
+  document.getElementById('modal-sub').textContent=isLogin?'Войдите в свой аккаунт':'Начните учиться бесплатно';
+  document.getElementById('btn-submit').textContent=isLogin?'Войти':'Зарегистрироваться';
+  document.getElementById('forgot-wrap').style.display=isLogin?'':'none';
+  document.getElementById('switch-text').innerHTML=isLogin
+    ?'Нет аккаунта? <a onclick="setMode(\'register\')">Зарегистрироваться</a>'
+    :'Уже есть аккаунт? <a onclick="setMode(\'login\')">Войти</a>';
+  document.querySelectorAll('.register-only').forEach(el=>{
+    el.className='form-group register-only'+(!isLogin?' show':'');
+  });
+}
+</script>
