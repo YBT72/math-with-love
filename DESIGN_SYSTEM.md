@@ -689,6 +689,93 @@ Cancel: clear input, restore all to default
 
 ---
 
+### Text answer type (AI-checked)
+
+Third answer type — free-form textarea, checked by AI against a pre-stored reference answer.
+
+```
+Header row:
+  left:  label "РАЗВЁРНУТЫЙ ОТВЕТ" 10px uppercase slate-600/slate-400
+  right: badge "🤖 Проверка AI" — cyan pill (same as ctx-badge style)
+
+Textarea:
+  dark:  bg #0b1622, border 1.5px #334a5a, color #d0dde8
+  light: bg #f5f7fa, border 1.5px #c0ccd8, color #1a2533
+  border-radius 7–8px, padding 8–10px 10–12px
+  font-size 12–13px, line-height 1.6, resize vertical
+  min-height 72–90px
+  IMPORTANT: apply via element.style inline
+
+Reference answer block (hidden from student, stored server-side only):
+  dark:  bg #0f1e2e, border-left 3px slate-700, color #445566
+  light: bg #f5f7fa, border-left 3px slate-300, color #8899aa
+  font-size 11px — visible only in admin/teacher view
+
+Char counter: bottom-right, 9–10px, slate-600/slate-400
+
+AI checking indicator (shown while API call runs):
+  dark:  bg #0f1e2e, border slate-800
+  light: bg #f0f8fb, border slate-200
+  🤖 icon + "AI проверяет..." text + 3 amber bounce dots
+
+AI feedback block (shown after check):
+  header: 🤖 icon + "Разбор AI" title + score badge (right-aligned)
+  score badge colors match result: green/amber/red
+  feedback text matches result color
+  correct: dark bg #0a2010 border green-400/20  | light bg #f0fdf4
+  partial: dark bg #1a1400 border amber-400/20  | light bg #fffbeb
+  wrong:   dark bg #200808 border red-400/20    | light bg #fef2f2
+```
+
+**Check button behaviour for text type:**
+- Shows AI checking indicator, disables button (opacity 0.5, pointer-events none)
+- After AI response: re-enables button, shows result + feedback block
+- Score format: "10/10", "6/10", "2/10" in badge
+
+### Question module system
+
+Each question is a self-contained module configured at test/exam creation time:
+
+```typescript
+interface QuestionModule {
+  type: 'numeric' | 'choice' | 'text'
+  question: string
+  visualization?: ThreeJSConfig
+  answer: number[] | string | string[]  // stored server-side only
+  points: number
+  aiPrompt?: string  // system prompt for text type AI check
+}
+```
+
+Renderer automatically selects the correct answer zone based on `type`. No code changes needed when adding new questions.
+
+### Responsive — Test Page
+
+| Element | Desktop (1024px+) | Tablet (768–1023px) | Mobile (<768px) |
+|---|---|---|---|
+| Layout | Zone 1: 2 columns | Zone 1: 2 columns (narrower) | Zone 1: 1 column stacked |
+| Topbar height | 46px | 42px | 40px |
+| Q-number circles | 28px | 26px | 24px |
+| Circle separators | 8px line | 6px line | 4px line |
+| Timer font | 15px | 14px | 13px |
+| Stats icons | 24px | 22px | 18px |
+| Stats text | 14px / 10px | 13px / 9px | 12px / 8px |
+| Viz size | 185×158px | 175×152px | 200×150px |
+| Field width (numeric) | 64px | 58px | 56px |
+| Field height | 34px | 32px | 32px |
+| Base font | 13px | 12px | 12px |
+| Label font | 10px | 9px | 9px |
+| Lesson title in topbar | Visible | Hidden | Hidden |
+
+**Mobile-only differences:**
+- Zone 1 stacks vertically: question text → visualization below
+- Viz moved below question text (not side by side)
+- "Следующий →" shortened to "След →"
+- AI feedback more compact (no reference answer block shown)
+- Stats labels abbreviated: "частично"→"часть", "пропущен"→"пропущ."
+
+---
+
 ## 14. Open Questions
 
 - [ ] 3D visualization on mobile: simplified WebGL / static image fallback / toggle button?
@@ -697,4 +784,4 @@ Cancel: clear input, restore all to default
 - [ ] Dark/light theme toggle: user preference saved in Supabase profile or localStorage?
 - [ ] KaTeX rendering: inline vs block, font size on mobile
 
-*Last updated: June 2026. Approved: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile), lesson page (desktop + tablet + mobile), test page (desktop), AI chat drawer (all pages, both themes, RU/HE) — both themes.*
+*Last updated: June 2026. Approved: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile), lesson page (desktop + tablet + mobile), test page (desktop + tablet + mobile, 3 answer types), AI chat drawer (all pages, both themes, RU/HE) — both themes.*
