@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import ru from "@/locales/ru.json";
 
@@ -53,13 +55,13 @@ export default function HeroSection({
       {/* Right: Professor Yosi card */}
       <div className="w-52.5 shrink-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[14px] overflow-hidden">
         {/* Image area */}
-        <div className="h-47.5 bg-cyan-100 dark:bg-cyan-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-center">
+        <div className="h-47.5 bg-cyan-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-center">
           <Image
             src="/professor/yosi-present.png"
             alt={ru.hero.professorName}
             width={120}
             height={160}
-            className="object-contain h-full w-auto"
+            className="object-contain object-bottom h-full w-auto"
             priority
           />
         </div>
