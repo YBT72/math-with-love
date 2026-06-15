@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import ru from "@/locales/ru.json";
+import { useLocale } from "@/lib/LanguageContext";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -10,6 +10,7 @@ interface LoginModalProps {
 
 // TODO: connect Supabase Auth — replace stub with real login form
 export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
+  const { t } = useLocale();
   // Close on Escape key
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -40,11 +41,11 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         </div>
 
         <h2 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-2">
-          {ru.loginModal.title}
+          {t.loginModal.title}
         </h2>
 
         <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">
-          {ru.loginModal.notice}
+          {t.loginModal.notice}
         </p>
         <p className="text-xs text-slate-400 dark:text-slate-600 mb-6">
           {/* TODO: connect Supabase */}
@@ -55,7 +56,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
           onClick={onClose}
           className="w-full bg-cyan-400 text-slate-950 font-medium rounded-[9px] py-2.5 text-sm cursor-pointer"
         >
-          {ru.loginModal.close}
+          {t.loginModal.close}
         </button>
       </div>
     </div>

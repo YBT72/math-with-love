@@ -1,22 +1,36 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import ru from "@/locales/ru.json";
+import { useTheme } from "next-themes";
+import { useLocale } from "@/lib/LanguageContext";
 
 interface HeaderProps {
   onLoginClick: () => void;
   onRegisterClick: () => void;
 }
 
+function SunIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-2">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  );
+}
+
 export default function Header({ onLoginClick, onRegisterClick }: HeaderProps) {
+  const { lang, setLang, t } = useLocale();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [lang, setLang] = useState<"RU" | "HE">("RU");
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => setMounted(true), []);
 
   return (
     <header className="sticky top-0 z-50 h-14 flex items-center gap-3 px-8 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
@@ -53,10 +67,10 @@ export default function Header({ onLoginClick, onRegisterClick }: HeaderProps) {
       {mounted && (
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="border border-slate-200 dark:border-slate-800 rounded-[7px] px-3 py-1.5 text-[13px] text-slate-500 dark:text-slate-400 cursor-pointer bg-transparent"
+          className="w-8 h-8 flex items-center justify-center rounded-[7px] border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 bg-transparent cursor-pointer"
           aria-label="Toggle theme"
         >
-          {theme === "dark" ? "☀️" : "🌙"}
+          {theme === "dark" ? <SunIcon /> : <MoonIcon />}
         </button>
       )}
 
@@ -65,7 +79,7 @@ export default function Header({ onLoginClick, onRegisterClick }: HeaderProps) {
         onClick={onLoginClick}
         className="border border-slate-300 dark:border-slate-800 rounded-[7px] px-4 py-1.5 text-[13px] text-slate-500 dark:text-slate-400 cursor-pointer bg-transparent"
       >
-        {ru.header.login}
+        {t.header.login}
       </button>
 
       {/* Register */}
@@ -73,7 +87,7 @@ export default function Header({ onLoginClick, onRegisterClick }: HeaderProps) {
         onClick={onRegisterClick}
         className="bg-cyan-400 border border-cyan-400 rounded-[7px] px-4 py-1.5 text-[13px] text-slate-950 font-medium cursor-pointer"
       >
-        {ru.header.register}
+        {t.header.register}
       </button>
     </header>
   );

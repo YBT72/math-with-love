@@ -1,4 +1,6 @@
-import ru from "@/locales/ru.json";
+"use client";
+
+import { useLocale } from "@/lib/LanguageContext";
 
 // SVG icons per module (from mockup)
 const MODULE_ICONS = [
@@ -31,10 +33,16 @@ function CourseCard({
   item,
   icon,
   index,
+  activeBadge,
+  lockedLabel,
+  completedSuffix,
 }: {
   item: CourseItem;
   icon: React.ReactNode;
   index: number;
+  activeBadge: string;
+  lockedLabel: string;
+  completedSuffix: string;
 }) {
   const base =
     "bg-white dark:bg-slate-900 rounded-[12px] p-4 relative";
@@ -48,7 +56,7 @@ function CourseCard({
       {/* Badge */}
       {item.active && (
         <span className="absolute top-3 right-3 bg-cyan-400 text-slate-950 text-[9px] font-medium px-2 py-0.5 rounded-full">
-          {ru.courses.activeBadge}
+          {activeBadge}
         </span>
       )}
       {item.locked && (
@@ -88,33 +96,37 @@ function CourseCard({
       {/* Progress label */}
       <div className="text-[10px] text-slate-400 dark:text-slate-600">
         {item.locked
-          ? ru.courses.lockedLabel
-          : `${item.progress}% ${ru.courses.completedSuffix}`}
+          ? lockedLabel
+          : `${item.progress}% ${completedSuffix}`}
       </div>
     </div>
   );
 }
 
 export default function CoursesSection() {
+  const { t } = useLocale();
   return (
     <div className="max-w-275 mx-auto px-8 pt-10">
       <div className="text-[9px] font-medium uppercase tracking-widest text-slate-400 dark:text-slate-600 mb-1.5">
-        {ru.courses.sectionLabel}
+        {t.courses.sectionLabel}
       </div>
       <div className="text-xl font-medium text-slate-900 dark:text-slate-100 mb-1.25">
-        {ru.courses.title}
+        {t.courses.title}
       </div>
       <div className="text-[13px] text-slate-500 dark:text-slate-400 mb-5">
-        {ru.courses.subtitle}
+        {t.courses.subtitle}
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        {ru.courses.items.map((item, index) => (
+        {t.courses.items.map((item, index) => (
           <CourseCard
             key={item.tag}
             item={item}
             icon={MODULE_ICONS[index]}
             index={index}
+            activeBadge={t.courses.activeBadge}
+            lockedLabel={t.courses.lockedLabel}
+            completedSuffix={t.courses.completedSuffix}
           />
         ))}
       </div>

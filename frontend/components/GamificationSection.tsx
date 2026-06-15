@@ -1,4 +1,6 @@
-import ru from "@/locales/ru.json";
+"use client";
+
+import { useLocale } from "@/lib/LanguageContext";
 
 // XP star icon (for the cyan gamification card)
 function StarIcon() {
@@ -24,20 +26,21 @@ const ICON_BG: Record<string, string> = {
 };
 
 export default function GamificationSection() {
+  const { t } = useLocale();
   return (
     <div className="max-w-275 mx-auto px-8 pt-10">
       <div className="text-[9px] font-medium uppercase tracking-widest text-slate-400 dark:text-slate-600 mb-1.5">
-        {ru.gamification.sectionLabel}
+        {t.gamification.sectionLabel}
       </div>
       <div className="text-xl font-medium text-slate-900 dark:text-slate-100 mb-1.25">
-        {ru.gamification.title}
+        {t.gamification.title}
       </div>
       <div className="text-[13px] text-slate-500 dark:text-slate-400 mb-5">
-        {ru.gamification.subtitle}
+        {t.gamification.subtitle}
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        {ru.gamification.items.map((item) => (
+        {t.gamification.items.map((item) => (
           <div
             key={item.title}
             className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3.5 flex items-center gap-3.5"
