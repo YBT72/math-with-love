@@ -47,7 +47,7 @@
         "description": "Угол между векторами, перпендикулярность, проекции.",
         "progress": 0,
         "active": false,
-        "locked": true
+        "locked": false
       },
       {
         "tag": "Модуль 3",
@@ -55,7 +55,7 @@
         "description": "Уравнения прямых и плоскостей в пространстве.",
         "progress": 0,
         "active": false,
-        "locked": true
+        "locked": false
       }
     ]
   },
@@ -92,5 +92,84 @@
     "title": "Вход в аккаунт",
     "notice": "Авторизация временно отключена",
     "close": "Закрыть"
+  },
+  "dashboard": {
+    "greeting": "Добрый день",
+    "greetingSub": "Что сегодня делаем?",
+    "btnContinue": "Продолжить",
+    "btnRepeat": "Повторить",
+    "btnNewTopic": "Новая тема",
+    "professorName": "Профессор Йоси",
+    "professorMessage": "7 дней подряд — так держать! Сегодня разберём сложение векторов 🎯",
+    "statStreak": "Серия дней",
+    "statXp": "Очки",
+    "statDone": "Пройдено тем",
+    "topicsTitle": "Темы курса",
+    "topicSelectPrompt": "Выберите тему слева",
+    "topicSelectHint": "← Кликните на тему слева",
+    "topicStatusNow": "Сейчас",
+    "topicBtnStart": "Начать урок",
+    "topicBtnRepeat": "Повторить",
+    "topicLockedMsg": "Тема заблокирована.\nЗавершите предыдущие темы.",
+    "moduleTitle": "Текущий модуль",
+    "moduleAvgScore": "средний балл",
+    "moduleProgress": "завершено",
+    "moduleOf": "из",
+    "moduleTopics": "тем",
+    "topicNow": "Сейчас",
+    "resultsTitle": "Последние результаты",
+    "resultToday": "Сегодня",
+    "resultYesterday": "Вчера",
+    "resultDaysAgo": "дня назад",
+    "navDashboard": "Дашборд",
+    "navModules": "Модули",
+    "navProgress": "Прогресс",
+    "navFormulas": "Формулы",
+    "navLab": "Лаборатория",
+    "navAchievements": "Достижения",
+    "navHelp": "Помощь",
+    "navSettings": "Настройки",
+    "mockCourses": [
+      {
+        "name": "Основы векторов",
+        "topics": [
+          { "name": "Введение", "status": "done", "xp": 10 },
+          { "name": "Координаты точки", "status": "done", "xp": 10 },
+          { "name": "Длина вектора", "status": "done", "xp": 15 },
+          { "name": "Сложение векторов", "status": "current", "xp": 15 },
+          { "name": "Вычитание векторов", "status": "available", "xp": 15 },
+          { "name": "Коллинеарные векторы", "status": "locked", "xp": 20 },
+          { "name": "Разложение вектора", "status": "locked", "xp": 20 },
+          { "name": "Тест: Основы", "status": "locked", "xp": 30 }
+        ]
+      },
+      {
+        "name": "Скалярное произведение",
+        "topics": [
+          { "name": "Определение", "status": "available", "xp": 10 },
+          { "name": "Угол между векторами", "status": "locked", "xp": 15 },
+          { "name": "Перпендикулярность", "status": "locked", "xp": 15 },
+          { "name": "Проекции", "status": "locked", "xp": 20 },
+          { "name": "Тест: Скалярное", "status": "locked", "xp": 30 }
+        ]
+      },
+      {
+        "name": "Геометрия в 3D",
+        "topics": [
+          { "name": "Координатная система", "status": "locked", "xp": 10 },
+          { "name": "Расстояние в пространстве", "status": "locked", "xp": 15 },
+          { "name": "Уравнение плоскости", "status": "locked", "xp": 20 },
+          { "name": "Тест: Геометрия", "status": "locked", "xp": 30 }
+        ]
+      },
+      {
+        "name": "Экзамен: Векторы 572",
+        "topics": [
+          { "name": "Пробный экзамен 1", "status": "locked", "xp": 50 },
+          { "name": "Пробный экзамен 2", "status": "locked", "xp": 50 },
+          { "name": "Итоговый экзамен", "status": "locked", "xp": 100 }
+        ]
+      }
+    ]
   }
 }

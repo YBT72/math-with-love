@@ -47,7 +47,7 @@
         "description": "זווית בין וקטורים, ניצבות, הטלות.",
         "progress": 0,
         "active": false,
-        "locked": true
+        "locked": false
       },
       {
         "tag": "מודול 3",
@@ -55,7 +55,7 @@
         "description": "משוואות ישרים ומישורים במרחב.",
         "progress": 0,
         "active": false,
-        "locked": true
+        "locked": false
       }
     ]
   },
@@ -87,6 +87,85 @@
   },
   "footer": {
     "text": "Math With Love · בגרות 572 · מתמטיקה וקטורית"
+  },
+  "dashboard": {
+    "greeting": "שלום",
+    "greetingSub": "מה עושים היום?",
+    "btnContinue": "המשך",
+    "btnRepeat": "חזרה",
+    "btnNewTopic": "נושא חדש",
+    "professorName": "פרופסור יוסי",
+    "professorMessage": "7 ימים ברצף — כל הכבוד! היום נלמד חיבור וקטורים 🎯",
+    "statStreak": "ימים ברצף",
+    "statXp": "נקודות",
+    "statDone": "נושאים שנלמדו",
+    "topicsTitle": "נושאי הקורס",
+    "topicSelectPrompt": "בחר נושא משמאל",
+    "topicSelectHint": "← לחץ על נושא משמאל",
+    "topicStatusNow": "עכשיו",
+    "topicBtnStart": "התחל שיעור",
+    "topicBtnRepeat": "חזרה",
+    "topicLockedMsg": "הנושא נעול.\nסיים את הנושאים הקודמים.",
+    "moduleTitle": "המודול הנוכחי",
+    "moduleAvgScore": "ציון ממוצע",
+    "moduleProgress": "הושלם",
+    "moduleOf": "מתוך",
+    "moduleTopics": "נושאים",
+    "topicNow": "עכשיו",
+    "resultsTitle": "תוצאות אחרונות",
+    "resultToday": "היום",
+    "resultYesterday": "אתמול",
+    "resultDaysAgo": "ימים לפני",
+    "navDashboard": "לוח בקרה",
+    "navModules": "מודולים",
+    "navProgress": "התקדמות",
+    "navFormulas": "נוסחאות",
+    "navLab": "מעבדה",
+    "navAchievements": "הישגים",
+    "navHelp": "עזרה",
+    "navSettings": "הגדרות",
+    "mockCourses": [
+      {
+        "name": "יסודות וקטורים",
+        "topics": [
+          { "name": "מבוא", "status": "done", "xp": 10 },
+          { "name": "קוארדינטות נקודה", "status": "done", "xp": 10 },
+          { "name": "אורך הוקטור", "status": "done", "xp": 15 },
+          { "name": "חיבור וקטורים", "status": "current", "xp": 15 },
+          { "name": "חיסור וקטורים", "status": "available", "xp": 15 },
+          { "name": "וקטורים קוליניאריים", "status": "locked", "xp": 20 },
+          { "name": "פירוק וקטור", "status": "locked", "xp": 20 },
+          { "name": "מבדק: יסודות", "status": "locked", "xp": 30 }
+        ]
+      },
+      {
+        "name": "מכפלה סקלרית",
+        "topics": [
+          { "name": "הגדרה", "status": "available", "xp": 10 },
+          { "name": "זווית בין וקטורים", "status": "locked", "xp": 15 },
+          { "name": "ניצבות", "status": "locked", "xp": 15 },
+          { "name": "הטלות", "status": "locked", "xp": 20 },
+          { "name": "מבדק: סקלרי", "status": "locked", "xp": 30 }
+        ]
+      },
+      {
+        "name": "גאומטריה תלת מימדית",
+        "topics": [
+          { "name": "מערכת צירים", "status": "locked", "xp": 10 },
+          { "name": "מרחק במרחב", "status": "locked", "xp": 15 },
+          { "name": "משוואת מישור", "status": "locked", "xp": 20 },
+          { "name": "מבדק: גאומטריה", "status": "locked", "xp": 30 }
+        ]
+      },
+      {
+        "name": "בגרות: וקטורים 572",
+        "topics": [
+          { "name": "מבדק גישה 1", "status": "locked", "xp": 50 },
+          { "name": "מבדק גישה 2", "status": "locked", "xp": 50 },
+          { "name": "בגרות סיום", "status": "locked", "xp": 100 }
+        ]
+      }
+    ]
   },
   "loginModal": {
     "title": "כניסה לחשבון",

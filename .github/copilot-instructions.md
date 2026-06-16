@@ -129,3 +129,33 @@ const SITE_CONFIG = { /* global config */ }
 **Adding new widget**: Create self-contained HTML in `/assets/widgets/[topic]/`, include Three.js if 3D
 **Debugging loading issues**: Check browser console for emoji-marked load sequence, verify file paths in `SITE_CONFIG.paths`
 **RTL layout issues**: Verify `dir="rtl"` propagation and CSS logical properties usage
+
+---
+
+## Agent Interaction Rules (MANDATORY — apply every session)
+
+### Communication
+- All chat responses: **Russian**
+- All code (variable names, component names, comments, TODO): **English**
+
+### Autonomy constraints
+- When multiple implementation options exist — **always ask the user**, never choose independently
+- When in doubt — ask, do not experiment
+- No improvisation: write the most accurate code for the given task
+
+### Design fidelity
+- HTML mockups (`mwl_*.html` in project root) are the **source of truth** — replicate exactly
+- No unsolicited improvements, no personal design decisions
+- Any deviation from the mockup requires explicit user approval
+
+### Database / Supabase
+- Supabase is currently **disabled** — do not write any live DB calls
+- All DB-dependent code: implement with **mocks / stubs** and mark with `// TODO: connect Supabase`
+
+### Git
+- After each completed work block: **create a git commit** (English message, concise)
+
+### Frontend tech stack (active)
+- Next.js 14, TypeScript (strict, no `any`), Tailwind CSS v4
+- UI strings: Russian → `/frontend/locales/ru.json`, Hebrew → `/frontend/locales/he.json`
+- Auth: Supabase Auth — currently disabled, use mocks

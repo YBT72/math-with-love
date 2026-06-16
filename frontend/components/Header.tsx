@@ -5,8 +5,10 @@ import { useTheme } from "next-themes";
 import { useLocale } from "@/lib/LanguageContext";
 
 interface HeaderProps {
-  onLoginClick: () => void;
-  onRegisterClick: () => void;
+  mode?: "landing" | "dashboard";
+  // landing mode props
+  onLoginClick?: () => void;
+  onRegisterClick?: () => void;
 }
 
 function SunIcon() {
@@ -26,7 +28,26 @@ function MoonIcon() {
   );
 }
 
-export default function Header({ onLoginClick, onRegisterClick }: HeaderProps) {
+function BellIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-[1.75]">
+      <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 01-3.46 0" />
+    </svg>
+  );
+}
+
+function HelpIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-current stroke-[1.75]">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+      <circle cx="12" cy="17" r="0.5" fill="currentColor" />
+    </svg>
+  );
+}
+
+export default function Header({ mode = "landing", onLoginClick, onRegisterClick }: HeaderProps) {
   const { lang, setLang, t } = useLocale();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -74,21 +95,50 @@ export default function Header({ onLoginClick, onRegisterClick }: HeaderProps) {
         </button>
       )}
 
-      {/* Login */}
-      <button
-        onClick={onLoginClick}
-        className="border border-slate-300 dark:border-slate-800 rounded-[7px] px-4 py-1.5 text-[13px] text-slate-500 dark:text-slate-400 cursor-pointer bg-transparent"
-      >
-        {t.header.login}
-      </button>
-
-      {/* Register */}
-      <button
-        onClick={onRegisterClick}
-        className="bg-cyan-400 border border-cyan-400 rounded-[7px] px-4 py-1.5 text-[13px] text-slate-950 font-medium cursor-pointer"
-      >
-        {t.header.register}
-      </button>
+      {/* Login / Register  —OR—  Dashboard account controls */}
+      {mode === "landing" ? (
+        <>
+          <button
+            onClick={onLoginClick}
+            className="border border-slate-300 dark:border-slate-800 rounded-[7px] px-4 py-1.5 text-[13px] text-slate-500 dark:text-slate-400 cursor-pointer bg-transparent"
+          >
+            {t.header.login}
+          </button>
+          <button
+            onClick={onRegisterClick}
+            className="bg-cyan-400 border border-cyan-400 rounded-[7px] px-4 py-1.5 text-[13px] text-slate-950 font-medium cursor-pointer"
+          >
+            {t.header.register}
+          </button>
+        </>
+      ) : (
+        <>
+          {/* Help */}
+          <button
+            className="w-8 h-8 flex items-center justify-center rounded-[7px] border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 bg-transparent cursor-pointer hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+            aria-label="Help"
+            onClick={() => console.log("[TODO] Open help")}
+          >
+            <HelpIcon />
+          </button>
+          {/* Bell */}
+          <button
+            className="w-8 h-8 flex items-center justify-center rounded-[7px] border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 bg-transparent cursor-pointer hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+            aria-label="Notifications"
+            onClick={() => console.log("[TODO] Open notifications")}
+          >
+            <BellIcon />
+          </button>
+          {/* Account avatar */}
+          <button
+            className="w-8 h-8 rounded-full bg-cyan-400 flex items-center justify-center text-[11px] font-semibold text-slate-950 cursor-pointer hover:bg-cyan-300 transition-colors"
+            aria-label="Account"
+            onClick={() => console.log("[TODO] Open account menu")}
+          >
+            ИГ
+          </button>
+        </>
+      )}
     </header>
   );
 }
