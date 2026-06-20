@@ -19,23 +19,23 @@ export default function LoginPage() {
   const hasError = searchParams?.get('error') === 'auth_failed'
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950">
-      <div className="bg-gray-900 rounded-2xl p-10 flex flex-col items-center gap-6 shadow-2xl w-full max-w-sm">
+    <div className="min-h-screen flex items-center justify-center bg-slate-950">
+      <div className="bg-slate-900 rounded-2xl p-10 flex flex-col items-center gap-6 shadow-2xl w-full max-w-sm border border-slate-800">
 
         {/* Logo */}
         <div className="flex flex-col items-center gap-2">
-          <span className="text-4xl font-bold text-white tracking-tight">
-            Math <span className="text-indigo-400">With Love</span>
+          <span className="text-4xl font-bold text-slate-100 tracking-tight">
+            Math <span className="text-cyan-400">With Love</span>
           </span>
-          <span className="text-gray-400 text-sm">Векторная математика</span>
+          <span className="text-slate-400 text-sm">Векторная математика</span>
         </div>
 
         {/* Divider */}
-        <div className="w-full h-px bg-gray-800" />
+        <div className="w-full h-px bg-slate-800" />
 
         {/* Error message */}
         {hasError && (
-          <div className="w-full bg-red-900/40 border border-red-700 rounded-lg px-4 py-3 text-red-300 text-sm text-center">
+          <div className="w-full bg-red-400/10 border border-red-400/40 rounded-lg px-4 py-3 text-red-400 text-sm text-center">
             Ошибка входа. Попробуй ещё раз.
           </div>
         )}
@@ -43,7 +43,7 @@ export default function LoginPage() {
         {/* Google button */}
         <button
           onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-900 font-medium py-3 px-6 rounded-xl transition-colors duration-200"
+          className="w-full flex items-center justify-center gap-3 bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-100 font-medium py-3 px-6 rounded-xl transition-colors duration-200"
         >
           <svg width="20" height="20" viewBox="0 0 48 48" fill="none">
             <path d="M43.611 20.083H42V20H24v8h11.303C33.654 32.657 29.332 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" fill="#FFC107"/>
@@ -54,7 +54,7 @@ export default function LoginPage() {
           Войти через Google
         </button>
 
-        <p className="text-gray-600 text-xs text-center">
+        <p className="text-slate-500 text-xs text-center">
           Только для учеников Math With Love
         </p>
       </div>

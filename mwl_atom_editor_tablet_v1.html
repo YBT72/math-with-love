@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MWL — עורך יחידה</title>
+<script defer src="https://cdn.jsdelivr.net/npm/mathlive"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif}
+.shell{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.d{background:#0f172a}.l{background:#f8fafc}
+.d .t1{color:#f1f5f9}.l .t1{color:#0f172a}
+.d .t2{color:#94a3b8}.l .t2{color:#64748b}
+.d .t3{color:#475569}.l .t3{color:#94a3b8}
+.d .p1{background:#1e293b;border-color:#334155}.l .p1{background:#ffffff;border-color:#e2e8f0}
+.d .p2{background:#334155;border-color:#334155}.l .p2{background:#f1f5f9;border-color:#e2e8f0}
+.d .bd{border-color:#334155!important}.l .bd{border-color:#e2e8f0!important}
+.d .mbg{background:#0f172a}.l .mbg{background:#f1f5f9}
+
+.hdr{height:48px;display:flex;align-items:center;padding:0 14px;gap:10px;border-bottom:1px solid;flex-shrink:0}
+.logo{width:26px;height:26px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand{font-size:13px;font-weight:500}.brand b{color:#22D3EE;font-weight:500}
+.crumb{display:flex;align-items:center;gap:6px;font-size:12px;margin-right:6px}
+[dir="ltr"] .crumb{margin-right:0;margin-left:6px}
+.crumb .cs{cursor:pointer}
+.d .crumb .cs{color:#64748b}.l .crumb .cs{color:#94a3b8}
+.crumb .cc{color:#22D3EE;font-weight:500}
+.crumb svg{flex-shrink:0}
+[dir="rtl"] .crumb svg{transform:scaleX(-1)}
+.hdr-r{display:flex;align-items:center;gap:8px;margin-right:auto}
+[dir="ltr"] .hdr-r{margin-right:0;margin-left:auto}
+.lang{display:flex;border-radius:6px;overflow:hidden;border:1px solid}
+.lb{padding:4px 9px;font-size:11px;cursor:pointer;font-weight:500}
+.d .lb{color:#94a3b8}.l .lb{color:#64748b}
+.lb.on{background:#22D3EE;color:#0f172a}
+.svbtn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:#22D3EE;color:#0f172a}
+
+.ctrl{display:flex;gap:6px;padding:7px 14px;border-bottom:1px solid;align-items:center}
+.tcb{padding:4px 12px;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid;background:transparent;font-family:inherit}
+.d .tcb{border-color:#334155}.l .tcb{border-color:#e2e8f0}
+.tcb.on{background:#22D3EE!important;color:#0f172a!important;border-color:#22D3EE!important}
+
+.body{display:flex;flex:1;min-height:0}
+
+/* ── Узкий сворачиваемый сайдбар — тот же компонент, что и на дашборде,
+   с зеркалированием под RTL через логические CSS-свойства ── */
+.sb{
+  width:46px;
+  display:flex;flex-direction:column;
+  padding:8px 0;
+  border-inline-end:1px solid;
+  transition:width 0.2s ease;
+  overflow:hidden;
+  flex-shrink:0;
+}
+.sb.open{width:164px;padding:8px 6px}
+
+.sbt{
+  display:flex;align-items:center;justify-content:center;
+  width:38px;height:38px;
+  margin:0 auto 8px;
+  border-radius:8px;cursor:pointer;
+  border:0;background:transparent;
+  flex-shrink:0;
+}
+.sbt svg{flex-shrink:0}
+.d .sbt svg{stroke:#475569}.l .sbt svg{stroke:#94a3b8}
+.sbt:hover svg{stroke:#94a3b8!important}
+
+.sg,.sbm,.sbb{display:flex;flex-direction:column;gap:2px}
+.sbm{margin:auto 0}
+
+.ni{
+  display:flex;align-items:center;
+  width:38px;height:38px;min-height:40px;
+  margin:0 auto;
+  border-radius:8px;cursor:pointer;
+  white-space:nowrap;overflow:hidden;border:0;background:transparent;
+  flex-shrink:0;
+}
+.sb.open .ni{width:100%;margin:0;padding:0 8px}
+.ni:hover svg{stroke:#94a3b8!important}
+.ni:hover .nl{color:#94a3b8!important}
+
+.ni .icon-wrap{width:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb.open .ni .icon-wrap{width:18px}
+
+.ni svg{flex-shrink:0;transition:stroke 0.15s;display:block}
+.d .ni svg{stroke:#475569}.l .ni svg{stroke:#64748b}
+.ni.on svg{stroke:#22D3EE!important}
+
+.nl{font-size:12px;font-weight:500;opacity:0;transition:opacity 0.15s,color 0.15s;white-space:nowrap;margin-inline-start:8px}
+.d .nl{color:#475569}.l .nl{color:#64748b}
+.ni.on .nl{color:#22D3EE!important}
+.sb.open .nl{opacity:1}
+
+.main{flex:1;overflow-y:auto;padding:16px;display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:14px;align-items:start;max-width:1040px;margin:0 auto;width:100%}
+
+.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sec{border-radius:12px;border:1px solid;overflow:hidden}
+.sech{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid}
+.secn{width:22px;height:22px;border-radius:50%;background:rgba(34,211,238,0.12);color:#22D3EE;font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sect{font-size:13px;font-weight:500;flex:1}
+.secd{font-size:10.5px}
+.secb{padding:14px}
+
+.fld{width:100%;border-radius:8px;padding:9px 10px;font-size:12.5px;outline:none;font-family:inherit;border:1px solid;resize:vertical}
+.d .fld{background:#0f172a;border-color:#334155;color:#f1f5f9}
+.l .fld{background:#f8fafc;border-color:#e2e8f0;color:#0f172a}
+.flabel{font-size:10.5px;font-weight:500;margin-bottom:5px;display:block}
+
+/* ── смешанные текст+формула поля: contenteditable + кнопка вставки формулы ── */
+.richwrap{border-radius:8px;border:1px solid;overflow:hidden}
+.d .richwrap{border-color:#334155}.l .richwrap{border-color:#e2e8f0}
+.richtool{display:flex;padding:4px 6px;border-bottom:1px solid}
+.d .richtool{background:#0f172a;border-color:#334155}.l .richtool{background:#f1f5f9;border-color:#e2e8f0}
+.rtbtn{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:6px;font-size:10.5px;font-weight:500;cursor:pointer;border:none;background:transparent}
+.d .rtbtn{color:#94a3b8}.l .rtbtn{color:#64748b}
+.rtbtn:hover{background:rgba(34,211,238,0.12);color:#22D3EE}
+.rmbtn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;cursor:pointer;border:none;background:transparent;margin-inline-start:auto;font-size:13px}
+.d .rmbtn{color:#94a3b8}.l .rmbtn{color:#64748b}
+.rmbtn:hover{background:rgba(34,211,238,0.12);color:#22D3EE}
+.mfwrap{position:relative}
+.mfwrap .rmbtn{position:absolute;top:5px;inset-inline-end:5px;z-index:2}
+
+/* выпадающая панель символов — открывается по иконке ⋮, своя реализация без обращения к скрытому API MathLive */
+.fmenu{position:fixed;display:none;flex-direction:column;gap:2px;padding:6px;border-radius:8px;border:1px solid;z-index:50;width:220px;box-shadow:0 8px 24px rgba(0,0,0,0.35)}
+.fmenu.open{display:flex}
+.d .fmenu{background:#1e293b;border-color:#334155}.l .fmenu{background:#ffffff;border-color:#e2e8f0}
+.fmenu-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
+.fmenu-item{display:flex;align-items:center;justify-content:center;padding:7px 2px;border-radius:6px;border:none;background:transparent;cursor:pointer;font-size:14px;font-family:'Cambria Math',serif;direction:ltr}
+.d .fmenu-item{color:#f1f5f9}.l .fmenu-item{color:#0f172a}
+.fmenu-item:hover{background:rgba(34,211,238,0.14);color:#22D3EE}
+.fmenu-label{font-size:9.5px;font-weight:500;padding:2px 4px 4px}
+.redit{min-height:54px;padding:9px 10px;font-size:12.5px;line-height:1.7;outline:none}
+.d .redit{background:#0f172a;color:#f1f5f9}.l .redit{background:#f8fafc;color:#0f172a}
+.redit:empty:before{content:attr(data-ph);opacity:0.4}
+
+/* инлайн math-field внутри текста — всегда LTR, не зависит от направления страницы */
+math-field.imf{display:inline-block;vertical-align:middle;margin:0 3px;min-width:22px;--primary-color:#22D3EE}
+/* math-field как целое поле-ответ */
+math-field.fld{display:block}
+/* убираем встроенные иконки MathLive (клавиатура / меню) на каждой формуле — у нас своя кнопка вставки */
+math-field::part(virtual-keyboard-toggle){display:none!important}
+math-field::part(menu-toggle){display:none!important}
+
+.gfx{margin-top:12px;border-radius:10px;border:1px dashed;padding:14px}
+.gfx-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.gpill{padding:4px 10px;border-radius:7px;font-size:10.5px;font-weight:500;cursor:pointer;border:1px solid}
+.gpill.on{background:#22D3EE;color:#0f172a;border-color:#22D3EE}
+.gprev{height:120px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;text-align:center;padding:0 16px}
+.d .gprev{background:rgba(34,211,238,0.05)}.l .gprev{background:rgba(34,211,238,0.06)}
+
+.qlist{display:flex;flex-direction:column;gap:10px}
+.qcard{border-radius:10px;border:1px solid;padding:11px}
+.qtop{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.qnum{font-size:10.5px;font-weight:500}
+.qtype{margin-right:auto;display:flex;gap:5px}
+[dir="ltr"] .qtype{margin-right:0;margin-left:auto}
+.qtb{padding:3px 9px;border-radius:6px;font-size:10px;font-weight:500;cursor:pointer;border:1px solid}
+.qtb.on{background:rgba(34,211,238,0.14);color:#22D3EE;border-color:#22D3EE}
+
+.addbtn{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;border-radius:8px;border:1px dashed;font-size:11.5px;font-weight:500;cursor:pointer;background:transparent;width:100%}
+.d .addbtn{color:#94a3b8}.l .addbtn{color:#64748b}
+
+.side{display:flex;flex-direction:column;gap:14px;position:sticky;top:18px}
+.sc2{border-radius:12px;border:1px solid;padding:13px}
+.sc2h{font-size:11.5px;font-weight:500;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+
+.preq-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:7px;font-size:10.5px;margin:0 0 5px 5px}
+[dir="ltr"] .preq-tag{margin:0 5px 5px 0}
+.preq-tag.atom{background:rgba(34,211,238,0.1);color:#22D3EE}
+.preq-tag.cp{background:rgba(251,191,36,0.12);color:#FBBF24}
+.preq-x{cursor:pointer;opacity:0.7}
+.preq-sel{width:100%;margin-top:6px;border-radius:8px;padding:7px 8px;font-size:11px;outline:none;font-family:inherit;border:1px solid}
+.d .preq-sel{background:#0f172a;border-color:#334155;color:#f1f5f9}
+.l .preq-sel{background:#f8fafc;border-color:#e2e8f0;color:#0f172a}
+
+.metaf{margin-bottom:10px}
+.tag-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.tag-pill{padding:3px 9px;border-radius:7px;font-size:10px;font-weight:500;background:rgba(34,211,238,0.1);color:#22D3EE}
+
+.flabel-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;gap:8px}
+.tbadge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;font-size:9px;font-weight:500;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.tbadge.draft{background:rgba(251,191,36,0.14);color:#FBBF24}
+.tbadge.ok{background:rgba(74,222,128,0.12);color:#4ade80}
+.tbadge svg{flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="shell d" id="shell">
+
+  <div class="hdr p1 bd">
+    <div class="logo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 4h-10l6 8l-6 8h10"/></svg></div>
+    <div class="brand t1">Math <b>With Love</b></div>
+    <div class="crumb t2">
+      <span class="cs" data-i18n="crumbTopic"></span>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6l-6 6"/></svg>
+      <span class="cc" data-i18n="crumbAtom"></span>
+    </div>
+    <div class="hdr-r">
+      <div class="lang bd">
+        <span class="lb" id="lru" onclick="setLang('ru')">RU</span>
+        <span class="lb on" id="lhe" onclick="setLang('he')">HE</span>
+      </div>
+      <button class="svbtn" id="saveBtn" onclick="alertI18n('saveAlert')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l10 -10"/></svg>
+        <span data-i18n="saveBtn"></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="ctrl p1 bd">
+    <button class="tcb on t1" id="tD" onclick="setTheme('d')" data-i18n="themeDark"></button>
+    <button class="tcb t1" id="tL" onclick="setTheme('l')" data-i18n="themeLight"></button>
+  </div>
+
+  <div class="body">
+  <div class="sb p1 bd" id="sb">
+    <div class="sbt" onclick="toggleSb()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+    </div>
+    <div class="sg">
+      <div class="ni">
+        <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9 -9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"/><path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/></svg></span>
+        <span class="nl" data-i18n="navDashboard"></span>
+      </div>
+      <div class="ni">
+        <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><line x1="3" y1="6" x2="3" y2="19"/><line x1="12" y1="6" x2="12" y2="19"/><line x1="21" y1="6" x2="21" y2="19"/></svg></span>
+        <span class="nl" data-i18n="navModules"></span>
+      </div>
+      <div class="ni">
+        <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="3" y2="21"/><line x1="21" y1="21" x2="3" y2="21"/><path d="M7 17v-3"/><path d="M11 17v-6"/><path d="M15 17v-9"/></svg></span>
+        <span class="nl" data-i18n="navProgress"></span>
+      </div>
+      <div class="ni on">
+        <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7h6m-6 5h6m-6 5h4"/><rect x="4" y="3" width="16" height="18" rx="2"/></svg></span>
+        <span class="nl" data-i18n="navContent"></span>
+      </div>
+    </div>
+    <div class="sbm">
+      <div class="ni">
+        <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="9" y2="4"/><line x1="6" y1="13" x2="13" y2="13"/><path d="M15 20l5 -16"/><path d="M14 8h7"/></svg></span>
+        <span class="nl" data-i18n="navFormulas"></span>
+      </div>
+      <div class="ni">
+        <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9l-8 4.5l-8 -4.5v-9z"/><path d="M12 12l8 -4.5"/><path d="M12 12v9"/><path d="M12 12l-8 -4.5"/></svg></span>
+        <span class="nl" data-i18n="navLab"></span>
+      </div>
+    </div>
+    <div class="sbb">
+      <div class="ni">
+        <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06 .06a2 2 0 1 1 -2.83 2.83l-.06 -.06a1.65 1.65 0 0 0 -1.82 -.33a1.65 1.65 0 0 0 -1 1.51v.17a2 2 0 0 1 -4 0v-.09a1.65 1.65 0 0 0 -1.08 -1.51a1.65 1.65 0 0 0 -1.82 .33l-.06 .06a2 2 0 1 1 -2.83 -2.83l.06 -.06a1.65 1.65 0 0 0 .33 -1.82a1.65 1.65 0 0 0 -1.51 -1h-.17a2 2 0 0 1 0 -4h.09a1.65 1.65 0 0 0 1.51 -1.08a1.65 1.65 0 0 0 -.33 -1.82l-.06 -.06a2 2 0 1 1 2.83 -2.83l.06 .06a1.65 1.65 0 0 0 1.82 .33h0a1.65 1.65 0 0 0 1 -1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82 -.33l.06 -.06a2 2 0 1 1 2.83 2.83l-.06 .06a1.65 1.65 0 0 0 -.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0 -1.51 1z"/></svg></span>
+        <span class="nl" data-i18n="navSettings"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <div class="col">
+
+      <!-- 1 — Теория -->
+      <div class="sec p1 bd">
+        <div class="sech bd">
+          <div class="secn">1</div>
+          <div class="sect t1" data-i18n="sec1Title"></div>
+          <div class="secd t2" data-i18n="sec1Sub"></div>
+        </div>
+        <div class="secb">
+          <div class="flabel-row">
+            <label class="flabel t2" style="margin-bottom:0" data-i18n="theoryLabel"></label>
+            <span class="tbadge ok" id="b_theory" onclick="markVerified('theory')"></span>
+          </div>
+          <div class="richwrap bd">
+            <div class="richtool">
+              <button class="rtbtn" onmousedown="event.preventDefault()" onclick="insertFormula('theory')">∑ <span data-i18n="insertFormula"></span></button><button class="rmbtn" title="Меню формулы" onmousedown="event.preventDefault()" onclick="toggleFormulaMenu(this)">⋮</button>
+            </div>
+            <div class="redit t1" id="f_theory" contenteditable="true"></div>
+          </div>
+
+          <div class="gfx bd">
+            <div class="gfx-top">
+              <span class="t2" style="font-size:10.5px;font-weight:500" data-i18n="gfxLabel"></span>
+              <span class="gpill on t1" data-i18n="gVector"></span>
+              <span class="gpill t1" data-i18n="gFunction"></span>
+              <span class="gpill t1" data-i18n="g3d"></span>
+              <span class="gpill t1" data-i18n="gPlane"></span>
+            </div>
+            <div class="gprev">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9l-8 4.5l-8 -4.5v-9z"/><path d="M12 12l8 -4.5"/><path d="M12 12v9"/><path d="M12 12l-8 -4.5"/></svg>
+              <span class="t3" style="font-size:10.5px" data-i18n="gfxPreview"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2 — Проверка понимания -->
+      <div class="sec p1 bd">
+        <div class="sech bd">
+          <div class="secn">2</div>
+          <div class="sect t1" data-i18n="sec2Title"></div>
+          <div class="secd t2" data-i18n="sec2Sub"></div>
+        </div>
+        <div class="secb">
+          <div class="qlist">
+            <div class="qcard p2">
+              <div class="qtop">
+                <span class="qnum t2" data-i18n="q1"></span>
+                <div class="qtype">
+                  <span class="qtb t2" data-i18n="typeNum"></span>
+                  <span class="qtb on" data-i18n="typeFormula"></span>
+                  <span class="qtb t2" data-i18n="typeChoice"></span>
+                </div>
+              </div>
+              <div class="flabel-row">
+                <label class="flabel t2" style="margin-bottom:0" data-i18n="questionTextLabel"></label>
+                <span class="tbadge ok" id="b_q1q" onclick="markVerified('q1q')"></span>
+              </div>
+              <div class="richwrap bd" style="margin-bottom:9px">
+                <div class="richtool">
+                  <button class="rtbtn" onmousedown="event.preventDefault()" onclick="insertFormula('q1q')">∑ <span data-i18n="insertFormula"></span></button><button class="rmbtn" title="Меню формулы" onmousedown="event.preventDefault()" onclick="toggleFormulaMenu(this)">⋮</button>
+                </div>
+                <div class="redit t1" id="f_q1q" contenteditable="true"></div>
+              </div>
+              <label class="flabel t2" data-i18n="studentAnswerLabel"></label>
+              <div class="mfwrap"><button class="rmbtn" title="Меню формулы" onmousedown="event.preventDefault()" onclick="toggleFormulaMenu(this)">⋮</button><math-field class="fld" id="f_q1ans" dir="ltr" virtual-keyboard-mode="off">6</math-field></div>
+            </div>
+          </div>
+          <div class="addbtn t2" style="margin-top:9px" onclick="alertI18n('addAlert')" data-i18n="addQuestion"></div>
+        </div>
+      </div>
+
+      <!-- 3 — Упражнения -->
+      <div class="sec p1 bd">
+        <div class="sech bd">
+          <div class="secn">3</div>
+          <div class="sect t1" data-i18n="sec3Title"></div>
+          <div class="secd t2" data-i18n="sec3Sub"></div>
+        </div>
+        <div class="secb">
+          <div class="qlist">
+
+            <div class="qcard p2">
+              <div class="qtop">
+                <span class="qnum t2" data-i18n="ex1"></span>
+                <div class="qtype"><span class="qtb on" data-i18n="typeNum"></span><span class="qtb t2" data-i18n="typeFormula"></span></div>
+              </div>
+              <div class="flabel-row">
+                <label class="flabel t2" style="margin-bottom:0" data-i18n="taskTextLabel"></label>
+                <span class="tbadge ok" id="b_ex1p" onclick="markVerified('ex1p')"></span>
+              </div>
+              <div class="richwrap bd" style="margin-bottom:9px">
+                <div class="richtool"><button class="rtbtn" onmousedown="event.preventDefault()" onclick="insertFormula('ex1p')">∑ <span data-i18n="insertFormula"></span></button><button class="rmbtn" title="Меню формулы" onmousedown="event.preventDefault()" onclick="toggleFormulaMenu(this)">⋮</button></div>
+                <div class="redit t1" id="f_ex1p" contenteditable="true"></div>
+              </div>
+              <label class="flabel t2" data-i18n="finalAnswerLabel"></label>
+              <div class="mfwrap"><button class="rmbtn" title="Меню формулы" onmousedown="event.preventDefault()" onclick="toggleFormulaMenu(this)">⋮</button><math-field class="fld" id="f_ex1a" dir="ltr" virtual-keyboard-mode="off" style="margin-bottom:9px">10</math-field></div>
+              <div class="flabel-row">
+                <label class="flabel t2" style="margin-bottom:0" data-i18n="fullSolutionLabel"></label>
+                <span class="tbadge ok" id="b_ex1s" onclick="markVerified('ex1s')"></span>
+              </div>
+              <div class="richwrap bd">
+                <div class="richtool"><button class="rtbtn" onmousedown="event.preventDefault()" onclick="insertFormula('ex1s')">∑ <span data-i18n="insertFormula"></span></button><button class="rmbtn" title="Меню формулы" onmousedown="event.preventDefault()" onclick="toggleFormulaMenu(this)">⋮</button></div>
+                <div class="redit t1" id="f_ex1s" contenteditable="true"></div>
+              </div>
+            </div>
+
+            <div class="qcard p2">
+              <div class="qtop">
+                <span class="qnum t2" data-i18n="ex2"></span>
+                <div class="qtype"><span class="qtb t2" data-i18n="typeNum"></span><span class="qtb on" data-i18n="typeFormula"></span></div>
+              </div>
+              <div class="flabel-row">
+                <label class="flabel t2" style="margin-bottom:0" data-i18n="taskTextLabel"></label>
+                <span class="tbadge ok" id="b_ex2p" onclick="markVerified('ex2p')"></span>
+              </div>
+              <div class="richwrap bd" style="margin-bottom:9px">
+                <div class="richtool"><button class="rtbtn" onmousedown="event.preventDefault()" onclick="insertFormula('ex2p')">∑ <span data-i18n="insertFormula"></span></button><button class="rmbtn" title="Меню формулы" onmousedown="event.preventDefault()" onclick="toggleFormulaMenu(this)">⋮</button></div>
+                <div class="redit t1" id="f_ex2p" contenteditable="true"></div>
+              </div>
+              <label class="flabel t2" data-i18n="finalAnswerLabel"></label>
+              <div class="mfwrap"><button class="rmbtn" title="Меню формулы" onmousedown="event.preventDefault()" onclick="toggleFormulaMenu(this)">⋮</button><math-field class="fld" id="f_ex2a" dir="ltr" virtual-keyboard-mode="off" style="margin-bottom:9px">\vec a\cdot\vec b=\vec b\cdot\vec a</math-field></div>
+              <div class="flabel-row">
+                <label class="flabel t2" style="margin-bottom:0" data-i18n="fullSolutionLabel"></label>
+                <span class="tbadge ok" id="b_ex2s" onclick="markVerified('ex2s')"></span>
+              </div>
+              <div class="richwrap bd">
+                <div class="richtool"><button class="rtbtn" onmousedown="event.preventDefault()" onclick="insertFormula('ex2s')">∑ <span data-i18n="insertFormula"></span></button><button class="rmbtn" title="Меню формулы" onmousedown="event.preventDefault()" onclick="toggleFormulaMenu(this)">⋮</button></div>
+                <div class="redit t1" id="f_ex2s" contenteditable="true"></div>
+              </div>
+            </div>
+
+          </div>
+          <div class="addbtn t2" style="margin-top:9px" onclick="alertI18n('addAlert')" data-i18n="addExercise"></div>
+        </div>
+      </div>
+
+      <!-- 4 — Тест атома -->
+      <div class="sec p1 bd">
+        <div class="sech bd">
+          <div class="secn">4</div>
+          <div class="sect t1" data-i18n="sec4Title"></div>
+          <div class="secd t2" data-i18n="sec4Sub"></div>
+        </div>
+        <div class="secb">
+          <div class="qlist">
+            <div class="qcard p2">
+              <div class="qtop">
+                <span class="qnum t2" data-i18n="t1q"></span>
+                <div class="qtype"><span class="qtb t2" data-i18n="typeNum"></span><span class="qtb on" data-i18n="typeFormula"></span><span class="qtb t2" data-i18n="typeChoice"></span></div>
+              </div>
+              <div class="flabel-row">
+                <label class="flabel t2" style="margin-bottom:0" data-i18n="taskTextLabel"></label>
+                <span class="tbadge ok" id="b_t1q" onclick="markVerified('t1q')"></span>
+              </div>
+              <div class="richwrap bd" style="margin-bottom:9px">
+                <div class="richtool"><button class="rtbtn" onmousedown="event.preventDefault()" onclick="insertFormula('t1q')">∑ <span data-i18n="insertFormula"></span></button><button class="rmbtn" title="Меню формулы" onmousedown="event.preventDefault()" onclick="toggleFormulaMenu(this)">⋮</button></div>
+                <div class="redit t1" id="f_t1q" contenteditable="true"></div>
+              </div>
+              <label class="flabel t2" data-i18n="finalAnswerLabel"></label>
+              <div class="mfwrap"><button class="rmbtn" title="Меню формулы" onmousedown="event.preventDefault()" onclick="toggleFormulaMenu(this)">⋮</button><math-field class="fld" id="f_t1a" dir="ltr" virtual-keyboard-mode="off" style="margin-bottom:9px">6</math-field></div>
+              <div class="flabel-row">
+                <label class="flabel t2" style="margin-bottom:0" data-i18n="hintsLabel"></label>
+                <span class="tbadge ok" id="b_t1h" onclick="markVerified('t1h')"></span>
+              </div>
+              <div class="richwrap bd">
+                <div class="richtool"><button class="rtbtn" onmousedown="event.preventDefault()" onclick="insertFormula('t1h')">∑ <span data-i18n="insertFormula"></span></button><button class="rmbtn" title="Меню формулы" onmousedown="event.preventDefault()" onclick="toggleFormulaMenu(this)">⋮</button></div>
+                <div class="redit t1" id="f_t1h" contenteditable="true"></div>
+              </div>
+            </div>
+          </div>
+          <div class="addbtn t2" style="margin-top:9px" onclick="alertI18n('addAlert')" data-i18n="addTask"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="side">
+
+      <div class="sc2 p1 bd">
+        <div class="sc2h t1">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7h6m-6 5h6m-6 5h4"/><rect x="4" y="3" width="16" height="18" rx="2"/></svg>
+          <span data-i18n="metaTitle"></span>
+        </div>
+        <div class="metaf">
+          <div class="flabel-row">
+            <label class="flabel t2" style="margin-bottom:0" data-i18n="nameLabel"></label>
+            <span class="tbadge ok" id="b_title" onclick="markVerified('title')"></span>
+          </div>
+          <input class="fld t1" id="f_title">
+        </div>
+        <div class="metaf">
+          <label class="flabel t2" data-i18n="groupLabel"></label>
+          <select class="fld t1"><option data-i18n="groupOption"></option></select>
+        </div>
+        <div class="metaf" style="margin-bottom:0">
+          <label class="flabel t2" data-i18n="tagsLabel"></label>
+          <div class="tag-row">
+            <span class="tag-pill" data-i18n="tag1"></span>
+            <span class="tag-pill">572</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sc2 p1 bd">
+        <div class="sc2h t1">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8 8l8 8"/></svg>
+          <span data-i18n="prereqTitle"></span>
+        </div>
+        <div>
+          <span class="preq-tag atom"><span data-i18n="preqAtom1"></span> <span class="preq-x" onclick="this.parentElement.remove()">✕</span></span>
+          <span class="preq-tag atom"><span data-i18n="preqAtom2"></span> <span class="preq-x" onclick="this.parentElement.remove()">✕</span></span>
+          <span class="preq-tag cp"><span data-i18n="preqCp"></span> <span class="preq-x" onclick="this.parentElement.remove()">✕</span></span>
+        </div>
+        <select class="preq-sel t1">
+          <option data-i18n="preqSelectDefault"></option>
+          <option data-i18n="preqOpt1"></option>
+          <option data-i18n="preqOpt2"></option>
+          <option data-i18n="preqOpt3"></option>
+        </select>
+        <div class="t3" style="font-size:10px;margin-top:8px;line-height:1.5" data-i18n="prereqNote"></div>
+      </div>
+
+      <div class="sc2 p1 bd">
+        <div class="sc2h t1">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2l4 -4"/></svg>
+          <span data-i18n="cpTitle"></span>
+        </div>
+        <div class="t2" style="font-size:11px;line-height:1.6" id="cpText"></div>
+      </div>
+
+    </div>
+
+  </div>
+  </div>
+
+  <div class="fmenu p1 bd" id="fmenu">
+    <span class="fmenu-label t2" data-i18n="fmenuLabel"></span>
+    <div class="fmenu-grid">
+      <button class="fmenu-item" data-ins="\frac{#0}{#1}" title="a/b">a∕b</button>
+      <button class="fmenu-item" data-ins="\sqrt{#0}" title="√">√</button>
+      <button class="fmenu-item" data-ins="#@^{#0}" title="x²">x²</button>
+      <button class="fmenu-item" data-ins="#@_{#0}" title="xₙ">xₙ</button>
+      <button class="fmenu-item" data-ins="\vec{#0}" title="вектор">→a</button>
+      <button class="fmenu-item" data-ins="|#0|" title="модуль">|a|</button>
+      <button class="fmenu-item" data-ins="\theta" title="тета">θ</button>
+      <button class="fmenu-item" data-ins="\pi" title="пи">π</button>
+      <button class="fmenu-item" data-ins="\sum_{#0}^{#1}" title="сумма">∑</button>
+      <button class="fmenu-item" data-ins="\int_{#0}^{#1}" title="интеграл">∫</button>
+      <button class="fmenu-item" data-ins="\infty" title="бесконечность">∞</button>
+      <button class="fmenu-item" data-ins="\cdot" title="умножение">·</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function setTheme(m){
+  var s=document.getElementById('shell');
+  s.classList.remove('d','l');
+  s.classList.add(m);
+  document.getElementById('tD').classList.toggle('on',m==='d');
+  document.getElementById('tL').classList.toggle('on',m==='l');
+}
+
+var sbOpen=false;
+function toggleSb(){
+  sbOpen=!sbOpen;
+  document.getElementById('sb').className='sb p1 bd'+(sbOpen?' open':'');
+}
+
+var PRIMARY = 'he';
+
+var UI = {
+  crumbTopic:{he:'נושא: וקטורים',ru:'Тема: Векторы'},
+  crumbAtom:{he:'יחידה: מכפלה סקלרית',ru:'Атом: Скалярное произведение'},
+  saveBtn:{he:'שמירה',ru:'Сохранить'},
+  themeDark:{he:'כהה',ru:'Тёмная'},
+  themeLight:{he:'בהיר',ru:'Светлая'},
+
+  navDashboard:{he:'לוח בקרה',ru:'Дашборд'},
+  navModules:{he:'מודולים',ru:'Модули'},
+  navProgress:{he:'התקדמות',ru:'Прогресс'},
+  navContent:{he:'תוכן',ru:'Контент'},
+  navFormulas:{he:'נוסחאות',ru:'Формулы'},
+  navLab:{he:'מעבדה',ru:'Лаборатория'},
+  navSettings:{he:'הגדרות',ru:'Настройки'},
+
+  sec1Title:{he:'תאוריה',ru:'Теория'},
+  sec1Sub:{he:'חומר חדש + גרפיקה',ru:'Новый материал + графика'},
+  theoryLabel:{he:'טקסט התאוריה',ru:'Текст теории'},
+  insertFormula:{he:'הוספת נוסחה',ru:'Вставить формулу'},
+  fmenuLabel:{he:'הוספת סימן',ru:'Вставить символ'},
+  gfxLabel:{he:'גרפיקה דינמית:',ru:'Динамичная графика:'},
+  gVector:{he:'וקטור',ru:'Вектор'},
+  gFunction:{he:'פונקציה',ru:'Функция'},
+  g3d:{he:'גוף תלת-ממדי',ru:'3D-фигура'},
+  gPlane:{he:'מישור',ru:'Плоскость'},
+  gfxPreview:{he:'תצוגה מקדימה של סצנה אינטראקטיבית (Three.js) — הפרמטרים נקבעים לאחר בחירת הסוג',ru:'Превью интерактивной сцены (Three.js) — параметры настраиваются после выбора типа'},
+
+  sec2Title:{he:'בדיקת הבנה',ru:'Проверка понимания'},
+  sec2Sub:{he:'מבחן קצר על המושגים החדשים',ru:'Мини-тест по новым понятиям'},
+  q1:{he:'שאלה 1',ru:'Вопрос 1'},
+  typeNum:{he:'מספר',ru:'Число'},
+  typeFormula:{he:'נוסחה',ru:'Формула'},
+  typeChoice:{he:'בחירה A–D',ru:'Выбор A–D'},
+  questionTextLabel:{he:'טקסט השאלה',ru:'Текст вопроса'},
+  studentAnswerLabel:{he:'תשובת התלמיד (עורך נוסחאות חזותי, נבדק ע"י AI)',ru:'Ответ ученика (визуальный редактор формул, проверяет ИИ)'},
+  addQuestion:{he:'+ הוספת שאלה',ru:'+ добавить вопрос'},
+
+  sec3Title:{he:'תרגילים',ru:'Упражнения'},
+  sec3Sub:{he:'תרגול עוקב',ru:'Последовательное закрепление'},
+  ex1:{he:'תרגיל 1 · קל',ru:'Упражнение 1 · лёгкое'},
+  ex2:{he:'תרגיל 2 · בינוני',ru:'Упражнение 2 · среднее'},
+  taskTextLabel:{he:'טקסט המשימה',ru:'Текст задания'},
+  finalAnswerLabel:{he:'תשובה סופית',ru:'Конечный ответ'},
+  fullSolutionLabel:{he:'פתרון מלא (עזרה לתלמיד, שלב אחר שלב)',ru:'Полное решение (помощь студенту, по шагам)'},
+  addExercise:{he:'+ הוספת תרגיל',ru:'+ добавить упражнение'},
+
+  sec4Title:{he:'מבחן יחידה',ru:'Тест атома'},
+  sec4Sub:{he:'סיכום ביסוס',ru:'Итог закрепления'},
+  t1q:{he:'שאלה 1',ru:'Задание 1'},
+  hintsLabel:{he:'רמזים (ללא פתרון מלא)',ru:'Подсказки (без полного решения)'},
+  addTask:{he:'+ הוספת משימה',ru:'+ добавить задание'},
+
+  metaTitle:{he:'מטא-נתונים',ru:'Метаданные'},
+  nameLabel:{he:'שם',ru:'Название'},
+  groupLabel:{he:'קבוצה',ru:'Группа'},
+  groupOption:{he:'פעולות בסיסיות בווקטורים',ru:'Базовые операции над векторами'},
+  tagsLabel:{he:'תגיות',ru:'Теги'},
+  tag1:{he:'וקטורים',ru:'Векторы'},
+
+  prereqTitle:{he:'דרישות קדם',ru:'Пререквизиты'},
+  preqAtom1:{he:'יחידה: אורך וקטור',ru:'Атом: Длина вектора'},
+  preqAtom2:{he:'יחידה: קואורדינטות וקטור',ru:'Атом: Координаты вектора'},
+  preqCp:{he:'מבחן בקרה: יסודות הווקטורים',ru:'Контрольная: Основы векторов'},
+  preqSelectDefault:{he:'+ הוספת דרישת קדם...',ru:'+ добавить пререквизит...'},
+  preqOpt1:{he:'יחידה: חיבור וקטורים',ru:'Атом: Сложение векторов'},
+  preqOpt2:{he:'יחידה: זווית בין וקטורים',ru:'Атом: Угол между векторами'},
+  preqOpt3:{he:'מבחן בקרה: ישרים ומישורים',ru:'Контрольная: Прямые и плоскости'},
+  prereqNote:{he:'מפת הקשרים המלאה — במסך נפרד "מפת הגרף"',ru:'Полная карта связей — на отдельном экране «Карта графа»'},
+
+  cpTitle:{he:'נקודת בקרה',ru:'Контрольная точка'},
+  cpText:{he:'היחידה הזו שייכת לקבוצה <b class="t1">פעולות בסיסיות בווקטורים</b>, ונסגרת במבחן בקרה לאחר מעבר כל היחידות.',ru:'Этот атом входит в группу <b class="t1">Базовые операции над векторами</b>, закрывается контрольной по группе после прохождения всех атомов.'},
+
+  badgeOriginal:{he:'מקור',ru:'Оригинал'},
+  badgeVerified:{he:'תרגום אומת',ru:'Перевод проверен'},
+  badgeDraft:{he:'טיוטת AI',ru:'Черновик ИИ'},
+
+  saveAlert:{he:'טיוטה: השמירה עדיין לא מחוברת',ru:'Макет: сохранение пока не подключено'},
+  addAlert:{he:'טיוטה: ההוספה עדיין לא מחוברת',ru:'Макет: добавление пока не подключено'}
+};
+
+/* ── Поля со смешанным текстом+формулами (rich text). Хранятся как HTML —
+   обычный текст переводится/флипается, <math-field> внутри — копируется
+   как есть в обоих языках (ИИ-переводчик такие узлы не трогает). ── */
+// <bdi> = настоящая bidi-изоляция для вложенных LTR-формул внутри RTL-текста
+// (надёжнее, чем просто dir="ltr" на кастомном элементе — особенно на переносах строк)
+var MFO = '<bdi style="unicode-bidi:isolate;direction:ltr"><math-field class="imf" dir="ltr" virtual-keyboard-mode="off">';
+var MFC = '</math-field></bdi>';
+var content = {
+  title:{he:'מכפלה סקלרית',ru:'Скалярное произведение'},
+
+  theory:{
+    he:'מכפלה סקלרית של שני וקטורים '+MFO+'\\vec a'+MFC+' ו- '+MFO+'\\vec b'+MFC+' מוגדרת כך: '+MFO+'\\vec a\\cdot\\vec b=|\\vec a||\\vec b|\\cos\\theta'+MFC+' — תוצאה זו היא מספר, לא וקטור...',
+    ru:'Скалярное произведение двух векторов '+MFO+'\\vec a'+MFC+' и '+MFO+'\\vec b'+MFC+' определяется так: '+MFO+'\\vec a\\cdot\\vec b=|\\vec a||\\vec b|\\cos\\theta'+MFC+' — результат это число, а не вектор... (черновой перевод ИИ)'
+  },
+  q1q:{
+    he:'כמה שווה '+MFO+'\\vec a\\cdot\\vec b'+MFC+' אם '+MFO+'|\\vec a|=3,\\ |\\vec b|=4,\\ \\theta=60^\\circ'+MFC+'?',
+    ru:'Чему равно '+MFO+'\\vec a\\cdot\\vec b'+MFC+', если '+MFO+'|\\vec a|=3,\\ |\\vec b|=4,\\ \\theta=60^\\circ'+MFC+'?'
+  },
+  ex1p:{
+    he:'מצאו את '+MFO+'\\vec a\\cdot\\vec b'+MFC+', כאשר '+MFO+'\\vec a=(2,1),\\ \\vec b=(3,4)'+MFC+'',
+    ru:'Найдите '+MFO+'\\vec a\\cdot\\vec b'+MFC+', если '+MFO+'\\vec a=(2,1),\\ \\vec b=(3,4)'+MFC+''
+  },
+  ex1s:{
+    he:'שלב 1: '+MFO+'\\vec a\\cdot\\vec b=a_1b_1+a_2b_2'+MFC+'<br>שלב 2: '+MFO+'\\vec a\\cdot\\vec b=2\\cdot3+1\\cdot4'+MFC+'<br>שלב 3: '+MFO+'\\vec a\\cdot\\vec b=6+4=10'+MFC+'',
+    ru:'Шаг 1: '+MFO+'\\vec a\\cdot\\vec b=a_1b_1+a_2b_2'+MFC+'<br>Шаг 2: '+MFO+'\\vec a\\cdot\\vec b=2\\cdot3+1\\cdot4'+MFC+'<br>Шаг 3: '+MFO+'\\vec a\\cdot\\vec b=6+4=10'+MFC+''
+  },
+  ex2p:{
+    he:'הוכיחו כי '+MFO+'\\vec a\\cdot\\vec b=\\vec b\\cdot\\vec a'+MFC+' באופן כללי',
+    ru:'Докажите, что '+MFO+'\\vec a\\cdot\\vec b=\\vec b\\cdot\\vec a'+MFC+' в общем виде'
+  },
+  ex2s:{
+    he:'שלב 1: רשמו '+MFO+'\\vec a\\cdot\\vec b'+MFC+' לפי קואורדינטות<br>שלב 2: השתמשו בחילופיות הכפל<br>שלב 3: הרכיבו בחזרה ל-'+MFO+'\\vec b\\cdot\\vec a'+MFC+'',
+    ru:'Шаг 1: распишите '+MFO+'\\vec a\\cdot\\vec b'+MFC+' через координаты<br>Шаг 2: примените коммутативность умножения чисел<br>Шаг 3: соберите обратно в '+MFO+'\\vec b\\cdot\\vec a'+MFC+''
+  },
+  t1q:{
+    he:'מהי '+MFO+'\\vec a\\cdot\\vec b'+MFC+' אם '+MFO+'|\\vec a|=2,\\ |\\vec b|=3,\\ \\theta=90^\\circ'+MFC+'?',
+    ru:'Чему равно '+MFO+'\\vec a\\cdot\\vec b'+MFC+', если '+MFO+'|\\vec a|=2,\\ |\\vec b|=3,\\ \\theta=90^\\circ'+MFC+'?'
+  },
+  t1h:{
+    he:'רמז 1: זכרו את הנוסחה '+MFO+'\\vec a\\cdot\\vec b=|\\vec a||\\vec b|\\cos\\theta'+MFC+'<br>רמז 2: הציבו את הערכים הידועים',
+    ru:'Подсказка 1: вспомните формулу '+MFO+'\\vec a\\cdot\\vec b=|\\vec a||\\vec b|\\cos\\theta'+MFC+'<br>Подсказка 2: подставьте известные значения'
+  }
+};
+var verified = {};
+Object.keys(content).forEach(function(k){ verified[k] = {}; verified[k][PRIMARY] = true; });
+
+var curLang = PRIMARY;
+
+// Запоминаем последнюю формулу, в которой стоял курсор — иконка меню в тулбаре
+// работает именно с ней (формул в одном поле может быть несколько).
+var lastFocusedMathField = null;
+document.addEventListener('focusin', function(e){
+  if(e.target && e.target.tagName === 'MATH-FIELD') lastFocusedMathField = e.target;
+});
+
+// Эмулируем правый клик на формуле — то же меню, что и через настоящий ПКМ.
+// Внимание: некоторые браузеры могут игнорировать синтетический contextmenu
+// из соображений безопасности — если не сработает, настоящий ПКМ остаётся рабочим.
+// ИТОГ: подтвердилось — синтетическое событие MathLive игнорирует. Ниже своя
+// панель символов на документированном публичном методе mf.insert().
+var fmenu = document.getElementById('fmenu');
+var fmenuTargetBtn = null;
+
+function toggleFormulaMenu(btn){
+  if(fmenu.classList.contains('open') && fmenuTargetBtn === btn){
+    closeFormulaMenu();
+    return;
+  }
+  fmenuTargetBtn = btn;
+  var r = btn.getBoundingClientRect();
+  fmenu.style.top = (r.bottom + 6) + 'px';
+  var left = r.left;
+  if(left + 220 > window.innerWidth - 8) left = window.innerWidth - 228;
+  fmenu.style.left = Math.max(8, left) + 'px';
+  fmenu.classList.add('open');
+}
+function closeFormulaMenu(){
+  fmenu.classList.remove('open');
+  fmenuTargetBtn = null;
+}
+document.addEventListener('mousedown', function(e){
+  if(fmenu.classList.contains('open') && !fmenu.contains(e.target) && e.target !== fmenuTargetBtn){
+    closeFormulaMenu();
+  }
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closeFormulaMenu();
+});
+fmenu.addEventListener('mousedown', function(e){ e.preventDefault(); }); // не терять фокус с формулы при клике по панели
+
+fmenu.querySelectorAll('.fmenu-item').forEach(function(item){
+  item.addEventListener('click', function(){
+    var mf = lastFocusedMathField;
+    if(!mf){ closeFormulaMenu(); return; }
+    var latex = item.getAttribute('data-ins');
+    mf.focus();
+    mf.insert(latex, {insertionMode:'insertAfter', selectionMode:'placeholder'});
+    closeFormulaMenu();
+  });
+});
+
+function alertI18n(key){ alert(UI[key][curLang]); }
+
+// Вставка <math-field> прямо в точку курсора внутри редактируемой области — как в Word.
+function insertFormula(field){
+  var host = document.getElementById('f_'+field);
+  var mf = document.createElement('math-field');
+  mf.className = 'imf';
+  mf.setAttribute('dir','ltr');
+  mf.setAttribute('virtual-keyboard-mode','off');
+
+  var sel = window.getSelection();
+  var inHost = sel.rangeCount && host.contains(sel.anchorNode);
+  if(inHost){
+    var range = sel.getRangeAt(0);
+    range.deleteContents();
+    range.insertNode(mf);
+    range.setStartAfter(mf); range.setEndAfter(mf); range.collapse(true);
+    sel.removeAllRanges(); sel.addRange(range);
+  } else {
+    host.appendChild(mf);
+  }
+  host.focus();
+  setTimeout(function(){ mf.focus(); }, 0);
+}
+
+function renderBadge(field, lang){
+  var el = document.getElementById('b_'+field);
+  if(!el) return;
+  var v = verified[field][lang];
+  var isPrimary = lang === PRIMARY;
+  el.classList.toggle('ok', isPrimary || v);
+  el.classList.toggle('draft', !isPrimary && !v);
+  var check='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2l4 -4"/></svg> ';
+  var warn ='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 16h.01"/><path d="M5 19h14a2 2 0 0 0 1.7 -3l-7 -12a2 2 0 0 0 -3.4 0l-7 12a2 2 0 0 0 1.7 3z"/></svg> ';
+  el.innerHTML = isPrimary ? (check+UI.badgeOriginal[lang]) : (v ? (check+UI.badgeVerified[lang]) : (warn+UI.badgeDraft[lang]));
+}
+
+function markVerified(field){
+  if(curLang === PRIMARY) return;
+  verified[field][curLang] = true;
+  renderBadge(field, curLang);
+}
+
+function applyLang(lang){
+  var dir = lang === 'he' ? 'rtl' : 'ltr';
+  document.documentElement.setAttribute('dir', dir);
+  document.documentElement.setAttribute('lang', lang);
+
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var key = el.getAttribute('data-i18n');
+    if(UI[key]) el.textContent = UI[key][lang];
+  });
+  document.getElementById('cpText').innerHTML = UI.cpText[lang];
+
+  document.getElementById('f_title').value = content.title[lang];
+  document.getElementById('f_title').setAttribute('dir', dir);
+  renderBadge('title', lang);
+
+  ['theory','q1q','ex1p','ex1s','ex2p','ex2s','t1q','t1h'].forEach(function(field){
+    var el = document.getElementById('f_'+field);
+    el.innerHTML = content[field][lang];
+    el.setAttribute('dir', dir);
+    renderBadge(field, lang);
+  });
+}
+
+function setLang(l){
+  curLang = l;
+  document.getElementById('lru').classList.toggle('on', l==='ru');
+  document.getElementById('lhe').classList.toggle('on', l==='he');
+  applyLang(l);
+}
+
+applyLang(PRIMARY);
+</script>
+</body>
+</html>

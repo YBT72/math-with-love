@@ -400,6 +400,26 @@ CDN: https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.
 | Bottom nav | — | — | Fixed bottom, 5 tabs |
 | Content | 2-col grid | 2-col grid | 1-col stack |
 
+### Persistent shell (applies to ALL authenticated pages, not just Dashboard)
+
+**Rule:** header, sidebar (desktop/tablet), and bottom nav (mobile) never scroll away
+or reload when navigating between authenticated pages (Dashboard, Lesson, Test,
+Exam, Atom Editor, future content-constructor screens). Only the central content
+area scrolls.
+
+```
+.shell { height: 100vh; overflow: hidden }   // NOT min-height — that was the bug:
+                                              // min-height let the whole page grow
+                                              // past the viewport, so header/sidebar
+                                              // scrolled away with everything else.
+.main  { flex: 1; overflow-y: auto }         // only this area scrolls internally
+```
+
+In the real Next.js 14 app this is solved natively via the App Router's shared
+`layout.tsx` (header + sidebar render once, `{children}` swaps) — the CSS rule
+above is for static-HTML mockups only, to let the same persistence be evaluated
+visually before the real layout is wired up.
+
 ### Header (authenticated)
 
 ```
@@ -481,6 +501,266 @@ label "ср. балл" 9px + number without %
 - Registration: auto-generated initials, cyan-400 bg
 - Settings: option to upload photo
 - Fallback: always initials
+
+---
+
+## 11. Progress Maze (Dashboard Widget)
+
+SVG-based node map showing a student's path through one course (topics: theory →
+test → exam). Lives inside the dashboard's right column, below the welcome row.
+Approved logic: desktop test rig (v17), validated against ~15 fail/return/remedial
+scenarios. **This section is the single source of truth for the maze's JS state
+machine — copy verbatim into any new layout (tablet/mobile), only resizing CSS
+(node radius, gap, font sizes) around it.**
+
+### Core principle
+
+No history is invented or guessed from "how we got here." Every visual fact on
+the map (a solid line, a badge, a remedial node) is backed by an explicit,
+permanent record in state — written only at the moment the action actually
+happens (a lesson/test is passed, a click moves the token). Nothing is inferred
+after the fact, which is what makes the logic safe to extend as node count grows.
+
+### Course data structure
+
+```js
+function buildCourse(n){
+  var types=[], labels=[], sc={}, li=0, ti=0;
+  for(var i=0;i<n;i++){
+    var t = i===n-1 ? 'exam' : ((i+1)%3===0 ? 'test' : 'lesson');
+    types.push(t);
+    labels.push(t==='lesson' ? lN[li++%lN.length] : t==='test' ? tN[ti++%tN.length] : 'Экзамен');
+  }
+  // shortcuts: a test may skip ahead to the next test/exam if >1 node lies between
+  for(var i=0;i<n;i++){
+    if(types[i]==='test'){
+      for(var j=i+1;j<n;j++){
+        if(types[j]==='test'||types[j]==='exam'){ if(j>i+1) sc[i]=j; break; }
+      }
+    }
+  }
+  return {types, labels, sc, n};
+}
+```
+
+### State (minimal — no "how did we get here" memory)
+
+```js
+var s = {
+  cur: 0,                  // index of the node the token currently sits on
+  earned: {},               // points earned per node
+  passed: {},               // nodes completed (lesson read / test passed)
+  problems: new Set(),      // tests currently blocking forward progress
+  failCount: {},            // attempts since the LAST success (resets on pass)
+  totalFails: {},           // attempts EVER (never resets — for the badge)
+  remedialActive: null,     // testIdx if a remedial mini-course is open right now
+  shortcutsUsed: new Set(), // shortcut edges (testIdx) the student has actually taken
+  remedialUsed: new Set(),  // tests for which remedial has been completed at least once
+  historyFails: new Set(),  // any node ever failed — drives the permanent fail badge
+  returnPaths: {},          // testIdx -> returnNodeIdx, fixed forever on first shortcut-fail
+  segs: new Set()           // "from:to" — segments ACTUALLY walked, see below
+};
+```
+
+`prevNode` is deliberately **not** part of state — an earlier version stored it
+to remember "where the student came from," and every scenario-specific bug in
+this widget traced back to that field. Position (`cur`) plus the permanent sets
+above is sufficient; nothing needs to be reconstructed from history.
+
+### computeSt() — the single source of truth for node status
+
+```js
+function computeSt(){
+  var st = new Array(n).fill('locked');
+  for(var i=0;i<n;i++) if(s.passed[i]) st[i] = 'done';
+  st[s.cur] = 'current';
+
+  // next opens from EVERY passed node independently — not just from cur.
+  // This is what lets the main path stay open after a shortcut detour.
+  for(var i=0;i<n;i++){
+    if(s.passed[i] && i+1<n && st[i+1]==='locked') st[i+1] = 'next';
+  }
+  for(var k in sc){
+    k = parseInt(k);
+    if(s.passed[k] && st[sc[k]]==='locked') st[sc[k]] = 'next';
+  }
+
+  s.problems.forEach(function(pi){
+    if(st[pi]==='done' || st[pi]==='current') return; // already resolved, don't touch
+    if(allPriorDone(pi)){
+      // all material before this test is done, yet it's still failing —
+      // if remedial was already completed once, just reopen the test (next);
+      // otherwise force the remedial branch before allowing another attempt
+      st[pi] = s.remedialUsed.has(pi) ? 'next' : 'remedial-needed';
+    } else {
+      st[pi] = 'problem'; // material before it is incomplete — go learn it first
+    }
+  });
+  return st;
+}
+
+function allPriorDone(idx){
+  for(var k=0; k<idx; k++) if(!s.passed[k]) return false;
+  return true;
+}
+function findReturnNode(problemIdx){
+  for(var k=0; k<problemIdx; k++) if(!s.passed[k]) return k; // first unfinished node
+  return Math.max(0, problemIdx-1); // everything done — fall back to the step before the test
+}
+```
+
+### Five node statuses
+
+| Status | Meaning | Visual |
+|---|---|---|
+| `done` | Passed | Solid fill in type color, dark checkmark |
+| `current` | Token is here | Colored ring (2.5px), 🧑‍🎓 token via `<text>` |
+| `next` | Reachable now | Lighter ring, dimmed fill |
+| `problem` | Blocked — material before it is incomplete | Red dashed ring |
+| `remedial-needed` | Blocked — material is complete but test keeps failing | Same red dashed ring; remedial node appears below it |
+
+### Transitions — who moves `cur` and who writes a segment
+
+| Action | Moves `cur`? | Writes a segment? | Why |
+|---|---|---|---|
+| `simLesson()` (pass a lesson) | **Yes**, auto to `cur+1` | Yes, `"i:i+1"` | A lesson has only one way forward — no choice to preserve |
+| `simPass()` (pass a test/exam) | **No** | No | After a test the student may have two valid next steps (main path or shortcut) — the click that follows decides, and that click is what gets recorded |
+| Click on an open node (`svg.onclick`) | Yes | Yes, if the click is `cur+1` (main path) or `sc[cur]` (shortcut) | This is the only place the route choice is actually made, so it's the only place that should be remembered |
+| `simFail()`, shortcut-fail branch | **Yes**, auto to `findReturnNode()` | Yes, `"ret{test}:{node}"` | One action — the failure — both diagnoses the problem and relocates the student; no second click should be required to open the right content |
+| `simFail()`, remedial branch | No (stays on the test) | No | The remedial node becomes the only reachable target; finishing it is what produces the segment |
+| Remedial completed (`simLesson()` while `remedialActive`) | Yes, to the test | Yes, `"rem{test}"` | Marks both "remedial was used" (permanent) and "this specific lap was walked" |
+
+```js
+function simLesson(){
+  if(s.remedialActive!==null){
+    var t=s.remedialActive;
+    s.problems.delete(t); s.failCount[t]=0; s.remedialUsed.add(t); s.remedialActive=null;
+    addSeg('rem'+t); s.cur=t; return;
+  }
+  if(types[s.cur]!=='lesson') return; // guard
+  s.earned[s.cur]=(s.earned[s.cur]||0)+10; s.passed[s.cur]=true;
+  if(s.cur+1<n){ addSeg(s.cur+':'+(s.cur+1)); s.cur=s.cur+1; }
+}
+
+function simPass(){
+  if(types[s.cur]==='lesson') return; // guard
+  var pts = types[s.cur]==='exam' ? 83 : 25;
+  s.earned[s.cur]=(s.earned[s.cur]||0)+pts;
+  s.passed[s.cur]=true; s.problems.delete(s.cur); s.failCount[s.cur]=0;
+  // cur is NOT moved here — the next click (main path or shortcut) writes the segment
+}
+
+function simFail(){
+  if(types[s.cur]==='lesson') return; // guard
+  var t=s.cur;
+  s.failCount[t]=(s.failCount[t]||0)+1;
+  s.totalFails[t]=(s.totalFails[t]||0)+1;
+  s.historyFails.add(t);
+
+  // "arrived via shortcut" is derived from graph structure, not from memory:
+  // a test j is a shortcut target if some k<j has sc[k]===j AND k !== j-1
+  // (k === j-1 would just mean it's the immediately preceding node — not a shortcut)
+  var arrivedViaShortcut=false, viaKey=-1;
+  for(var k in sc){ k=parseInt(k); if(sc[k]===t && k!==t-1){ arrivedViaShortcut=true; viaKey=k; break; } }
+  if(viaKey>=0) s.shortcutsUsed.add(viaKey);
+
+  if(allPriorDone(t)){
+    s.problems.add(t); s.remedialActive=t; // remedial branch — cur stays put
+  } else if(arrivedViaShortcut){
+    s.problems.add(t);
+    var ret=findReturnNode(t);
+    if(s.returnPaths[t]===undefined) s.returnPaths[t]=ret; // fixed forever, first time only
+    addSeg('ret'+t+':'+ret);
+    s.cur=ret; // one action = diagnosis + relocation, no extra click needed
+  }
+  // else: ordinary fail on the main path — stay put, try again
+}
+```
+
+### Click handler — the only place route choice is recorded
+
+```js
+svg.onclick = function(e){
+  var i = /* node under cursor, via distance-to-center check */;
+  var st = computeSt();
+  if(st[i]==='locked')          { /* blocked, no-op */ return; }
+  if(st[i]==='problem')         { /* "go finish the material first" message */ return; }
+  if(st[i]==='remedial-needed') { /* "finish the remedial node below first" message */ return; }
+
+  var from = s.cur;
+  if(i === from+1)            addSeg(from+':'+i); // main path
+  else if(sc[from] === i)     addSeg(from+':'+i); // shortcut
+  // any other reachable click (e.g. revisiting a done node) — no segment written
+
+  s.cur = i;
+};
+```
+
+### Segments — what actually gets painted solid
+
+`segs` is a `Set` of strings recording **only** edges the student has physically
+walked, separate from `passed` (which only says a node was completed). This
+split is what prevents a node-2-to-node-3 connector from lighting up solid when
+the student actually skipped from node 2 straight to node 5 via shortcut and
+only reached node 3 later, from the other direction.
+
+| Segment key | Written by | Painted as |
+|---|---|---|
+| `"i:i+1"` | Main-path lesson/test completion, or the click that confirms it | Solid cyan line, 3px |
+| `"i:j"` where `sc[i]===j` | The click on a shortcut target after the test is passed | Solid purple line, 3px, drawn as an arc above the row |
+| `"ret{test}:{node}"` | The auto-relocation inside `simFail()`'s shortcut-fail branch | Solid red arc below the row, drawn **below** the row specifically so it never overlaps the purple shortcut arc above |
+| `"rem{test}"` | Completing the remedial mini-course | Turns the remedial node from outlined to solid purple fill + dark checkmark |
+
+None of these are ever deleted. A later successful retry dims a segment's
+visual weight slightly (e.g. the return-path arc goes from bright to muted red)
+but never removes it — the whole point is that the maze stays a readable record
+of the student's actual journey, including the detours, not just the final
+green state.
+
+### Remedial node (extra branch for "material complete, test still failing")
+
+Triggered when `s.totalFails[testIdx]` keeps climbing while `allPriorDone(testIdx)`
+is already true — i.e. the student has genuinely learned everything before the
+test and is still failing it, so re-reading the same lessons would not help.
+
+- Renders as a small circle (r=14–16px) below the test node, connected by a short
+  dashed curve.
+- States: **not yet needed** (hidden) → **active** (`remedialActive===testIdx`,
+  bright purple, dashed ring, 🔄 icon, only reachable target) → **completed**
+  (`remedialUsed.has(testIdx)`, solid purple fill, dark ✓, permanent — stays
+  visible even after the test is later passed, as a record of the detour).
+- Completing it (`simLesson()` while active) resets `failCount[testIdx]` to 0,
+  marks `remedialUsed`, and reopens the test (`computeSt` now returns `next`
+  instead of `remedial-needed` for it, per the rule above) — content-wise this
+  is a different variant of the test/lesson, generated from the student's
+  specific error pattern; that swap happens at the content layer, not in the
+  maze schema.
+
+### Permanent fail badge
+
+Any `done` node where `s.historyFails.has(i)` shows a small red circle badge
+(top-right of the node, 8px radius) with `s.totalFails[i]` inside — e.g. a node
+passed on the third attempt keeps a small "3" on it permanently, even though
+the node itself is solid green/done. This is intentional: the student should be
+able to look at the finished map later and see where they struggled, not just
+that everything is now complete.
+
+### Hard rules (checklist before copying this logic into a new layout)
+
+1. `cur` only ever changes via `simLesson()`'s auto-advance, the click handler,
+   or `simFail()`'s auto-relocation — never set directly anywhere else.
+2. A segment is written **only** at the moment of real traversal (lesson/test
+   completion that has just one way forward, or the click that picks a route)
+   — never written speculatively when a test is merely passed.
+3. `remedialUsed` and `historyFails`/`totalFails`/`returnPaths`/`shortcutsUsed`
+   are **append-only** — nothing is ever deleted from them, even after a
+   successful retry. `failCount` is the one counter that resets on success.
+4. SVG icons are native `<text>` with emoji (📖📝🎓✓🧑‍🎓🔄) — never
+   `foreignObject`, which renders unreliably inside the widget iframe.
+5. No vector arrowheads on any line — status is conveyed by color and stroke
+   width only, to keep the map from feeling cluttered as node count grows.
+6. Theme background read from a hardcoded JS map (`BGMAP = {d:'#0f172a', l:'#f1f5f9'}`)
+   keyed by the current mode — never from CSS variables inside the SVG.
 
 ---
 
@@ -1193,12 +1473,167 @@ Row 2: [Завершить экзамен ✓]
 
 ---
 
-## 15. Open Questions
+## 15. Atom Editor (Content Constructor)
+
+**Status: draft, mid-iteration — not yet approved.** Author-facing tool (teacher
+role), not student-facing. Scope: **desktop + tablet only** — mobile authoring
+is not planned at this stage (content creation needs screen real estate the
+phone breakpoint doesn't have; teachers use desktop/tablet for this task).
+
+Access: same authenticated shell as Dashboard (see §10 "Persistent shell") —
+header + collapsible left sidebar, never standalone. Sidebar entry point not
+yet decided, see Open Questions.
+
+### Page header (within the persistent app header's content area)
+
+```
+[Breadcrumb: Тема: Векторы › Атом: Скалярное произведение]   [RU|HE]   [Сохранить]
+```
+
+Breadcrumb arrow (`›`) mirrors horizontally in RTL (`transform: scaleX(-1)`).
+
+### Layout — 2 columns
+
+```
+desktop: [Step cards — flexible width]   [280px sidebar, sticky]
+tablet:  same 2-column grid, ~20px narrower step column, sidebar unchanged
+```
+
+### Step cards (4, stacked vertically, not tabs)
+
+```
+① Теория              — rich text + inline formulas + "Динамичная графика" block
+② Проверка понимания  — short comprehension check, immediately after theory
+③ Упражнения           — sequential practice; each item: task text + final
+                          answer + full step-by-step solution (self-study aid)
+④ Тест атома           — final check; each item: task text + final answer +
+                          hints only (NO full solution — would defeat the test)
+```
+
+Each card: numbered circle badge (cyan), title, grey subtitle, divider, body padding 14px.
+
+### Dynamic graphics block (inside Теория)
+
+```
+Pill selector: Вектор | Функция | 3D-фигура | Плоскость (single active, cyan)
+Preview box: dashed border, cube icon placeholder, caption explaining
+             parameters are configured after type selection (Three.js scene,
+             not built yet at this stage)
+```
+
+### Translation / verification badge (per text field)
+
+Content is authored in **Hebrew** (primary — students' language); Russian is
+an AI-generated draft requiring human verification. Applies to: title, theory,
+question/task text, full solutions, hints — **every real text field**, not
+just title/theory. Pure numeric/formula-only answer fields are exempt (math
+notation doesn't translate).
+
+```
+Badge states (small pill, top-right of each field's label row):
+  Original (primary language):  green, ✓ icon, not clickable
+  Draft (non-primary, unverified): amber, ⚠ icon, "Черновик ИИ"
+  Verified (non-primary, clicked): green, ✓ icon, "Перевод проверен"
+Click target: the badge itself, only active when viewing the non-primary language.
+```
+
+### Language switch = interface + content together (no mixing)
+
+Switching RU↔HE flips **everything** on the page at once: every UI label
+(button text, section headers, field labels), `dir`/text-direction, AND the
+authored content shown in each field. Never a mix of Hebrew interface with
+Russian content or vice versa.
+
+### Formula input — WYSIWYG, no visible LaTeX code
+
+Uses **MathLive** (`<math-field>` web component, MIT license, loaded from CDN —
+**first external dependency in the project**; everything else is deliberately
+CDN-free, see CLAUDE.md). Rationale: a real Word/MathType-style equation
+editor cannot be hand-built; MathLive is the standard library for this exact
+use case.
+
+```
+Pure-formula fields (student answer, final answers):
+  the entire field IS a <math-field> — type, see live-rendered math immediately
+
+Mixed text+formula fields (theory, task text, solutions, hints):
+  contenteditable area + "∑ Вставить формулу" toolbar button
+  → inserts an inline <math-field> at the cursor position, exactly like
+    Word's "Insert Equation" — type plain text around it as normal
+```
+
+**Inline math + RTL text bidi isolation:**
+
+```
+Every embedded <math-field> wrapped in <bdi style="unicode-bidi:isolate;
+direction:ltr">. Plain <dir="ltr"> attribute alone was NOT reliable enough —
+formulas visually reordered relative to surrounding Hebrew text on line
+wraps. <bdi> is the W3C-recommended fix for embedding foreign-direction
+content inside bidi text. NOT YET VERIFIED in a real browser — see Open
+Questions.
+```
+
+**Built-in MathLive chrome removed:** the virtual-keyboard toggle and
+hamburger/menu icon that MathLive shows by default on every instance are
+hidden (`::part(virtual-keyboard-toggle)`, `::part(menu-toggle)` set to
+`display:none`, plus `virtual-keyboard-mode="off"` attribute) — too much
+visual noise with many formulas on one page.
+
+**Formula symbol panel** (replaces the removed per-field menu icon):
+
+```
+Single "⋮" icon per formula toolbar/field → opens one shared dropdown
+(position:fixed, follows the clicked icon) with a 4×3 grid of common symbols
+(fraction, √, x², xₙ, vector, |·|, θ, π, ∑, ∫, ∞, ·). Click inserts into
+whichever formula last had focus, via MathLive's public `mf.insert()` API.
+Closes on outside click or Esc.
+NOTE: this is NOT a copy of MathLive's real right-click context menu — that
+menu cannot be triggered programmatically (browsers reject synthetic
+`contextmenu` events for library UI). Real right-click still opens MathLive's
+own menu separately, unstyled.
+```
+
+### Right sidebar (280px, sticky)
+
+```
+┌ Метаданные ──────────────┐
+│ Название [badge]          │  ← single field, content follows language toggle
+│ Группа [dropdown]         │
+│ Теги [pills]               │
+├ Пререквизиты ─────────────┤
+│ Tag chips (atom | контрольная точка, different colors) with × to remove │
+│ + dropdown to add          │
+│ note: full graph view lives on a separate "Карта графа" screen (not built) │
+├ Контрольная точка ────────┤
+│ Plain text: which group this atom belongs to, what closes it │
+└────────────────────────────┘
+```
+
+Prerequisite tag colors: cyan bg = atom target, amber bg = checkpoint target
+(matches the two prerequisite-edge types in MWL_CONTENT_ARCHITECTURE.md §5).
+
+---
+
+## 16. Open Questions
+
+- [ ] Atom Editor sidebar entry point: new top-level nav item (e.g. "Контент") vs
+      separate constructor section with its own sub-nav (Атомы / Карта графа /
+      Экзамены) — not yet decided.
+- [ ] MathLive bidi-isolation fix (`<bdi>` wrapping for inline formulas in RTL
+      text) implemented but not verified in a real browser — needs visual QA.
+- [ ] MathLive's built-in right-click context menu cannot be triggered
+      programmatically (browsers ignore synthetic `contextmenu` events for
+      security) — replaced with a custom symbol-insert panel instead; real
+      ПКМ-меню remains available as a separate, unstyled fallback.
 
 - [ ] 3D visualization on mobile: simplified WebGL / static image fallback / toggle button?
 - [ ] Platform name: "Math With Love" is temporary
 - [ ] Favicon: based on yosi-icon.png (needs 32×32 and 180×180 versions)
 - [ ] Dark/light theme toggle: user preference saved in Supabase profile or localStorage?
-- [ ] KaTeX rendering: inline vs block, font size on mobile
+- [x] ~~KaTeX rendering: inline vs block, font size on mobile~~ — superseded:
+      formula editing uses **MathLive** (`<math-field>`), not plain KaTeX —
+      KaTeX is read-only rendering, MathLive is needed for editable WYSIWYG
+      input. See §15 Atom Editor. Mobile font-size question still open if/when
+      formulas appear on student-facing mobile screens (lesson/test/exam).
 
 *Last updated: June 2026. Approved: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile), lesson page (desktop + tablet + mobile), test page (desktop + tablet + mobile, 3 answer types), exam page (desktop + tablet + mobile, both themes), AI chat drawer (all pages, both themes, RU/HE) — both themes.*
