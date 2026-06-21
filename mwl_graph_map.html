@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MWL — Карта графа</title>
+<style>
+/* ============================================================
+   Base tokens & shell — copied 1:1 from mwl_dashboard_desktop_dark_v5.html
+   (header, ctrl strip, sidebar). Only dark theme kept for this mockup.
+   ============================================================ */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif}
+.shell{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.d{background:#0f172a}
+.l{background:#f8fafc}
+.d .t1{color:#f1f5f9}
+.l .t1{color:#0f172a}
+.d .t2{color:#94a3b8}
+.l .t2{color:#64748b}
+.d .t3{color:#475569}
+.l .t3{color:#94a3b8}
+.d .p1{background:#1e293b;border-color:#334155}
+.l .p1{background:#ffffff;border-color:#e2e8f0}
+.d .p2{background:#334155;border-color:#334155}
+.l .p2{background:#f1f5f9;border-color:#e2e8f0}
+.d .bd{border-color:#334155!important}
+.l .bd{border-color:#e2e8f0!important}
+.d .mbg{background:#0f172a}
+.l .mbg{background:#f1f5f9}
+.d .b2{background:#0f172a!important}
+.l .b2{background:#f1f5f9!important}
+
+.hdr{height:48px;display:flex;align-items:center;padding:0 14px;gap:10px;border-bottom:1px solid;flex-shrink:0}
+.logo{width:26px;height:26px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo svg{stroke:#0f172a}
+.brand{font-size:13px;font-weight:500}.brand b{color:#22D3EE;font-weight:500}
+.srch{flex:1;max-width:280px;margin:0 10px;position:relative}
+.srch input{width:100%;border-radius:8px;padding:6px 28px 6px 10px;font-size:12px;outline:none;font-family:inherit;border:1px solid}
+.d .srch input{background:#334155;border-color:#475569;color:#f1f5f9}
+.l .srch input{background:#f1f5f9;border-color:#e2e8f0;color:#0f172a}
+.si2{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none}
+.hdr-r{display:flex;align-items:center;gap:6px;margin-inline-start:auto}
+.lang{display:flex;border-radius:6px;overflow:hidden;border:1px solid}
+.lb{padding:3px 7px;font-size:11px;cursor:pointer}
+.d .lb{color:#94a3b8}
+.l .lb{color:#64748b}
+.lb.on{background:#22D3EE;color:#0f172a;font-weight:500}
+.hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid}
+.hico i{font-size:15px}
+
+.ctrl{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid;align-items:center;flex-wrap:wrap}
+.l .ctrl{background:#c5e3eb!important}
+.tcb{padding:4px 12px;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid;background:transparent}
+.d .tcb{color:#94a3b8;border-color:#334155}
+.l .tcb{color:#64748b;border-color:#e2e8f0}
+.tcb.on{background:#22D3EE!important;color:#0f172a!important;border-color:#22D3EE!important}
+.d .tcb-link,.d .tcb-new{border-color:#475569}
+.l .tcb-link,.l .tcb-new{border-color:#94a3b8}
+.div1{width:1px;height:16px;margin:0 2px}
+.d .div1{background:#334155}
+.l .div1{background:#e2e8f0}
+
+.body{display:flex;flex:1;min-height:0}
+.gm-col{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
+
+.sb{
+  width:46px;
+  display:flex;flex-direction:column;
+  padding:8px 0;
+  border-inline-end:1px solid;
+  transition:width 0.2s ease;
+  overflow:hidden;
+  flex-shrink:0;
+}
+.sb.open{width:164px;padding:8px 6px}
+
+.sbt{
+  display:flex;align-items:center;justify-content:center;
+  width:38px;height:38px;
+  margin:0 auto 8px;
+  border-radius:8px;cursor:pointer;
+  border:0;background:transparent;
+  flex-shrink:0;
+}
+.sbt svg{flex-shrink:0}
+.d .sbt svg{stroke:#475569}
+.l .sbt svg{stroke:#94a3b8}
+.sbt:hover svg{stroke:#94a3b8!important}
+
+.sg,.sbm,.sbb{display:flex;flex-direction:column;gap:2px}
+
+.nav-sub{display:none;flex-direction:column;gap:1px;padding-inline-start:14px;margin-top:2px;margin-bottom:4px}
+.sb.open .nav-sub{display:flex}
+.ni-sub{
+  display:flex;align-items:center;gap:8px;
+  font-size:11.5px;padding:6px 8px;border-radius:6px;cursor:pointer;
+  white-space:nowrap;
+}
+.ni-sub svg{flex-shrink:0}
+.d .ni-sub{color:#64748b}
+.l .ni-sub{color:#94a3b8}
+.d .ni-sub svg{stroke:#475569}
+.l .ni-sub svg{stroke:#94a3b8}
+.d .ni-sub:hover{background:#334155;color:#cbd5e1}
+.l .ni-sub:hover{background:#f1f5f9;color:#475569}
+.ni-sub:hover svg{stroke:#94a3b8}
+.ni-sub.on{color:#22D3EE!important;font-weight:600}
+.ni-sub.on svg{stroke:#22D3EE!important}
+.sbm{margin:auto 0}
+
+.ni{
+  display:flex;align-items:center;
+  width:38px;height:38px;
+  margin:0 auto;
+  border-radius:8px;cursor:pointer;
+  white-space:nowrap;overflow:hidden;border:0;background:transparent;
+  flex-shrink:0;
+}
+.sb.open .ni{width:100%;margin:0;padding:0 8px}
+.ni:hover svg{stroke:#94a3b8!important}
+.ni:hover .nl{color:#94a3b8!important}
+
+.ni .icon-wrap{width:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb.open .ni .icon-wrap{width:18px}
+
+.ni svg{flex-shrink:0;transition:stroke 0.15s;display:block}
+.d .ni svg{stroke:#475569}
+.l .ni svg{stroke:#64748b}
+.ni.on svg{stroke:#22D3EE!important}
+
+.nl{font-size:12px;font-weight:500;opacity:0;transition:opacity 0.15s,color 0.15s;white-space:nowrap;margin-inline-start:8px}
+.d .nl{color:#475569}
+.l .nl{color:#64748b}
+.ni.on .nl{color:#22D3EE!important}
+.sb.open .nl{opacity:1}
+
+/* ============================================================
+   Graph map specific styles (namespaced gm-*)
+   ============================================================ */
+.gm-main{flex:1;display:flex;min-width:0;min-height:0}
+
+.gm-filter{
+  width:190px;flex-shrink:0;overflow-y:auto;
+  padding:14px 12px;border-inline-end:1px solid;
+}
+.d .gm-filter{background:#13233a!important}
+.l .gm-filter{background:#f3fbfc!important}
+.gm-filter-title{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:9px}
+.gm-filter-item{display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:6px;cursor:pointer;font-size:12.5px}
+.d .gm-filter-item:hover{background:#334155}
+.l .gm-filter-item:hover{background:#f1f5f9}
+.gm-filter-item input{accent-color:#22D3EE;width:13px;height:13px;cursor:pointer}
+.gm-swatch{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.gm-divider{height:1px;margin:12px 0}
+.d .gm-divider{background:#334155}
+.l .gm-divider{background:#e2e8f0}
+.gm-legend-item{display:flex;align-items:center;gap:8px;font-size:11.5px;padding:4px}
+.gm-legend-line{width:20px;height:2px;flex-shrink:0}
+
+.gm-canvas-wrap{flex:1;position:relative;overflow:hidden;
+  background-image:radial-gradient(circle at 1px 1px, rgba(148,163,184,0.10) 1px, transparent 0);
+  background-size:24px 24px;
+}
+.d .gm-canvas-wrap{background-color:#0b1322}
+.l .gm-canvas-wrap{background-color:#e2f3f7}
+svg.gm-graph{width:100%;height:100%;display:block;cursor:grab}
+svg.gm-graph.panning{cursor:grabbing}
+svg.gm-graph.linking{cursor:crosshair}
+
+.gm-node-shape{stroke-width:2;transition:opacity .2s}
+.d .gm-node-shape{fill:#273449}
+.l .gm-node-shape{fill:#ffffff}
+.gm-node-shape.dimmed{opacity:.18}
+.d .gm-node-shape.selected{stroke:#fff;stroke-width:3}
+.l .gm-node-shape.selected{stroke:#0f172a;stroke-width:3}
+.d .gm-node-shape.link-source{stroke:#fff;stroke-width:3;stroke-dasharray:4 3}
+.l .gm-node-shape.link-source{stroke:#0f172a;stroke-width:3;stroke-dasharray:4 3}
+.gm-node-label{font-size:11px;font-weight:600;pointer-events:none;text-anchor:middle}
+.d .gm-node-label{fill:#e2e8f0}
+.l .gm-node-label{fill:#0f172a}
+.gm-node-label.dimmed{opacity:.18}
+.gm-node-sub{font-size:9px;pointer-events:none;text-anchor:middle}
+.d .gm-node-sub{fill:#64748b}
+.l .gm-node-sub{fill:#94a3b8}
+.gm-node-sub.dimmed{opacity:.18}
+
+.gm-edge{fill:none;transition:opacity .2s;cursor:pointer}
+.gm-edge.dimmed{opacity:.1}
+.d .gm-edge.selected{stroke:#fff !important;stroke-width:3 !important}
+.l .gm-edge.selected{stroke:#0f172a !important;stroke-width:3 !important}
+.gm-edge-direct{stroke:#22D3EE;stroke-width:1.6}
+.d .gm-edge-checkpoint{stroke:#64748B;stroke-width:1.6;stroke-dasharray:5 4}
+.l .gm-edge-checkpoint{stroke:#94a3b8;stroke-width:1.6;stroke-dasharray:5 4}
+.gm-edge-hit{fill:none;stroke:transparent;stroke-width:14;cursor:pointer}
+
+.gm-zoom-controls{
+  position:absolute;bottom:18px;right:18px;
+  display:flex;flex-direction:column;gap:6px;
+  background:#1e293b;border:1px solid #334155;border-radius:8px;padding:4px;
+}
+.gm-zoom-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:5px;cursor:pointer;color:#94a3b8}
+.gm-zoom-btn:hover{background:#334155;color:#e2e8f0}
+
+.gm-linking-hint{
+  position:absolute;top:14px;left:50%;transform:translateX(-50%);
+  background:rgba(34,211,238,0.12);border:1px solid #22D3EE;color:#22D3EE;
+  font-size:12px;padding:7px 13px;border-radius:8px;display:none;align-items:center;gap:8px;
+}
+.gm-linking-hint.show{display:flex}
+.gm-cancel-link{cursor:pointer;padding:2px 7px;border-radius:5px;background:rgba(255,255,255,0.08)}
+
+.gm-detail{width:0;flex-shrink:0;overflow:hidden;border-inline-start:1px solid;transition:width .18s ease}
+.d .gm-detail{background:#1e293b;border-color:#334155}
+.l .gm-detail{background:#ffffff;border-color:#e2e8f0}
+.gm-detail.open{width:290px;overflow-y:auto}
+.gm-detail-inner{width:290px;padding:16px}
+.gm-detail-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px}
+.gm-detail-type{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.4px}
+.gm-detail-type.atom{background:rgba(34,211,238,0.12);color:#22D3EE}
+.gm-detail-type.checkpoint{background:rgba(251,191,36,0.14);color:#d97706}
+.d .gm-detail-type.checkpoint{color:#FBBF24}
+.gm-detail-close{cursor:pointer;padding:4px;border-radius:5px}
+.d .gm-detail-close{color:#475569}
+.l .gm-detail-close{color:#94a3b8}
+.d .gm-detail-close:hover{background:#334155;color:#e2e8f0}
+.l .gm-detail-close:hover{background:#f1f5f9;color:#0f172a}
+.gm-detail-title{font-size:15px;font-weight:700;margin:10px 0 2px 0}
+.d .gm-detail-title{color:#f1f5f9}
+.l .gm-detail-title{color:#0f172a}
+.gm-detail-title-he{font-size:12.5px;direction:rtl;margin-bottom:14px}
+.d .gm-detail-title-he{color:#94a3b8}
+.l .gm-detail-title-he{color:#64748b}
+.gm-tag{font-size:10.5px;padding:3px 9px;border-radius:20px;border:1px solid;display:inline-block;margin-bottom:14px}
+.gm-section-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;margin:14px 0 8px 0}
+.d .gm-section-label{color:#475569}
+.l .gm-section-label{color:#94a3b8}
+.gm-prereq-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;font-size:12px;cursor:pointer;margin-bottom:6px}
+.d .gm-prereq-item{background:#334155;color:#e2e8f0}
+.l .gm-prereq-item{background:#f1f5f9;color:#0f172a}
+.d .gm-prereq-item:hover{background:#3a4a64}
+.l .gm-prereq-item:hover{background:#e2e8f0}
+.gm-prereq-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.gm-empty-note{font-size:11.5px;font-style:italic}
+.d .gm-empty-note{color:#475569}
+.l .gm-empty-note{color:#94a3b8}
+.gm-btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid;width:100%;margin-top:8px}
+.d .gm-btn{border-color:#475569;background:#334155;color:#e2e8f0}
+.l .gm-btn{border-color:#e2e8f0;background:#f1f5f9;color:#0f172a}
+.d .gm-btn:hover{background:#3a4a64}
+.l .gm-btn:hover{background:#e2e8f0}
+.gm-btn.primary{background:#22D3EE;border-color:#22D3EE;color:#0f172a}
+.gm-btn.primary:hover{background:#3ee0f5}
+.gm-btn.danger{color:#f87171;border-color:rgba(248,113,113,.4);background:transparent}
+.gm-btn.danger:hover{background:rgba(248,113,113,.12)}
+
+.gm-tooltip{position:absolute;pointer-events:none;font-size:11px;padding:5px 9px;border-radius:6px;display:none;white-space:nowrap;z-index:50;border:1px solid}
+.d .gm-tooltip{background:#04101D;border-color:#475569;color:#e2e8f0}
+.l .gm-tooltip{background:#0f172a;border-color:#334155;color:#f1f5f9}
+
+.gm-link-popover{position:absolute;background:#1e293b;border:1px solid #475569;border-radius:8px;padding:8px;display:none;z-index:60;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.gm-link-popover.show{display:block}
+.gm-link-popover-title{font-size:10.5px;color:#475569;padding:2px 6px 6px 6px}
+.gm-link-popover button{display:flex;align-items:center;gap:8px;width:100%;padding:7px 8px;border-radius:5px;background:none;border:none;color:#e2e8f0;font-size:12px;cursor:pointer;text-align:start}
+.gm-link-popover button:hover{background:#334155}[dir="rtl"] .gm-link-popover button{text-align:right}
+[dir="rtl"] .srch input{text-align:right}
+[dir="rtl"] .gm-zoom-controls{right:auto;left:18px}
+</style>
+</head>
+<body>
+<div class="shell d" id="shell">
+
+  <!-- ===== Header (copied from dashboard v5) ===== -->
+  <div class="hdr p1 bd">
+    <div class="logo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 4h-10l6 8l-6 8h10"/></svg></div>
+    <div class="brand t1">Math <b>With Love</b></div>
+    <div class="srch"><input placeholder="Поиск тем, формул..."><svg class="t3 si2" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg></div>
+    <div class="hdr-r">
+      <div class="lang bd"><span class="lb on" id="lbRu" onclick="setLang('ru')">RU</span><span class="lb" id="lbHe" onclick="setLang('he')">HE</span></div>
+      <div class="hico bd t2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg></div>
+      <div class="hico bd t2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5a5 5 0 0 1 11 0"/></svg></div>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- ===== Sidebar (copied 1:1 from dashboard v5, "Контент" item added), full height under header ===== -->
+    <div class="sb p1 bd" id="sb">
+      <div class="sbt" onclick="toggleSb()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+      </div>
+      <div class="sg">
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9 -9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"/><path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/></svg></span>
+          <span class="nl" data-i18n="navDashboard">Дашборд</span>
+        </div>
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><line x1="3" y1="6" x2="3" y2="19"/><line x1="12" y1="6" x2="12" y2="19"/><line x1="21" y1="6" x2="21" y2="19"/></svg></span>
+          <span class="nl" data-i18n="navModules">Модули</span>
+        </div>
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="3" y2="21"/><line x1="21" y1="21" x2="3" y2="21"/><path d="M7 17v-3"/><path d="M11 17v-6"/><path d="M15 17v-9"/></svg></span>
+          <span class="nl" data-i18n="navProgress">Прогресс</span>
+        </div>
+        <div class="ni on" id="contentNavToggle" onclick="onContentClick()">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+          <span class="nl" data-i18n="navContent">Контент</span>
+        </div>
+        <div class="nav-sub" id="contentSubNav">
+          <div class="ni-sub on">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="13" r="2.5"/><circle cx="6" cy="20" r="2.5"/><circle cx="18" cy="20" r="2.5"/><path d="M8.2 7.2L10.5 11.3M15.8 7.2L13.5 11.3M10.5 14.7L7.8 18M13.5 14.7L16.2 18"/></svg>
+            <span data-i18n="subGraph">Карта графа</span>
+          </div>
+          <div class="ni-sub">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg>
+            <span data-i18n="subAtomEditor">Редактор атома</span>
+          </div>
+          <div class="ni-sub">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="13" width="7" height="7" rx="1.5"/><rect x="14" y="13" width="7" height="7" rx="1.5"/></svg>
+            <span data-i18n="subGroups">Группы</span>
+          </div>
+          <div class="ni-sub">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6a1 1 0 0 1 1 1v3.5a1 1 0 0 1 -.4 .8l-3.6 2.7l3.6 2.7a1 1 0 0 1 .4 .8v3.5a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1v-3.5a1 1 0 0 1 .4 -.8l3.6 -2.7l-3.6 -2.7a1 1 0 0 1 -.4 -.8v-3.5a1 1 0 0 1 1 -1z"/></svg>
+            <span data-i18n="subExam">Схема экзамена</span>
+          </div>
+        </div>
+      </div>
+      <div class="sbm">
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="9" y2="4"/><line x1="6" y1="13" x2="13" y2="13"/><path d="M15 20l5 -16"/><path d="M14 8h7"/></svg></span>
+          <span class="nl" data-i18n="navFormulas">Формулы</span>
+        </div>
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9l-8 4.5l-8 -4.5v-9z"/><path d="M12 12l8 -4.5"/><path d="M12 12v9"/><path d="M12 12l-8 -4.5"/></svg></span>
+          <span class="nl" data-i18n="navLab">Лаборатория</span>
+        </div>
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21l8 0"/><path d="M12 17l0 4"/><path d="M7 4l10 0"/><path d="M17 4v8a5 5 0 0 1 -10 0v-8"/><path d="M5 9a2 2 0 0 1 -2 -2v-1a2 2 0 0 1 2 -2"/><path d="M19 9a2 2 0 0 0 2 -2v-1a2 2 0 0 0 -2 -2"/></svg></span>
+          <span class="nl" data-i18n="navAchievements">Достижения</span>
+        </div>
+      </div>
+      <div class="sbb">
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="17" x2="12.01" y2="17"/><path d="M12 13.5a1.5 1.5 0 0 1 1 -1.5a2.6 2.6 0 1 0 -3 -4"/></svg></span>
+          <span class="nl" data-i18n="navHelp">Помощь</span>
+        </div>
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06 .06a2 2 0 1 1 -2.83 2.83l-.06 -.06a1.65 1.65 0 0 0 -1.82 -.33a1.65 1.65 0 0 0 -1 1.51v.17a2 2 0 0 1 -4 0v-.09a1.65 1.65 0 0 0 -1.08 -1.51a1.65 1.65 0 0 0 -1.82 .33l-.06 .06a2 2 0 1 1 -2.83 -2.83l.06 -.06a1.65 1.65 0 0 0 .33 -1.82a1.65 1.65 0 0 0 -1.51 -1h-.17a2 2 0 0 1 0 -4h.09a1.65 1.65 0 0 0 1.51 -1.08a1.65 1.65 0 0 0 -.33 -1.82l-.06 -.06a2 2 0 1 1 2.83 -2.83l.06 .06a1.65 1.65 0 0 0 1.82 .33h0a1.65 1.65 0 0 0 1 -1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82 -.33l.06 -.06a2 2 0 1 1 2.83 2.83l-.06 .06a1.65 1.65 0 0 0 -.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0 -1.51 1z"/></svg></span>
+          <span class="nl" data-i18n="navSettings">Настройки</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Right content column: sub-nav + theme toggle, then graph map below ===== -->
+    <div class="gm-col">
+
+      <div class="ctrl p2 bd">
+        <button class="tcb on" id="bd" onclick="setMode('d')">🌙 <span data-i18n="themeDark">Тёмная</span></button>
+        <button class="tcb" id="bl" onclick="setMode('l')">☀ <span data-i18n="themeLight">Светлая</span></button>
+        <div class="div1"></div>
+        <span class="t2" style="font-size:12px;" data-i18n="ctxLabel">Карта графа · Багрут 572</span>
+        <div style="flex:1;"></div>
+        <button class="tcb tcb-link" id="btnLinkMode" data-i18n="linkNodesBtn">⤳ Связать узлы</button>
+        <button class="tcb tcb-new" data-i18n="newAtomBtn">+ Новый атом</button>
+      </div>
+
+      <div class="gm-main">
+
+      <div class="gm-filter p1 bd">
+        <div class="gm-filter-title t3" data-i18n="filterGroups">Группы</div>
+        <label class="gm-filter-item t2">
+          <input type="checkbox" class="grp-filter" data-grp="vectors" checked>
+          <span class="gm-swatch" style="background:#22D3EE;"></span> <span data-i18n="grpVectors">Векторы</span>
+        </label>
+        <label class="gm-filter-item t2">
+          <input type="checkbox" class="grp-filter" data-grp="trig" checked>
+          <span class="gm-swatch" style="background:#FB923C;"></span> <span data-i18n="grpTrig">Тригонометрия</span>
+        </label>
+        <label class="gm-filter-item t2">
+          <input type="checkbox" class="grp-filter" data-grp="deriv" checked>
+          <span class="gm-swatch" style="background:#FB7185;"></span> <span data-i18n="grpDeriv">Производная</span>
+        </label>
+
+        <div class="gm-divider bd"></div>
+        <div class="gm-filter-title t3" data-i18n="filterLegend">Легенда</div>
+        <div class="gm-legend-item t2">
+          <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" rx="4" fill="none" stroke="#22D3EE" stroke-width="2"/></svg>
+          <span data-i18n="legendAtom">Атом</span>
+        </div>
+        <div class="gm-legend-item t2">
+          <svg width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 15,8 8,15 1,8" fill="none" stroke="#FBBF24" stroke-width="2"/></svg>
+          <span data-i18n="legendCheckpoint">Контрольная точка</span>
+        </div>
+        <div class="gm-legend-item t2">
+          <div class="gm-legend-line" style="background:#22D3EE;"></div> <span data-i18n="legendDirect">Точечная связь</span>
+        </div>
+        <div class="gm-legend-item t2">
+          <svg width="22" height="2"><line x1="0" y1="1" x2="22" y2="1" stroke="#64748B" stroke-width="2" stroke-dasharray="4 3"/></svg>
+          <span data-i18n="legendCheckpointEdge">Через контрольную точку</span>
+        </div>
+      </div>
+
+      <div class="gm-canvas-wrap" id="canvasWrap">
+        <div class="gm-linking-hint" id="linkingHint">
+          <span data-i18n="linkingHint">Выберите узел-источник, затем узел-цель связи</span>
+          <span class="gm-cancel-link" id="btnCancelLink" data-i18n="cancel">Отмена</span>
+        </div>
+        <svg class="gm-graph" id="graph"></svg>
+        <div class="gm-zoom-controls">
+          <div class="gm-zoom-btn" id="zoomIn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          </div>
+          <div class="gm-zoom-btn" id="zoomOut">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          </div>
+          <div class="gm-zoom-btn" id="zoomFit">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+          </div>
+        </div>
+        <div class="gm-tooltip" id="tooltip"></div>
+        <div class="gm-link-popover" id="linkPopover">
+          <div class="gm-link-popover-title" data-i18n="lpTitle">Тип связи</div>
+          <button id="lpDirect"><span style="width:14px;height:2px;background:#22D3EE;display:inline-block;"></span> <span data-i18n="lpDirectLabel">Точечная (атом → атом)</span></button>
+          <button id="lpCheckpoint"><span style="width:14px;height:2px;background:#64748B;display:inline-block;"></span> <span data-i18n="legendCheckpointEdge">Через контрольную точку</span></button>
+        </div>
+      </div>
+
+      <div class="gm-detail" id="detailPanel">
+        <div class="gm-detail-inner" id="detailInner"></div>
+      </div>
+
+    </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== Sidebar toggle (same behaviour as dashboard v5) =====================
+var sbOpen=false;
+function toggleSb(){
+  sbOpen=!sbOpen;
+  document.getElementById('sb').className='sb p1 bd'+(sbOpen?' open':'');
+  setTimeout(fitView, 220);
+}
+function onContentClick(){
+  if(!sbOpen) toggleSb();
+}
+
+// ===================== Language toggle (RU/HE) =====================
+var currentLang = 'ru';
+const TR = {
+  ru:{
+    search:'Поиск тем, формул...',
+    navDashboard:'Дашборд', navModules:'Модули', navProgress:'Прогресс', navContent:'Контент',
+    navFormulas:'Формулы', navLab:'Лаборатория', navAchievements:'Достижения',
+    navHelp:'Помощь', navSettings:'Настройки',
+    subGraph:'Карта графа', subAtomEditor:'Редактор атома', subGroups:'Группы', subExam:'Схема экзамена',
+    themeDark:'Тёмная', themeLight:'Светлая',
+    ctxLabel:'Карта графа · Багрут 572',
+    linkNodesBtn:'⤳ Связать узлы', newAtomBtn:'+ Новый атом',
+    filterGroups:'Группы', filterLegend:'Легенда',
+    grpVectors:'Векторы', grpTrig:'Тригонометрия', grpDeriv:'Производная',
+    legendAtom:'Атом', legendCheckpoint:'Контрольная точка',
+    legendDirect:'Точечная связь', legendCheckpointEdge:'Через контрольную точку',
+    linkingHint:'Выберите узел-источник, затем узел-цель связи', cancel:'Отмена',
+    lpTitle:'Тип связи', lpDirectLabel:'Точечная (атом → атом)',
+    typeAtom:'Атом', typeCheckpoint:'Контрольная точка',
+    edgeDirect:'Точечная связь', edgeCheckpoint:'Через контрольную точку',
+    prereqsLabel:'Пререквизиты', noPrereqs:'Нет пререквизитов — стартовый узел',
+    openInEditor:'Открыть в редакторе атома', openCheckpointSettings:'Открыть настройки КТ',
+    addLinkFromHere:'Добавить связь от этого узла',
+    prereqKindDirect:'точечная', prereqKindCheckpoint:'через КТ',
+    fromLabel:'Из', toLabel:'В', deleteEdge:'Удалить связь',
+    checkpointSub:'контрольная точка'
+  },
+  he:{
+    search:'חיפוש נושאים, נוסחאות...',
+    navDashboard:'לוח בקרה', navModules:'מודולים', navProgress:'התקדמות', navContent:'תוכן',
+    navFormulas:'נוסחאות', navLab:'מעבדה', navAchievements:'הישגים',
+    navHelp:'עזרה', navSettings:'הגדרות',
+    subGraph:'מפת הגרף', subAtomEditor:'עורך אטום', subGroups:'קבוצות', subExam:'מבנה הבגרות',
+    themeDark:'כהה', themeLight:'בהיר',
+    ctxLabel:'מפת הגרף · בגרות 572',
+    linkNodesBtn:'⤳ קשר צמתים', newAtomBtn:'+ אטום חדש',
+    filterGroups:'קבוצות', filterLegend:'מקרא',
+    grpVectors:'וקטורים', grpTrig:'טריגונומטריה', grpDeriv:'נגזרות',
+    legendAtom:'אטום', legendCheckpoint:'נקודת בקרה',
+    legendDirect:'קשר ישיר', legendCheckpointEdge:'דרך נקודת בקרה',
+    linkingHint:'בחר צומת מקור ולאחר מכן צומת יעד', cancel:'ביטול',
+    lpTitle:'סוג הקשר', lpDirectLabel:'ישיר (אטום ← אטום)',
+    typeAtom:'אטום', typeCheckpoint:'נקודת בקרה',
+    edgeDirect:'קשר ישיר', edgeCheckpoint:'דרך נקודת בקרה',
+    prereqsLabel:'דרישות קדם', noPrereqs:'אין דרישות קדם — צומת התחלתי',
+    openInEditor:'פתח בעורך האטום', openCheckpointSettings:'פתח הגדרות נקודת בקרה',
+    addLinkFromHere:'הוסף קשר מצומת זה',
+    prereqKindDirect:'ישיר', prereqKindCheckpoint:'דרך נ.ב.',
+    fromLabel:'מ', toLabel:'אל', deleteEdge:'מחק קשר',
+    checkpointSub:'נקודת בקרה'
+  }
+};
+function applyStaticTranslations(){
+  const t = TR[currentLang];
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    if(t[key]!==undefined) el.textContent = t[key];
+  });
+  const srch = document.querySelector('.srch input');
+  if(srch) srch.placeholder = t.search;
+}
+function setLang(lang){
+  currentLang = lang;
+  document.getElementById('lbRu').className = 'lb'+(lang==='ru'?' on':'');
+  document.getElementById('lbHe').className = 'lb'+(lang==='he'?' on':'');
+  document.getElementById('shell').setAttribute('dir', lang==='he' ? 'rtl' : 'ltr');
+  applyStaticTranslations();
+  renderAll();
+  if(selectedNodeId){ openDetail(nodeById[selectedNodeId]); }
+  else if(selectedEdgeIdx!==null){ openEdgeDetail(edges[selectedEdgeIdx]); }
+  setTimeout(fitView, 50);
+}
+
+// ===================== Theme toggle (same pattern as dashboard v5) =====================
+function setMode(m){
+  document.getElementById('shell').className='shell '+m;
+  document.getElementById('bd').className='tcb'+(m==='d'?' on':'');
+  document.getElementById('bl').className='tcb'+(m==='l'?' on':'');
+}
+
+// ===================== Demo data =====================
+const GROUP_COLOR = { vectors:'#22D3EE', trig:'#FB923C', deriv:'#FB7185' };
+
+const nodes = [
+  {id:'a1', type:'atom', title:'Определение вектора', titleHe:'הגדרת וקטור', grp:'vectors', tier:0},
+  {id:'a2', type:'atom', title:'Сложение векторов', titleHe:'חיבור וקטורים', grp:'vectors', tier:1},
+  {id:'a3', type:'atom', title:'Умножение на скаляр', titleHe:'כפל בסקלר', grp:'vectors', tier:1},
+  {id:'cp1', type:'checkpoint', title:'КТ: Основы векторов', titleHe:'נקודת בקרה', grp:'vectors', tier:2},
+  {id:'a4', type:'atom', title:'Скалярное произведение', titleHe:'מכפלה סקלרית', grp:'vectors', tier:3},
+  {id:'a5', type:'atom', title:'Векторное уравнение прямой', titleHe:'משוואת ישר וקטורית', grp:'vectors', tier:3},
+  {id:'a6', type:'atom', title:'Коллинеарность', titleHe:'קוליניאריות', grp:'vectors', tier:4},
+
+  {id:'t1', type:'atom', title:'Единичная окружность', titleHe:'מעגל היחידה', grp:'trig', tier:0},
+  {id:'t2', type:'atom', title:'Синус и косинус', titleHe:'סינוס וקוסינוס', grp:'trig', tier:1},
+  {id:'t3', type:'atom', title:'Тригонометрические тождества', titleHe:'זהויות טריגונומטריות', grp:'trig', tier:2},
+  {id:'cp2', type:'checkpoint', title:'КТ: Тригонометрия база', titleHe:'נקודת בקרה', grp:'trig', tier:3},
+
+  {id:'d1', type:'atom', title:'Предел функции', titleHe:'גבול הפונקציה', grp:'deriv', tier:0},
+  {id:'d2', type:'atom', title:'Определение производной', titleHe:'הגדרת הנגזרת', grp:'deriv', tier:1},
+  {id:'d3', type:'atom', title:'Производная произведения', titleHe:'נגזרת מכפלה', grp:'deriv', tier:2},
+  {id:'d4', type:'atom', title:'Исследование функции', titleHe:'חקירת פונקציה', grp:'deriv', tier:3},
+];
+
+const edges = [
+  {from:'a1', to:'a2', kind:'direct'},
+  {from:'a1', to:'a3', kind:'direct'},
+  {from:'a2', to:'cp1', kind:'checkpoint'},
+  {from:'a3', to:'cp1', kind:'checkpoint'},
+  {from:'cp1', to:'a4', kind:'checkpoint'},
+  {from:'cp1', to:'a5', kind:'checkpoint'},
+  {from:'a4', to:'a6', kind:'direct'},
+  {from:'a5', to:'a6', kind:'direct'},
+
+  {from:'t1', to:'t2', kind:'direct'},
+  {from:'t2', to:'t3', kind:'direct'},
+  {from:'t3', to:'cp2', kind:'checkpoint'},
+
+  {from:'d1', to:'d2', kind:'direct'},
+  {from:'d2', to:'d3', kind:'direct'},
+  {from:'d3', to:'d4', kind:'direct'},
+
+  {from:'cp2', to:'d3', kind:'checkpoint'},
+];
+
+// ===================== Layout (tiered init + force relax) =====================
+const svg = document.getElementById('graph');
+const NS = 'http://www.w3.org/2000/svg';
+let W = 0, H = 0;
+
+function resize(){
+  const wrap = document.getElementById('canvasWrap');
+  W = wrap.clientWidth; H = wrap.clientHeight;
+}
+resize();
+
+const tierGap = 150, withinGap = 90;
+const placed = {};
+nodes.forEach(n=>{
+  const idx = (placed[n.tier] = (placed[n.tier]||0));
+  placed[n.tier]++;
+  n.x = 140 + n.tier*tierGap + (Math.random()*20-10);
+  n.y = 80 + idx*withinGap + (Math.random()*20-10);
+});
+const groupOffset = { vectors:0, trig:260, deriv:520 };
+nodes.forEach(n=>{ n.y += groupOffset[n.grp]; });
+
+const nodeById = {}; nodes.forEach(n=>nodeById[n.id]=n);
+
+function relax(iterations){
+  for(let it=0; it<iterations; it++){
+    for(let i=0;i<nodes.length;i++){
+      for(let j=i+1;j<nodes.length;j++){
+        const a=nodes[i], b=nodes[j];
+        let dx=a.x-b.x, dy=a.y-b.y;
+        let dist = Math.sqrt(dx*dx+dy*dy)||0.01;
+        const minDist = 95;
+        if(dist < minDist){
+          const force = (minDist-dist)/dist*0.5;
+          const fx=dx*force, fy=dy*force;
+          a.x+=fx; a.y+=fy; b.x-=fx; b.y-=fy;
+        }
+      }
+    }
+    edges.forEach(e=>{
+      const a=nodeById[e.from], b=nodeById[e.to];
+      const dy=(b.y-a.y);
+      const targetY = dy*0.02;
+      a.y += targetY*0.5; b.y -= targetY*0.5;
+    });
+    nodes.forEach(n=>{
+      const targetX = 140 + n.tier*tierGap;
+      n.x += (targetX-n.x)*0.1;
+    });
+  }
+}
+relax(60);
+
+// ===================== Render =====================
+let viewScale = 1, viewX = 0, viewY = 0;
+let selectedNodeId = null;
+let selectedEdgeIdx = null;
+let linkMode = false;
+let linkSource = null;
+let activeGroups = new Set(['vectors','trig','deriv']);
+
+function applyTransform(){
+  gRoot.setAttribute('transform', `translate(${viewX},${viewY}) scale(${viewScale})`);
+}
+
+svg.innerHTML = '';
+const gRoot = document.createElementNS(NS,'g');
+const gEdges = document.createElementNS(NS,'g');
+const gNodes = document.createElementNS(NS,'g');
+gRoot.appendChild(gEdges);
+gRoot.appendChild(gNodes);
+svg.appendChild(gRoot);
+
+function nodeRadiusBox(n){
+  return n.type==='checkpoint' ? {w:38,h:38} : {w:34,h:34};
+}
+
+function edgePath(a,b){
+  const dx = (b.x-a.x)*0.5;
+  return `M ${a.x} ${a.y} C ${a.x+dx} ${a.y}, ${b.x-dx} ${b.y}, ${b.x} ${b.y}`;
+}
+
+function renderEdges(){
+  gEdges.innerHTML='';
+  edges.forEach((e, idx)=>{
+    const a=nodeById[e.from], b=nodeById[e.to];
+    const visible = activeGroups.has(a.grp) || activeGroups.has(b.grp);
+    const hit = document.createElementNS(NS,'path');
+    hit.setAttribute('class','gm-edge-hit');
+    hit.setAttribute('d', edgePath(a,b));
+    hit.addEventListener('click', (ev)=>{ ev.stopPropagation(); selectEdge(idx); });
+
+    const line = document.createElementNS(NS,'path');
+    line.setAttribute('class', 'gm-edge ' + (e.kind==='direct'?'gm-edge-direct':'gm-edge-checkpoint') + (idx===selectedEdgeIdx?' selected':'') + (visible?'':' dimmed'));
+    line.setAttribute('d', edgePath(a,b));
+
+    gEdges.appendChild(line);
+    gEdges.appendChild(hit);
+  });
+}
+
+function shapeEl(n){
+  const box = nodeRadiusBox(n);
+  const color = n.type==='checkpoint' ? '#FBBF24' : GROUP_COLOR[n.grp];
+  let el;
+  if(n.type==='checkpoint'){
+    el = document.createElementNS(NS,'polygon');
+    const r=box.w/2;
+    const pts = [[0,-r],[r,0],[0,r],[-r,0]].map(p=>p.join(',')).join(' ');
+    el.setAttribute('points', pts);
+  } else {
+    el = document.createElementNS(NS,'rect');
+    el.setAttribute('x', -box.w/2);
+    el.setAttribute('y', -box.h/2);
+    el.setAttribute('width', box.w);
+    el.setAttribute('height', box.h);
+    el.setAttribute('rx', 9);
+  }
+  el.setAttribute('stroke', color);
+  return el;
+}
+
+function renderNodes(){
+  gNodes.innerHTML='';
+  nodes.forEach(n=>{
+    const visible = activeGroups.has(n.grp);
+    const g = document.createElementNS(NS,'g');
+    g.setAttribute('transform', `translate(${n.x},${n.y})`);
+    g.style.cursor='pointer';
+
+    const shape = shapeEl(n);
+    let cls = 'gm-node-shape';
+    if(!visible) cls += ' dimmed';
+    if(n.id===selectedNodeId) cls += ' selected';
+    if(n.id===linkSource) cls += ' link-source';
+    shape.setAttribute('class', cls);
+    g.appendChild(shape);
+
+    const label = document.createElementNS(NS,'text');
+    label.setAttribute('class','gm-node-label'+(visible?'':' dimmed'));
+    label.setAttribute('y', n.type==='checkpoint'?34:30);
+    const displayTitle = currentLang==='he' ? n.titleHe : n.title;
+    label.textContent = displayTitle.length>16 ? displayTitle.slice(0,15)+'…' : displayTitle;
+    g.appendChild(label);
+
+    if(n.type==='checkpoint'){
+      const sub = document.createElementNS(NS,'text');
+      sub.setAttribute('class','gm-node-sub'+(visible?'':' dimmed'));
+      sub.setAttribute('y', 46);
+      sub.textContent = TR[currentLang].checkpointSub;
+      g.appendChild(sub);
+    }
+
+    g.addEventListener('mousedown', (ev)=>startDrag(ev, n));
+    g.addEventListener('click', (ev)=>{ ev.stopPropagation(); onNodeClick(n); });
+    g.addEventListener('mouseenter', (ev)=>showTooltip(ev, n));
+    g.addEventListener('mouseleave', hideTooltip);
+
+    gNodes.appendChild(g);
+  });
+}
+
+function renderAll(){ renderEdges(); renderNodes(); }
+renderAll();
+applyTransform();
+fitView();
+
+// ===================== Pan / zoom =====================
+let isPanning=false, panStart={x:0,y:0}, viewStart={x:0,y:0};
+svg.addEventListener('mousedown', (ev)=>{
+  if(ev.target===svg){
+    isPanning=true; svg.classList.add('panning');
+    panStart={x:ev.clientX,y:ev.clientY};
+    viewStart={x:viewX,y:viewY};
+  }
+});
+window.addEventListener('mousemove', (ev)=>{
+  if(isPanning){
+    viewX = viewStart.x + (ev.clientX-panStart.x);
+    viewY = viewStart.y + (ev.clientY-panStart.y);
+    applyTransform();
+  }
+});
+window.addEventListener('mouseup', ()=>{ isPanning=false; svg.classList.remove('panning'); });
+
+svg.addEventListener('wheel', (ev)=>{
+  ev.preventDefault();
+  const delta = ev.deltaY>0 ? 0.9 : 1.1;
+  viewScale = Math.min(2.5, Math.max(0.3, viewScale*delta));
+  applyTransform();
+}, {passive:false});
+
+document.getElementById('zoomIn').addEventListener('click', ()=>{ viewScale=Math.min(2.5,viewScale*1.2); applyTransform(); });
+document.getElementById('zoomOut').addEventListener('click', ()=>{ viewScale=Math.max(0.3,viewScale*0.8); applyTransform(); });
+document.getElementById('zoomFit').addEventListener('click', fitView);
+
+function fitView(){
+  resize();
+  const xs = nodes.map(n=>n.x), ys = nodes.map(n=>n.y);
+  const minX=Math.min(...xs)-60, maxX=Math.max(...xs)+60;
+  const minY=Math.min(...ys)-60, maxY=Math.max(...ys)+60;
+  const gw = maxX-minX, gh=maxY-minY;
+  const scale = Math.min(W/gw, H/gh, 1.3);
+  viewScale = scale;
+  viewX = (W - gw*scale)/2 - minX*scale;
+  viewY = (H - gh*scale)/2 - minY*scale;
+  applyTransform();
+}
+window.addEventListener('resize', fitView);
+
+// ===================== Drag node =====================
+let dragging=null, dragOffset={x:0,y:0};
+function startDrag(ev, n){
+  ev.stopPropagation();
+  if(linkMode) return;
+  dragging = n;
+  const pt = svgPoint(ev);
+  dragOffset = { x: pt.x - n.x, y: pt.y - n.y };
+}
+window.addEventListener('mousemove', (ev)=>{
+  if(dragging){
+    const pt = svgPoint(ev);
+    dragging.x = pt.x - dragOffset.x;
+    dragging.y = pt.y - dragOffset.y;
+    renderAll();
+  }
+});
+window.addEventListener('mouseup', ()=>{ dragging=null; });
+
+function svgPoint(ev){
+  const rect = svg.getBoundingClientRect();
+  const x = (ev.clientX-rect.left - viewX)/viewScale;
+  const y = (ev.clientY-rect.top - viewY)/viewScale;
+  return {x,y};
+}
+
+// ===================== Selection / detail panel =====================
+function onNodeClick(n){
+  if(linkMode){
+    handleLinkClick(n);
+    return;
+  }
+  selectedEdgeIdx = null;
+  selectedNodeId = (selectedNodeId===n.id) ? null : n.id;
+  renderAll();
+  if(selectedNodeId) openDetail(n); else closeDetail();
+}
+
+svg.addEventListener('click', (ev)=>{
+  if(ev.target===svg){
+    selectedNodeId=null; selectedEdgeIdx=null;
+    renderAll(); closeDetail();
+  }
+});
+
+function selectEdge(idx){
+  selectedNodeId=null;
+  selectedEdgeIdx = (selectedEdgeIdx===idx)?null:idx;
+  renderAll();
+  if(selectedEdgeIdx!==null) openEdgeDetail(edges[selectedEdgeIdx]); else closeDetail();
+}
+
+function prereqsOf(nodeId){
+  return edges.filter(e=>e.to===nodeId).map(e=>({node:nodeById[e.from], kind:e.kind}));
+}
+
+function openDetail(n){
+  const panel = document.getElementById('detailPanel');
+  const inner = document.getElementById('detailInner');
+  const t = TR[currentLang];
+  panel.classList.add('open');
+  const prereqs = prereqsOf(n.id);
+  const typeLabel = n.type==='checkpoint' ? t.typeCheckpoint : t.typeAtom;
+  const typeClass = n.type==='checkpoint' ? 'checkpoint' : 'atom';
+  const displayTitle = currentLang==='he' ? n.titleHe : n.title;
+
+  inner.innerHTML = `
+    <div class="gm-detail-header">
+      <span class="gm-detail-type ${typeClass}">${typeLabel}</span>
+      <span class="gm-detail-close" id="detailCloseBtn">✕</span>
+    </div>
+    <div class="gm-detail-title">${displayTitle}</div>
+    ${currentLang==='ru' ? `<div class="gm-detail-title-he">${n.titleHe}</div>` : ''}
+    <span class="gm-tag" style="background:${GROUP_COLOR[n.grp]}22;color:${GROUP_COLOR[n.grp]};border-color:${GROUP_COLOR[n.grp]}55">${groupLabel(n.grp)}</span>
+
+    <div class="gm-section-label">${t.prereqsLabel} (${prereqs.length})</div>
+    <div id="prereqList">
+      ${prereqs.length ? prereqs.map(p=>`
+        <div class="gm-prereq-item" data-id="${p.node.id}">
+          <span class="gm-prereq-dot" style="background:${p.kind==='direct'?'#22D3EE':'#64748B'}"></span>
+          <span style="flex:1;">${currentLang==='he' ? p.node.titleHe : p.node.title}</span>
+          <span style="color:#475569;font-size:10px;">${p.kind==='direct'?t.prereqKindDirect:t.prereqKindCheckpoint}</span>
+        </div>`).join('') : `<div class="gm-empty-note">${t.noPrereqs}</div>`}
+    </div>
+
+    <div class="gm-btn primary">${n.type==='checkpoint'?t.openCheckpointSettings:t.openInEditor}</div>
+    <div class="gm-btn" id="startLinkFromHere">${t.addLinkFromHere}</div>
+  `;
+  document.getElementById('detailCloseBtn').addEventListener('click', ()=>{
+    selectedNodeId=null; renderAll(); closeDetail();
+  });
+  document.getElementById('startLinkFromHere').addEventListener('click', ()=>{
+    enterLinkMode(); linkSource = n.id; renderAll();
+    document.getElementById('linkingHint').classList.add('show');
+  });
+  inner.querySelectorAll('.gm-prereq-item').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const target = nodeById[el.dataset.id];
+      selectedNodeId = target.id; renderAll(); openDetail(target);
+    });
+  });
+}
+
+function openEdgeDetail(e){
+  const panel = document.getElementById('detailPanel');
+  const inner = document.getElementById('detailInner');
+  const t = TR[currentLang];
+  panel.classList.add('open');
+  const a=nodeById[e.from], b=nodeById[e.to];
+  const titleA = currentLang==='he' ? a.titleHe : a.title;
+  const titleB = currentLang==='he' ? b.titleHe : b.title;
+  inner.innerHTML = `
+    <div class="gm-detail-header">
+      <span class="gm-detail-type ${e.kind==='direct'?'atom':'checkpoint'}">${e.kind==='direct'?t.edgeDirect:t.edgeCheckpoint}</span>
+      <span class="gm-detail-close" id="detailCloseBtn">✕</span>
+    </div>
+    <div class="gm-section-label" style="margin-top:18px;">${t.fromLabel}</div>
+    <div class="gm-prereq-item">${titleA}</div>
+    <div class="gm-section-label">${t.toLabel}</div>
+    <div class="gm-prereq-item">${titleB}</div>
+    <div class="gm-btn danger" id="deleteEdgeBtn">${t.deleteEdge}</div>
+  `;
+  document.getElementById('detailCloseBtn').addEventListener('click', ()=>{
+    selectedEdgeIdx=null; renderAll(); closeDetail();
+  });
+  document.getElementById('deleteEdgeBtn').addEventListener('click', ()=>{
+    const idx = edges.indexOf(e);
+    if(idx>-1) edges.splice(idx,1);
+    selectedEdgeIdx=null; renderAll(); closeDetail();
+  });
+}
+
+function closeDetail(){
+  document.getElementById('detailPanel').classList.remove('open');
+  setTimeout(fitView, 190);
+}
+
+function groupLabel(g){
+  const t = TR[currentLang];
+  return {vectors:t.grpVectors, trig:t.grpTrig, deriv:t.grpDeriv}[g] || g;
+}
+
+// ===================== Link mode =====================
+const btnLinkMode = document.getElementById('btnLinkMode');
+const linkingHint = document.getElementById('linkingHint');
+const linkPopover = document.getElementById('linkPopover');
+
+function enterLinkMode(){
+  linkMode = true; linkSource=null;
+  btnLinkMode.classList.add('on');
+  svg.classList.add('linking');
+  linkingHint.classList.add('show');
+}
+function exitLinkMode(){
+  linkMode=false; linkSource=null;
+  btnLinkMode.classList.remove('on');
+  svg.classList.remove('linking');
+  linkingHint.classList.remove('show');
+  linkPopover.classList.remove('show');
+  renderAll();
+}
+btnLinkMode.addEventListener('click', ()=>{
+  if(linkMode) exitLinkMode(); else enterLinkMode();
+});
+document.getElementById('btnCancelLink').addEventListener('click', exitLinkMode);
+
+let pendingLink = null;
+function handleLinkClick(n){
+  if(!linkSource){
+    linkSource = n.id; renderAll();
+    return;
+  }
+  if(linkSource === n.id) return;
+  pendingLink = {from:linkSource, to:n.id};
+  showLinkPopover(n);
+}
+
+function showLinkPopover(targetNode){
+  const rect = svg.getBoundingClientRect();
+  const screenX = rect.left + viewX + targetNode.x*viewScale;
+  const screenY = rect.top + viewY + targetNode.y*viewScale;
+  linkPopover.style.left = (screenX - rect.left + 20) + 'px';
+  linkPopover.style.top = (screenY - rect.top) + 'px';
+  linkPopover.classList.add('show');
+}
+document.getElementById('lpDirect').addEventListener('click', ()=>{ confirmLink('direct'); });
+document.getElementById('lpCheckpoint').addEventListener('click', ()=>{ confirmLink('checkpoint'); });
+function confirmLink(kind){
+  if(pendingLink){
+    edges.push({from:pendingLink.from, to:pendingLink.to, kind});
+  }
+  pendingLink=null;
+  linkPopover.classList.remove('show');
+  exitLinkMode();
+}
+
+// ===================== Filters =====================
+document.querySelectorAll('.grp-filter').forEach(cb=>{
+  cb.addEventListener('change', ()=>{
+    activeGroups = new Set(
+      Array.from(document.querySelectorAll('.grp-filter')).filter(c=>c.checked).map(c=>c.dataset.grp)
+    );
+    renderAll();
+  });
+});
+
+// ===================== Tooltip =====================
+const tooltip = document.getElementById('tooltip');
+function showTooltip(ev, n){
+  tooltip.style.display='block';
+  const displayTitle = currentLang==='he' ? n.titleHe : n.title;
+  tooltip.textContent = displayTitle + (n.type==='checkpoint' ? ' · '+TR[currentLang].checkpointSub : '');
+  positionTooltip(ev);
+}
+function positionTooltip(ev){
+  const wrap = document.getElementById('canvasWrap').getBoundingClientRect();
+  tooltip.style.left = (ev.clientX - wrap.left + 14) + 'px';
+  tooltip.style.top = (ev.clientY - wrap.top + 10) + 'px';
+}
+function hideTooltip(){ tooltip.style.display='none'; }
+</script>
+</body>
+</html>
