@@ -35,6 +35,28 @@ Stack: Next.js 14 + TypeScript + Tailwind CSS.
 | Correct answer | `green-400 #4ade80` | `green-600 #16a34a` |
 | Wrong answer | `red-400 #f87171` | `red-600 #dc2626` |
 
+### Group categorization — "Карта графа" only
+
+Используется исключительно для различения тематических групп узлов на экране
+"Карта графа" (§ TBD, конструктор контента). Это единственное место в системе,
+где вводится более одного акцентного цвета одновременно — осознанное и
+задокументированное исключение из принципа "only cyan as accent".
+
+| Группа | Hex | Примечание |
+|---|---|---|
+| Векторы | `#22D3EE` (cyan-400) | Совпадает с основным акцентом системы |
+| Тригонометрия | `#FB923C` (orange-400) | Выбран вместо amber — amber зарезервирован под тип «контрольная точка», см. Патч 2 |
+| Производная | `#FB7185` (rose-400) | ⚠️ Технически из «красной» цветовой семьи, зарезервированной §1 под answer-state «неверно». Сознательно принято как исключение по решению автора (июнь 2026), а не как ошибка реализации. Если в будущем на графе появится индикация неверных/проблемных атомов — потребуется пересмотреть. |
+
+Применение: используется только как **stroke** (обводка) узла-атома и фон
+тега группы (`background: color+22, border: color+55`, ~13% и ~33% непрозрачности
+соответственно) в детальной панели. Не используется как заливка узла (заливка
+нейтральна и зависит от темы, см. компонент "Node fill").
+
+Цвет идентичен в обеих темах (соответствует core principle §1).
+
+---
+
 ### Dark theme — Slate scale
 
 | Token | Hex | Usage |
@@ -445,10 +467,14 @@ Group 3 (bottom):
 
 Nav item states:
 ```
-active dark:  bg #164e63 / color #22D3EE
-active light: bg #cffafe / color #0e7490
-hover dark:   bg #334155 / color #f1f5f9
-hover light:  bg #e2e8f0 / color #0f172a
+// Revised June 2026 — supersedes original bg-pill spec below.
+// Decision: color-only state change, no background fill.
+// Rationale: a background pill tested as visually too heavy for the
+// 46–164px icon-rail sidebar at this width; color-only keeps the rail calm.
+// Applies to ALL persistent-shell screens (Dashboard, Карта графа, Atom Editor, etc).
+
+active (both themes): color #22D3EE — icon + label, no background
+hover  (both themes): color #94a3b8 — icon + label, no background
 ```
 
 ### Bottom navigation (mobile only)
@@ -1612,13 +1638,23 @@ own menu separately, unstyled.
 Prerequisite tag colors: cyan bg = atom target, amber bg = checkpoint target
 (matches the two prerequisite-edge types in MWL_CONTENT_ARCHITECTURE.md §5).
 
+Эта же пара цветов используется и на экране "Карта графа" как индикатор
+**типа узла**, поверх групповой категоризации (см. §1 "Group categorization"):
+контрольная точка всегда отрисовывается amber-обводкой (`#FBBF24`), независимо
+от того, к какой тематической группе она относится — тип узла имеет приоритет
+над группой для контрольных точек. Узлы-атомы используют цвет своей группы.
+Маркер группы для контрольной точки на текущем этапе не показывается отдельно
+(открытый вопрос на будущее, если потребуется — см. §16).
+
 ---
 
 ## 16. Open Questions
 
-- [ ] Atom Editor sidebar entry point: new top-level nav item (e.g. "Контент") vs
-      separate constructor section with its own sub-nav (Атомы / Карта графа /
-      Экзамены) — not yet decided.
+- [x] ~~Atom Editor sidebar entry point~~ — решено (июнь 2026): top-level пункт
+      "Контент" в основном сайдбаре с раскрывающимся подменю (Карта графа /
+      Редактор атома / Группы / Схема экзамена). Подменю видно только при
+      развёрнутом сайдбаре; клик по "Контенту" в свёрнутом состоянии
+      автоматически разворачивает сайдбар.
 - [ ] MathLive bidi-isolation fix (`<bdi>` wrapping for inline formulas in RTL
       text) implemented but not verified in a real browser — needs visual QA.
 - [ ] MathLive's built-in right-click context menu cannot be triggered
