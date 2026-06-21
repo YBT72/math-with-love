@@ -8,7 +8,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,sans-serif}
-.shell{display:flex;flex-direction:column;min-height:100vh}
+.shell{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 .d{background:#0f172a}.l{background:#f8fafc}
 .d .t1{color:#f1f5f9}.l .t1{color:#0f172a}
 .d .t2{color:#94a3b8}.l .t2{color:#64748b}
@@ -41,7 +41,77 @@ body{font-family:system-ui,sans-serif}
 .d .tcb{border-color:#334155}.l .tcb{border-color:#e2e8f0}
 .tcb.on{background:#22D3EE!important;color:#0f172a!important;border-color:#22D3EE!important}
 
-.main{flex:1;padding:18px;display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:start;max-width:1180px;margin:0 auto;width:100%}
+.body{display:flex;flex:1;min-height:0}
+
+/* ── Узкий сворачиваемый сайдбар — тот же компонент, что и на дашборде/карте графа,
+   с зеркалированием под RTL через логические CSS-свойства ── */
+.sb{
+  width:46px;
+  display:flex;flex-direction:column;
+  padding:8px 0;
+  border-inline-end:1px solid;
+  transition:width 0.2s ease;
+  overflow:hidden;
+  flex-shrink:0;
+}
+.sb.open{width:164px;padding:8px 6px}
+
+.sbt{
+  display:flex;align-items:center;justify-content:center;
+  width:38px;height:38px;
+  margin:0 auto 8px;
+  border-radius:8px;cursor:pointer;
+  border:0;background:transparent;
+  flex-shrink:0;
+}
+.sbt svg{flex-shrink:0}
+.d .sbt svg{stroke:#475569}.l .sbt svg{stroke:#94a3b8}
+.sbt:hover svg{stroke:#94a3b8!important}
+
+.sg,.sbm,.sbb{display:flex;flex-direction:column;gap:2px}
+.sbm{margin:auto 0}
+
+.ni{
+  display:flex;align-items:center;
+  width:38px;height:38px;min-height:40px;
+  margin:0 auto;
+  border-radius:8px;cursor:pointer;
+  white-space:nowrap;overflow:hidden;border:0;background:transparent;
+  flex-shrink:0;
+}
+.sb.open .ni{width:100%;margin:0;padding:0 8px}
+.ni:hover svg{stroke:#94a3b8!important}
+.ni:hover .nl{color:#94a3b8!important}
+
+.ni .icon-wrap{width:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb.open .ni .icon-wrap{width:18px}
+
+.ni svg{flex-shrink:0;transition:stroke 0.15s;display:block}
+.d .ni svg{stroke:#475569}.l .ni svg{stroke:#64748b}
+.ni.on svg{stroke:#22D3EE!important}
+
+.nl{font-size:12px;font-weight:500;opacity:0;transition:opacity 0.15s,color 0.15s;white-space:nowrap;margin-inline-start:8px}
+.d .nl{color:#475569}.l .nl{color:#64748b}
+.ni.on .nl{color:#22D3EE!important}
+.sb.open .nl{opacity:1}
+
+.nav-sub{display:none;flex-direction:column;gap:1px;padding-inline-start:14px;margin-top:2px;margin-bottom:4px}
+.sb.open .nav-sub{display:flex}
+.ni-sub{
+  display:flex;align-items:center;gap:8px;
+  font-size:11.5px;padding:6px 8px;border-radius:6px;cursor:pointer;
+  white-space:nowrap;
+}
+.ni-sub svg{flex-shrink:0}
+.d .ni-sub{color:#64748b}.l .ni-sub{color:#94a3b8}
+.d .ni-sub svg{stroke:#475569}.l .ni-sub svg{stroke:#94a3b8}
+.d .ni-sub:hover{background:#334155;color:#cbd5e1}
+.l .ni-sub:hover{background:#f1f5f9;color:#475569}
+.ni-sub:hover svg{stroke:#94a3b8}
+.ni-sub.on{color:#22D3EE!important;font-weight:600}
+.ni-sub.on svg{stroke:#22D3EE!important}
+
+.main{flex:1;overflow-y:auto;padding:18px;display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:start;max-width:1180px;margin:0 auto;width:100%}
 
 .col{display:flex;flex-direction:column;gap:14px;min-width:0}
 .sec{border-radius:12px;border:1px solid;overflow:hidden}
@@ -160,6 +230,65 @@ math-field::part(menu-toggle){display:none!important}
   <div class="ctrl p1 bd">
     <button class="tcb on t1" id="tD" onclick="setTheme('d')" data-i18n="themeDark"></button>
     <button class="tcb t1" id="tL" onclick="setTheme('l')" data-i18n="themeLight"></button>
+  </div>
+
+  <div class="body">
+  <div class="sb p1 bd" id="sb">
+    <div class="sbt" onclick="toggleSb()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+    </div>
+    <div class="sg">
+      <div class="ni">
+        <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9 -9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"/><path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/></svg></span>
+        <span class="nl" data-i18n="navDashboard"></span>
+      </div>
+      <div class="ni">
+        <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><line x1="3" y1="6" x2="3" y2="19"/><line x1="12" y1="6" x2="12" y2="19"/><line x1="21" y1="6" x2="21" y2="19"/></svg></span>
+        <span class="nl" data-i18n="navModules"></span>
+      </div>
+      <div class="ni">
+        <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="3" y2="21"/><line x1="21" y1="21" x2="3" y2="21"/><path d="M7 17v-3"/><path d="M11 17v-6"/><path d="M15 17v-9"/></svg></span>
+        <span class="nl" data-i18n="navProgress"></span>
+      </div>
+      <div class="ni on" id="contentNavToggle" onclick="onContentClick()">
+        <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7h6m-6 5h6m-6 5h4"/><rect x="4" y="3" width="16" height="18" rx="2"/></svg></span>
+        <span class="nl" data-i18n="navContent"></span>
+      </div>
+      <div class="nav-sub" id="contentSubNav">
+        <div class="ni-sub">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="13" r="2.5"/><circle cx="6" cy="20" r="2.5"/><circle cx="18" cy="20" r="2.5"/><path d="M8.2 7.2L10.5 11.3M15.8 7.2L13.5 11.3M10.5 14.7L7.8 18M13.5 14.7L16.2 18"/></svg>
+          <span data-i18n="subGraph"></span>
+        </div>
+        <div class="ni-sub on">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg>
+          <span data-i18n="subAtomEditor"></span>
+        </div>
+        <div class="ni-sub">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="13" width="7" height="7" rx="1.5"/><rect x="14" y="13" width="7" height="7" rx="1.5"/></svg>
+          <span data-i18n="subGroups"></span>
+        </div>
+        <div class="ni-sub">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6a1 1 0 0 1 1 1v3.5a1 1 0 0 1 -.4 .8l-3.6 2.7l3.6 2.7a1 1 0 0 1 .4 .8v3.5a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1v-3.5a1 1 0 0 1 .4 -.8l3.6 -2.7l-3.6 -2.7a1 1 0 0 1 -.4 -.8v-3.5a1 1 0 0 1 1 -1z"/></svg>
+          <span data-i18n="subExam"></span>
+        </div>
+      </div>
+    </div>
+    <div class="sbm">
+      <div class="ni">
+        <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="9" y2="4"/><line x1="6" y1="13" x2="13" y2="13"/><path d="M15 20l5 -16"/><path d="M14 8h7"/></svg></span>
+        <span class="nl" data-i18n="navFormulas"></span>
+      </div>
+      <div class="ni">
+        <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9l-8 4.5l-8 -4.5v-9z"/><path d="M12 12l8 -4.5"/><path d="M12 12v9"/><path d="M12 12l-8 -4.5"/></svg></span>
+        <span class="nl" data-i18n="navLab"></span>
+      </div>
+    </div>
+    <div class="sbb">
+      <div class="ni">
+        <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06 .06a2 2 0 1 1 -2.83 2.83l-.06 -.06a1.65 1.65 0 0 0 -1.82 -.33a1.65 1.65 0 0 0 -1 1.51v.17a2 2 0 0 1 -4 0v-.09a1.65 1.65 0 0 0 -1.08 -1.51a1.65 1.65 0 0 0 -1.82 .33l-.06 .06a2 2 0 1 1 -2.83 -2.83l.06 -.06a1.65 1.65 0 0 0 .33 -1.82a1.65 1.65 0 0 0 -1.51 -1h-.17a2 2 0 0 1 0 -4h.09a1.65 1.65 0 0 0 1.51 -1.08a1.65 1.65 0 0 0 -.33 -1.82l-.06 -.06a2 2 0 1 1 2.83 -2.83l.06 .06a1.65 1.65 0 0 0 1.82 .33h0a1.65 1.65 0 0 0 1 -1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82 -.33l.06 -.06a2 2 0 1 1 2.83 2.83l-.06 .06a1.65 1.65 0 0 0 -.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0 -1.51 1z"/></svg></span>
+        <span class="nl" data-i18n="navSettings"></span>
+      </div>
+    </div>
   </div>
 
   <div class="main">
@@ -399,6 +528,7 @@ math-field::part(menu-toggle){display:none!important}
     </div>
 
   </div>
+  </div>
 
   <div class="fmenu p1 bd" id="fmenu">
     <span class="fmenu-label t2" data-i18n="fmenuLabel"></span>
@@ -428,6 +558,15 @@ function setTheme(m){
   document.getElementById('tL').classList.toggle('on',m==='l');
 }
 
+var sbOpen=false;
+function toggleSb(){
+  sbOpen=!sbOpen;
+  document.getElementById('sb').className='sb p1 bd'+(sbOpen?' open':'');
+}
+function onContentClick(){
+  if(!sbOpen) toggleSb();
+}
+
 var PRIMARY = 'he';
 
 var UI = {
@@ -436,6 +575,18 @@ var UI = {
   saveBtn:{he:'שמירה',ru:'Сохранить'},
   themeDark:{he:'כהה',ru:'Тёмная'},
   themeLight:{he:'בהיר',ru:'Светлая'},
+
+  navDashboard:{he:'לוח בקרה',ru:'Дашборд'},
+  navModules:{he:'מודולים',ru:'Модули'},
+  navProgress:{he:'התקדמות',ru:'Прогресс'},
+  navContent:{he:'תוכן',ru:'Контент'},
+  navFormulas:{he:'נוסחאות',ru:'Формулы'},
+  navLab:{he:'מעבדה',ru:'Лаборатория'},
+  navSettings:{he:'הגדרות',ru:'Настройки'},
+  subGraph:{he:'מפת הגרף',ru:'Карта графа'},
+  subAtomEditor:{he:'עורך אטום',ru:'Редактор атома'},
+  subGroups:{he:'קבוצות',ru:'Группы'},
+  subExam:{he:'מבנה הבגרות',ru:'Схема экзамена'},
 
   sec1Title:{he:'תאוריה',ru:'Теория'},
   sec1Sub:{he:'חומר חדש + גרפיקה',ru:'Новый материал + графика'},
@@ -608,24 +759,64 @@ function alertI18n(key){ alert(UI[key][curLang]); }
 // Вставка <math-field> прямо в точку курсора внутри редактируемой области — как в Word.
 function insertFormula(field){
   var host = document.getElementById('f_'+field);
+
+  // bdi-изоляция нужна для RTL-текста (иврит), чтобы встроенная LTR-формула
+  // не путала логический порядок символов — тот же приём, что и в статичном
+  // demo-контенте (см. MFO/MFC выше), но раньше живая вставка через эту кнопку
+  // его не использовала, отсюда и расхождение в поведении.
+  var bdi = document.createElement('bdi');
+  bdi.style.unicodeBidi = 'isolate';
+  bdi.style.direction = 'ltr';
+
   var mf = document.createElement('math-field');
   mf.className = 'imf';
   mf.setAttribute('dir','ltr');
   mf.setAttribute('virtual-keyboard-mode','off');
+  bdi.appendChild(mf);
+
+  // Невидимый текстовый якорь (zero-width space) сразу после формулы.
+  // Без него клик мышью прямо у границы кастомного inline-элемента
+  // (<math-field>) — это известная неоднозначность Selection API: браузер
+  // часто резолвит такой клик как позицию ПЕРЕД элементом, а не после, потому
+  // что у границы кастомного элемента нет настоящего текстового узла, на
+  // который можно однозначно "попасть". Этот якорь даёт браузеру реальный
+  // текст сразу после формулы, чтобы клик туда срабатывал предсказуемо.
+  var anchor = document.createTextNode('\u200B');
+
+  var frag = document.createDocumentFragment();
+  frag.appendChild(bdi);
+  frag.appendChild(anchor);
 
   var sel = window.getSelection();
   var inHost = sel.rangeCount && host.contains(sel.anchorNode);
   if(inHost){
     var range = sel.getRangeAt(0);
     range.deleteContents();
-    range.insertNode(mf);
-    range.setStartAfter(mf); range.setEndAfter(mf); range.collapse(true);
-    sel.removeAllRanges(); sel.addRange(range);
+    range.insertNode(frag);
   } else {
-    host.appendChild(mf);
+    host.appendChild(frag);
   }
+
+  // Сразу ставим курсор в якорь (внутри текстового узла, после формулы) —
+  // это и стартовая позиция, и то место, куда корректно попадёт клик рядом
+  // с формулой в дальнейшем.
+  var r = document.createRange();
+  r.setStart(anchor, 1); r.setEnd(anchor, 1);
+  sel.removeAllRanges(); sel.addRange(r);
+
   host.focus();
   setTimeout(function(){ mf.focus(); }, 0);
+
+  // Когда фокус уходит из формулы (пользователь закончил её вводить и
+  // нажал Tab/Escape, не кликая мышью), тоже возвращаем курсор в якорь —
+  // подстраховка для путей выхода из формулы без клика.
+  mf.addEventListener('blur', function(){
+    var r2 = document.createRange();
+    r2.setStart(anchor, 1); r2.setEnd(anchor, 1);
+    var s = window.getSelection();
+    s.removeAllRanges();
+    s.addRange(r2);
+  });
 }
 
 function renderBadge(field, lang){

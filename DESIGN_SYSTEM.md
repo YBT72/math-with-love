@@ -1655,8 +1655,26 @@ Prerequisite tag colors: cyan bg = atom target, amber bg = checkpoint target
       Редактор атома / Группы / Схема экзамена). Подменю видно только при
       развёрнутом сайдбаре; клик по "Контенту" в свёрнутом состоянии
       автоматически разворачивает сайдбар.
-- [ ] MathLive bidi-isolation fix (`<bdi>` wrapping for inline formulas in RTL
-      text) implemented but not verified in a real browser — needs visual QA.
+- [x] ~~MathLive bidi-isolation fix~~ — проверено вживую (июнь 2026). Найден и
+      исправлен реальный баг: живая вставка формулы через кнопку "Вставить
+      формулу" (insertFormula()) не оборачивала <math-field> в <bdi>, в
+      отличие от статичного demo-контента (MFO/MFC) — расхождение между
+      двумя путями вставки. Также обнаружена и исправлена независимая
+      проблема, не связанная с bidi: клик мышью сразу после вставленной
+      формулы помещал курсор ДО неё, а не после — известная неоднозначность
+      Selection API на границе кастомных inline-элементов в contenteditable.
+      Решение: невидимый текстовый узел (zero-width space, ​) сразу
+      после <bdi>-обёртки формулы — даёт браузеру реальный текст, на который
+      клик у границы формулы попадает однозначно. Исправлено в обоих файлах
+      (mwl_atom_editor.html, mwl_atom_editor_tablet.html).
+- [x] Десктоп-версия Редактора атома (mwl_atom_editor.html) не имела
+      сайдбара вообще — недоделка, не осознанное решение. Исправлено
+      (июнь 2026): добавлен тот же сайдбар, что в карте графа/планшетной
+      версии, с пунктом "Контент" и подменю (Карта графа / Редактор атома /
+      Группы / Схема экзамена). Заодно исправлен .shell{min-height:100vh} →
+      height:100vh;overflow:hidden — нарушение §10 Persistent shell.
+      Планшетная версия (mwl_atom_editor_tablet.html) дополнена тем же
+      подменю — раньше "Контент" там был статичным пунктом без раскрытия.
 - [ ] MathLive's built-in right-click context menu cannot be triggered
       programmatically (browsers ignore synthetic `contextmenu` events for
       security) — replaced with a custom symbol-insert panel instead; real
