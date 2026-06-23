@@ -28,7 +28,9 @@
 - [x] Конструктор групп — desktop (`mwl_groups_v4.html`)
       Рекурсивное дерево групп, drag-and-drop рекурсивный (рекурсивный D&D),
       черновики атомов, КТ-карточка, batch-перевод через Anthropic API, RTL/i18n.
-- [ ] Редактор схемы экзамена — не начат
+- [x] Примеры вопросников — desktop (`mwl_exam_schema_v2.html`)
+      Двухуровневый список (тип → сессии), разделы, вопросы с формулами
+      и изображениями, правила выбора, превью, batch-перевод, auto-save.
 
 ---
 
@@ -40,7 +42,7 @@
 - [ ] Адаптировать `app/dashboard/page.tsx` под новый layout
 - [ ] Обновить/переписать компоненты в `components/dashboard/`:
   - [ ] `WelcomeBlock` — аватар, приветствие по времени, кнопки действий, Yosi card
-  - [ ] `Sidebar` — «Контент» пункт с подменю (Карта графа / Редактор атома / Группы / Схема экзамена), collapse, active states
+  - [ ] `Sidebar` — «Контент» пункт с подменю (Карта графа / Редактор атома / Группы / Примеры вопросников), collapse, active states
   - [ ] `StatsRow` — 3 карточки (серия / очки / темы), без знака %
   - [ ] `TopicsAndPreview` — список тем + превью (Progress Maze встанет сюда)
   - [ ] `CurrentModule` — прогресс бар, кнопка Продолжить
@@ -130,14 +132,30 @@
 
 ## Фаза 8 — Конструктор контента: реализация (после Фаз 1–7)
 
-Перенос мокапов в реальные Next.js компоненты. Требует пересмотра Supabase-схемы
-(текущая схема линейна, не отражает граф + теги — см. MWL_CONTENT_ARCHITECTURE §9).
+Перенос мокапов в реальные Next.js компоненты. Требует:
+- пересмотра Supabase-схемы (линейная → граф + теги, см. MWL_CONTENT_ARCHITECTURE §9)
+- завершения инженерного спайка по rich text + формулам (см. Фаза 8a)
 
-- [ ] Пересмотреть Supabase-схему: `atoms`, `groups`, `group_members`, `prerequisite_edges`, `checkpoints`
+### Фаза 8a — Спайк: rich text + MathLive + bidi (ОБЯЗАТЕЛЕН ПЕРВЫМ)
+
+Техническая проблема: `contenteditable` + inline `<math-field>` + RTL Hebrew.
+В HTML-макетах работает на базовом уровне, но есть нерешённые вопросы:
+- Виртуальная клавиатура MathLive появляется несмотря на `virtual-keyboard-mode="off"`
+- Навигация по placeholder-слотам (#0, #1) в shadow DOM требует проверки
+- Selection API на границах кастомных элементов ведёт себя непредсказуемо
+
+- [ ] Создать `app/spike/formula-editor/page.tsx` — изолированный тест
+- [ ] Проверить: вставка math-field, bidi-изоляция, cursor anchor, placeholder navigation
+- [ ] Выбрать финальный подход или альтернативу (ProseMirror + MathLive plugin?)
+- [ ] Зафиксировать решение в DESIGN_SYSTEM.md §15 до начала §8b
+
+### Фаза 8b — Реализация экранов конструктора
+
+- [ ] Пересмотреть Supabase-схему: `atoms`, `groups`, `group_members`, `prerequisite_edges`, `checkpoints`, `shalon_types`, `shalon_sessions`
 - [ ] `app/constructor/graph/page.tsx` — Карта графа
 - [ ] `app/constructor/atom/[id]/page.tsx` — Редактор атома
 - [ ] `app/constructor/groups/page.tsx` — Конструктор групп
-- [ ] `app/constructor/exam-schema/page.tsx` — Редактор схемы экзамена (мокап тоже не начат)
+- [ ] `app/constructor/examples/page.tsx` — Примеры вопросников
 - [ ] Подключить batch-перевод к реальному Anthropic API endpoint
 
 ---
@@ -170,4 +188,4 @@ Claude Code (VS Code) + claude.ai/chat тянут из **одного пула**
 
 ---
 
-*Создан: 2026-06-19 · Обновлён: 2026-06-22*
+*Создан: 2026-06-19 · Обновлён: 2026-06-22 (Фаза 0.5 завершена — все 4 макета конструктора готовы)*

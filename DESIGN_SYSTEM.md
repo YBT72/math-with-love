@@ -480,52 +480,104 @@ above is for static-HTML mockups only.
 Search icon: right-aligned inside field
 ```
 
+### Header
+
+3-column CSS Grid layout — поиск всегда строго по центру, не зависит от ширины боковых секций:
+
+```css
+.hdr {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: 48px;
+  padding: 0 14px;
+}
+.hdr-left  { display: flex; align-items: center; gap: 10px }
+.hdr-center{ display: flex; align-items: center; justify-content: center }
+.hdr-right { display: flex; align-items: center; justify-content: flex-end; gap: 6px }
+```
+
+RTL-поведение (иврит): CSS Grid автоматически зеркалит колонки при `dir="rtl"` на `.shell`:
+- LTR: [лого + бренд | поиск | кнопки] — лого слева, кнопки справа
+- RTL: [кнопки | поиск | лого + бренд] — кнопки слева, поиск по центру, лого справа
+
 ### Sidebar — 3 groups, no divider lines, only spacing
 
 ```
 [Toggle btn]           ← expand/collapse, width: collapsed 46px / expanded 164px
 Group 1 (top):
-  [icon  Dashboard]
-  [icon  Модули]
-  [icon  Прогресс]
-  [icon  Контент]      ← content constructor entry point (see §10a)
-    └─ submenu (visible only when expanded):
-         [icon  Карта графа]
-         [icon  Редактор атома]
-         [icon  Группы]          ← active on Groups screen
-         [icon  Схема экзамена]
+  [🏠  Дашборд]        — home icon
+  [🎓  Модули]         — graduation cap — ЗАФИКСИРОВАНО ✓
+  [📊  Прогресс]       — bar chart
+  [📝  Редактор]       — document + pencil — ЗАФИКСИРОВАНО ✓
+    └─ submenu (visible only when «Редактор» is active):
+         [⬡  Граф]       — route/path: circle cx5 cy6 r2, circle cx19 cy6 r2,
+                            circle cx12 cy18 r2, path M7 6h10, path M14 18H7 a2 2... — ЗАФИКСИРОВАНО ✓
+         [☰  Атом]       — document with lines (rect + 2 lines)
+         [⊞  Группы]     — 4 squares grid (2×2)
+         [✎✓ Экзамены]   — pencil-check (Tabler): path M4 20h4l10.5-10.5... — ЗАФИКСИРОВАНО ✓
 
 Group 2 (margin: auto 0 — vertically centered):
-  [icon  Формулы]
-  [icon  Лаборатория]
-  [icon  Достижения]
+  [±×  Формулы]  — math-symbols (Tabler) — ЗАФИКСИРОВАНО ✓
+                   SVG: M3 12l18 0 / M12 3l0 18 / M16.5 4.5l3 3 / M19.5 4.5l-3 3 /
+                   M6 4l0 4 / M4 6l4 0 / M18 16l.01 0 / M18 20l.01 0 / M4 18l4 0
+  [⚛  Лаборатория] — atom: circle r2 + 3 ellipses rx10 ry4 rotated 0°/60°/120° — ЗАФИКСИРОВАНО ✓
+  [🏆  Достижения] — trophy
 
 Group 3 (bottom):
-  [icon  Помощь]
-  [icon  Настройки]
+  [?   Помощь]    — circle with question mark
+  [⚙   Настройки] — gear
+```
+
+#### Sidebar icon alignment (зафиксировано июнь 2026)
+
+Иконки должны стоять на одной горизонтальной позиции в обоих состояниях — свёрнутом и развёрнутом.
+
+```css
+/* Ключевое правило: .ni всегда 46px (= ширина свёрнутого сайдбара) */
+.ni { width: 46px; height: 38px; display: flex; align-items: center; }
+.sb.open .ni { width: 100%; }  /* растягивается при открытии */
+
+/* icon-wrap всегда 46px — иконка физически не сдвигается */
+.ni .icon-wrap { width: 46px; display: flex; align-items: center; justify-content: center; flex-shrink: 0 }
+/* При открытии icon-wrap остаётся 46px — текст появляется справа */
 ```
 
 Nav item states:
 ```
-// Decision: color-only state change, no background fill.
-// Rationale: a background pill tested as visually too heavy for the
-// 46–164px icon-rail sidebar at this width; color-only keeps the rail calm.
-// Applies to ALL persistent-shell screens.
-
 active (both themes): color #22D3EE — icon + label, no background
 hover  (both themes): color #94a3b8 — icon + label, no background
 ```
 
 ### §10a. Content constructor sidebar entry point
 
-Resolved (June 2026): top-level пункт "Контент" в основном сайдбаре с раскрывающимся
-подменю (Карта графа / Редактор атома / Группы / Схема экзамена).
+Resolved (June 2026): top-level пункт **«Редактор»** в основном сайдбаре с раскрывающимся
+подменю (Граф / Атом / Группы / Экзамены).
 
-- Подменю видно только при развёрнутом сайдбаре (`.sb.open`)
-- Клик по "Контенту" в свёрнутом состоянии автоматически разворачивает сайдбар
+- Подменю открывается **только когда «Редактор» активен** (не как отдельный toggle)
+- Активация «Редактора» деактивирует все остальные пункты верхнего уровня
+- Клик на Дашборд/Модули/Прогресс → закрывает подменю и деактивирует «Редактор»
+- В свёрнутом сайдбаре: клик на иконку «Редактора» → разворачивает сайдбар + открывает подменю
 - Подпункты: `.ni-sub` flex-row с иконкой 14px + текстом, indent `padding-inline-start: 14px`
 - Активный подпункт: `color: #22D3EE; font-weight: 600; svg stroke: #22D3EE`
-- Реализовано во всех трёх авторских экранах (Карта графа, Редактор атома, Конструктор групп)
+
+### i18n — Dashboard
+
+```javascript
+// TR_DASH dictionary (RU + HE), setLang() + applyI18n() via data-i18n attributes
+// Sandbox-safe onclick: callFn() dispatcher вместо eval()
+
+function callFn(expr) {
+  // parses: fn(), fn('str'), fn(n), fn('str', n)
+}
+
+function setLang(lang) {
+  // sets dir="rtl/ltr" on #shell, updates TR_DASH labels, placeholder
+}
+```
+
+RTL switching: `dir="rtl/ltr"` устанавливается на `#shell`. Header grid зеркалит
+автоматически. Sidebar position (left/right) зеркалит автоматически через flex-direction.
 
 ### Contextual action strip (`.ctrl`)
 
@@ -1151,31 +1203,193 @@ Full RU/HE translation via `TR{ru, he}` dictionary. RTL set on shell root. Group
 
 ---
 
-## 18. Exam Schema Editor (Content Constructor)
+## 18. Exam Schema Editor — «Примеры вопросников» (Content Constructor)
 
-**Status: not yet started.** Planned mockup for next phase.
+**Status: approved mockup (mwl_exam_schema_v2.html).** Author-facing. Scope: desktop only.
 
-Will cover: distribution of exam tasks across groups + student choice rules (per §6 MWL_CONTENT_ARCHITECTURE). Separate entity from atom/group content — authored independently by teacher.
+### Concept
+
+Screen for authoring Bagrut exam instances (שאלונים). Two-level structure:
+- **Shalon type** (вопросник): number only (572, 571, 471…) — no title shown in list
+- **Session** (экземпляр вопросника): free-form label authored by teacher, no date fields, not bound to any calendar date — purely content-based
+
+Multiple sessions per shalon type — the more the better (archive of past exams for practice).
+
+### Layout
+
+```
+[Sidebar §10a] | [Ctrl-bar: theme · RU→HE translate · Preview · + New срок (contextual)]
+               | [Shalon list panel, collapsible] | [Editor / Preview panel]
+```
+
+### Shalon list panel (left, collapsible)
+
+Collapsible like sidebar: open (220px) / closed (46px strip).
+
+```
+Toggle button: ☰ hamburger (NOT the sidebar icon — different to avoid confusion)
+Title "Примеры вопросников" / "דוגמאות שאלונים": visible only when open (opacity fade)
+Toggle button stays fixed at same position regardless of open/closed state.
+
+Open state:
+  Type row: [number badge: 572] [▾/▸ chevron]  ← no title text, no session count
+  Session rows (visible when type selected):
+    [exam document icon 14px] [free label or "Без названия"]
+  [+ Вопросник] button at bottom — always visible, adds new shalon type
+
+Closed state (46px):
+  [☰ toggle]
+  [572 badge]  ← clickable, expands panel + selects type
+  [571 badge]
+```
+
+Auto-close: panel closes automatically when a session is selected, giving more editor space.
+
+**+ button (ctrl-bar) is context-aware:**
+- Type selected → «+ Новый срок» (adds session inside selected type)
+- Nothing selected → «+ Вопросник» (adds new shalon type)
+
+### Session editor
+
+```
+Session header: [type number · session label] in cyan
+Metadata grid (4 cols): duration (min) | total questions (read-only) | answer K | pts/question
+Instructions field: free-form textarea (3 rows) — author writes any text; shown in preview as-is
+פרקים list: collapsible cards (same structure as Groups Constructor)
++ Add פרק button
+Selection rules constructor (below פרקים)
+```
+
+### פרק card
+
+```
+Header: [chevron] [badge Р1/פ1] [editable name input] [question count] [✕ delete]
+Body (when open):
+  Topics textarea (2 rows, italic placeholder)
+  Question rows
+  + Add question button
+```
+
+### Question row
+
+```
+Header: [q-num circle] [pts badge amber] [✓ save indicator] [toolbar]
+  Toolbar: [∑ smart button] [📎 image] [✕ delete]
+Body: contenteditable field (min-height 60px, dark bg #0f172a / light #f8fafc)
+  — with image: text 66.7% | image 33.3%, vertical divider
+  — no image: full width
+
+∑ button behavior (single smart button, replaces two-button approach):
+  — no focused math-field in this question → inserts new <math-field> at cursor + opens symbol panel
+  — math-field already focused → opens symbol panel only
+  — panel open → closes panel
+  onmousedown="event.preventDefault()" on all formula buttons — never steals focus
+```
+
+### Save indicator
+
+```
+green ✓ in question header: appears 600ms after typing stops, fades after 1.4s
+Content saved to data model on every keystroke (oninput → q.content = el.innerHTML)
+```
+
+### Tab key in question content fields
+
+```
+Tab inside .q-content → inserts 4 × \u00A0 (non-breaking space) as indent
+Exit field: Escape or mouse click elsewhere
+```
+
+### Inline formula fields (`<math-field class="imf">`)
+
+```
+Wrapped in: <bdi style="unicode-bidi:isolate; direction:ltr">
+Followed by: \u200B zero-width-space anchor (fixes Selection API boundary ambiguity)
+virtual-keyboard-mode="off" attribute + JS: mf.virtualKeyboardMode='off'; mf.menuItems=[]
+CSS: ::part(virtual-keyboard-toggle), ::part(menu-toggle) { display:none !important }
+Delete empty field: Backspace/Delete when mf.getValue('latex').trim()==='' removes bdi+anchor
+
+⚠️ ENGINEERING SPIKE REQUIRED (see §19):
+Mixed contenteditable + inline MathLive + RTL bidi is a known hard problem.
+The mockup demonstrates the intended UX; actual production implementation
+needs a dedicated spike in Next.js before Фаза 8.
+```
+
+### Formula symbol panel
+
+```
+Single shared .fmenu (position:fixed, z-index:200), 4×4 grid of 16 symbols:
+a∕b √ x² xₙ →a |a| θ π ∑ ∫ ∞ · log ln cos sin
+mousedown → preventDefault on panel (no focus loss)
+Close: click outside or Escape
+Insert: mf.insert(latex, {insertionMode:'insertAfter', selectionMode:'placeholder'})
+```
+
+### Image in question
+
+```
+Upload via 📎 button → FileReader → base64 stored in q.images[]
+Delete: ✕ button on thumbnail
+Layout: text 66.7% / image 33.3% (both in editor and preview)
+```
+
+### Selection rules constructor
+
+```
+Main rule: "Ответить на [K] из [N] всего"
+Constraint rows: "Минимум [M] из раздела: [chip] [chip OR] [+ add chip]"
+  Chips: selected = cyan outline; unselected = addable (click to include)
+  OR grouping: multiple chips in one constraint → min-or type
+  + Add constraint button
+```
+
+### Translate button (RU → HE / HE → RU)
+
+Opens confirmation modal (same pattern as Groups Constructor §17):
+- Body: "Перевести названия разделов и темы с X на Y? Существующие переводы будут перезаписаны."
+- Progress bar (animated) during API call
+- On success: "Готово! Переведено N элементов." + OK button
+- On error: red bar + error message, Перевести button reappears
+- OK click applies buffered result to data model then closes modal
+
+### Preview mode
+
+Activated by «Превью» button in ctrl-bar (panel toggles, ctrl-bar button turns cyan).
+
+```
+Ministry header → title → session label
+Instructions line (free text from field — displayed as-is, full direction/RTL support)
+פרקים: chapter title + topics (italic)
+Questions:
+  [num]. ([pts] балла/балл/баллов)
+       text indented inline-start:22px (next line)
+       image: 66.7% / 33.3% same as editor
+```
+
+### i18n / RTL
+
+Full RU/HE via TR{} dictionary. dir="rtl" on shell root when HE active.
+Logical CSS properties throughout (`padding-inline-*`, `border-inline-*`, `margin-inline-*`).
 
 ---
 
 ## 19. Open Questions
 
+- [ ] **Rich text + formulas engineering spike** — `contenteditable` + inline `<math-field>` + RTL bidi is a hard implementation problem. MathLive's virtual keyboard toggle appears despite `virtual-keyboard-mode="off"` in some browsers. Placeholder navigation (#0, #1 slots) inside shadow DOM across bidi boundaries needs careful testing. Must be solved as a dedicated spike in Next.js before Фаза 8, not in HTML mockups.
 - [ ] 3D visualization on mobile: simplified WebGL / static image fallback / toggle button?
 - [ ] Platform name: "Math With Love" is temporary
 - [ ] Favicon: based on yosi-icon.png (needs 32×32 and 180×180 versions)
 - [ ] Dark/light theme toggle: user preference saved in Supabase profile or localStorage?
-- [ ] MathLive's built-in right-click context menu cannot be triggered programmatically — replaced with custom symbol-insert panel; real ПКМ-меню remains as unstyled fallback.
-- [ ] Supabase schema: current schema is linear (topics/lessons/exercises/progress) and does not reflect the graph+tags model (§4 MWL_CONTENT_ARCHITECTURE). Needs full redesign before implementing real data persistence.
-- [ ] 3D dynamic graphics: mechanism for binding a Three.js scene to a specific atom in the constructor is not designed — only a type-selector placeholder exists in the Atom Editor mockup.
+- [ ] Supabase schema: current schema is linear (topics/lessons/exercises/progress) — needs full redesign to reflect graph+tags model before real data persistence.
+- [ ] 3D dynamic graphics: mechanism for binding Three.js scene to a specific atom not designed — only type-selector placeholder in Atom Editor mockup.
 - [ ] Formula AI-check: prompt format, equivalent-form comparison, backend not designed.
-- [ ] Terminology: "Модуль" vs "Тема" vs "Блок" not finalized. Existing dashboard UI uses "Модуль 1: Основы векторов" — not yet reconciled with the tag/group model.
-- [ ] Maze navigation layer: thin adapter layer over v17 maze (accepts graph + student-progress, computes visible nodes) — architecturally sketched (§7 MWL_CONTENT_ARCHITECTURE), not yet implemented.
-- [ ] Input fields spec (BACKLOG): states default/focus/error/disabled — not yet added to this document.
+- [ ] Terminology: "Модуль" vs "Тема" vs "Блок" not finalized. Dashboard UI not yet reconciled with tag/group model.
+- [ ] Maze navigation layer: architecturally sketched (§7 MWL_CONTENT_ARCHITECTURE), not implemented.
+- [ ] Input fields spec: states default/focus/error/disabled — not yet added to this document.
 - [ ] Settings page spec — not yet added.
-- [ ] Mobile formula rendering: KaTeX font size on student-facing mobile screens (lesson/test/exam) — open if/when formulas appear there.
+- [ ] Mobile formula rendering: KaTeX font size on student-facing mobile screens — open when needed.
 
 ---
 
 *Last updated: June 2026.*
-*Approved screens: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile), lesson page (desktop + tablet + mobile), test page (desktop + tablet + mobile, 3 answer types), exam page (desktop + tablet + mobile, both themes), AI chat drawer (all pages, both themes, RU/HE), graph map (desktop, both themes), groups constructor (desktop, both themes) — all both themes.*
+*Approved screens: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile), lesson page (desktop + tablet + mobile), test page (desktop + tablet + mobile, 3 answer types), exam page (desktop + tablet + mobile, both themes), AI chat drawer (all pages, both themes, RU/HE), graph map (desktop, both themes), groups constructor (desktop, both themes), exam schema editor / «Примеры вопросников» (desktop, both themes) — all both themes.*

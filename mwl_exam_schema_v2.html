@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MWL — Примеры вопросников</title>
+<script defer src="https://cdn.jsdelivr.net/npm/mathlive"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif}
+.shell{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.d{background:#0f172a}.l{background:#f8fafc}
+.d .t1{color:#f1f5f9}.l .t1{color:#0f172a}
+.d .t2{color:#94a3b8}.l .t2{color:#64748b}
+.d .t3{color:#475569}.l .t3{color:#94a3b8}
+.d .p1{background:#1e293b;border-color:#334155}.l .p1{background:#ffffff;border-color:#e2e8f0}
+.d .p2{background:#334155;border-color:#334155}.l .p2{background:#f1f5f9;border-color:#e2e8f0}
+.d .bd{border-color:#334155!important}.l .bd{border-color:#e2e8f0!important}
+
+/* Header */
+.hdr{height:48px;display:flex;align-items:center;padding:0 14px;gap:10px;border-bottom:1px solid;flex-shrink:0}
+.logo{width:26px;height:26px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo svg{stroke:#0f172a}
+.brand{font-size:13px;font-weight:500}.brand b{color:#22D3EE;font-weight:500}
+.srch{flex:1;max-width:280px;margin:0 10px;position:relative}
+.srch input{width:100%;border-radius:8px;padding:6px 28px 6px 10px;font-size:12px;outline:none;font-family:inherit;border:1px solid}
+.d .srch input{background:#334155;border-color:#475569;color:#f1f5f9}
+.l .srch input{background:#f1f5f9;border-color:#e2e8f0;color:#0f172a}
+.si2{position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none}
+.hdr-r{display:flex;align-items:center;gap:6px;margin-inline-start:auto}
+.lang{display:flex;border-radius:6px;overflow:hidden;border:1px solid}
+.lb{padding:3px 7px;font-size:11px;cursor:pointer}
+.d .lb{color:#94a3b8}.l .lb{color:#64748b}
+.lb.on{background:#22D3EE;color:#0f172a;font-weight:500}
+.hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid}
+
+/* Body / sidebar */
+.body{display:flex;flex:1;min-height:0}
+.sb{width:46px;display:flex;flex-direction:column;padding:8px 0;border-inline-end:1px solid;transition:width .2s;overflow:hidden;flex-shrink:0}
+.sb.open{width:164px;padding:8px 6px}
+.sbt{display:flex;align-items:center;justify-content:center;width:38px;height:38px;margin:0 auto 8px;border-radius:8px;cursor:pointer;border:0;background:transparent;flex-shrink:0}
+.sbt svg{flex-shrink:0}
+.d .sbt svg{stroke:#475569}.l .sbt svg{stroke:#94a3b8}
+.sbt:hover svg{stroke:#94a3b8!important}
+.sg,.sbm,.sbb{display:flex;flex-direction:column;gap:2px}.sbm{margin:auto 0}
+.ni{display:flex;align-items:center;width:38px;height:38px;margin:0 auto;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden;border:0;background:transparent;flex-shrink:0}
+.sb.open .ni{width:100%;margin:0;padding:0 8px}
+.ni .icon-wrap{width:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb.open .ni .icon-wrap{width:18px}
+.ni svg{flex-shrink:0;transition:stroke .15s;display:block}
+.d .ni svg{stroke:#475569}.l .ni svg{stroke:#64748b}
+.ni.on svg{stroke:#22D3EE!important}
+.nl{font-size:12px;font-weight:500;opacity:0;transition:opacity .15s,color .15s;white-space:nowrap;margin-inline-start:8px}
+.d .nl{color:#475569}.l .nl{color:#64748b}
+.ni.on .nl{color:#22D3EE!important}
+.sb.open .nl{opacity:1}
+.nav-sub{display:none;flex-direction:column;gap:1px;padding-inline-start:14px;margin-top:2px;margin-bottom:4px}
+.sb.open .nav-sub{display:flex}
+.ni-sub{display:flex;align-items:center;gap:8px;font-size:11.5px;padding:6px 8px;border-radius:6px;cursor:pointer;white-space:nowrap}
+.ni-sub svg{flex-shrink:0}
+.d .ni-sub{color:#64748b}.l .ni-sub{color:#94a3b8}
+.d .ni-sub svg{stroke:#475569}.l .ni-sub svg{stroke:#94a3b8}
+.d .ni-sub:hover{background:#334155;color:#cbd5e1}.l .ni-sub:hover{background:#f1f5f9;color:#475569}
+.ni-sub.on{color:#22D3EE!important;font-weight:600}
+.ni-sub.on svg{stroke:#22D3EE!important}
+
+/* Ctrl bar */
+.ctrl{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid;align-items:center;flex-wrap:wrap;flex-shrink:0}
+.l .ctrl{background:#c5e3eb!important}
+.tcb{padding:4px 12px;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid;background:transparent}
+.d .tcb{color:#94a3b8;border-color:#334155}.l .tcb{color:#64748b;border-color:#e2e8f0}
+.tcb.on{background:#22D3EE!important;color:#0f172a!important;border-color:#22D3EE!important}
+.d .tcb-act{border-color:#475569}.l .tcb-act{border-color:#94a3b8}
+.div1{width:1px;height:16px;margin:0 2px}
+.d .div1{background:#334155}.l .div1{background:#e2e8f0}
+
+/* Main column */
+.es-col{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
+.es-main{flex:1;display:flex;min-height:0}
+
+/* Shalonot list (left panel) */
+.es-list{
+  width:220px;flex-shrink:0;border-inline-end:1px solid;overflow-y:auto;padding:12px;
+  transition:width .2s ease, padding .2s ease;
+  position:relative;
+}
+.es-list.closed{width:46px;padding:8px 4px;overflow:hidden}
+.es-list.closed .es-list-body{display:none}
+.es-type-icon{
+  width:38px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;cursor:pointer;margin-bottom:4px;
+}
+.d .es-type-icon{background:#334155;color:#94a3b8}
+.l .es-type-icon{background:#e2e8f0;color:#475569}
+.es-type-icon.active{background:rgba(34,211,238,.15);color:#22D3EE}
+.es-type-icons{display:none;flex-direction:column;gap:4px;align-items:center;margin-top:8px}
+.es-list.closed .es-type-icons{display:flex}
+.es-list-header{
+  display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-shrink:0;
+  /* Always at the same position — hamburger is always at inline-start,
+     title slides in/out via opacity, not layout shift */
+}
+.es-list-toggle{
+  display:flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:7px;cursor:pointer;
+  border:0;background:transparent;flex-shrink:0;
+}
+.d .es-list-toggle svg{stroke:#475569}.l .es-list-toggle svg{stroke:#94a3b8}
+.es-list-toggle:hover svg{stroke:#94a3b8!important}
+.es-list-header-title{
+  font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;
+  white-space:nowrap;overflow:hidden;
+  opacity:1;transition:opacity .15s;
+}
+.d .es-list-header-title{color:#475569}.l .es-list-header-title{color:#94a3b8}
+.es-list.closed .es-list-header-title{opacity:0;pointer-events:none}
+.d .es-list{background:#13233a}.l .es-list{background:#f3fbfc}
+.es-list-title{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.d .es-list-title{color:#475569}.l .es-list-title{color:#94a3b8}
+.shalon-item{display:flex;align-items:center;gap:8px;padding:9px 8px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:500;margin-bottom:4px}
+.d .shalon-item{color:#cbd5e1}.l .shalon-item{color:#334155}
+.d .shalon-item:hover{background:#273449}.l .shalon-item:hover{background:#e2ecf0}
+.shalon-item.active{background:rgba(34,211,238,0.12);color:#22D3EE!important}
+.shalon-num{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.d .shalon-num{background:#334155}.l .shalon-num{background:#e2e8f0}
+.shalon-item.active .shalon-num{background:rgba(34,211,238,0.15);color:#22D3EE}
+.shalon-body{flex:1;min-width:0}
+.shalon-label{font-size:11px;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.d .shalon-label{color:#64748b}.l .shalon-label{color:#94a3b8}
+.es-add-btn{display:flex;align-items:center;gap:6px;padding:8px;border-radius:8px;font-size:12px;cursor:pointer;margin-top:8px;border:1.5px dashed}
+.d .es-add-btn{color:#64748b;border-color:#475569}.l .es-add-btn{color:#94a3b8;border-color:#cbd5e1}
+.d .es-add-btn:hover{background:#1e293b;color:#cbd5e1}.l .es-add-btn:hover{background:#f8fafc;color:#475569}
+
+/* Editor / Preview panel */
+.es-editor{flex:1;overflow-y:auto;padding:20px 24px}
+.d .es-editor{background:#0b1322}.l .es-editor{background:#e2f3f7}
+
+/* Meta card */
+.meta-card{border-radius:12px;border:1px solid;padding:16px;margin-bottom:20px}
+.d .meta-card{background:#1e293b;border-color:#334155}.l .meta-card{background:#ffffff;border-color:#e2e8f0}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-top:12px}
+.meta-field label{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px}
+.d .meta-field label{color:#475569}.l .meta-field label{color:#94a3b8}
+.meta-input{width:100%;border-radius:7px;padding:7px 10px;font-size:13px;outline:none;font-family:inherit;border:1px solid}
+.d .meta-input{background:#0f172a;border-color:#334155;color:#f1f5f9}
+.l .meta-input{background:#f8fafc;border-color:#e2e8f0;color:#0f172a}
+.meta-input:focus{border-color:#22D3EE}
+
+/* פרק card */
+.prek-card{border-radius:12px;border:1px solid;margin-bottom:14px;overflow:hidden}
+.d .prek-card{background:#1e293b;border-color:#334155}.l .prek-card{background:#ffffff;border-color:#e2e8f0}
+.prek-header{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
+.d .prek-header:hover{background:#273449}.l .prek-header:hover{background:#f8fafc}
+.prek-chevron{transition:transform .15s;flex-shrink:0}
+.prek-chevron.open{transform:rotate(90deg)}
+.prek-badge{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;color:#22D3EE;background:rgba(34,211,238,0.12)}
+.prek-name{flex:1}
+.prek-name-input{background:transparent;border:none;outline:none;font-size:13.5px;font-weight:600;color:inherit;font-family:inherit;width:100%}
+.prek-body{padding:0 14px 14px 14px;border-top:1px solid}
+.d .prek-body{border-color:#334155}.l .prek-body{border-color:#e2e8f0}
+.topics-input{width:100%;border-radius:7px;padding:7px 10px;font-size:12px;outline:none;font-family:inherit;border:1px solid;margin:10px 0;resize:none;font-style:italic}
+.d .topics-input{background:#0f172a;border-color:#334155;color:#94a3b8}
+.l .topics-input{background:#f8fafc;border-color:#e2e8f0;color:#64748b}
+.topics-input:focus{border-color:#22D3EE;font-style:normal}
+
+/* Question rows */
+.q-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.q-row{border-radius:9px;border:1px solid;overflow:hidden}
+.d .q-row{background:#273449;border-color:#334155}.l .q-row{background:#f8fafc;border-color:#e2e8f0}
+.q-row-header{display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:9px 9px 0 0;border-bottom:1px solid}
+.d .q-row-header{background:#0f172a;border-color:#334155}.l .q-row-header{background:#f1f5f9;border-color:#e2e8f0}
+.q-num{width:22px;height:22px;border-radius:50%;background:#22D3EE;color:#0f172a;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.q-pts-badge{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;flex-shrink:0;background:rgba(251,191,36,0.12);color:#FBBF24;border:1px solid rgba(251,191,36,0.3)}
+.pts-label{font-size:10px}
+.d .pts-label{color:#475569}.l .pts-label{color:#94a3b8}
+.q-toolbar{display:flex;align-items:center;gap:2px;margin-inline-start:auto}
+/* Atom editor exact: rtbtn = insert button, rmbtn = ⋮ menu button */
+.rtbtn{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:6px;font-size:10.5px;font-weight:500;cursor:pointer;border:none;background:transparent}
+.d .rtbtn{color:#94a3b8}.l .rtbtn{color:#64748b}
+.rtbtn:hover{background:rgba(34,211,238,0.12);color:#22D3EE}
+.rmbtn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;cursor:pointer;border:none;background:transparent;font-size:13px}
+.d .rmbtn{color:#94a3b8}.l .rmbtn{color:#64748b}
+.rmbtn:hover{background:rgba(34,211,238,0.12);color:#22D3EE}
+.q-tb-btn.danger{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;cursor:pointer;border:none;background:transparent;font-size:12px}
+.d .q-tb-btn.danger{color:#64748b}.l .q-tb-btn.danger{color:#94a3b8}
+.q-tb-btn.danger:hover{color:#f87171;background:rgba(248,113,113,.12)}
+.q-content{
+  min-height:60px;padding:8px 10px;font-size:12.5px;line-height:1.7;outline:none;
+  border-radius:0 0 8px 8px;border-top:1px solid;cursor:text;
+}
+.d .q-content{color:#e2e8f0;background:#0f172a;border-top-color:#334155}
+.l .q-content{color:#0f172a;background:#f8fafc;border-top-color:#e2e8f0}
+.q-content:focus{border-top-color:#22D3EE80}
+.q-content:empty::before{content:attr(data-ph);font-style:italic;pointer-events:none}
+.d .q-content:empty::before{color:#475569}.l .q-content:empty::before{color:#94a3b8}
+.q-body{display:flex;min-height:60px}
+.q-body.has-image .q-content{flex:0 0 66.666%;border-inline-end:1px solid;border-radius:0 0 0 8px}
+.d .q-body.has-image .q-content{border-color:#334155}
+.l .q-body.has-image .q-content{border-color:#e2e8f0}
+.q-body:not(.has-image) .q-content{flex:1;border-radius:0 0 8px 8px}
+.q-image-wrap{flex:0 0 33.333%;padding:8px;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:flex-start;border-radius:0 0 8px 0}
+.q-image-thumb{position:relative;display:block;width:100%}
+.q-image-thumb img{width:100%;border-radius:6px;border:1px solid;object-fit:contain;max-height:180px}
+.d .q-image-thumb img{border-color:#475569}.l .q-image-thumb img{border-color:#e2e8f0}
+.q-img-del{position:absolute;top:-6px;inset-inline-end:-6px;width:18px;height:18px;border-radius:50%;background:#f87171;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;font-family:inherit}
+.q-save-indicator{font-size:10px;padding:2px 7px;border-radius:12px;opacity:0;transition:opacity .3s;pointer-events:none;flex-shrink:0}
+.d .q-save-indicator{color:#4ade80}.l .q-save-indicator{color:#16a34a}
+.q-save-indicator.show{opacity:1}
+
+/* Add question btn */
+.add-q-btn{display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:8px;font-size:12px;cursor:pointer;border:1.5px dashed;width:100%}
+.d .add-q-btn{color:#64748b;border-color:#475569}.l .add-q-btn{color:#94a3b8;border-color:#cbd5e1}
+.d .add-q-btn:hover{background:#273449;color:#cbd5e1}.l .add-q-btn:hover{background:#e8f5f8;color:#475569}
+
+/* Add פרק btn */
+.add-prek-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-radius:12px;font-size:12.5px;font-weight:500;cursor:pointer;border:1.5px dashed;width:100%;margin-bottom:16px}
+.d .add-prek-btn{color:#64748b;border-color:#475569}.l .add-prek-btn{color:#94a3b8;border-color:#cbd5e1}
+.d .add-prek-btn:hover{background:#1e293b;color:#cbd5e1}.l .add-prek-btn:hover{background:#e8f5f8;color:#475569}
+
+/* Selection rules */
+.rules-card{border-radius:12px;border:1px solid;padding:16px;margin-bottom:16px}
+.d .rules-card{background:#1e293b;border-color:#334155}.l .rules-card{background:#ffffff;border-color:#e2e8f0}
+.rules-title{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px}
+.d .rules-title{color:#475569}.l .rules-title{color:#94a3b8}
+.rules-main-row{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.rules-label{font-size:13px}
+.d .rules-label{color:#cbd5e1}.l .rules-label{color:#334155}
+.rules-num{width:48px;border-radius:7px;padding:5px 8px;font-size:13px;font-weight:600;text-align:center;outline:none;font-family:inherit;border:1px solid;color:#22D3EE}
+.d .rules-num{background:#0f172a;border-color:#475569}.l .rules-num{background:#f8fafc;border-color:#cbd5e1}
+.rules-num:focus{border-color:#22D3EE}
+.constraint-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.constraint-row{display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:8px;flex-wrap:wrap}
+.d .constraint-row{background:#273449}.l .constraint-row{background:#f8fafc;border:1px solid #e2e8f0}
+.constraint-prek-chips{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.c-chip{font-size:11px;padding:3px 8px;border-radius:20px;cursor:pointer;border:1px solid}
+.d .c-chip{background:#334155;color:#94a3b8;border-color:#475569}
+.l .c-chip{background:#e2e8f0;color:#475569;border-color:#cbd5e1}
+.c-chip.sel{background:rgba(34,211,238,0.15);color:#22D3EE;border-color:#22D3EE}
+.or-badge{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(167,139,250,0.15);color:#a78bfa;border:1px solid rgba(167,139,250,0.3)}
+.add-or-btn{font-size:10.5px;cursor:pointer;padding:3px 7px;border-radius:6px;border:1px dashed}
+.d .add-or-btn{color:#64748b;border-color:#475569}.l .add-or-btn{color:#94a3b8;border-color:#cbd5e1}
+.add-or-btn:hover{color:#22D3EE;border-color:#22D3EE}
+.del-constraint{margin-inline-start:auto;cursor:pointer;font-size:12px;color:#f87171;opacity:.7}
+.del-constraint:hover{opacity:1}
+.add-constraint-btn{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:7px 10px;border-radius:8px;border:1.5px dashed;width:fit-content}
+.d .add-constraint-btn{color:#64748b;border-color:#475569}.l .add-constraint-btn{color:#94a3b8;border-color:#cbd5e1}
+.add-constraint-btn:hover{color:#22D3EE;border-color:#22D3EE}
+
+/* Student preview */
+.preview-wrap{max-width:700px;margin:0 auto}
+.preview-header{text-align:center;margin-bottom:24px;padding-bottom:20px;border-bottom:2px solid}
+.d .preview-header{border-color:#334155}.l .preview-header{border-color:#334155}
+.preview-ministry{font-size:11px;margin-bottom:8px}
+.d .preview-ministry{color:#64748b}.l .preview-ministry{color:#64748b}
+.preview-title{font-size:22px;font-weight:700;margin-bottom:4px}
+.d .preview-title{color:#f1f5f9}.l .preview-title{color:#0f172a}
+.preview-subtitle{font-size:15px;font-weight:500;margin-bottom:16px;color:#22D3EE}
+.preview-meta{display:flex;justify-content:center;gap:20px;font-size:12px;flex-wrap:wrap}
+.d .preview-meta{color:#94a3b8}.l .preview-meta{color:#64748b}
+.preview-instruction{border:1px solid;border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:13px;line-height:1.8;direction:rtl;text-align:right}
+.d .preview-instruction{background:#1e293b;border-color:#334155;color:#cbd5e1}
+.l .preview-instruction{background:#ffffff;border-color:#e2e8f0;color:#334155}
+.preview-prek{margin-bottom:18px}
+.preview-prek-title{font-size:14px;font-weight:600;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid;direction:rtl;text-align:right}
+.d .preview-prek-title{color:#22D3EE;border-color:#334155}.l .preview-prek-title{color:#0e7490;border-color:#e2e8f0}
+.preview-prek-topics{font-size:11.5px;margin-bottom:10px;direction:rtl;text-align:right;font-style:italic}
+.d .preview-prek-topics{color:#64748b}.l .preview-prek-topics{color:#94a3b8}
+.preview-q-item{display:flex;align-items:baseline;gap:10px;padding:6px 8px;border-radius:6px;font-size:12.5px}
+.d .preview-q-item{color:#94a3b8}.l .preview-q-item{color:#475569}
+.preview-q-num{font-weight:700;color:#22D3EE;flex-shrink:0}
+.preview-pts-badge{font-size:10px;padding:2px 7px;border-radius:12px;background:rgba(251,191,36,0.12);color:#FBBF24;border:1px solid rgba(251,191,36,0.25);flex-shrink:0}
+.preview-rules-box{border:1.5px solid rgba(34,211,238,0.3);border-radius:10px;padding:12px 16px;margin-top:20px;background:rgba(34,211,238,0.05)}
+.preview-rules-title{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:#22D3EE;margin-bottom:8px}
+.preview-rule-item{font-size:12px;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.d .preview-rule-item{color:#94a3b8}.l .preview-rule-item{color:#475569}
+
+/* Inline math field */
+math-field.imf{display:inline-block;vertical-align:middle;border:1px solid #22D3EE40;border-radius:4px;padding:0 4px;background:rgba(34,211,238,0.06);font-size:1em;min-width:20px;line-height:1.4}
+math-field.imf:focus-within{border-color:#22D3EE;outline:none}
+math-field.imf::part(virtual-keyboard-toggle),math-field.imf::part(menu-toggle){display:none!important}
+math-field.imf::part(virtual-keyboard-toggle){width:0!important;height:0!important;overflow:hidden!important;padding:0!important;margin:0!important}
+/* MathLive injects a .ML__virtual-keyboard-toggle span — hide it too */
+math-field.imf .ML__virtual-keyboard-toggle{display:none!important}
+.d math-field.imf{--caret-color:#22D3EE;color:#f1f5f9}
+.l math-field.imf{color:#0f172a}
+
+/* RTL fixes */
+[dir="rtl"] .srch input{text-align:right}
+[dir="rtl"] .meta-input,[dir="rtl"] .topics-input{text-align:right}
+[dir="rtl"] .prek-name-input{text-align:right}
+[dir="rtl"] .q-content{text-align:right}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-overlay.show{display:flex}
+.modal{width:380px;border-radius:14px;border:1px solid;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.d .modal{background:#1e293b;border-color:#334155}.l .modal{background:#ffffff;border-color:#e2e8f0}
+.modal-title{font-size:14px;font-weight:600;margin-bottom:14px}
+.d .modal-title{color:#f1f5f9}.l .modal-title{color:#0f172a}
+.modal-field{width:100%;border-radius:8px;padding:9px 10px;font-size:12.5px;outline:none;font-family:inherit;border:1px solid;margin-bottom:10px}
+.d .modal-field{background:#0f172a;border-color:#334155;color:#f1f5f9}
+.l .modal-field{background:#f8fafc;border-color:#e2e8f0;color:#0f172a}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+.m-btn{padding:8px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid}
+.d .m-btn{background:#334155;border-color:#475569;color:#e2e8f0}.l .m-btn{background:#f1f5f9;border-color:#e2e8f0;color:#0f172a}
+.m-btn.primary{background:#22D3EE;border-color:#22D3EE;color:#0f172a}
+
+/* Translate modal */
+.tr-progress-label{font-size:12px;color:#22D3EE;margin-bottom:6px;min-height:16px}
+.tr-bar-wrap{height:5px;border-radius:3px;overflow:hidden;margin-bottom:10px;display:none}
+.d .tr-bar-wrap{background:#0f172a}.l .tr-bar-wrap{background:#e2e8f0}
+.tr-bar-fill{height:100%;background:#22D3EE;border-radius:3px;width:0;transition:width .4s}
+.tr-error{font-size:12px;color:#f87171;min-height:18px;margin-bottom:10px}
+.tr-modal-body{font-size:13px;margin-bottom:16px;line-height:1.6}
+
+/* Formula symbol panel */
+.fmenu{position:fixed;display:none;flex-direction:column;gap:2px;padding:6px;border-radius:8px;border:1px solid;z-index:200;width:224px;box-shadow:0 8px 24px rgba(0,0,0,0.35)}
+.fmenu.open{display:flex}
+.d .fmenu{background:#1e293b;border-color:#334155}.l .fmenu{background:#ffffff;border-color:#e2e8f0}
+.fmenu-label{font-size:9.5px;font-weight:500;padding:2px 4px 4px}
+.d .fmenu-label{color:#64748b}.l .fmenu-label{color:#94a3b8}
+.fmenu-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
+.fmenu-item{display:flex;align-items:center;justify-content:center;padding:7px 2px;border-radius:6px;border:none;background:transparent;cursor:pointer;font-size:14px;font-family:'Cambria Math',Georgia,serif;direction:ltr}
+.d .fmenu-item{color:#f1f5f9}.l .fmenu-item{color:#0f172a}
+.fmenu-item:hover{background:rgba(34,211,238,0.14);color:#22D3EE}
+</style>
+</head>
+<body>
+<div class="shell d" id="shell">
+
+  <div class="hdr p1 bd">
+    <div class="logo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 4h-10l6 8l-6 8h10"/></svg></div>
+    <div class="brand t1">Math <b>With Love</b></div>
+    <div class="srch"><input id="searchInput" placeholder="Поиск тем, формул..."><svg class="t3 si2" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg></div>
+    <div class="hdr-r">
+      <div class="lang bd"><span class="lb on" id="lbRu" onclick="setLang('ru')">RU</span><span class="lb" id="lbHe" onclick="setLang('he')">HE</span></div>
+      <div class="hico bd t2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg></div>
+      <div class="hico bd t2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5a5 5 0 0 1 11 0"/></svg></div>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="sb p1 bd" id="sb">
+      <div class="sbt" onclick="toggleSb()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+      </div>
+      <div class="sg">
+        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span><span class="nl" data-i18n="navDashboard">Дашборд</span></div>
+        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><line x1="3" y1="6" x2="3" y2="19"/><line x1="12" y1="6" x2="12" y2="19"/><line x1="21" y1="6" x2="21" y2="19"/></svg></span><span class="nl" data-i18n="navModules">Модули</span></div>
+        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="3" y2="21"/><line x1="21" y1="21" x2="3" y2="21"/><path d="M7 17v-3"/><path d="M11 17v-6"/><path d="M15 17v-9"/></svg></span><span class="nl" data-i18n="navProgress">Прогресс</span></div>
+        <div class="ni on" onclick="onContentClick()"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span><span class="nl" data-i18n="navContent">Контент</span></div>
+        <div class="nav-sub">
+          <div class="ni-sub"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="13" r="2.5"/><circle cx="6" cy="20" r="2.5"/><circle cx="18" cy="20" r="2.5"/><path d="M8.2 7.2L10.5 11.3M15.8 7.2L13.5 11.3M10.5 14.7L7.8 18M13.5 14.7L16.2 18"/></svg><span data-i18n="subGraph">Карта графа</span></div>
+          <div class="ni-sub"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg><span data-i18n="subAtomEditor">Редактор атома</span></div>
+          <div class="ni-sub"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="13" width="7" height="7" rx="1.5"/><rect x="14" y="13" width="7" height="7" rx="1.5"/></svg><span data-i18n="subGroups">Группы</span></div>
+          <div class="ni-sub on"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6a1 1 0 0 1 1 1v3.5a1 1 0 0 1-.4.8l-3.6 2.7 3.6 2.7a1 1 0 0 1 .4.8v3.5a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-3.5a1 1 0 0 1 .4-.8l3.6-2.7-3.6-2.7a1 1 0 0 1-.4-.8v-3.5a1 1 0 0 1 1-1z"/></svg><span data-i18n="subExam">Примеры вопросников</span></div>
+        </div>
+      </div>
+      <div class="sbm">
+        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="9" y2="4"/><line x1="6" y1="13" x2="13" y2="13"/><path d="M15 20l5-16"/><path d="M14 8h7"/></svg></span><span class="nl" data-i18n="navFormulas">Формулы</span></div>
+        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9l-8 4.5l-8-4.5v-9z"/></svg></span><span class="nl" data-i18n="navLab">Лаборатория</span></div>
+      </div>
+      <div class="sbb">
+        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51v.17a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1h-.17a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span class="nl" data-i18n="navSettings">Настройки</span></div>
+      </div>
+    </div>
+
+    <div class="es-col">
+      <div class="ctrl p1 bd">
+        <button class="tcb on" id="btnDark" onclick="setMode('d')">🌙 <span data-i18n="themeDark">Тёмная</span></button>
+        <button class="tcb" id="btnLight" onclick="setMode('l')">☀ <span data-i18n="themeLight">Светлая</span></button>
+        <div class="div1"></div>
+        <span class="t2" style="font-size:12px;" id="ctxLabel">Примеры вопросников · Багрут 572</span>
+        <div style="flex:1"></div>
+        <button class="tcb tcb-act" id="translateBtn" onclick="openTranslateModal()">RU → HE</button>
+        <button class="tcb tcb-act" id="btnPreview" onclick="togglePreview()">👁 <span data-i18n="previewBtn">Превью</span></button>
+        <button class="tcb tcb-act" id="btnAddCtx" onclick="addContextual()">+ <span id="addCtxLabel">Вопросник</span></button>
+      </div>
+
+      <div class="es-main">
+
+        <div class="es-list bd" id="esList">
+          <div class="es-list-header">
+            <button class="es-list-toggle" id="esListToggle" onclick="toggleList()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+            </button>
+            <span class="es-list-header-title" id="esListTitle">Примеры вопросников</span>
+          </div>
+          <div class="es-type-icons" id="typeIcons"></div>
+          <div class="es-list-body" id="shalonList" style="overflow-y:auto;flex:1"></div>
+        </div>
+
+        <div class="es-editor" id="editorPanel"></div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Translate modal -->
+  <div class="modal-overlay" id="translateModalOverlay">
+    <div class="modal p1 bd">
+      <div class="modal-title t1" id="translateModalTitle">Перевести контент</div>
+      <div class="tr-modal-body t2" id="translateModalBody"></div>
+      <div class="tr-progress-label" id="translateProgress"></div>
+      <div class="tr-bar-wrap" id="translateBarWrap"><div class="tr-bar-fill" id="translateBarFill"></div></div>
+      <div class="tr-error" id="translateError"></div>
+      <div class="modal-actions">
+        <div class="m-btn" id="translateCancelBtn" onclick="closeTranslateModal()">Отмена</div>
+        <div class="m-btn" id="translateOkBtn" style="display:none;background:#22D3EE;border-color:#22D3EE;color:#0f172a" onclick="onTranslateOk()">OK</div>
+        <div class="m-btn primary" id="translateConfirmBtn" onclick="runTranslation()">Перевести</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formula symbol panel -->
+  <div class="fmenu p1 bd" id="fmenu">
+    <span class="fmenu-label t2" id="fmenuLabel">Вставить символ</span>
+    <div class="fmenu-grid">
+      <button class="fmenu-item" data-ins="\frac{#0}{#1}" title="дробь">a∕b</button>
+      <button class="fmenu-item" data-ins="\sqrt{#0}" title="корень">√</button>
+      <button class="fmenu-item" data-ins="#@^{#0}" title="степень">x²</button>
+      <button class="fmenu-item" data-ins="#@_{#0}" title="индекс">xₙ</button>
+      <button class="fmenu-item" data-ins="\vec{#0}" title="вектор">→a</button>
+      <button class="fmenu-item" data-ins="|#0|" title="модуль">|a|</button>
+      <button class="fmenu-item" data-ins="\theta" title="тета">θ</button>
+      <button class="fmenu-item" data-ins="\pi" title="пи">π</button>
+      <button class="fmenu-item" data-ins="\sum_{#0}^{#1}" title="сумма">∑</button>
+      <button class="fmenu-item" data-ins="\int_{#0}^{#1}" title="интеграл">∫</button>
+      <button class="fmenu-item" data-ins="\infty" title="бесконечность">∞</button>
+      <button class="fmenu-item" data-ins="\cdot" title="умножение">·</button>
+      <button class="fmenu-item" data-ins="\log_{#0}" title="лог">log</button>
+      <button class="fmenu-item" data-ins="\ln" title="натуральный лог">ln</button>
+      <button class="fmenu-item" data-ins="\cos" title="косинус">cos</button>
+      <button class="fmenu-item" data-ins="\sin" title="синус">sin</button>
+    </div>
+  </div>
+
+  <!-- Modal: add/rename shalon -->
+  <div class="modal-overlay" id="shalonModal">
+    <div class="modal">
+      <div class="modal-title t1" id="shalonModalTitle">Новый вопросник</div>
+      <input class="modal-field t1" id="shalonNumInput" placeholder="Номер вопросника (напр. 572)">
+      <input class="modal-field t1" id="shalonNameInput" placeholder="Название (необязательно)">
+      <div class="modal-actions">
+        <div class="m-btn" onclick="closeShalonModal()">Отмена</div>
+        <div class="m-btn primary" onclick="confirmShalonModal()">Сохранить</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+// ===================== i18n =====================
+var TR = {
+  ru:{
+    navDashboard:'Дашборд', navModules:'Модули', navProgress:'Прогресс',
+    navContent:'Контент', navFormulas:'Формулы', navLab:'Лаборатория', navSettings:'Настройки',
+    subGraph:'Карта графа', subAtomEditor:'Редактор атома', subGroups:'Группы', subExam:'Примеры вопросников',
+    themeDark:'Тёмная', themeLight:'Светлая',
+    previewBtn:'Превью', addShalon:'Новый вопросник',
+    addSession:'Новый срок',
+    instructionsLabel:'Инструкции',
+    instructionsPlh:'Текст инструкций для студента...',
+    ctxLabel:'Примеры вопросников · Багрут',
+    examNum:'Номер вопросника', examDuration:'Длительность', examTotalQ:'Всего вопросов',
+    examAnswerK:'Ответить на', examPtsPerQ:'Баллов за вопрос',
+    prakim:'Разделы (פרקים)',
+    topicsPlaceholder:'Темы раздела (текст или формулы)...',
+    qPlaceholder:'Текст вопроса (необязательно — для предпросмотра)...',
+    addQuestion:'Добавить вопрос', addPrek:'Добавить פרק',
+    selectionRules:'Правила выбора',
+    ruleTotal1:'Ответить на', ruleTotal2:'вопросов из',
+    ruleTotal3:'всего', ruleMinFrom:'Минимум',
+    ruleFrom:'из раздела', addConstraint:'+ Добавить ограничение', addOr:'или',
+    insertFormula:'∑ Формула', insertImage:'📎 Рисунок',
+    preview571:'Математика · 5 יחידות · שאלון ראשון',
+    preview572:'Математика · 5 יחידות · שאלון שני',
+    previewMinEdu:'Министерство просвещения Израиля',
+    previewInstructLabel:'Инструкции', previewDur:'Продолжительность',
+    previewAnswerRule:'Ответить на %K из %N вопросов',
+    previewMinRule:'Не менее %M из %S',
+    previewMinOrRule:'Не менее %M из %S или %S2',
+    previewPts:'баллов', previewTotal:'Всего: 100 баллов',
+    deleteQ:'удалить вопрос', deletePrek:'удалить раздел',
+    shalonModalNew:'Новый вопросник', shalonModalEdit:'Редактировать вопросник',
+    minutesLabel:'мин'
+  },
+  he:{
+    navDashboard:'לוח בקרה', navModules:'מודולים', navProgress:'התקדמות',
+    navContent:'תוכן', navFormulas:'נוסחאות', navLab:'מעבדה', navSettings:'הגדרות',
+    subGraph:'מפת הגרף', subAtomEditor:'עורך אטום', subGroups:'קבוצות', subExam:'דוגמאות שאלונים',
+    themeDark:'כהה', themeLight:'בהיר',
+    previewBtn:'תצוגה מקדימה', addShalon:'שאלון חדש',
+    addSession:'מועד חדש',
+    instructionsLabel:'הוראות',
+    instructionsPlh:'טקסט ההוראות לתלמיד...',
+    ctxLabel:'דוגמאות שאלונים',
+    examNum:'מספר השאלון', examDuration:'משך הבחינה', examTotalQ:'סה"כ שאלות',
+    examAnswerK:'לענות על', examPtsPerQ:'נקודות לשאלה',
+    prakim:'פרקים',
+    topicsPlaceholder:'נושאי הפרק (טקסט או נוסחאות)...',
+    qPlaceholder:'טקסט השאלה (לא חובה — לתצוגה מקדימה)...',
+    addQuestion:'הוספת שאלה', addPrek:'הוספת פרק',
+    selectionRules:'כללי הבחירה',
+    ruleTotal1:'לענות על', ruleTotal2:'שאלות מתוך',
+    ruleTotal3:'סה"כ', ruleMinFrom:'לפחות',
+    ruleFrom:'מהפרק', addConstraint:'+ הוספת הגבלה', addOr:'או',
+    insertFormula:'∑ נוסחה', insertImage:'📎 ציור',
+    preview571:'מתמטיקה · 5 יחידות לימוד – שאלון ראשון',
+    preview572:'מתמטיקה · 5 יחידות לימוד – שאלון שני',
+    previewMinEdu:'מדינת ישראל · משרד החינוך',
+    previewInstructLabel:'הוראות', previewDur:'משך הבחינה',
+    previewAnswerRule:'לענות על %K מתוך %N שאלות',
+    previewMinRule:'לפחות %M מ-%S',
+    previewMinOrRule:'לפחות %M מ-%S או %S2',
+    previewPts:'נקודות', previewTotal:'סה"כ: 100 נקודות',
+    deleteQ:'מחיקת שאלה', deletePrek:'מחיקת פרק',
+    shalonModalNew:'שאלון חדש', shalonModalEdit:'עריכת שאלון',
+    minutesLabel:'דקות'
+  }
+};
+var currentLang = 'ru';
+
+function applyI18n(){
+  var titleEl = document.getElementById('esListTitle');
+  if(titleEl) titleEl.textContent = currentLang==='he' ? 'דוגמאות שאלונים' : 'Примеры вопросников';
+  var t = TR[currentLang];
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var k = el.getAttribute('data-i18n');
+    if(t[k]) el.textContent = t[k];
+  });
+  document.getElementById('searchInput').placeholder = currentLang==='ru' ? 'Поиск тем, формул...' : 'חיפוש נושאים, נוסחאות...';
+}
+function setLang(lang){
+  currentLang = lang;
+  document.getElementById('lbRu').className = 'lb'+(lang==='ru'?' on':'');
+  document.getElementById('lbHe').className = 'lb'+(lang==='he'?' on':'');
+  document.getElementById('shell').setAttribute('dir', lang==='he'?'rtl':'ltr');
+  applyI18n();
+  updateTranslateBtn();
+  updateAddBtn();
+  renderShalonList();
+  renderEditor();
+}
+
+// ===================== Theme =====================
+function setMode(m){
+  document.getElementById('shell').className = 'shell '+m;
+  document.getElementById('btnDark').className = 'tcb'+(m==='d'?' on':'');
+  document.getElementById('btnLight').className = 'tcb'+(m==='l'?' on':'');
+}
+
+// ===================== Sidebar =====================
+var sbOpen = false;
+function toggleSb(){
+  sbOpen = !sbOpen;
+  document.getElementById('sb').className = 'sb p1 bd'+(sbOpen?' open':'');
+}
+function onContentClick(){ if(!sbOpen) toggleSb(); }
+
+// ===================== Demo data =====================
+// ===================== Data model =====================
+// Two-level: shalonType (572/571) contains sessions (קיץ 2026, חורף 2025...)
+// Each session is one actual exam with its פרקים, questions and rules.
+// The structure (פרקים topics, rules) is shared/inherited from the type template
+// but each session can override it — giving the flexibility to change year-over-year.
+
+function makePrakim572(){
+  return [
+    {id:'pk_'+Date.now()+'a', nameHE:'פרק ראשון', nameRU:'Раздел первый',
+     topicsHE:'גאומטרייה אנליטית, וקטורים, טריגונומטרייה במרחב, מספרים מרוכבים',
+     topicsRU:'Аналитическая геометрия, векторы, тригонометрия в пространстве, комплексные числа',
+     open:true, questions:[
+       {id:'q_'+Date.now()+'1',num:1,content:'',images:[]},
+       {id:'q_'+Date.now()+'2',num:2,content:'',images:[]},
+       {id:'q_'+Date.now()+'3',num:3,content:'',images:[]}
+     ]},
+    {id:'pk_'+Date.now()+'b', nameHE:'פרק שני', nameRU:'Раздел второй',
+     topicsHE:'גדילה ודעיכה, פונקציות מעריכיות ולוגריתמיות',
+     topicsRU:'Рост и убывание, показательные и логарифмические функции',
+     open:true, questions:[
+       {id:'q_'+Date.now()+'4',num:4,content:'',images:[]},
+       {id:'q_'+Date.now()+'5',num:5,content:'',images:[]}
+     ]}
+  ];
+}
+
+var shalonTypes = [
+  {
+    id:'st572', number:'572',
+    titleHE:'שאלון שני', titleRU:'Вопросник второй',
+    sessions:[
+      {
+        id:'s572_2026a',
+        moed:'מועד א', year:2026, season:'קיץ',
+        instructions:'',
+        durationMin:150, pointsPerQ:33.33,
+        prakim:[
+          {id:'pk1', nameHE:'פרק ראשון', nameRU:'Раздел первый',
+           topicsHE:'גאומטרייה אנליטית, וקטורים, טריגונומטרייה במרחב, מספרים מרוכבים',
+           topicsRU:'Аналитическая геометрия, векторы, тригонометрия в пространстве, комплексные числа',
+           open:true,
+           questions:[
+             {id:'q1',num:1,content:'',images:[]},
+             {id:'q2',num:2,content:'',images:[]},
+             {id:'q3',num:3,content:'',images:[]}
+           ]},
+          {id:'pk2', nameHE:'פרק שני', nameRU:'Раздел второй',
+           topicsHE:'גדילה ודעיכה, פונקציות מעריכיות ולוגריתמיות',
+           topicsRU:'Рост и убывание, показательные и логарифмические функции',
+           open:true,
+           questions:[
+             {id:'q4',num:4,content:'',images:[]},
+             {id:'q5',num:5,content:'',images:[]}
+           ]}
+        ],
+        rules:{
+          totalAnswer:3,
+          constraints:[
+            {id:'c1',type:'min',prekIds:['pk1'],min:1},
+            {id:'c2',type:'min',prekIds:['pk2'],min:1}
+          ]
+        }
+      },
+      {
+        id:'s572_2025b',
+        moed:'מועד ב', year:2025, season:'חורף',
+        instructions:'',
+        durationMin:150, pointsPerQ:33.33,
+        prakim:[
+          {id:'pk1b', nameHE:'פרק ראשון', nameRU:'Раздел первый',
+           topicsHE:'גאומטרייה אנליטית, וקטורים, טריגונומטרייה במרחב, מספרים מרוכבים',
+           topicsRU:'Аналитическая геометрия, векторы, тригонометрия в пространстве, комплексные числа',
+           open:false,
+           questions:[
+             {id:'q1b',num:1,content:'',images:[]},
+             {id:'q2b',num:2,content:'',images:[]},
+             {id:'q3b',num:3,content:'',images:[]}
+           ]},
+          {id:'pk2b', nameHE:'פרק שני', nameRU:'Раздел второй',
+           topicsHE:'גדילה ודעיכה, פונקציות מעריכיות ולוגריתמיות',
+           topicsRU:'Рост и убывание, показательные и логарифмические функции',
+           open:false,
+           questions:[
+             {id:'q4b',num:4,content:'',images:[]},
+             {id:'q5b',num:5,content:'',images:[]}
+           ]}
+        ],
+        rules:{
+          totalAnswer:3,
+          constraints:[
+            {id:'c1b',type:'min',prekIds:['pk1b'],min:1},
+            {id:'c2b',type:'min',prekIds:['pk2b'],min:1}
+          ]
+        }
+      },
+      {
+        id:'s572_2025a',
+        moed:'מועד א', year:2025, season:'קיץ',
+        instructions:'',
+        durationMin:150, pointsPerQ:33.33,
+        prakim:[
+          {id:'pk1c', nameHE:'פרק ראשון', nameRU:'Раздел первый',
+           topicsHE:'גאומטרייה אנליטית, וקטורים, טריגונומטרייה במרחב, מספרים מרוכבים',
+           topicsRU:'Аналитическая геометрия, векторы, тригонометрия в пространстве, комплексные числа',
+           open:false,
+           questions:[
+             {id:'q1c',num:1,content:'',images:[]},
+             {id:'q2c',num:2,content:'',images:[]},
+             {id:'q3c',num:3,content:'',images:[]}
+           ]},
+          {id:'pk2c', nameHE:'פרק שני', nameRU:'Раздел второй',
+           topicsHE:'גדילה ודעיכה, פונקציות מעריכיות ולוגריתמיות',
+           topicsRU:'Рост и убывание, показательные и логарифмические функции',
+           open:false,
+           questions:[
+             {id:'q4c',num:4,content:'',images:[]},
+             {id:'q5c',num:5,content:'',images:[]}
+           ]}
+        ],
+        rules:{
+          totalAnswer:3,
+          constraints:[
+            {id:'c1c',type:'min',prekIds:['pk1c'],min:1},
+            {id:'c2c',type:'min',prekIds:['pk2c'],min:1}
+          ]
+        }
+      }
+    ]
+  },
+  {
+    id:'st571', number:'571',
+    titleHE:'שאלון ראשון', titleRU:'Вопросник первый',
+    sessions:[
+      {
+        id:'s571_2026a',
+        moed:'מועד א', year:2026, season:'קיץ',
+        instructions:'',
+        durationMin:225, pointsPerQ:20,
+        prakim:[
+          {id:'pk1_571', nameHE:'פרק ראשון', nameRU:'Раздел первый',
+           topicsHE:'שאלות קצרות', topicsRU:'Короткие вопросы',
+           open:false,
+           questions:[{id:'q1_571',num:1,content:'',images:[]}]},
+          {id:'pk2_571', nameHE:'פרק שני', nameRU:'Раздел второй',
+           topicsHE:'אינדוקציה, סדרות והסתברות', topicsRU:'Индукция, ряды и вероятность',
+           open:false,
+           questions:[{id:'q2_571',num:2,content:'',images:[]},{id:'q3_571',num:3,content:'',images:[]}]},
+          {id:'pk3_571', nameHE:'פרק שלישי', nameRU:'Раздел третий',
+           topicsHE:'גאומטרייה וטריגונומטרייה במישור', topicsRU:'Геометрия и тригонометрия на плоскости',
+           open:false,
+           questions:[{id:'q4_571',num:4,content:'',images:[]},{id:'q5_571',num:5,content:'',images:[]}]},
+          {id:'pk4_571', nameHE:'פרק רביעי', nameRU:'Раздел четвёртый',
+           topicsHE:'חשבון דיפרנציאלי ואינטגרלי', topicsRU:'Дифференциальное и интегральное исчисление',
+           open:false,
+           questions:[{id:'q6_571',num:6,content:'',images:[]},{id:'q7_571',num:7,content:'',images:[]},{id:'q8_571',num:8,content:'',images:[]}]}
+        ],
+        rules:{
+          totalAnswer:5,
+          constraints:[
+            {id:'c1_571',type:'min-or',prekIds:['pk1_571','pk2_571'],min:1},
+            {id:'c2_571',type:'min',prekIds:['pk3_571'],min:1},
+            {id:'c3_571',type:'min',prekIds:['pk4_571'],min:1}
+          ]
+        }
+      },
+      {
+        id:'s571_2025b',
+        moed:'מועד ב', year:2025, season:'חורף',
+        instructions:'',
+        durationMin:225, pointsPerQ:20,
+        prakim:[
+          {id:'pk1_571b', nameHE:'פרק ראשון', nameRU:'Раздел первый',
+           topicsHE:'שאלות קצרות', topicsRU:'Короткие вопросы',
+           open:false,
+           questions:[{id:'q1_571b',num:1,content:'',images:[]}]},
+          {id:'pk2_571b', nameHE:'פרק שני', nameRU:'Раздел второй',
+           topicsHE:'אינדוקציה, סדרות והסתברות', topicsRU:'Индукция, ряды и вероятность',
+           open:false,
+           questions:[{id:'q2_571b',num:2,content:'',images:[]},{id:'q3_571b',num:3,content:'',images:[]}]},
+          {id:'pk3_571b', nameHE:'פרק שלישי', nameRU:'Раздел третий',
+           topicsHE:'גאומטרייה וטריגונומטרייה במישור', topicsRU:'Геометрия и тригонометрия на плоскости',
+           open:false,
+           questions:[{id:'q4_571b',num:4,content:'',images:[]},{id:'q5_571b',num:5,content:'',images:[]}]},
+          {id:'pk4_571b', nameHE:'פרק רביעי', nameRU:'Раздел четвёртый',
+           topicsHE:'חשבון דיפרנציאלי ואינטגרלי', topicsRU:'Дифференциальное и интегральное исчисление',
+           open:false,
+           questions:[{id:'q6_571b',num:6,content:'',images:[]},{id:'q7_571b',num:7,content:'',images:[]},{id:'q8_571b',num:8,content:'',images:[]}]}
+        ],
+        rules:{
+          totalAnswer:5,
+          constraints:[
+            {id:'c1_571b',type:'min-or',prekIds:['pk1_571b','pk2_571b'],min:1},
+            {id:'c2_571b',type:'min',prekIds:['pk3_571b'],min:1},
+            {id:'c3_571b',type:'min',prekIds:['pk4_571b'],min:1}
+          ]
+        }
+      }
+    ]
+  }
+];
+
+// Helper lookups
+var selectedTypeId = 'st572';
+var selectedSessionId = 's572_2026a';
+var previewMode = false;
+var listOpen = true;
+var _translateResult = null;  // starts open, closes after selecting a session
+
+function toggleList(){
+  listOpen = !listOpen;
+  document.getElementById('esList').classList.toggle('closed', !listOpen);
+  // icon doesn't change — the panel itself is the visual indicator
+}
+
+function updateAddBtn(){
+  // Context-aware like groups constructor:
+  // type selected but no session yet → "Новый срок"
+  // type selected and session selected  → "Новый срок" (add to current type)
+  // nothing/ambiguous → "Вопросник"
+  var t = TR[currentLang];
+  var label = document.getElementById('addCtxLabel');
+  if(!label) return;
+  if(selectedTypeId){
+    label.textContent = t.addSession || (currentLang==='he'?'מועד חדש':'Новый срок');
+  } else {
+    label.textContent = t.addShalon || (currentLang==='he'?'שאלון חדש':'Новый вопросник');
+  }
+}
+
+function addContextual(){
+  // If a type is selected → add session inside it (same as groups: selected folder → create subfolder)
+  // If no type selected → add new shalon type (top-level)
+  if(selectedTypeId){
+    addSession(selectedTypeId);
+  } else {
+    addShalon();
+  }
+}
+
+function typeById(id){ return shalonTypes.find(function(t){ return t.id===id; }); }
+function sessionById(id){
+  for(var i=0;i<shalonTypes.length;i++){
+    var s=shalonTypes[i].sessions.find(function(s){ return s.id===id; });
+    if(s) return s;
+  }
+  return null;
+}
+function prekById(sess,id){ return sess.prakim.find(function(p){ return p.id===id; }); }
+function sessionLabel(sess,lang){
+  // Use free-form label set by author; fall back to generic placeholder
+  if(sess.label && sess.label.trim()) return sess.label.trim();
+  return lang==='he' ? 'ללא שם' : 'Без названия';
+}
+function moedRU(he){
+  if(he==='מועד א') return 'Срок А';
+  if(he==='מועד ב') return 'Срок Б';
+  if(he==='מועד ג') return 'Срок В';
+  return he;
+}
+function seasonRU(he){
+  if(he==='קיץ') return 'Лето';
+  if(he==='חורף') return 'Зима';
+  if(he==='אביב') return 'Весна';
+  return he;
+}
+
+
+// ===================== Left panel: shalon types + sessions =====================
+function renderShalonList(){
+  var t = TR[currentLang];
+  var wrap = document.getElementById('shalonList');
+  wrap.innerHTML = '';
+
+  shalonTypes.forEach(function(st){
+    // Type header
+    var typeDiv = document.createElement('div');
+    typeDiv.className = 'shalon-item'+(selectedTypeId===st.id?' active':'');
+    typeDiv.style.marginBottom='4px';
+    var isActive = selectedTypeId===st.id;
+    typeDiv.innerHTML =
+      '<div class="shalon-num" style="font-size:15px;font-weight:700;'+(isActive?'background:rgba(34,211,238,.15);color:#22D3EE':'')+'">'+st.number+'</div>'+
+      '<span style="flex:1"></span>'+
+      '<span style="font-size:12px;color:#475569;cursor:pointer;margin-inline-end:2px" onclick="event.stopPropagation();toggleType(\''+st.id+'\')">'+(isActive?'&#9662;':'&#9656;')+'</span>';
+    typeDiv.onclick = function(){ selectedTypeId=st.id; if(st.sessions.length>0){ selectedSessionId=st.sessions[0].id; } renderShalonList(); renderEditor(); updateAddBtn(); };
+    wrap.appendChild(typeDiv);
+
+    // Sessions list (visible when type is selected)
+    if(selectedTypeId===st.id){
+      st.sessions.forEach(function(sess){
+        var sessDiv = document.createElement('div');
+        sessDiv.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 8px 6px 18px;border-radius:8px;cursor:pointer;font-size:12px;margin-bottom:2px';
+        var isSel = selectedSessionId===sess.id;
+        sessDiv.style.background = isSel ? 'rgba(34,211,238,0.1)' : '';
+        sessDiv.style.color = isSel ? '#22D3EE' : '';
+        var label = sessionLabel(sess, currentLang);
+        sessDiv.innerHTML =
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="'+(isSel?'#22D3EE':'#64748b')+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg>'+
+          '<span style="flex:1;font-weight:'+(isSel?'600':'400')+'">' +label+'</span>';
+        sessDiv.onclick = function(e){
+    e.stopPropagation();
+    selectedSessionId=sess.id; previewMode=false;
+    // auto-close the list panel to give more space to the editor
+    listOpen=false;
+    document.getElementById('esList').classList.add('closed');
+    renderShalonList(); renderEditor(); updateAddBtn();
+  };
+        wrap.appendChild(sessDiv);
+      });
+      // session add button removed — handled by context-aware ctrl-bar button
+    }
+  });
+
+  // Add new shalon type button — always at bottom of the list
+  var addTypeBtn = document.createElement('div');
+  addTypeBtn.className = 'es-add-btn';
+  addTypeBtn.style.cssText = 'margin-top:10px;';
+  addTypeBtn.innerHTML =
+    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> '+
+    (currentLang==='he' ? 'שאלון חדש' : 'Вопросник');
+  addTypeBtn.onclick = addShalon;
+  wrap.appendChild(addTypeBtn);
+
+  // Render collapsed icon strip (only numbers, no sessions)
+  var iconsWrap = document.getElementById('typeIcons');
+  if(iconsWrap){
+    iconsWrap.innerHTML = '';
+    shalonTypes.forEach(function(st){
+      var ic = document.createElement('div');
+      ic.className = 'es-type-icon'+(st.id===selectedTypeId?' active':'');
+      ic.textContent = st.number;
+      ic.title = st.number;
+      ic.onclick = function(){
+        selectedTypeId = st.id;
+        if(st.sessions.length>0) selectedSessionId = st.sessions[0].id;
+        listOpen = true;
+        document.getElementById('esList').classList.remove('closed');
+        renderShalonList(); renderEditor(); updateAddBtn();
+      };
+      iconsWrap.appendChild(ic);
+    });
+  }
+
+  // Update ctx label
+  var sess = sessionById(selectedSessionId);
+  var ctxEl = document.getElementById('ctxLabel');
+  if(ctxEl && sess){
+    var st2 = shalonTypes.find(function(s){ return s.id===selectedTypeId; });
+    ctxEl.textContent = t.ctxLabel.split('·')[0].trim() + ' · ' + (st2?st2.number:'') + ' · ' + sessionLabel(sess,currentLang);
+  }
+}
+
+function toggleType(typeId){
+  selectedTypeId = typeId;
+  var st = typeById(typeId);
+  if(st && st.sessions.length>0) selectedSessionId = st.sessions[0].id;
+  renderShalonList(); renderEditor();
+}
+
+// ===================== Preview toggle =====================
+function togglePreview(){
+  previewMode = !previewMode;
+  document.getElementById('btnPreview').className = 'tcb tcb-act'+(previewMode?' on':'');
+  renderEditor();
+}
+
+// ===================== Editor render =====================
+function renderEditor(){
+  var sess = sessionById(selectedSessionId);
+  if(!sess){ document.getElementById('editorPanel').innerHTML=''; return; }
+  if(previewMode){ renderPreview(sess); return; }
+
+  var t = TR[currentLang];
+  var totalQ = sess.prakim.reduce(function(s,p){ return s+p.questions.length; },0);
+  var html = '';
+
+  // Session header
+  var st = shalonTypes.find(function(s){ return s.id===selectedTypeId; });
+  html += '<div class="meta-card">';
+  html += '<div style="font-size:14px;font-weight:700;margin-bottom:10px;color:#22D3EE">'+(st?st.number+' · ':'')+sessionLabel(sess,currentLang)+'</div>';
+  html += '<div class="meta-grid">';
+  html += metaField('examDuration',sess.durationMin,t,'durationMin');
+  html += metaField('examTotalQ',totalQ,t,'totalQ_readonly',true);
+  html += metaField('examAnswerK',sess.rules.totalAnswer,t,'answerK');
+  html += metaField('examPtsPerQ',sess.pointsPerQ,t,'ptsPerQ');
+  html += '</div></div>';
+
+  // Instructions field
+  html += '<div class="meta-card" style="margin-bottom:14px">';
+  html += '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px" class="t3">'+t.instructionsLabel+'</div>';
+  html += '<textarea class="topics-input" rows="3" style="margin:0;font-style:normal" placeholder="'+t.instructionsPlh+'" oninput="onInstructionsChange(this.value)">'+((sess.instructions||''))+'</textarea>';
+  html += '</div>';
+
+  // פרקים
+  html += '<div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;margin-top:4px" class="t3">'+t.prakim+'</div>';
+
+  sess.prakim.forEach(function(pk,pi){
+    html += '<div class="prek-card" id="prek_'+pk.id+'">';
+    html += '<div class="prek-header" onclick="togglePrek(\''+pk.id+'\')">';
+    html += '<span class="prek-chevron'+(pk.open?' open':'')+'">';
+    html += '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>';
+    html += '<span class="prek-badge">'+(currentLang==='he'?'פ':'Р')+(pi+1)+'</span>';
+    html += '<span class="prek-name"><input class="prek-name-input t1" value="'+(currentLang==='he'?pk.nameHE:pk.nameRU)+'" oninput="onPrekNameChange(\''+pk.id+'\',this.value)"></span>';
+    html += '<span style="font-size:11px;color:#64748b;margin-inline-end:8px">'+pk.questions.length+' '+t.questionsCount+'</span>';
+    html += '<span class="q-tb-btn danger" onclick="event.stopPropagation();deletePrek(\''+pk.id+'\')" title="'+t.deletePrek+'">✕</span>';
+    html += '</div>';
+    if(pk.open){
+      html += '<div class="prek-body">';
+      html += '<textarea class="topics-input" rows="2" placeholder="'+t.topicsPlaceholder+'" oninput="onTopicsChange(\''+pk.id+'\',this.value)">'+(currentLang==='he'?pk.topicsHE:pk.topicsRU)+'</textarea>';
+      html += '<div class="q-list" id="qlist_'+pk.id+'">';
+      pk.questions.forEach(function(q){
+        html += renderQRow(q,pk.id,sess,t);
+      });
+      html += '</div>';
+      html += '<div class="add-q-btn" onclick="addQuestion(\''+pk.id+'\')">';
+      html += '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> '+t.addQuestion;
+      html += '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+
+  html += '<div class="add-prek-btn" onclick="addPrek()">'+
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> '+t.addPrek+'</div>';
+
+  html += renderRules(sess, t);
+
+  document.getElementById('editorPanel').innerHTML = html;
+}
+
+function metaField(key,val,t,dataKey,readonly){
+  var html = '<div class="meta-field">';
+  html += '<label>'+t[key]+'</label>';
+  if(readonly){
+    html += '<div style="padding:7px 10px;font-size:13px;font-weight:600;color:#22D3EE">'+val+'</div>';
+  } else {
+    html += '<input class="meta-input" type="number" value="'+val+'" data-key="'+dataKey+'" oninput="onMetaChange(this)" style="color:#22D3EE;font-weight:600">';
+  }
+  html += '</div>';
+  return html;
+}
+
+// Russian numeral agreement for «балл»:
+// 1 → балл, 2-4 → балла, 5-20 and teens → баллов, 21 → балл, 22-24 → балла ...
+function ptsBallRU(n){
+  var abs = Math.abs(Math.round(n));
+  var mod100 = abs % 100;
+  var mod10  = abs % 10;
+  if(mod100 >= 11 && mod100 <= 19) return 'баллов';
+  if(mod10 === 1) return 'балл';
+  if(mod10 >= 2 && mod10 <= 4) return 'балла';
+  return 'баллов';
+}
+
+function renderQRow(q,pkId,sess,t){
+  var pts = typeof sess.pointsPerQ==='number' ? sess.pointsPerQ.toFixed(2) : sess.pointsPerQ;
+  var ptsParsed = parseFloat(pts);
+  var ptsLabel = currentLang==='ru' ? ptsBallRU(ptsParsed) : t.previewPts;
+  var html = '<div class="q-row" id="qrow_'+q.id+'">';
+  html += '<div class="q-row-header">';
+  html += '<span class="q-num">'+q.num+'</span>';
+  html += '<span class="q-pts-badge">'+pts+' '+ptsLabel+'</span>';
+  html += '<span class="q-save-indicator" id="qsave_'+q.id+'">✓</span>';
+  html += '<div class="q-toolbar">';
+  html += '<button class="rtbtn" id="fbtn_'+q.id+'" onmousedown="event.preventDefault()" onclick="onSigmaClick(\''+q.id+'\',this)" title="'+t.insertFormula+'">∑</button>';
+  html += '<button class="rmbtn" onclick="insertImageInQ(\''+q.id+'\')" title="'+t.insertImage+'">📎</button>';
+  html += '<input type="file" id="imgInput_'+q.id+'" accept="image/*" style="display:none" onchange="onImageSelected(\''+q.id+'\',this)">';
+  html += '<button class="q-tb-btn danger" onclick="deleteQuestion(\''+pkId+'\',\''+q.id+'\')" title="'+t.deleteQ+'">✕</button>';
+  html += '</div></div>';
+  var hasImg = q.images && q.images.length>0;
+  html += '<div class="q-body'+(hasImg?' has-image':'')+'">';
+  html += '<div class="q-content" id="qcontent_'+q.id+'" contenteditable="true" data-ph="'+t.qPlaceholder+'" oninput="onQContentChange(\''+q.id+'\',this)">'+q.content+'</div>';
+  if(hasImg){
+    html += '<div class="q-image-wrap">';
+    q.images.forEach(function(src,ii){
+      html += '<div class="q-image-thumb"><img src="'+src+'"><button class="q-img-del" onclick="deleteImage(\''+q.id+'\','+ii+')">✕</button></div>';
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderRules(sess,t){
+  var totalQ = sess.prakim.reduce(function(s,p){ return s+p.questions.length; },0);
+  var html = '<div class="rules-card">';
+  html += '<div class="rules-title">'+t.selectionRules+'</div>';
+  html += '<div class="rules-main-row">';
+  html += '<span class="rules-label">'+t.ruleTotal1+'</span>';
+  html += '<input class="rules-num" type="number" value="'+sess.rules.totalAnswer+'" min="1" max="'+totalQ+'" oninput="onAnswerKChange(this)">';
+  html += '<span class="rules-label">'+t.ruleTotal2+' '+totalQ+' '+t.ruleTotal3+'</span>';
+  html += '</div>';
+  html += '<div class="constraint-list">';
+  sess.rules.constraints.forEach(function(c){
+    html += '<div class="constraint-row">';
+    html += '<span class="rules-label" style="font-size:12px;flex-shrink:0">'+t.ruleMinFrom+'</span>';
+    html += '<input class="rules-num" type="number" value="'+c.min+'" min="1" style="width:42px" oninput="onConstraintMin(\''+c.id+'\',this)">';
+    html += '<span class="rules-label" style="font-size:12px;flex-shrink:0">'+t.ruleFrom+':</span>';
+    html += '<div class="constraint-prek-chips">';
+    c.prekIds.forEach(function(pid,idx){
+      if(idx>0) html += '<span class="or-badge">'+t.addOr+'</span>';
+      var pk = prekById(sess,pid);
+      if(pk) html += '<span class="c-chip sel">'+((currentLang==='he')?pk.nameHE:pk.nameRU)+'</span>';
+    });
+    sess.prakim.filter(function(p){ return c.prekIds.indexOf(p.id)<0; }).forEach(function(pk){
+      html += '<span class="c-chip" onclick="addPrekToConstraint(\''+c.id+'\',\''+pk.id+'\')" title="+">'+((currentLang==='he')?pk.nameHE:pk.nameRU)+' ＋</span>';
+    });
+    if(c.prekIds.length>1){
+      html += '<span class="add-or-btn" onclick="removePrekFromConstraint(\''+c.id+'\',\''+c.prekIds[c.prekIds.length-1]+'\')" style="color:#f87171;border-color:#f8717155">–</span>';
+    }
+    html += '</div>';
+    html += '<span class="del-constraint" onclick="deleteConstraint(\''+c.id+'\')">✕</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+  html += '<div class="add-constraint-btn" onclick="addConstraint()">'+
+    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> '+t.addConstraint+'</div>';
+  html += '</div>';
+  return html;
+}
+
+// ===================== Preview =====================
+function renderPreview(sess){
+  var t = TR[currentLang];
+  var isHE = currentLang==='he';
+  var dir = isHE?'rtl':'ltr';
+  var totalQ = sess.prakim.reduce(function(s,p){ return s+p.questions.length; },0);
+  var st = shalonTypes.find(function(s){ return s.id===selectedTypeId; });
+  var dH = Math.floor(sess.durationMin/60), dM = sess.durationMin%60;
+  var durStr = (dH?dH+(isHE?' שעות ':' ч '):'')+(dM?dM+' '+t.minutesLabel:'');
+  var pv = parseFloat(sess.pointsPerQ);
+  var ptsLabel = isHE ? t.previewPts : ptsBallRU(pv);
+
+  // Build the selection rule as one compact line (like real Bagrut exam header)
+  var ruleStr = t.previewAnswerRule.replace('%K',sess.rules.totalAnswer).replace('%N',totalQ);
+  var constraintParts = [];
+  sess.rules.constraints.forEach(function(c){
+    var names = c.prekIds.map(function(pid){ var pk=prekById(sess,pid); return pk?(isHE?pk.nameHE:pk.nameRU):pid; });
+    if(c.type==='min-or') constraintParts.push(t.previewMinRule.replace('%M',c.min).replace('%S',names.join(' '+t.addOr+' ')));
+    else constraintParts.push(t.previewMinRule.replace('%M',c.min).replace('%S',names[0]));
+  });
+  // Append points per question at end of rule line
+  var ptsStr = '('+pv.toFixed(2)+' '+ptsLabel+' '+t.ruleTotal3+')';
+  var fullRuleLine = ruleStr
+    + (constraintParts.length ? ', ' + constraintParts.join(', ') : '')
+    + ' – ' + ptsStr;
+
+  var html = '<div class="preview-wrap" dir="'+dir+'">';
+
+  // Header: ministry + title
+  html += '<div class="preview-header">';
+  html += '<div class="preview-ministry">'+t.previewMinEdu+'</div>';
+  html += '<div class="preview-title">מתמטיקה</div>';
+  html += '<div class="preview-subtitle">5 יחידות לימוד – '+(st?((isHE?st.titleHE:st.titleRU)+' '):'')+'</div>';
+  html += '<div style="font-size:12px;margin-bottom:10px;color:#475569">'+(st?'35'+st.number+' ':'')+' · '+sessionLabel(sess,currentLang)+'</div>';
+  html += '<div class="preview-meta">';
+  html += '<span>⏱ '+durStr+'</span>';
+  html += '</div></div>';
+
+  // Instructions — author-written free text
+  var instrText = (sess.instructions||'').trim();
+  if(instrText){
+    html += '<div class="preview-instruction" style="margin-bottom:20px;direction:'+dir+';text-align:'+(isHE?'right':'left')+'">'+instrText+'</div>';
+  }
+
+  // פרקים + questions
+  sess.prakim.forEach(function(pk){
+    html += '<div class="preview-prek">';
+    html += '<div class="preview-prek-title">'+(isHE?pk.nameHE:pk.nameRU)+'</div>';
+    html += '<div class="preview-prek-topics">'+(isHE?pk.topicsHE:pk.topicsRU)+'</div>';
+    pk.questions.forEach(function(q){
+      var ct = q.content.replace(/<[^>]*>/g,'').trim();
+      var hasImg = q.images && q.images.length > 0;
+      // Question number + points
+      html += '<div style="margin-bottom:12px">';
+      html += '<div class="preview-q-item">';
+      html += '<span class="preview-q-num">'+q.num+'.</span>';
+      html += '<span style="font-size:12px;color:#FBBF24;font-weight:600;margin-inline-start:4px">('+pv.toFixed(2)+' '+ptsLabel+')</span>';
+      html += '</div>';
+      // Text + image row
+      html += '<div style="display:flex;gap:12px;padding-inline-start:22px;margin-top:4px">';
+      // Text: full width if no image, 2/3 if image
+      html += '<div style="flex:'+(hasImg?'0 0 66.666%':'1')+';font-size:12.5px;line-height:1.8" class="t1">';
+      if(ct) html += ct;
+      html += '</div>';
+      if(hasImg){
+        html += '<div style="flex:0 0 33.333%;display:flex;flex-direction:column;gap:8px">';
+        q.images.forEach(function(src){
+          html += '<img src="'+src+'" style="width:100%;border-radius:6px;border:1px solid #334155;object-fit:contain;max-height:180px">';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+
+  html += '</div>';
+  document.getElementById('editorPanel').innerHTML = html;
+}
+
+// ===================== Mutations =====================
+function onMetaChange(el){
+  var sess = sessionById(selectedSessionId);
+  if(!sess) return;
+  var k = el.getAttribute('data-key');
+  var v = parseFloat(el.value)||0;
+  if(k==='durationMin') sess.durationMin = v;
+  else if(k==='answerK') sess.rules.totalAnswer = v;
+  else if(k==='ptsPerQ') sess.pointsPerQ = v;
+}
+var _saveTimers = {};
+function onQContentChange(qId, el){
+  // Save content to data model immediately
+  var sess = sessionById(selectedSessionId);
+  if(!sess) return;
+  var q = null;
+  sess.prakim.forEach(function(pk){ pk.questions.forEach(function(x){ if(x.id===qId) q=x; }); });
+  if(q) q.content = el.innerHTML;
+
+  // Show save indicator with debounce
+  clearTimeout(_saveTimers[qId]);
+  _saveTimers[qId] = setTimeout(function(){
+    var ind = document.getElementById('qsave_'+qId);
+    if(ind){
+      ind.classList.add('show');
+      setTimeout(function(){ ind.classList.remove('show'); }, 1400);
+    }
+  }, 600);
+}
+
+function onInstructionsChange(val){
+  var sess = sessionById(selectedSessionId);
+  if(sess) sess.instructions = val;
+}
+function onAnswerKChange(el){
+  var sess = sessionById(selectedSessionId);
+  if(sess) sess.rules.totalAnswer = parseInt(el.value)||1;
+}
+function onPrekNameChange(pkId, val){
+  var sess = sessionById(selectedSessionId);
+  var pk = prekById(sess,pkId);
+  if(!pk) return;
+  if(currentLang==='he') pk.nameHE = val; else pk.nameRU = val;
+}
+function onTopicsChange(pkId, val){
+  var sess = sessionById(selectedSessionId);
+  var pk = prekById(sess,pkId);
+  if(!pk) return;
+  if(currentLang==='he') pk.topicsHE = val; else pk.topicsRU = val;
+}
+function togglePrek(pkId){
+  var sess = sessionById(selectedSessionId);
+  var pk = prekById(sess,pkId);
+  if(pk){ pk.open = !pk.open; renderEditor(); }
+}
+function addPrek(){
+  var sess = sessionById(selectedSessionId);
+  var n = sess.prakim.length+1;
+  sess.prakim.push({id:'pk_'+Date.now(),nameHE:'פרק '+n,nameRU:'Раздел '+n,topicsHE:'',topicsRU:'',open:true,questions:[]});
+  renderEditor();
+}
+function deletePrek(pkId){
+  var sess = sessionById(selectedSessionId);
+  if(!confirm(TR[currentLang].deletePrek+'?')) return;
+  sess.prakim = sess.prakim.filter(function(p){ return p.id!==pkId; });
+  sess.rules.constraints.forEach(function(c){ c.prekIds = c.prekIds.filter(function(id){ return id!==pkId; }); });
+  sess.rules.constraints = sess.rules.constraints.filter(function(c){ return c.prekIds.length>0; });
+  renderEditor();
+}
+function addQuestion(pkId){
+  var sess = sessionById(selectedSessionId);
+  var pk = prekById(sess,pkId);
+  if(!pk) return;
+  var maxNum = 0;
+  sess.prakim.forEach(function(p){ p.questions.forEach(function(q){ if(q.num>maxNum) maxNum=q.num; }); });
+  pk.questions.push({id:'q_'+Date.now(),num:maxNum+1,content:'',images:[]});
+  renderEditor();
+}
+function deleteQuestion(pkId, qId){
+  var sess = sessionById(selectedSessionId);
+  var pk = prekById(sess,pkId);
+  if(!pk) return;
+  pk.questions = pk.questions.filter(function(q){ return q.id!==qId; });
+  renderEditor();
+}
+
+// ===================== Constraints =====================
+function addConstraint(){
+  var sess = sessionById(selectedSessionId);
+  if(!sess) return;
+  var first = sess.prakim[0]?sess.prakim[0].id:null;
+  sess.rules.constraints.push({id:'c_'+Date.now(),type:'min',prekIds:first?[first]:[],min:1});
+  renderEditor();
+}
+function deleteConstraint(cId){
+  var sess = sessionById(selectedSessionId);
+  sess.rules.constraints = sess.rules.constraints.filter(function(c){ return c.id!==cId; });
+  renderEditor();
+}
+function onConstraintMin(cId,el){
+  var sess = sessionById(selectedSessionId);
+  var c = sess.rules.constraints.find(function(c){ return c.id===cId; });
+  if(c) c.min = parseInt(el.value)||1;
+}
+function addPrekToConstraint(cId,pkId){
+  var sess = sessionById(selectedSessionId);
+  var c = sess.rules.constraints.find(function(x){ return x.id===cId; });
+  if(c&&c.prekIds.indexOf(pkId)<0){ c.prekIds.push(pkId); c.type='min-or'; renderEditor(); }
+}
+function removePrekFromConstraint(cId,pkId){
+  var sess = sessionById(selectedSessionId);
+  var c = sess.rules.constraints.find(function(x){ return x.id===cId; });
+  if(c){ c.prekIds=c.prekIds.filter(function(id){ return id!==pkId; }); if(c.prekIds.length<=1) c.type='min'; renderEditor(); }
+}
+
+// ===================== Formula symbol panel =====================
+var fmenu = document.getElementById('fmenu');
+var fmenuTargetBtn = null;
+var lastFocusedMathField = null;
+
+// Track last focused math-field globally
+document.addEventListener('focusin', function(e){
+  if(e.target && e.target.tagName === 'MATH-FIELD'){
+    lastFocusedMathField = e.target;
+    // Ensure virtual keyboard stays off regardless of browser/MathLive version
+    e.target.virtualKeyboardMode = 'off';
+    e.target.menuItems = [];
+  }
+});
+
+function toggleFormulaMenu(btn){
+  if(fmenu.classList.contains('open') && fmenuTargetBtn === btn){
+    closeFormulaMenu(); return;
+  }
+  fmenuTargetBtn = btn;
+  var r = btn.getBoundingClientRect();
+  fmenu.style.top  = (r.bottom + 6) + 'px';
+  var left = r.left;
+  if(left + 224 > window.innerWidth - 8) left = window.innerWidth - 232;
+  fmenu.style.left = Math.max(8, left) + 'px';
+  fmenu.classList.add('open');
+}
+function closeFormulaMenu(){
+  fmenu.classList.remove('open');
+  fmenuTargetBtn = null;
+}
+document.addEventListener('mousedown', function(e){
+  if(fmenu.classList.contains('open') && !fmenu.contains(e.target) && e.target !== fmenuTargetBtn)
+    closeFormulaMenu();
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closeFormulaMenu();
+});
+// Prevent fmenu clicks from stealing focus from active math-field
+fmenu.addEventListener('mousedown', function(e){ e.preventDefault(); });
+fmenu.querySelectorAll('.fmenu-item').forEach(function(item){
+  item.addEventListener('click', function(){
+    var mf = lastFocusedMathField;
+    if(!mf){ closeFormulaMenu(); return; }
+    var latex = item.getAttribute('data-ins');
+    mf.focus();
+    mf.insert(latex, {insertionMode:'insertAfter', selectionMode:'placeholder'});
+    closeFormulaMenu();
+  });
+});
+
+function onSigmaClick(qId, btn){
+  // Panel already open for this button → just close
+  if(fmenu.classList.contains('open') && fmenuTargetBtn===btn){
+    closeFormulaMenu(); return;
+  }
+  var field = document.getElementById('qcontent_'+qId);
+  var hasFocusedMF = lastFocusedMathField && field && field.contains(lastFocusedMathField);
+  if(hasFocusedMF){
+    // Formula already active → just open panel, no new field
+    toggleFormulaMenu(btn);
+  } else {
+    // No active formula → insert new field, then open panel after mount
+    insertFormulaInQ(qId);
+    setTimeout(function(){ toggleFormulaMenu(btn); }, 50);
+  }
+}
+
+// ===================== Tab → indent in question content fields =====================
+// Use event delegation on the editor panel so it works after every re-render
+document.getElementById('editorPanel').addEventListener('keydown', function(e){
+  if(e.key === 'Tab' && e.target.classList.contains('q-content')){
+    e.preventDefault();
+    // Insert 4 non-breaking spaces as indent
+    var sel = window.getSelection();
+    if(!sel.rangeCount) return;
+    var range = sel.getRangeAt(0);
+    range.deleteContents();
+    var spaces = document.createTextNode('\u00A0\u00A0\u00A0\u00A0');
+    range.insertNode(spaces);
+    range.setStartAfter(spaces);
+    range.setEndAfter(spaces);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+});
+
+// ===================== Formula insertion =====================
+var MFO = '<bdi style="unicode-bidi:isolate;direction:ltr"><math-field class="imf" virtual-keyboard-mode="off">';
+var MFC = '</math-field></bdi>';
+
+function insertFormulaInQ(qId){
+  var field = document.getElementById('qcontent_'+qId);
+  if(!field) return;
+  var bdi = document.createElement('bdi');
+  bdi.style.unicodeBidi='isolate'; bdi.style.direction='ltr';
+  var mf = document.createElement('math-field');
+  mf.className='imf'; mf.setAttribute('virtual-keyboard-mode','off');
+  bdi.appendChild(mf);
+  var anchor = document.createTextNode('\u200B');
+  var frag = document.createDocumentFragment();
+  frag.appendChild(bdi); frag.appendChild(anchor);
+  var sel = window.getSelection();
+  if(sel.rangeCount&&field.contains(sel.anchorNode)){
+    var range=sel.getRangeAt(0); range.deleteContents(); range.insertNode(frag);
+  } else { field.appendChild(frag); }
+  var r=document.createRange(); r.setStart(anchor,1); r.setEnd(anchor,1);
+  sel.removeAllRanges(); sel.addRange(r);
+  field.focus();
+  setTimeout(function(){ mf.focus(); },0);
+  mf.addEventListener('blur',function(){
+    var r2=document.createRange(); r2.setStart(anchor,1); r2.setEnd(anchor,1);
+    var s=window.getSelection(); s.removeAllRanges(); s.addRange(r2);
+  });
+  mf.addEventListener('keydown',function(e){
+    if((e.key==='Backspace'||e.key==='Delete') && mf.getValue('latex').trim()===''){
+      e.preventDefault();
+      var parent = bdi.parentNode;
+      if(parent){
+        // place cursor where the bdi was before removing it
+        var r3=document.createRange();
+        r3.setStartBefore(bdi); r3.collapse(true);
+        var s=window.getSelection(); s.removeAllRanges(); s.addRange(r3);
+        parent.removeChild(bdi);
+        if(anchor.parentNode) anchor.parentNode.removeChild(anchor);
+      }
+    }
+  });
+}
+
+// ===================== Image insertion =====================
+function insertImageInQ(qId){
+  var inp = document.getElementById('imgInput_'+qId);
+  if(inp) inp.click();
+}
+function onImageSelected(qId,inputEl){
+  if(!inputEl.files||!inputEl.files[0]) return;
+  var sess = sessionById(selectedSessionId);
+  var q = null;
+  sess.prakim.forEach(function(pk){ pk.questions.forEach(function(x){ if(x.id===qId) q=x; }); });
+  if(!q) return;
+  var reader = new FileReader();
+  reader.onload = function(e){ if(!q.images) q.images=[]; q.images.push(e.target.result); renderEditor(); };
+  reader.readAsDataURL(inputEl.files[0]);
+}
+function deleteImage(qId,idx){
+  var sess = sessionById(selectedSessionId);
+  var q = null;
+  sess.prakim.forEach(function(pk){ pk.questions.forEach(function(x){ if(x.id===qId) q=x; }); });
+  if(q&&q.images){ q.images.splice(idx,1); renderEditor(); }
+}
+
+// ===================== Session / Shalon CRUD =====================
+function addSession(typeId){
+  var st = typeById(typeId);
+  if(!st) return;
+  var sessModal = document.getElementById('shalonModal');
+  document.getElementById('shalonModalTitle').textContent =
+    currentLang==='he' ? 'הוספת שאלון' : 'Добавить вопросник';
+  document.getElementById('shalonNumInput').style.display = 'none';
+  document.getElementById('shalonNameInput').placeholder =
+    currentLang==='he' ? 'שם (לא חובה)' : 'Название (необязательно)';
+  sessModal._addingSession = typeId;
+  document.getElementById('shalonNumInput').value='';
+  document.getElementById('shalonNameInput').value='';
+  sessModal.classList.add('show');
+  setTimeout(function(){ document.getElementById('shalonNameInput').focus(); },50);
+}
+function addShalon(){
+  var sessModal = document.getElementById('shalonModal');
+  document.getElementById('shalonModalTitle').textContent = TR[currentLang].shalonModalNew;
+  document.getElementById('shalonNumInput').style.display = '';
+  document.getElementById('shalonNumInput').placeholder = currentLang==='he'?'מספר השאלון (572)':'Номер вопросника (572)';
+  document.getElementById('shalonNameInput').placeholder = currentLang==='he'?'שם (לא חובה)':'Название (необязательно)';
+  sessModal._addingSession = null;
+  document.getElementById('shalonNumInput').value='';
+  document.getElementById('shalonNameInput').value='';
+  sessModal.classList.add('show');
+  setTimeout(function(){ document.getElementById('shalonNumInput').focus(); },50);
+}
+function closeShalonModal(){
+  document.getElementById('shalonModal').classList.remove('show');
+  document.getElementById('shalonNumInput').style.display = '';
+}
+function confirmShalonModal(){
+  var num = document.getElementById('shalonNumInput').value.trim();
+  // name is already read in the session/shalon branch below
+  var modal = document.getElementById('shalonModal');
+  var name = document.getElementById('shalonNameInput').value.trim();
+  if(modal._addingSession){
+    // new session inside existing type — name only, no date fields
+    var st = typeById(modal._addingSession);
+    var sessId = 'sess_'+Date.now();
+    var newSess = {
+      id:sessId, label:name,
+      durationMin:150, pointsPerQ:33.33, prakim:[],
+      rules:{totalAnswer:3,constraints:[]}
+    };
+    st.sessions.push(newSess);
+    selectedTypeId = st.id;
+    selectedSessionId = sessId;
+  } else {
+    // adding new shalon type
+    var typeId = 'st_'+Date.now();
+    shalonTypes.push({id:typeId, number:num, titleHE:name||num, titleRU:name||num, sessions:[]});
+    selectedTypeId = typeId;
+  }
+  closeShalonModal();
+  renderShalonList(); renderEditor();
+}
+
+// ===================== Translate =====================
+function updateTranslateBtn(){
+  var btn = document.getElementById('translateBtn');
+  if(btn) btn.textContent = currentLang==='ru'?'RU \u2192 HE':'HE \u2192 RU';
+}
+function openTranslateModal(){
+  var fromRU = currentLang==='ru';
+  var fromWord = fromRU ? 'русского' : 'иврита';
+  var toWord   = fromRU ? 'иврите'   : 'русский';
+  var fromWordHE = fromRU ? 'רוסית' : 'עברית';
+  var toWordHE   = fromRU ? 'עברית' : 'רוסית';
+  document.getElementById('translateModalTitle').textContent =
+    currentLang==='he' ? 'תרגום תוכן' : 'Перевести контент';
+  document.getElementById('translateModalBody').innerHTML =
+    currentLang==='he'
+      ? 'לתרגם את כל שמות הפרקים והנושאים מ<b>'+fromWordHE+'</b> ל<b>'+toWordHE+'</b>?<br>תרגומים קיימים יוחלפו.'
+      : 'Перевести все названия разделов и темы с <b>'+fromWord+'</b> на <b>'+toWord+'</b>?<br>Существующие переводы будут перезаписаны.';
+  document.getElementById('translateProgress').textContent = '';
+  document.getElementById('translateError').textContent = '';
+  var barWrap = document.getElementById('translateBarWrap');
+  var barFill = document.getElementById('translateBarFill');
+  barWrap.style.display = 'none';
+  barFill.style.width = '0';
+  barFill.style.background = '';
+  document.getElementById('translateConfirmBtn').style.display = '';
+  document.getElementById('translateOkBtn').style.display = 'none';
+  document.getElementById('translateCancelBtn').textContent = currentLang==='he' ? 'ביטול' : 'Отмена';
+  document.getElementById('translateConfirmBtn').textContent = currentLang==='he' ? 'תרגם' : 'Перевести';
+  document.getElementById('translateOkBtn').textContent = currentLang==='he' ? 'אישור' : 'OK';
+  _translateResult = null;
+  document.getElementById('translateModalOverlay').classList.add('show');
+}
+
+function closeTranslateModal(){
+  document.getElementById('translateModalOverlay').classList.remove('show');
+}
+
+function onTranslateOk(){
+  if(_translateResult){
+    _translateResult._items.forEach(function(it,i){
+      var text = _translateResult[i];
+      if(!text) return;
+      var sess = sessionById(selectedSessionId);
+      var pk = sess ? prekById(sess, it.id) : null;
+      if(!pk) return;
+      if(_translateResult._fromRU){ if(it.type==='name') pk.nameHE=text; else pk.topicsHE=text; }
+      else { if(it.type==='name') pk.nameRU=text; else pk.topicsRU=text; }
+    });
+    _translateResult = null;
+  }
+  closeTranslateModal();
+  renderEditor();
+}
+
+async function runTranslation(){
+  var sess = sessionById(selectedSessionId);
+  if(!sess) return;
+  var fromRU = currentLang==='ru';
+  var items = [];
+  sess.prakim.forEach(function(pk){
+    items.push({type:'name',   id:pk.id, text:fromRU?pk.nameRU:(pk.nameHE||pk.nameRU)});
+    items.push({type:'topics', id:pk.id, text:fromRU?pk.topicsRU:(pk.topicsHE||pk.topicsRU)});
+  });
+  if(!items.length){
+    document.getElementById('translateError').textContent = currentLang==='ru'?'Нет текста для перевода':'אין טקסט לתרגום';
+    return;
+  }
+  var srcLines = items.map(function(it,i){ return (i+1)+'. '+it.text; }).join('\n');
+  var progress   = document.getElementById('translateProgress');
+  var barWrap    = document.getElementById('translateBarWrap');
+  var barFill    = document.getElementById('translateBarFill');
+  var errEl      = document.getElementById('translateError');
+  var confirmBtn = document.getElementById('translateConfirmBtn');
+  var okBtn      = document.getElementById('translateOkBtn');
+  progress.textContent = (currentLang==='ru'?'Отправка запроса... (':'שולח בקשה... (')+items.length+(currentLang==='ru'?' элементов)':' פריטים)');
+  barWrap.style.display = 'block';
+  barFill.style.width = '10%';
+  errEl.textContent = '';
+  confirmBtn.style.display = 'none';
+  okBtn.style.display = 'none';
+  var barTimer = setInterval(function(){
+    var cur=parseFloat(barFill.style.width)||0;
+    if(cur<80) barFill.style.width=Math.min(cur+6,80)+'%';
+  },350);
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6', max_tokens:2000,
+        messages:[{role:'user',content:'You are a mathematics educator translator. Translate each numbered item from '+(fromRU?'Russian':'Hebrew')+' to '+(fromRU?'Hebrew':'Russian')+'. Return ONLY a JSON array of strings in the same order. No markdown. Input:\n'+srcLines}]
+      })
+    });
+    clearInterval(barTimer);
+    barFill.style.width = '90%';
+    var data = await resp.json();
+    var raw = (data.content||[]).map(function(c){ return c.text||''; }).join('');
+    var clean = raw.replace(/```[^`]*```/g,'').replace(/```/g,'').trim();
+    var translated = JSON.parse(clean);
+    if(!Array.isArray(translated)||translated.length!==items.length) throw new Error('length mismatch');
+    translated._items = items;
+    translated._fromRU = fromRU;
+    _translateResult = translated;
+    barFill.style.width = '100%';
+    progress.textContent = (currentLang==='ru'?'Готово! Переведено ':'הושלם! תורגמו ')+items.length+(currentLang==='ru'?' элементов.':' פריטים.');
+    okBtn.style.display = '';
+  } catch(err){
+    clearInterval(barTimer);
+    barFill.style.width = '100%';
+    barFill.style.background = '#f87171';
+    errEl.textContent = (currentLang==='ru'?'Ошибка: ':'שגיאה: ')+err.message;
+    confirmBtn.style.display = '';
+    progress.textContent = '';
+  }
+}
+
+// ===================== i18n additions =====================
+TR.ru.questionsCount = 'שאלות';
+TR.he.questionsCount = 'שאלות';
+
+// ===================== Init =====================
+renderShalonList();
+renderEditor();
+applyI18n();
+updateTranslateBtn();
+updateAddBtn();
+</script>
+</body>
+</html>
