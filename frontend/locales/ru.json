@@ -124,11 +124,16 @@
     "navDashboard": "Дашборд",
     "navModules": "Модули",
     "navProgress": "Прогресс",
+    "navContent": "Редактор",
     "navFormulas": "Формулы",
     "navLab": "Лаборатория",
     "navAchievements": "Достижения",
     "navHelp": "Помощь",
     "navSettings": "Настройки",
+    "subGraph": "Граф",
+    "subAtomEditor": "Атом",
+    "subGroups": "Группы",
+    "subExam": "Экзамены",
     "mockCourses": [
       {
         "name": "Основы векторов",

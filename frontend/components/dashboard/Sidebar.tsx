@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocale } from "@/lib/LanguageContext";
 
 // TODO: connect to router for real navigation
@@ -38,6 +38,17 @@ function ProgressIcon() {
       <rect x="3" y="12" width="4" height="9" rx="1" />
       <rect x="10" y="7" width="4" height="14" rx="1" />
       <rect x="17" y="3" width="4" height="18" rx="1" />
+    </svg>
+  );
+}
+
+function EditorIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-5 h-5 fill-none stroke-current stroke-[1.75]">
+      <path d="M14 3v4a1 1 0 001 1h4" />
+      <path d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z" />
+      <path d="M10 13l-1 4 4-1 5-5-3-3z" />
+      <path d="M13.5 10.5l3 3" />
     </svg>
   );
 }
@@ -86,6 +97,49 @@ function HelpIcon() {
   );
 }
 
+function GraphIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-[1.75]">
+      <circle cx="5" cy="6" r="2" />
+      <circle cx="19" cy="6" r="2" />
+      <circle cx="12" cy="18" r="2" />
+      <path d="M7 6h10" />
+      <path d="M14 18H7a2 2 0 01-2-2v-6" />
+    </svg>
+  );
+}
+
+function AtomEditorIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-[1.75]">
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <path d="M8 9h8" />
+      <path d="M8 13h6" />
+    </svg>
+  );
+}
+
+function GroupsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-[1.75]">
+      <rect x="3" y="4" width="7" height="7" rx="1.5" />
+      <rect x="14" y="4" width="7" height="7" rx="1.5" />
+      <rect x="3" y="13" width="7" height="7" rx="1.5" />
+      <rect x="14" y="13" width="7" height="7" rx="1.5" />
+    </svg>
+  );
+}
+
+function ExamIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-[1.75]">
+      <path d="M4 20h4l10.5-10.5a2.8 2.8 0 10-4-4L4 16v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M15 19l2 2 4-4" />
+    </svg>
+  );
+}
+
 function SettingsIcon() {
   return (
     <svg viewBox="0 0 24 24" className="w-5 h-5 fill-none stroke-current stroke-[1.75]">
@@ -95,40 +149,86 @@ function SettingsIcon() {
   );
 }
 
-type NavItem = {
-  icon: React.ReactNode;
-  label: string;
-  active?: boolean;
-};
+type TopNavKey = "dashboard" | "modules" | "progress" | "content";
+type SubNavKey = "graph" | "atom" | "groups" | "exam";
+
+type NavItem = { key: TopNavKey; icon: React.ReactNode; label: string };
+type SubNavItem = { key: SubNavKey; icon: React.ReactNode; label: string };
 
 export default function Sidebar() {
   const [open, setOpen] = useState(false);
+  const [activeTop, setActiveTop] = useState<TopNavKey>("dashboard");
+  const [activeSub, setActiveSub] = useState<SubNavKey>("graph");
   const { t } = useLocale();
   const d = t.dashboard;
 
+  useEffect(() => {
+    const saved = window.localStorage.getItem("mwl.sidebar.open");
+    if (saved === "1") {
+      setOpen(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("mwl.sidebar.open", open ? "1" : "0");
+  }, [open]);
+
   const NAV_TOP = [
-    { icon: <HomeIcon />, label: d.navDashboard, active: true },
-    { icon: <BooksIcon />, label: d.navModules },
-    { icon: <ProgressIcon />, label: d.navProgress },
-  ];
+    { key: "dashboard", icon: <HomeIcon />, label: d.navDashboard },
+    { key: "modules", icon: <BooksIcon />, label: d.navModules },
+    { key: "progress", icon: <ProgressIcon />, label: d.navProgress },
+    { key: "content", icon: <EditorIcon />, label: d.navContent },
+  ] satisfies NavItem[];
+
+  const NAV_CONTENT = [
+    { key: "graph", icon: <GraphIcon />, label: d.subGraph },
+    { key: "atom", icon: <AtomEditorIcon />, label: d.subAtomEditor },
+    { key: "groups", icon: <GroupsIcon />, label: d.subGroups },
+    { key: "exam", icon: <ExamIcon />, label: d.subExam },
+  ] satisfies SubNavItem[];
 
   const NAV_MID = [
     { icon: <MathIcon />, label: d.navFormulas },
     { icon: <LabIcon />, label: d.navLab },
     { icon: <TrophyIcon />, label: d.navAchievements },
-  ];
+  ] as const;
 
   const NAV_BOT = [
     { icon: <HelpIcon />, label: d.navHelp },
     { icon: <SettingsIcon />, label: d.navSettings },
-  ];
+  ] as const;
 
-  const itemClass = (active?: boolean) =>
+  const handleTopClick = (key: TopNavKey) => {
+    if (key === "content") {
+      setActiveTop("content");
+      if (!open) {
+        setOpen(true);
+      }
+      return;
+    }
+
+    setActiveTop(key);
+  };
+
+  const handleSubClick = (key: SubNavKey) => {
+    setActiveTop("content");
+    setActiveSub(key);
+  };
+
+  const itemClass = (active: boolean) =>
     [
-      "flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer whitespace-nowrap overflow-hidden transition-colors",
+      "flex items-center h-[38px] rounded-lg cursor-pointer whitespace-nowrap overflow-hidden transition-colors",
       active
-        ? "bg-cyan-400/10 text-cyan-400"
-        : "text-slate-500 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100",
+        ? "text-cyan-400"
+        : "text-slate-500 dark:text-slate-500 hover:text-slate-400 dark:hover:text-slate-400",
+    ].join(" ");
+
+  const subItemClass = (active: boolean) =>
+    [
+      "flex items-center gap-2 px-2 py-1.5 rounded-md text-[11.5px] whitespace-nowrap transition-colors",
+      active
+        ? "text-cyan-400 font-semibold"
+        : "text-slate-500 dark:text-slate-500 hover:text-slate-400 dark:hover:text-slate-400",
     ].join(" ");
 
   const labelClass = open
@@ -140,42 +240,53 @@ export default function Sidebar() {
       className={[
         "flex flex-col shrink-0 border-r transition-[width] duration-200 overflow-hidden",
         "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800",
-        open ? "w-44" : "w-13",
+        open ? "w-41" : "w-11.5",
       ].join(" ")}
     >
       {/* Toggle */}
       <div
-        className="flex items-center justify-center p-2 mt-1 rounded-lg cursor-pointer text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 mx-1 mb-1"
+        className="w-11.5 h-9.5 flex items-center justify-center mt-1 mb-2 rounded-lg cursor-pointer text-slate-500 dark:text-slate-500 hover:text-slate-400 dark:hover:text-slate-400"
         onClick={() => setOpen((v) => !v)}
       >
         <SidebarToggleIcon />
       </div>
 
       {/* Top nav: Дашборд / Модули / Прогресс */}
-      <div className="flex flex-col gap-0.5 px-1">
+      <div className="flex flex-col gap-0.5 px-0">
         {NAV_TOP.map((item) => (
-          <div key={item.label} className={itemClass(item.active)}>
-            <span className="w-5 shrink-0">{item.icon}</span>
+          <button key={item.key} className={itemClass(activeTop === item.key)} onClick={() => handleTopClick(item.key)}>
+            <span className="w-11.5 h-9.5 flex items-center justify-center shrink-0">{item.icon}</span>
             <span className={labelClass}>{item.label}</span>
-          </div>
+          </button>
         ))}
+
+        {open && activeTop === "content" && (
+          <div className="flex flex-col gap-1 ps-3.5 mt-1 mb-2">
+            {NAV_CONTENT.map((item) => (
+              <button key={item.key} className={subItemClass(activeSub === item.key)} onClick={() => handleSubClick(item.key)}>
+                <span className="w-3.5 h-3.5 shrink-0">{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Mid nav: Формулы / Лаборатория / Достижения — centered vertically */}
-      <div className="flex flex-col gap-0.5 px-1 flex-1 justify-center">
+      <div className="flex flex-col gap-0.5 px-0 flex-1 justify-center">
         {NAV_MID.map((item) => (
-          <div key={item.label} className={itemClass(item.active)}>
-            <span className="w-5 shrink-0">{item.icon}</span>
+          <div key={item.label} className={itemClass(false)}>
+            <span className="w-11.5 h-9.5 flex items-center justify-center shrink-0">{item.icon}</span>
             <span className={labelClass}>{item.label}</span>
           </div>
         ))}
       </div>
 
       {/* Bottom nav: Помощь / Настройки */}
-      <div className="flex flex-col gap-0.5 px-1 mb-2">
+      <div className="flex flex-col gap-0.5 px-0 mb-2">
         {NAV_BOT.map((item) => (
-          <div key={item.label} className={itemClass(item.active)}>
-            <span className="w-5 shrink-0">{item.icon}</span>
+          <div key={item.label} className={itemClass(false)}>
+            <span className="w-11.5 h-9.5 flex items-center justify-center shrink-0">{item.icon}</span>
             <span className={labelClass}>{item.label}</span>
           </div>
         ))}

@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import Sidebar from "@/components/dashboard/Sidebar";
 import WelcomeBlock from "@/components/dashboard/WelcomeBlock";
 import StatsRow from "@/components/dashboard/StatsRow";
@@ -10,7 +10,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden">
       {/* Header */}
-      <Header mode="dashboard" />
+      <DashboardHeader />
 
       {/* Body: sidebar + main */}
       <div className="flex flex-1 overflow-hidden">

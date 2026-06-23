@@ -119,11 +119,16 @@
     "navDashboard": "לוח בקרה",
     "navModules": "מודולים",
     "navProgress": "התקדמות",
+    "navContent": "עורך",
     "navFormulas": "נוסחאות",
     "navLab": "מעבדה",
     "navAchievements": "הישגים",
     "navHelp": "עזרה",
     "navSettings": "הגדרות",
+    "subGraph": "גרף",
+    "subAtomEditor": "אטום",
+    "subGroups": "קבוצות",
+    "subExam": "מבחנים",
     "mockCourses": [
       {
         "name": "יסודות וקטורים",
