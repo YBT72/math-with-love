@@ -270,7 +270,7 @@ export default function TopicsAndPreview() {
   const course = courses[selectedCourse];
 
   return (
-    <div className="grid grid-cols-[240px_1fr] gap-3">
+    <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-3">
       {/* Left: topics list */}
       <div className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl flex flex-col overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest text-start">
