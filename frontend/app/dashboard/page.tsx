@@ -1,5 +1,6 @@
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import Sidebar from "@/components/dashboard/Sidebar";
+import BottomNav from "@/components/dashboard/BottomNav";
 import WelcomeBlock from "@/components/dashboard/WelcomeBlock";
 import StatsRow from "@/components/dashboard/StatsRow";
 import TopicsAndPreview from "@/components/dashboard/TopicsAndPreview";
@@ -14,10 +15,13 @@ export default function DashboardPage() {
 
       {/* Body: sidebar + main */}
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
+        {/* Sidebar: hidden on mobile, visible md+ */}
+        <div className="hidden md:block">
+          <Sidebar />
+        </div>
 
         {/* Main scrollable content */}
-        <main className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+        <main className="flex-1 overflow-y-auto p-4 pb-[calc(1rem+52px+env(safe-area-inset-bottom))] md:pb-4 flex flex-col gap-3">
           {/* Welcome + Yosi */}
           <WelcomeBlock />
 
@@ -33,6 +37,11 @@ export default function DashboardPage() {
             <RecentResults />
           </div>
         </main>
+      </div>
+
+      {/* Bottom navigation: mobile only */}
+      <div className="md:hidden">
+        <BottomNav />
       </div>
     </div>
   );
