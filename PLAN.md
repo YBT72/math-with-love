@@ -34,21 +34,24 @@
 
 ---
 
-## Фаза 1 — Dashboard v2 (ждём макеты)
+## Фаза 1 — Dashboard v2 (~в процессе)
 
-Триггер: загрузка новых макетов (desktop + tablet + mobile, оба theme).
-
-- [ ] Принять макеты от пользователя
-- [ ] Адаптировать `app/dashboard/page.tsx` под новый layout
+- [x] Desktop макет (`mwl_dashboard_desktop_dark.html`) — утверждён июнь 2026
+      3-column grid хедер, sidebar с зафиксированными иконками и именами,
+      Progress Maze, Topics, Recent Results, RU/HE i18n, оба theme, RTL.
+- [ ] Tablet макет — не начат
+- [ ] Mobile макет — не начат
+- [ ] Адаптировать `app/dashboard/page.tsx` под утверждённый layout
 - [ ] Обновить/переписать компоненты в `components/dashboard/`:
   - [ ] `WelcomeBlock` — аватар, приветствие по времени, кнопки действий, Yosi card
-  - [ ] `Sidebar` — «Контент» пункт с подменю (Карта графа / Редактор атома / Группы / Примеры вопросников), collapse, active states
-  - [ ] `StatsRow` — 3 карточки (серия / очки / темы), без знака %
+  - [ ] `Sidebar` — «Редактор» с подменю (Граф / Атом / Группы / Экзамены),
+        collapse/expand, setActiveNav, icon alignment (ni=46px, icon-wrap=46px)
+  - [ ] `StatsRow` — 3 карточки (серия / очки / пройдено), без знака %
   - [ ] `TopicsAndPreview` — список тем + превью (Progress Maze встанет сюда)
   - [ ] `CurrentModule` — прогресс бар, кнопка Продолжить
-  - [ ] `RecentResults` — таблица последних результатов
-  - [ ] `DashboardHeader` — search field
-- [ ] Добавить Bottom Navigation для мобайла (5 табов)
+  - [ ] `RecentResults` — min-width:0 overflow:hidden на колонках
+  - [ ] `DashboardHeader` — 3-column grid, search по центру
+- [ ] Bottom Navigation для мобайла (5 табов)
 - [ ] Sidebar: сохранять состояние (collapsed/expanded) в localStorage
 
 ---
@@ -155,7 +158,7 @@
 - [ ] `app/constructor/graph/page.tsx` — Карта графа
 - [ ] `app/constructor/atom/[id]/page.tsx` — Редактор атома
 - [ ] `app/constructor/groups/page.tsx` — Конструктор групп
-- [ ] `app/constructor/examples/page.tsx` — Примеры вопросников
+- [ ] `app/constructor/examples/page.tsx` — Экзамены (бывш. Примеры вопросников)
 - [ ] Подключить batch-перевод к реальному Anthropic API endpoint
 
 ---
@@ -188,4 +191,4 @@ Claude Code (VS Code) + claude.ai/chat тянут из **одного пула**
 
 ---
 
-*Создан: 2026-06-19 · Обновлён: 2026-06-22 (Фаза 0.5 завершена — все 4 макета конструктора готовы)*
+*Создан: 2026-06-19 · Обновлён: 2026-06-23 (Фаза 0.5 ✅ · Фаза 1 desktop макет ✅ · tablet/mobile pending)*
