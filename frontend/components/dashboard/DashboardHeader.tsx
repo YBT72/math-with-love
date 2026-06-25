@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import { useLocale } from "@/lib/LanguageContext";
 
 function SearchIcon() {
@@ -22,6 +23,25 @@ function BellIcon() {
 
 export default function DashboardHeader() {
   const { lang, setLang } = useLocale();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (searchOpen) inputRef.current?.focus();
+  }, [searchOpen]);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!searchOpen) return;
+    function onDown(e: MouseEvent) {
+      const target = e.target as Node;
+      if (!inputRef.current?.closest(".search-wrap")?.contains(target)) {
+        setSearchOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [searchOpen]);
 
   return (
     <header className="h-12 grid grid-cols-[1fr_auto_1fr] items-center px-4 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0 gap-3">
@@ -36,15 +56,48 @@ export default function DashboardHeader() {
         </span>
       </div>
 
-      <div className="w-70 max-w-[42vw] relative justify-self-center">
-        <input
-          type="text"
-          placeholder="Поиск тем, формул..."
-          className="w-full h-7 ps-3 pe-8 text-[12px] rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-cyan-400 transition-colors"
-        />
-        <span className="absolute inset-e-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
-          <SearchIcon />
-        </span>
+      {/* Search: full-width input on md+; icon-only toggle on mobile */}
+      <div className="search-wrap relative justify-self-center">
+        {/* Desktop/tablet: always visible input */}
+        <div className="hidden md:block w-70 max-w-[42vw] relative">
+          <input
+            type="text"
+            placeholder="Поиск тем, формул..."
+            className="w-full h-7 ps-3 pe-8 text-[12px] rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-cyan-400 transition-colors"
+          />
+          <span className="absolute inset-e-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none">
+            <SearchIcon />
+          </span>
+        </div>
+
+        {/* Mobile: icon button → expanding input */}
+        <div className="md:hidden flex items-center">
+          {searchOpen ? (
+            <div className="relative">
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="Поиск..."
+                className="h-7 w-44 ps-3 pe-8 text-[12px] rounded-lg border border-cyan-400 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none transition-colors"
+              />
+              <button
+                onClick={() => setSearchOpen(false)}
+                className="absolute inset-e-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
+                aria-label="Close search"
+              >
+                <SearchIcon />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="w-7 h-7 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+              aria-label="Search"
+            >
+              <SearchIcon />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-2 justify-self-end">
