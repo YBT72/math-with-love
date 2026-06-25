@@ -67,16 +67,17 @@ export default function WelcomeBlock() {
 
       {/* Right: Professor Yosi card */}
       <div className="w-44 shrink-0 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl overflow-hidden flex flex-col">
-        <div className="h-18 flex items-center justify-center bg-cyan-400/5 border-b border-slate-200 dark:border-slate-800">
+        {/* Image zone: larger on mobile (fills card), compact on md+ */}
+        <div className="h-36 md:h-24 md:flex-none flex items-end justify-center bg-cyan-400/5 border-b border-slate-200 dark:border-slate-800 pt-2">
           <Image
             src="/professor/yosi-present.png"
             alt="Professor Yosi"
-            width={56}
-            height={56}
-            className="object-contain"
+            width={96}
+            height={96}
+            className="object-contain object-bottom w-full md:w-24 h-full"
           />
         </div>
-        <div className="p-2.5 flex flex-col gap-0.5">
+        <div className="p-2.5 flex flex-col gap-0.5 shrink-0">
           <div className="text-[11px] font-medium text-cyan-400">
             {d.professorName}
           </div>
