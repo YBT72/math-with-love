@@ -36,23 +36,28 @@
 
 ## Фаза 1 — Dashboard v2 (~в процессе)
 
-- [x] Desktop макет (`mwl_dashboard_desktop_dark.html`) — утверждён июнь 2026
-      3-column grid хедер, sidebar с зафиксированными иконками и именами,
+**Утверждённые макеты:**
+- [x] Desktop (`mwl_dark_theme.html`) — 3-column grid хедер, sidebar с зафиксированными иконками,
       Progress Maze, Topics, Recent Results, RU/HE i18n, оба theme, RTL.
-- [ ] Tablet макет — не начат
-- [ ] Mobile макет — не начат
-- [ ] Адаптировать `app/dashboard/page.tsx` под утверждённый layout
-- [ ] Обновить/переписать компоненты в `components/dashboard/`:
-  - [ ] `WelcomeBlock` — аватар, приветствие по времени, кнопки действий, Yosi card
-  - [ ] `Sidebar` — «Редактор» с подменю (Граф / Атом / Группы / Экзамены),
-        collapse/expand, setActiveNav, icon alignment (ni=46px, icon-wrap=46px)
-  - [ ] `StatsRow` — 3 карточки (серия / очки / пройдено), без знака %
-  - [ ] `TopicsAndPreview` — список тем + превью (Progress Maze встанет сюда)
-  - [ ] `CurrentModule` — прогресс бар, кнопка Продолжить
-  - [ ] `RecentResults` — min-width:0 overflow:hidden на колонках
-  - [ ] `DashboardHeader` — 3-column grid, search по центру
-- [ ] Bottom Navigation для мобайла (5 табов)
-- [ ] Sidebar: сохранять состояние (collapsed/expanded) в localStorage
+- [x] Tablet (`mwl_dark_tablet.html`) — адаптивный layout, portrait/landscape media queries.
+- [x] Mobile (`mwl_dark_mobile.html`) — без сайдбара, bottom tab bar 5 пунктов (без Редактора).
+
+**Next.js реализация (статус по gap-анализу §10b DESIGN_SYSTEM.md):**
+- [x] Header со встроенным search подключён в dashboard shell
+- [x] Sidebar: «Редактор» + подменю (Граф/Атом/Группы/Экзамены)
+- [x] Поведение §10a: open/close rules, auto-expand при клике в collapsed
+- [x] Nav states: color-only (без фоновых плашек), стабильные иконки
+- [x] `sidebarOpen` сохраняется в localStorage
+- [x] i18n ключи в `ru.json` / `he.json`
+- [ ] Роутинг: onClick пунктов меню → маршрутизация (заглушки или реальные routes)
+- [ ] Smoke-check: desktop/tablet/mobile × RU/HE × dark/light
+
+**Компоненты (Next.js):**
+- [ ] `WelcomeBlock` — аватар, приветствие по времени, кнопки действий, Yosi card
+- [ ] `StatsRow` — 3 карточки (серия / очки / пройдено), без знака %
+- [ ] `TopicsAndPreview` — список тем + превью (Progress Maze встанет сюда)
+- [ ] `CurrentModule` — прогресс бар, кнопка Продолжить
+- [ ] `RecentResults` — min-width:0 overflow:hidden на колонках
 
 ---
 
@@ -191,4 +196,4 @@ Claude Code (VS Code) + claude.ai/chat тянут из **одного пула**
 
 ---
 
-*Создан: 2026-06-19 · Обновлён: 2026-06-23 (Фаза 0.5 ✅ · Фаза 1 desktop макет ✅ · tablet/mobile pending)*
+*Создан: 2026-06-19 · Обновлён: 2026-06-25 (Фаза 0.5 ✅ · Фаза 1 все 3 макета ✅ · Next.js 8.1–8.6 ✅ · 8.7–8.8 pending)*
