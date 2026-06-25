@@ -72,8 +72,9 @@ export default function WelcomeBlock() {
           <Image
             src="/professor/yosi-present.png"
             alt="Professor Yosi"
-            width={96}
-            height={96}
+            width={200}
+            height={200}
+            sizes="(max-width: 767px) 176px, 96px"
             className="object-contain object-bottom w-full md:w-24 h-full"
           />
         </div>
