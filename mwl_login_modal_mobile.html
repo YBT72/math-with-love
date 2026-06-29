@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>MWL — Login Mobile</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;overscroll-behavior:none}
+
+/* ── controls ── */
+.controls{display:flex;gap:8px;padding:10px 14px;background:#111827;flex-wrap:wrap;align-items:center}
+.ctrl-btn{padding:5px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:500;transition:all 0.15s}
+.ctrl-btn.on{background:#22D3EE;color:#0f172a;border:1px solid #22D3EE}
+.ctrl-btn.off{border:1px solid #334155;color:#94a3b8;background:transparent}
+.sep{width:1px;background:#374151;height:20px}
+
+/* ── phone frame ── */
+.phone-wrap{display:flex;justify-content:center;align-items:flex-start;padding:24px 16px;min-height:calc(100vh - 52px)}
+.phone-wrap.dark-bg{background:#0f172a}
+.phone-wrap.light-bg{background:#e2e8f0}
+
+.phone{
+  width:375px;height:720px;
+  border-radius:40px;
+  overflow:hidden;
+  position:relative;
+  box-shadow:0 32px 80px rgba(0,0,0,0.5);
+  flex-shrink:0;
+  display:flex;flex-direction:column;
+}
+.phone.dark{background:#0f172a}
+.phone.light{background:#f8fafc}
+
+/* ── notch ── */
+.notch{height:44px;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:2}
+.notch-pill{width:120px;height:34px;border-radius:20px;display:flex;align-items:center;justify-content:center}
+.dark .notch-pill{background:#1e293b}
+.light .notch-pill{background:#e2e8f0}
+.notch-cam{width:12px;height:12px;border-radius:50%}
+.dark .notch-cam{background:#334155}
+.light .notch-cam{background:#cbd5e1}
+
+/* ── full screen content ── */
+.screen{
+  flex:1;
+  overflow-y:auto;
+  display:flex;flex-direction:column;
+  padding:0 24px calc(16px + env(safe-area-inset-bottom, 8px));
+  -webkit-overflow-scrolling:touch;
+}
+
+/* logo + title */
+.logo-wrap{
+  display:flex;flex-direction:column;align-items:center;
+  padding:28px 0 24px;
+}
+.logo-circle{
+  width:56px;height:56px;border-radius:50%;
+  background:#22D3EE;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:14px;
+}
+.logo-circle svg{width:26px;height:26px;fill:#0f172a}
+.logo-title{font-size:22px;font-weight:600;margin-bottom:4px}
+.dark .logo-title{color:#f1f5f9}
+.light .logo-title{color:#0f172a}
+.logo-sub{font-size:13px}
+.dark .logo-sub{color:#64748b}
+.light .logo-sub{color:#94a3b8}
+
+/* lang toggle */
+.lang-row{display:flex;justify-content:center;margin-bottom:24px}
+.lang{display:flex;border-radius:8px;overflow:hidden;border:1px solid}
+.dark .lang{border-color:#334155}
+.light .lang{border-color:#e2e8f0}
+.lb{padding:5px 14px;font-size:12px;cursor:pointer;font-weight:500}
+.dark .lb{color:#94a3b8}
+.light .lb{color:#64748b}
+.lb.on{background:#22D3EE;color:#0f172a}
+
+/* tabs */
+.tabs{display:flex;gap:6px;margin-bottom:20px}
+.tab{
+  flex:1;text-align:center;padding:9px;
+  font-size:13px;font-weight:500;
+  border-radius:10px;cursor:pointer;
+  border:1px solid;transition:all 0.15s;
+}
+.tab.on{background:#22D3EE;color:#0f172a;border-color:#22D3EE}
+.dark .tab.off{border-color:#334155;color:#94a3b8;background:transparent}
+.light .tab.off{border-color:#e2e8f0;color:#64748b;background:transparent}
+
+/* google button */
+.btn-google{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  border-radius:12px;padding:12px;font-size:14px;font-weight:500;
+  cursor:pointer;margin-bottom:14px;
+}
+.dark .btn-google{background:#1e293b;border:1px solid #334155;color:#f1f5f9}
+.light .btn-google{background:#ffffff;border:1px solid #cbd5e1;color:#0f172a}
+.google-icon{width:18px;height:18px;flex-shrink:0}
+
+/* divider */
+.divider{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.div-line{flex:1;height:1px}
+.dark .div-line{background:#334155}
+.light .div-line{background:#e2e8f0}
+.div-text{font-size:11px}
+.dark .div-text{color:#475569}
+.light .div-text{color:#94a3b8}
+
+/* form */
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;font-weight:500;margin-bottom:5px;display:block}
+.dark .form-label{color:#94a3b8}
+.light .form-label{color:#64748b}
+.input-wrap{position:relative}
+.form-input{
+  width:100%;border-radius:12px;
+  padding:12px 40px 12px 14px;
+  font-size:16px; /* 16px prevents iOS auto-zoom on focus */
+  outline:none;font-family:system-ui,sans-serif;
+  transition:border-color 0.15s;
+}
+.dark .form-input{background:#1e293b;border:1px solid #334155;color:#f1f5f9}
+.dark .form-input::placeholder{color:#475569}
+.dark .form-input:focus{border-color:#22D3EE}
+.light .form-input{background:#ffffff;border:1px solid #cbd5e1;color:#0f172a}
+.light .form-input::placeholder{color:#94a3b8}
+.light .form-input:focus{border-color:#22D3EE}
+.input-icon{
+  position:absolute;inset-inline-end:13px;top:50%;transform:translateY(-50%);
+  cursor:pointer;display:flex;align-items:center;
+}
+.input-icon svg{width:17px;height:17px}
+.dark .input-icon svg{color:#475569}
+.light .input-icon svg{color:#94a3b8}
+
+.forgot{text-align:end;margin-top:-8px;margin-bottom:16px}
+.forgot a{font-size:12px;color:#22D3EE;cursor:pointer}
+
+/* submit */
+.btn-submit{
+  width:100%;display:flex;align-items:center;justify-content:center;
+  background:#22D3EE;color:#0f172a;border-radius:12px;
+  padding:14px;font-size:15px;font-weight:600;cursor:pointer;
+  border:none;margin-bottom:16px;margin-top:4px;
+}
+
+/* switch */
+.switch-text{text-align:center;font-size:13px;padding-bottom:8px}
+.dark .switch-text{color:#64748b}
+.light .switch-text{color:#94a3b8}
+.switch-text a{color:#22D3EE;cursor:pointer}
+
+/* register-only */
+.reg-only{display:none}
+.reg-only.show{display:block}
+.forgot-wrap.hide{display:none}
+
+/* rtl support */
+.rtl{direction:rtl}
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <div class="ctrl-btn on" id="btn-dark" onclick="setTheme('dark')">🌙 Тёмная</div>
+  <div class="ctrl-btn off" id="btn-light" onclick="setTheme('light')">☀ Светлая</div>
+  <div class="sep"></div>
+  <div class="ctrl-btn on" id="btn-login" onclick="setMode('login')">Войти</div>
+  <div class="ctrl-btn off" id="btn-reg" onclick="setMode('register')">Регистрация</div>
+  <div class="sep"></div>
+  <div class="ctrl-btn on" id="btn-ru" onclick="setLang('ru')">RU</div>
+  <div class="ctrl-btn off" id="btn-he" onclick="setLang('he')">HE</div>
+</div>
+
+<div class="phone-wrap dark-bg" id="wrap">
+  <div class="phone dark" id="phone">
+
+    <!-- notch -->
+    <div class="notch">
+      <div class="notch-pill"><div class="notch-cam"></div></div>
+    </div>
+
+    <!-- full screen -->
+    <div class="screen" id="screen">
+
+      <!-- logo -->
+      <div class="logo-wrap">
+        <div class="logo-circle">
+          <svg viewBox="0 0 24 24"><path d="M12 2L8 8H4l4 4-2 6 6-3 6 3-2-6 4-4h-4z"/></svg>
+        </div>
+        <div class="logo-title" id="txt-brand">Math With Love</div>
+        <div class="logo-sub" id="txt-sub">Добро пожаловать</div>
+      </div>
+
+      <!-- lang toggle -->
+      <div class="lang-row">
+        <div class="lang">
+          <div class="lb on" id="lb-ru" onclick="setLang('ru')">RU</div>
+          <div class="lb" id="lb-he" onclick="setLang('he')">HE</div>
+        </div>
+      </div>
+
+      <!-- tabs -->
+      <div class="tabs">
+        <div class="tab on" id="tab-login" onclick="setMode('login')" id="tab-login-txt">Войти</div>
+        <div class="tab off" id="tab-reg" onclick="setMode('register')" id="tab-reg-txt">Регистрация</div>
+      </div>
+
+      <!-- google -->
+      <div class="btn-google">
+        <svg class="google-icon" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        <span id="txt-google">Продолжить через Google</span>
+      </div>
+
+      <!-- divider -->
+      <div class="divider">
+        <div class="div-line"></div>
+        <div class="div-text" id="txt-or">или</div>
+        <div class="div-line"></div>
+      </div>
+
+      <!-- name (register only) -->
+      <div class="form-group reg-only" id="field-name">
+        <label class="form-label" id="lbl-name">Имя</label>
+        <div class="input-wrap">
+          <input class="form-input" type="text" id="inp-name" placeholder="Как тебя зовут?">
+          <span class="input-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- email -->
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <div class="input-wrap">
+          <input class="form-input" type="email" placeholder="your@email.com">
+          <span class="input-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- password -->
+      <div class="form-group">
+        <label class="form-label" id="lbl-pass">Пароль</label>
+        <div class="input-wrap">
+          <input class="form-input" type="password" id="inp-pass" placeholder="••••••••">
+          <span class="input-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- confirm password (register only) -->
+      <div class="form-group reg-only" id="field-confirm">
+        <label class="form-label" id="lbl-confirm">Подтвердите пароль</label>
+        <div class="input-wrap">
+          <input class="form-input" type="password" id="inp-confirm" placeholder="••••••••">
+          <span class="input-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- forgot -->
+      <div class="forgot forgot-wrap" id="forgot-wrap">
+        <a id="txt-forgot">Забыли пароль?</a>
+      </div>
+
+      <!-- submit -->
+      <button class="btn-submit" id="btn-submit">Войти</button>
+
+      <!-- switch -->
+      <div class="switch-text" id="switch-text">
+        Нет аккаунта? <a onclick="setMode('register')">Зарегистрироваться</a>
+      </div>
+
+    </div><!-- /screen -->
+  </div><!-- /phone -->
+</div><!-- /wrap -->
+
+<script>
+let theme = 'dark', mode = 'login', lang = 'ru';
+
+const TR = {
+  ru: {
+    sub_login: 'Добро пожаловать',
+    sub_reg: 'Создать аккаунт',
+    tab_login: 'Войти',
+    tab_reg: 'Регистрация',
+    google: 'Продолжить через Google',
+    or: 'или',
+    lbl_name: 'Имя',
+    ph_name: 'Как тебя зовут?',
+    lbl_pass: 'Пароль',
+    lbl_confirm: 'Подтвердите пароль',
+    forgot: 'Забыли пароль?',
+    submit_login: 'Войти',
+    submit_reg: 'Зарегистрироваться',
+    switch_login: 'Нет аккаунта?',
+    switch_login_link: 'Зарегистрироваться',
+    switch_reg: 'Уже есть аккаунт?',
+    switch_reg_link: 'Войти',
+  },
+  he: {
+    sub_login: 'ברוך הבא',
+    sub_reg: 'יצירת חשבון',
+    tab_login: 'כניסה',
+    tab_reg: 'הרשמה',
+    google: 'המשך עם Google',
+    or: 'או',
+    lbl_name: 'שם',
+    ph_name: 'מה שמך?',
+    lbl_pass: 'סיסמה',
+    lbl_confirm: 'אימות סיסמה',
+    forgot: 'שכחת סיסמה?',
+    submit_login: 'כניסה',
+    submit_reg: 'הרשמה',
+    switch_login: 'אין חשבון?',
+    switch_login_link: 'הירשם',
+    switch_reg: 'כבר יש חשבון?',
+    switch_reg_link: 'כנס',
+  }
+};
+
+function applyI18n() {
+  const t = TR[lang];
+  const isLogin = mode === 'login';
+  const isHe = lang === 'he';
+
+  // direction
+  document.getElementById('screen').className = 'screen' + (isHe ? ' rtl' : '');
+
+  document.getElementById('txt-sub').textContent     = isLogin ? t.sub_login : t.sub_reg;
+  document.getElementById('tab-login').textContent   = t.tab_login;
+  document.getElementById('tab-reg').textContent     = t.tab_reg;
+  document.getElementById('txt-google').textContent  = t.google;
+  document.getElementById('txt-or').textContent      = t.or;
+  document.getElementById('lbl-name').textContent    = t.lbl_name;
+  document.getElementById('inp-name').placeholder    = t.ph_name;
+  document.getElementById('lbl-pass').textContent    = t.lbl_pass;
+  document.getElementById('lbl-confirm').textContent = t.lbl_confirm;
+  document.getElementById('txt-forgot').textContent  = t.forgot;
+  document.getElementById('btn-submit').textContent  = isLogin ? t.submit_login : t.submit_reg;
+
+  if (isLogin) {
+    document.getElementById('switch-text').innerHTML =
+      t.switch_login + ' <a onclick="setMode(\'register\')">' + t.switch_login_link + '</a>';
+  } else {
+    document.getElementById('switch-text').innerHTML =
+      t.switch_reg + ' <a onclick="setMode(\'login\')">' + t.switch_reg_link + '</a>';
+  }
+}
+
+function setTheme(t) {
+  theme = t;
+  document.getElementById('phone').className = 'phone ' + t;
+  document.getElementById('wrap').className  = 'phone-wrap ' + (t === 'dark' ? 'dark-bg' : 'light-bg');
+  document.getElementById('btn-dark').className  = 'ctrl-btn ' + (t === 'dark'  ? 'on' : 'off');
+  document.getElementById('btn-light').className = 'ctrl-btn ' + (t === 'light' ? 'on' : 'off');
+}
+
+function setMode(m) {
+  mode = m;
+  const isLogin = m === 'login';
+  document.getElementById('tab-login').className = 'tab ' + (isLogin ? 'on' : 'off');
+  document.getElementById('tab-reg').className   = 'tab ' + (!isLogin ? 'on' : 'off');
+  document.getElementById('btn-login').className = 'ctrl-btn ' + (isLogin ? 'on' : 'off');
+  document.getElementById('btn-reg').className   = 'ctrl-btn ' + (!isLogin ? 'on' : 'off');
+  document.getElementById('forgot-wrap').className = 'forgot forgot-wrap' + (isLogin ? '' : ' hide');
+  document.querySelectorAll('.reg-only').forEach(el => {
+    el.className = 'form-group reg-only' + (!isLogin ? ' show' : '');
+  });
+  applyI18n();
+}
+
+function setLang(l) {
+  lang = l;
+  document.getElementById('lb-ru').className = 'lb' + (l === 'ru' ? ' on' : '');
+  document.getElementById('lb-he').className = 'lb' + (l === 'he' ? ' on' : '');
+  document.getElementById('btn-ru').className = 'ctrl-btn ' + (l === 'ru' ? 'on' : 'off');
+  document.getElementById('btn-he').className = 'ctrl-btn ' + (l === 'he' ? 'on' : 'off');
+  applyI18n();
+}
+
+// init
+applyI18n();
+</script>
+</body>
+</html>

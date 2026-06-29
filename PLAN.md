@@ -34,30 +34,33 @@
 
 ---
 
-## Фаза 1 — Dashboard v2 (~в процессе)
+## Фаза 0.6 — Страницы студента: макеты (завершена, июнь 2026)
 
-**Утверждённые макеты:**
-- [x] Desktop (`mwl_dark_theme.html`) — 3-column grid хедер, sidebar с зафиксированными иконками,
-      Progress Maze, Topics, Recent Results, RU/HE i18n, оба theme, RTL.
-- [x] Tablet (`mwl_dark_tablet.html`) — адаптивный layout, portrait/landscape media queries.
-- [x] Mobile (`mwl_dark_mobile.html`) — без сайдбара, bottom tab bar 5 пунктов (без Редактора).
+- [x] Страница настроек — desktop (`mwl_settings_desktop.html`) + tablet (`mwl_settings_tablet.html`) + mobile (`mwl_settings_mobile.html`)
+      Три секции: Профиль (аватар, имя, фамилия, email с верификацией) / Внешний вид (тема) / Язык.
+      Каждая секция со своей кнопкой сохранения. Аватар-dropdown с выходом. Обе темы, RU/HE, RTL.
+- [x] Страница достижений — desktop (`mwl_achievements_v2_desktop.html`)
+      Объединяет прогресс + достижения + сроки. Активность, модуль, дедлайны Багрута.
+      Обе темы, RU/HE, RTL. Маршрут: /achievements.
 
-**Next.js реализация (статус по gap-анализу §10b DESIGN_SYSTEM.md):**
-- [x] Header со встроенным search подключён в dashboard shell
-- [x] Sidebar: «Редактор» + подменю (Граф/Атом/Группы/Экзамены)
-- [x] Поведение §10a: open/close rules, auto-expand при клике в collapsed
-- [x] Nav states: color-only (без фоновых плашек), стабильные иконки
-- [x] `sidebarOpen` сохраняется в localStorage
-- [x] i18n ключи в `ru.json` / `he.json`
-- [ ] Роутинг: onClick пунктов меню → маршрутизация (заглушки или реальные routes)
-- [ ] Smoke-check: desktop/tablet/mobile × RU/HE × dark/light
+---
 
-**Компоненты (Next.js):**
-- [ ] `WelcomeBlock` — аватар, приветствие по времени, кнопки действий, Yosi card
-- [ ] `StatsRow` — 3 карточки (серия / очки / пройдено), без знака %
-- [ ] `TopicsAndPreview` — список тем + превью (Progress Maze встанет сюда)
-- [ ] `CurrentModule` — прогресс бар, кнопка Продолжить
-- [ ] `RecentResults` — min-width:0 overflow:hidden на колонках
+## Фаза 1 — Dashboard v2 (ждём макеты)
+
+Триггер: загрузка новых макетов (desktop + tablet + mobile, оба theme).
+
+- [ ] Принять макеты от пользователя
+- [ ] Адаптировать `app/dashboard/page.tsx` под новый layout
+- [ ] Обновить/переписать компоненты в `components/dashboard/`:
+  - [ ] `WelcomeBlock` — аватар, приветствие по времени, кнопки действий, Yosi card
+  - [ ] `Sidebar` — student menu: Дашборд / Темы / Достижения / Лаборатория / Формулы / Помощь / Настройки; collapse, active states
+  - [ ] `StatsRow` — 3 карточки (серия / очки / темы), без знака %
+  - [ ] `TopicsAndPreview` — список тем + превью (Progress Maze встанет сюда)
+  - [ ] `CurrentModule` — прогресс бар, кнопка Продолжить
+  - [ ] `RecentResults` — таблица последних результатов
+  - [ ] `DashboardHeader` — search field
+- [ ] Добавить Bottom Navigation для мобайла (5 табов)
+- [ ] Sidebar: сохранять состояние (collapsed/expanded) в localStorage
 
 ---
 
@@ -163,7 +166,7 @@
 - [ ] `app/constructor/graph/page.tsx` — Карта графа
 - [ ] `app/constructor/atom/[id]/page.tsx` — Редактор атома
 - [ ] `app/constructor/groups/page.tsx` — Конструктор групп
-- [ ] `app/constructor/examples/page.tsx` — Экзамены (бывш. Примеры вопросников)
+- [ ] `app/constructor/examples/page.tsx` — Примеры вопросников
 - [ ] Подключить batch-перевод к реальному Anthropic API endpoint
 
 ---
@@ -196,4 +199,4 @@ Claude Code (VS Code) + claude.ai/chat тянут из **одного пула**
 
 ---
 
-*Создан: 2026-06-19 · Обновлён: 2026-06-25 (Фаза 0.5 ✅ · Фаза 1 все 3 макета ✅ · Next.js 8.1–8.6 ✅ · 8.7–8.8 pending)*
+*Создан: 2026-06-19 · Обновлён: 2026-06-27 (Фазы 0.5 и 0.6 завершены — макеты конструктора и студенческих страниц готовы)*

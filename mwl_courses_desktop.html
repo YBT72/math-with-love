@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MWL — Курсы</title>
+<style>
+/* ── Reset & base ── */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif}
+
+/* ── Theme classes ── */
+.shell{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.d{background:#0f172a}
+.l{background:#f8fafc}
+.d .t1{color:#f1f5f9}.l .t1{color:#0f172a}
+.d .t2{color:#94a3b8}.l .t2{color:#64748b}
+.d .t3{color:#475569}.l .t3{color:#94a3b8}
+.d .p1{background:#1e293b;border-color:#334155}.l .p1{background:#ffffff;border-color:#e2e8f0}
+.d .p2{background:#334155;border-color:#334155}.l .p2{background:#f1f5f9;border-color:#e2e8f0}
+.d .bd{border-color:#334155!important}.l .bd{border-color:#e2e8f0!important}
+.d .mbg{background:#0f172a}.l .mbg{background:#f1f5f9}
+
+/* ── Header ── */
+.hdr{height:48px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 14px;border-bottom:1px solid;flex-shrink:0}
+.hdr-left{display:flex;align-items:center;gap:10px}
+.hdr-center{display:flex;align-items:center;justify-content:center}
+.hdr-right{display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.logo{width:26px;height:26px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand{font-size:13px;font-weight:500}.brand b{color:#22D3EE;font-weight:500}
+.srch{width:280px;position:relative}
+.srch input{width:100%;border-radius:8px;padding:6px 28px 6px 10px;font-size:12px;outline:none;font-family:inherit;border:1px solid}
+.d .srch input{background:#334155;border-color:#475569;color:#f1f5f9}
+.l .srch input{background:#f1f5f9;border-color:#e2e8f0;color:#0f172a}
+.si2{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none}
+.lang-btn{width:30px;height:30px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid;background:transparent;font-family:inherit;letter-spacing:0.04em;display:flex;align-items:center;justify-content:center;transition:color 0.15s,border-color 0.15s}
+.d .lang-btn{color:#22D3EE;border-color:#22D3EE55}.l .lang-btn{color:#0e7490;border-color:#22D3EE66}
+.d .lang-btn:hover{border-color:#22D3EE}.l .lang-btn:hover{border-color:#0e7490}
+.hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid}
+
+/* ── Dev toolbar ── */
+.ctrl{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid;align-items:center;flex-wrap:wrap;flex-shrink:0}
+.tcb{padding:4px 12px;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid}
+.tcb.on{background:#22D3EE!important;color:#0f172a!important;border-color:#22D3EE!important}
+.div1{width:1px;height:16px;margin:0 2px}
+.d .div1{background:#334155}.l .div1{background:#e2e8f0}
+
+/* ── Body layout ── */
+.body{display:flex;flex:1;min-height:0}
+
+/* ── Sidebar ── */
+.sb{width:46px;display:flex;flex-direction:column;padding:8px 0;border-inline-end:1px solid;transition:width 0.2s ease;overflow:hidden;flex-shrink:0}
+.sb.open{width:164px}
+.sbt{display:flex;align-items:center;justify-content:center;width:46px;height:38px;margin:0 0 8px 0;border-radius:8px;cursor:pointer;border:0;background:transparent;flex-shrink:0}
+.sbt svg{flex-shrink:0}
+.d .sbt svg{stroke:#475569}.l .sbt svg{stroke:#94a3b8}
+.sbt:hover svg{stroke:#94a3b8!important}
+.sg,.sbm,.sbb{display:flex;flex-direction:column;gap:2px}
+.sbm{margin:auto 0}
+.ni{display:flex;align-items:center;width:46px;height:38px;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden;border:0;background:transparent;flex-shrink:0}
+.sb.open .ni{width:100%;border-radius:6px}
+.ni:hover svg{stroke:#94a3b8!important}
+.ni:hover .nl{color:#94a3b8!important}
+.ni .icon-wrap{width:46px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ni svg{flex-shrink:0;transition:stroke 0.15s;display:block}
+.d .ni svg{stroke:#475569}.l .ni svg{stroke:#64748b}
+.ni.on svg{stroke:#22D3EE!important}
+.nl{font-size:12px;font-weight:500;opacity:0;transition:opacity 0.15s,color 0.15s;white-space:nowrap;margin-inline-start:8px}
+.d .nl{color:#475569}.l .nl{color:#64748b}
+.ni.on .nl{color:#22D3EE!important}
+.sb.open .nl{opacity:1}
+.nav-sub{display:none;flex-direction:column;gap:1px;padding-inline-start:14px;margin-top:2px;margin-bottom:4px}
+.ni-sub{display:flex;align-items:center;gap:8px;font-size:11.5px;padding:6px 8px;border-radius:6px;cursor:pointer;white-space:nowrap}
+.ni-sub svg{flex-shrink:0}
+.d .ni-sub{color:#64748b}.l .ni-sub{color:#94a3b8}
+.d .ni-sub svg{stroke:#475569}.l .ni-sub svg{stroke:#94a3b8}
+.d .ni-sub:hover{background:#334155;color:#cbd5e1}.l .ni-sub:hover{background:#f1f5f9;color:#475569}
+.ni-sub.on{color:#22D3EE!important;font-weight:600}
+.ni-sub.on svg{stroke:#22D3EE!important}
+
+/* ── Main content ── */
+.main{flex:1;overflow-y:auto;padding:20px 24px;min-width:0}
+
+/* ── Page header ── */
+.pg-head{margin-bottom:20px}
+.pg-title{font-size:20px;font-weight:500;margin-bottom:4px}
+.pg-sub{font-size:12px}
+
+/* ── Exam cards grid ── */
+.exam-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* ── Exam card ── */
+.exam-card{border-radius:14px;border:1px solid;padding:18px;display:flex;flex-direction:column;gap:14px}
+
+.exam-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.exam-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(34,211,238,0.12);color:#22D3EE;border:1px solid rgba(34,211,238,0.25);flex-shrink:0}
+.exam-title{font-size:16px;font-weight:600;line-height:1.3}
+.exam-desc{font-size:11.5px;line-height:1.5;margin-top:3px}
+
+/* ── Overall progress bar ── */
+.overall-prog{display:flex;flex-direction:column;gap:5px}
+.prog-label-row{display:flex;justify-content:space-between;align-items:center}
+.prog-label{font-size:11px}
+.prog-val{font-size:11px;font-weight:500}
+.prog-val .done{color:#22D3EE}
+.prog-bar{height:4px;border-radius:2px;overflow:hidden}
+.d .prog-bar{background:#334155}.l .prog-bar{background:#e2e8f0}
+.prog-fill{height:100%;border-radius:2px;background:#22D3EE;transition:width 0.3s}
+
+/* ── Divider ── */
+.card-div{height:1px;margin:0 -18px}
+.d .card-div{background:#334155}.l .card-div{background:#e2e8f0}
+
+/* ── Theme list ── */
+.theme-list{display:flex;flex-direction:column;gap:6px}
+.theme-list-label{font-size:10px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:4px}
+.d .theme-list-label{color:#475569}.l .theme-list-label{color:#94a3b8}
+
+.theme-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;cursor:pointer;border:1px solid transparent;transition:background 0.15s,border-color 0.15s;position:relative}
+.d .theme-row:hover{background:#1e293b;border-color:#334155}
+.l .theme-row:hover{background:#f1f5f9;border-color:#e2e8f0}
+
+/* locked theme */
+.theme-row.locked{cursor:default;opacity:0.45}
+.d .theme-row.locked:hover{background:transparent;border-color:transparent}
+.l .theme-row.locked:hover{background:transparent;border-color:transparent}
+
+/* in-work theme */
+.theme-row.in-work{cursor:pointer}
+
+/* ── Theme icon (replaces dot) ── */
+.theme-icon{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.theme-icon svg{display:block}
+/* locked: greyed */
+.theme-row.locked .theme-icon{opacity:0.35}
+/* ready: cyan tint */
+.d .theme-icon.ready-icon{background:rgba(34,211,238,0.1);color:#22D3EE}
+.l .theme-icon.ready-icon{background:rgba(34,211,238,0.1);color:#0e7490}
+/* in_work: amber tint */
+.d .theme-icon.inwork-icon-bg{background:rgba(251,191,36,0.1);color:#FBBF24}
+.l .theme-icon.inwork-icon-bg{background:rgba(251,191,36,0.1);color:#d97706}
+/* locked: neutral */
+.d .theme-icon.locked-icon{background:rgba(100,116,139,0.1);color:#475569}
+.l .theme-icon.locked-icon{background:rgba(100,116,139,0.1);color:#94a3b8}
+.theme-name{font-size:12.5px;font-weight:500;flex:1;min-width:0}
+.theme-mods{font-size:11px;white-space:nowrap;flex-shrink:0}
+.theme-mods .done{color:#4ade80;font-weight:600}
+.theme-mods .d-color{color:#4ade80}
+.theme-mods .sep{color:#475569;margin:0 1px}
+.theme-mods .total{color:#22D3EE}
+.theme-mods .total-color{color:#22D3EE}
+.d .theme-mods .zero{color:#475569}.l .theme-mods .zero{color:#94a3b8}
+
+.lock-icon{display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0.5}
+.inwork-icon{display:flex;align-items:center;flex-shrink:0}
+
+/* ── Module mini progress inside theme row ── */
+.theme-mini-bar{width:48px;height:3px;border-radius:2px;overflow:hidden;flex-shrink:0}
+.d .theme-mini-bar{background:#334155}.l .theme-mini-bar{background:#e2e8f0}
+.theme-mini-fill{height:100%;border-radius:2px;background:#22D3EE}
+
+/* ── Popup overlay ── */
+.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.18s}
+.popup-overlay.open{opacity:1;pointer-events:all}
+
+.popup{width:520px;max-width:92vw;max-height:82vh;border-radius:14px;border:1px solid;display:flex;flex-direction:column;box-shadow:0 16px 48px rgba(0,0,0,0.45);overflow:hidden;transform:translateY(8px);transition:transform 0.18s}
+.popup-overlay.open .popup{transform:translateY(0)}
+.d .popup{background:#1e293b;border-color:#334155}.l .popup{background:#ffffff;border-color:#e2e8f0}
+
+.popup-head{padding:16px 18px 14px;border-bottom:1px solid;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-shrink:0}
+.d .popup-head{border-color:#334155}.l .popup-head{border-color:#e2e8f0}
+.popup-head-info{display:flex;flex-direction:column;gap:3px}
+.popup-badge{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;background:rgba(34,211,238,0.12);color:#22D3EE;border:1px solid rgba(34,211,238,0.2);margin-bottom:2px;width:fit-content}
+.popup-title{font-size:15px;font-weight:600}
+.popup-subtitle{font-size:11.5px}
+.popup-close{width:28px;height:28px;border-radius:7px;border:1px solid;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;background:transparent;font-size:16px;line-height:1;transition:background 0.15s}
+.d .popup-close{border-color:#334155;color:#64748b}.l .popup-close{border-color:#e2e8f0;color:#94a3b8}
+.d .popup-close:hover{background:#334155;color:#f1f5f9}.l .popup-close:hover{background:#f1f5f9;color:#0f172a}
+
+.popup-body{flex:1;overflow-y:auto;padding:14px 18px}
+
+/* Syllabus module list */
+.syl-module{margin-bottom:14px}
+.syl-module:last-child{margin-bottom:0}
+.syl-mod-head{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.syl-mod-num{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;background:rgba(34,211,238,0.1);color:#22D3EE;border:1px solid rgba(34,211,238,0.2);flex-shrink:0}
+.syl-mod-name{font-size:12.5px;font-weight:600}
+.syl-mod-name.d-color{color:#f1f5f9}.syl-mod-name.l-color{color:#0f172a}
+.syl-topics{display:flex;flex-direction:column;gap:4px;padding-inline-start:12px;border-inline-start:2px solid}
+.d .syl-topics{border-color:#334155}.l .syl-topics{border-color:#e2e8f0}
+.syl-topic{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0}
+.syl-topic-name{font-size:11.5px}
+.syl-counts{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.syl-count{display:flex;align-items:center;gap:3px;font-size:10px}
+.d .syl-count{color:#64748b}.l .syl-count{color:#94a3b8}
+.syl-count svg{flex-shrink:0}
+
+.popup-foot{padding:12px 18px;border-top:1px solid;display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-shrink:0}
+.d .popup-foot{border-color:#334155}.l .popup-foot{border-color:#e2e8f0}
+.btn-cancel{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid;background:transparent;transition:background 0.15s}
+.d .btn-cancel{border-color:#334155;color:#94a3b8}.l .btn-cancel{border-color:#e2e8f0;color:#64748b}
+.d .btn-cancel:hover{background:#334155}.l .btn-cancel:hover{background:#f1f5f9}
+.btn-primary{padding:6px 16px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;border:none;background:#22D3EE;color:#0f172a;transition:filter 0.15s}
+.btn-primary:hover{filter:brightness(1.1)}
+
+/* In-work popup */
+.inwork-body{padding:28px 18px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.inwork-emoji{font-size:40px;line-height:1}
+.inwork-title{font-size:14px;font-weight:600}
+.inwork-desc{font-size:12px;line-height:1.6;max-width:320px}
+</style>
+</head>
+<body>
+<div class="shell d" id="shell">
+
+  <!-- Header -->
+  <div class="hdr p1 bd">
+    <div class="hdr-left">
+      <div class="logo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 4.5v9L12 21l-9-4.5v-9z"/><path d="M12 3v18"/><path d="M3 7.5l9 4.5 9-4.5"/></svg>
+      </div>
+      <span class="brand t1"><b>Math</b> With Love</span>
+    </div>
+    <div class="hdr-center">
+      <div class="srch">
+        <input type="text" placeholder="Поиск по курсам…" id="searchInput">
+        <span class="si2 t3">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <button class="lang-btn" id="langBtn" onclick="toggleLang()">RU</button>
+      <div class="hico p1 bd t2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a6 6 0 0 0-12 0"/><circle cx="12" cy="10" r="4"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dev toolbar -->
+  <div class="ctrl p2 bd">
+    <button class="tcb on" id="bd" onclick="setMode('d')">🌙 Тёмная</button>
+    <button class="tcb" id="bl" onclick="setMode('l')">☀ Светлая</button>
+  </div>
+
+  <div class="body">
+
+    <!-- Sidebar -->
+    <div class="sb p1 bd" id="sb">
+      <button class="sbt" onclick="toggleSb()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+      </button>
+      <div class="sg">
+        <!-- Dashboard -->
+        <div class="ni" id="niDashboard" onclick="setActiveNav('niDashboard')">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></svg></span>
+          <span class="nl" data-i18n="navDashboard">Дашборд</span>
+        </div>
+        <!-- Courses — active -->
+        <div class="ni on" id="niCourses" onclick="setActiveNav('niCourses')">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 5-10 5L2 8z"/><path d="M7 11.5v4.5a5 5 0 0 0 10 0v-4.5"/><line x1="22" y1="8" x2="22" y2="14"/></svg></span>
+          <span class="nl" data-i18n="navCourses">Курсы</span>
+        </div>
+        <!-- Achievements -->
+        <div class="ni" id="niAchievements" onclick="setActiveNav('niAchievements')">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21l8 0"/><path d="M12 17l0 4"/><path d="M7 4l10 0"/><path d="M17 4v8a5 5 0 0 1-10 0v-8"/><path d="M5 9a2 2 0 0 1-2-2v-1a2 2 0 0 1 2-2"/><path d="M19 9a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2"/></svg></span>
+          <span class="nl" data-i18n="navAchievements">Достижения</span>
+        </div>
+        <!-- Content (author) -->
+        <div class="ni" id="niContent" onclick="setActiveNav('niContent')">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M10 13l-1 4 4-1 5-5-3-3z"/><path d="M13.5 10.5l3 3"/></svg></span>
+          <span class="nl" data-i18n="navContent">Редактор</span>
+        </div>
+        <div class="nav-sub" id="contentSubmenu">
+          <div class="ni-sub"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M7 6h10"/><path d="M14 18H7a2 2 0 0 1-2-2v-6"/></svg><span data-i18n="subGraph">Граф</span></div>
+          <div class="ni-sub"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg><span data-i18n="subAtomEditor">Атом</span></div>
+          <div class="ni-sub"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="13" width="7" height="7" rx="1.5"/><rect x="14" y="13" width="7" height="7" rx="1.5"/></svg><span data-i18n="subGroups">Группы</span></div>
+          <div class="ni-sub"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5-10.5a2.828 2.828 0 1 0-4-4l-10.5 10.5v4"/><path d="M13.5 6.5l4 4"/><path d="M15 19l2 2l4-4"/></svg><span data-i18n="subExam">Экзамены</span></div>
+        </div>
+      </div>
+
+      <div class="sbm">
+        <div class="ni">
+          <span class="icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l18 0"/><path d="M12 3l0 18"/><path d="M16.5 4.5l3 3"/><path d="M19.5 4.5l-3 3"/><path d="M6 4l0 4"/><path d="M4 6l4 0"/><path d="M18 16l.01 0"/><path d="M18 20l.01 0"/><path d="M4 18l4 0"/></svg></span>
+          <span class="nl" data-i18n="navFormulas">Формулы</span>
+        </div>
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg></span>
+          <span class="nl" data-i18n="navLab">Лаборатория</span>
+        </div>
+      </div>
+
+      <div class="sbb">
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="17" x2="12.01" y2="17"/><path d="M12 13.5a1.5 1.5 0 0 1 1-1.5a2.6 2.6 0 1 0-3-4"/></svg></span>
+          <span class="nl" data-i18n="navHelp">Помощь</span>
+        </div>
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51v.17a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82a1.65 1.65 0 0 0-1.51-1h-.17a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+          <span class="nl" data-i18n="navSettings">Настройки</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div class="main" id="main">
+      <div class="pg-head">
+        <div class="pg-title t1" data-i18n="pageTitle">Курсы</div>
+        <div class="pg-sub t2" data-i18n="pageSubtitle">Программа подготовки к Багруту — 5 единиц обучения</div>
+      </div>
+
+      <div class="exam-grid" id="examGrid">
+        <!-- Cards rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Popup overlay -->
+  <div class="popup-overlay" id="popupOverlay" onclick="handleOverlayClick(event)">
+    <div class="popup p1" id="popup">
+      <!-- Content injected by JS -->
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── State ──
+var CM = 'd';
+var sbOpen = false;
+var LANG = 'ru';
+
+// ── Course data ──
+var EXAMS = [
+  {
+    id: 571,
+    code: '35571',
+    themes: [
+      {
+        id: 'trig',
+        name: {ru:'Тригонометрия', he:'טריגונומטריה'},
+        status: 'locked',
+        modules: 5,
+        done: 0,
+        dot: '#94a3b8',
+        icon: {type:'svg', val:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12 Q6 4 9 12 Q12 20 15 12 Q18 4 21 12"/></svg>'},
+        syllabus: []
+      },
+      {
+        id: 'func',
+        name: {ru:'Функции', he:'פונקציות'},
+        status: 'locked',
+        modules: 4,
+        done: 0,
+        dot: '#94a3b8',
+        icon: {type:'svg', val:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="21" x2="3" y2="3"/><line x1="3" y1="21" x2="21" y2="21"/><path d="M6 18 Q9 6 12 10 Q15 14 18 6"/></svg>'},
+        syllabus: []
+      },
+      {
+        id: 'prob',
+        name: {ru:'Вероятность', he:'הסתברות'},
+        status: 'in_work',
+        modules: 4,
+        done: 0,
+        dot: '#FBBF24',
+        icon: {type:'svg', val:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 L5 7 L5 17 L12 21 L19 17 L19 7 Z"/><path d="M5 7 L12 11 L19 7"/><line x1="12" y1="11" x2="12" y2="21"/></svg>'},
+        syllabus: []
+      },
+      {
+        id: 'complex',
+        name: {ru:'Комплексные числа', he:'מספרים מרוכבים'},
+        status: 'locked',
+        modules: 3,
+        done: 0,
+        dot: '#94a3b8',
+        icon: {type:'svg', val:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="21"/><line x1="3" y1="12" x2="21" y2="12"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>'},
+        syllabus: []
+      }
+    ]
+  },
+  {
+    id: 572,
+    code: '35572',
+    themes: [
+      {
+        id: 'vectors',
+        name: {ru:'Векторы', he:'וקטורים'},
+        status: 'ready',
+        modules: 6,
+        done: 2,
+        dot: '#22D3EE',
+        icon: {type:'svg', val:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="19" x2="19" y2="5"/><polyline points="9 5 19 5 19 15"/></svg>'},
+        syllabus: [
+          {
+            num: '0',
+            name: {ru:'Стереометрия — введение', he:'סטריאומטריה — מבוא'},
+            topics: [
+              {name:{ru:'Точка, прямая, плоскость в пространстве',he:'נקודה, ישר, מישור במרחב'}, lessons:3, tests:3, exams:0},
+              {name:{ru:'Куб, параллелепипед, пирамида',he:'קובייה, מקבילון, פירמידה'}, lessons:2, tests:2, exams:0}
+            ]
+          },
+          {
+            num: '1',
+            name: {ru:'Основы векторов', he:'יסודות הוקטורים'},
+            topics: [
+              {name:{ru:'Понятие вектора, длина, направление',he:'מושג הוקטור, אורך, כיוון'}, lessons:3, tests:3, exams:0},
+              {name:{ru:'Координатная форма',he:'צורה קואורדינטית'}, lessons:2, tests:2, exams:0},
+              {name:{ru:'Применение в стереометрии',he:'יישום בסטריאומטריה'}, lessons:2, tests:2, exams:1}
+            ]
+          },
+          {
+            num: '2',
+            name: {ru:'Скалярное произведение', he:'מכפלה סקלרית'},
+            topics: [
+              {name:{ru:'Геометрическое определение',he:'הגדרה גיאומטרית'}, lessons:2, tests:2, exams:0},
+              {name:{ru:'Алгебраическое определение',he:'הגדרה אלגברית'}, lessons:2, tests:2, exams:0},
+              {name:{ru:'Угол между векторами',he:'זווית בין וקטורים'}, lessons:2, tests:3, exams:1}
+            ]
+          },
+          {
+            num: '3',
+            name: {ru:'Прямые и плоскости', he:'ישרים ומישורים'},
+            topics: [
+              {name:{ru:'Уравнение прямой (явное и параметрическое)',he:'משוואת ישר (מפורשת ופרמטרית)'}, lessons:3, tests:3, exams:0},
+              {name:{ru:'Уравнение плоскости',he:'משוואת מישור'}, lessons:3, tests:3, exams:1}
+            ]
+          },
+          {
+            num: '4',
+            name: {ru:'Расстояния', he:'מרחקים'},
+            topics: [
+              {name:{ru:'Расстояние от точки до прямой/плоскости',he:'מרחק מנקודה לישר/מישור'}, lessons:3, tests:3, exams:1},
+              {name:{ru:'Расстояние между параллельными объектами',he:'מרחק בין אובייקטים מקבילים'}, lessons:2, tests:2, exams:0}
+            ]
+          },
+          {
+            num: '5',
+            name: {ru:'Углы', he:'זוויות'},
+            topics: [
+              {name:{ru:'Угол между прямыми',he:'זווית בין ישרים'}, lessons:2, tests:2, exams:0},
+              {name:{ru:'Угол между плоскостями',he:'זווית בין מישורים'}, lessons:2, tests:2, exams:0},
+              {name:{ru:'Угол между прямой и плоскостью',he:'זווית בין ישר למישור'}, lessons:2, tests:3, exams:1}
+            ]
+          }
+        ]
+      },
+      {
+        id: 'analytic',
+        name: {ru:'Аналитическая геометрия', he:'גיאומטריה אנליטית'},
+        status: 'in_work',
+        modules: 5,
+        done: 0,
+        dot: '#FBBF24',
+        icon: {type:'svg', val:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="3" y2="21"/><line x1="3" y1="21" x2="21" y2="21"/><circle cx="10" cy="14" r="3"/><circle cx="17" cy="8" r="3"/></svg>'},
+        syllabus: []
+      },
+      {
+        id: 'integral',
+        name: {ru:'Интегральное исчисление', he:'חשבון אינטגרלי'},
+        status: 'locked',
+        modules: 4,
+        done: 0,
+        dot: '#94a3b8',
+        icon: {type:'svg', val:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20c2-2 4-8 4-8s2 4 4 4 4-8 4-8 2 4 4 4"/><line x1="3" y1="20" x2="21" y2="20"/></svg>'},
+        syllabus: []
+      }
+    ]
+  }
+];
+
+// ── i18n ──
+var TR = {
+  ru: {
+    pageTitle: 'Курсы',
+    pageSubtitle: 'Программа подготовки к Багруту — 5 единиц обучения',
+    navDashboard: 'Дашборд',
+    navCourses: 'Курсы',
+    navAchievements: 'Достижения',
+    navContent: 'Редактор',
+    navFormulas: 'Формулы',
+    navLab: 'Лаборатория',
+    navHelp: 'Помощь',
+    navSettings: 'Настройки',
+    subGraph: 'Граф',
+    subAtomEditor: 'Атом',
+    subGroups: 'Группы',
+    subExam: 'Экзамены',
+    examLabel: 'Вопросник',
+    overallProg: 'Общий прогресс',
+    themes: 'Темы',
+    modules: 'мод.',
+    locked: 'Заблокировано',
+    btnStart: 'Начать',
+    btnContinue: 'Продолжить',
+    btnCancel: 'Закрыть',
+    inWorkTitle: 'Тема в разработке',
+    inWorkDesc: 'Эта тема ещё не готова. Мы работаем над добавлением материала — загляни позже!',
+    syllabus: 'Программа курса',
+    lessons: 'уроков',
+    tests: 'тестов',
+    exams: 'экз.'
+  },
+  he: {
+    pageTitle: 'קורסים',
+    pageSubtitle: 'תוכנית הכנה לבגרות — 5 יחידות לימוד',
+    navDashboard: 'לוח מחוונים',
+    navCourses: 'קורסים',
+    navAchievements: 'הישגים',
+    navContent: 'עורך',
+    navFormulas: 'נוסחאות',
+    navLab: 'מעבדה',
+    navHelp: 'עזרה',
+    navSettings: 'הגדרות',
+    subGraph: 'גרף',
+    subAtomEditor: 'אטום',
+    subGroups: 'קבוצות',
+    subExam: 'בחינות',
+    examLabel: 'שאלון',
+    overallProg: 'התקדמות כללית',
+    themes: 'נושאים',
+    modules: 'מודולים',
+    locked: 'נעול',
+    btnStart: 'התחל',
+    btnContinue: 'המשך',
+    btnCancel: 'סגור',
+    inWorkTitle: 'נושא בפיתוח',
+    inWorkDesc: 'נושא זה עוד לא מוכן. אנחנו עובדים על הוספת תוכן — חזור בקרוב!',
+    syllabus: 'תוכנית הקורס',
+    lessons: 'שיעורים',
+    tests: 'בדיקות',
+    exams: 'בחינות'
+  }
+};
+
+function t(key){ return (TR[LANG] && TR[LANG][key]) || TR.ru[key] || key; }
+
+// ── Render ──
+function renderAll(){
+  applyI18n();
+  renderExamCards();
+}
+
+function applyI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+  var isRTL = LANG === 'he';
+  document.getElementById('shell').setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+}
+
+function renderExamCards(){
+  var grid = document.getElementById('examGrid');
+  var html = '';
+  EXAMS.forEach(function(exam){
+    var totalMods = exam.themes.reduce(function(s,th){ return s + th.modules; }, 0);
+    var doneMods  = exam.themes.reduce(function(s,th){ return s + th.done; }, 0);
+    var pct = totalMods > 0 ? Math.round(doneMods / totalMods * 100) : 0;
+
+    html += '<div class="exam-card p1 bd">';
+    // Head
+    html += '<div class="exam-card-head">';
+    html += '<div>';
+    html += '<div class="exam-badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3l8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>' + t('examLabel') + ' ' + exam.code + '</div>';
+    html += '</div>';
+    html += '</div>';
+
+    // Overall progress
+    html += '<div class="overall-prog">';
+    html += '<div class="prog-label-row">';
+    html += '<span class="prog-label t2">' + t('overallProg') + '</span>';
+    html += '<span class="prog-val t2"><span class="done">' + doneMods + '</span> / ' + totalMods + ' ' + t('modules') + '</span>';
+    html += '</div>';
+    html += '<div class="prog-bar"><div class="prog-fill" style="width:' + pct + '%"></div></div>';
+    html += '</div>';
+
+    // Divider
+    html += '<div class="card-div"></div>';
+
+    // Theme list
+    html += '<div class="theme-list">';
+    html += '<div class="theme-list-label">' + t('themes') + '</div>';
+
+    exam.themes.forEach(function(theme){
+      var isLocked   = theme.status === 'locked';
+      var isInWork   = theme.status === 'in_work';
+      var isReady    = theme.status === 'ready';
+      var rowClass   = 'theme-row' + (isLocked ? ' locked' : isInWork ? ' in-work' : '');
+      var clickAttr  = isLocked ? '' : 'onclick="openPopup(\'' + exam.id + '\',\'' + theme.id + '\')"';
+
+      html += '<div class="' + rowClass + '" ' + clickAttr + '>';
+
+      // Icon
+      var statusClass = isLocked ? 'locked-icon' : isInWork ? 'inwork-icon-bg' : 'ready-icon';
+      if(theme.icon && theme.icon.val){
+        html += '<div class="theme-icon ' + statusClass + '">' + theme.icon.val + '</div>';
+      } else {
+        html += '<div style="width:8px;height:8px;border-radius:50%;background:' + theme.dot + ';flex-shrink:0"></div>';
+      }
+
+      // Name
+      html += '<span class="theme-name t1">' + (theme.name[LANG] || theme.name.ru) + '</span>';
+
+      // Mini progress bar (only if any progress)
+      if(isReady){
+        var mp = theme.modules > 0 ? Math.round(theme.done / theme.modules * 100) : 0;
+        html += '<div class="theme-mini-bar"><div class="theme-mini-fill" style="width:' + mp + '%"></div></div>';
+      }
+
+      // Counts
+      if(isLocked){
+        html += '<span class="lock-icon t3"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>';
+      } else if(isInWork){
+        html += '<span class="theme-mods t2" style="font-size:10px">🔧</span>';
+      } else {
+        var doneCol = theme.done > 0 ? ' d-color' : ' zero';
+        html += '<span class="theme-mods"><span class="' + (theme.done>0?'d-color':'zero') + '">' + theme.done + '</span><span class="sep">/</span><span class="total-color">' + theme.modules + '</span></span>';
+      }
+
+      html += '</div>'; // .theme-row
+    });
+
+    html += '</div>'; // .theme-list
+    html += '</div>'; // .exam-card
+  });
+
+  grid.innerHTML = html;
+}
+
+// ── Popup ──
+function openPopup(examId, themeId){
+  var exam   = EXAMS.find(function(e){ return e.id === parseInt(examId); });
+  var theme  = exam.themes.find(function(th){ return th.id === themeId; });
+  var popup  = document.getElementById('popup');
+  var overlay= document.getElementById('popupOverlay');
+
+  if(theme.status === 'in_work'){
+    popup.innerHTML = buildInWorkPopup(theme);
+  } else {
+    popup.innerHTML = buildSyllabusPopup(exam, theme);
+  }
+
+  overlay.classList.add('open');
+}
+
+function buildInWorkPopup(theme){
+  var name = theme.name[LANG] || theme.name.ru;
+  return ''
+    + '<div class="popup-head">'
+    +   '<div class="popup-head-info">'
+    +     '<span class="popup-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' + name + '</span>'
+    +   '</div>'
+    +   '<button class="popup-close" onclick="closePopup()">×</button>'
+    + '</div>'
+    + '<div class="inwork-body">'
+    +   '<div class="inwork-emoji">👷</div>'
+    +   '<div class="inwork-title t1">' + t('inWorkTitle') + '</div>'
+    +   '<div class="inwork-desc t2">' + t('inWorkDesc') + '</div>'
+    + '</div>'
+    + '<div class="popup-foot">'
+    +   '<button class="btn-cancel" onclick="closePopup()">' + t('btnCancel') + '</button>'
+    + '</div>';
+}
+
+function buildSyllabusPopup(exam, theme){
+  var name = theme.name[LANG] || theme.name.ru;
+  var hasProgress = theme.done > 0;
+  var btnLabel = hasProgress ? t('btnContinue') : t('btnStart');
+
+  var sylHtml = '';
+  theme.syllabus.forEach(function(mod){
+    var modName = mod.name[LANG] || mod.name.ru;
+    sylHtml += '<div class="syl-module">';
+    sylHtml += '<div class="syl-mod-head"><span class="syl-mod-num">' + t('modules') + ' ' + mod.num + '</span><span class="syl-mod-name t1">' + modName + '</span></div>';
+    sylHtml += '<div class="syl-topics">';
+    mod.topics.forEach(function(tp){
+      var tpName = tp.name[LANG] || tp.name.ru;
+      sylHtml += '<div class="syl-topic">';
+      sylHtml += '<span class="syl-topic-name t2">' + tpName + '</span>';
+      sylHtml += '<div class="syl-counts">';
+      // Lessons
+      sylHtml += '<span class="syl-count"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>' + tp.lessons + '</span>';
+      // Tests
+      sylHtml += '<span class="syl-count"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><path d="M9 12l2 2 4-4"/></svg>' + tp.tests + '</span>';
+      // Exams (if any)
+      if(tp.exams > 0){
+        sylHtml += '<span class="syl-count"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 9l-10-4-10 4 10 4 10-4v6"/><path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"/></svg>' + tp.exams + '</span>';
+      }
+      sylHtml += '</div>';
+      sylHtml += '</div>';
+    });
+    sylHtml += '</div>'; // .syl-topics
+    sylHtml += '</div>'; // .syl-module
+  });
+
+  return ''
+    + '<div class="popup-head">'
+    +   '<div class="popup-head-info">'
+    +     '<span class="popup-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3l8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg>' + t('examLabel') + ' ' + exam.code + '</span>'
+    +     '<div class="popup-title t1">' + name + '</div>'
+    +     '<div class="popup-subtitle t2">' + theme.modules + ' ' + t('modules') + ' · ' + theme.done + ' ' + t('modules') + ' ' + (LANG==='ru'?'пройдено':'הושלמו') + '</div>'
+    +   '</div>'
+    +   '<button class="popup-close" onclick="closePopup()">×</button>'
+    + '</div>'
+    + '<div class="popup-body">' + sylHtml + '</div>'
+    + '<div class="popup-foot">'
+    +   '<button class="btn-cancel" onclick="closePopup()">' + t('btnCancel') + '</button>'
+    +   '<button class="btn-primary" onclick="closePopup()">' + btnLabel + ' →</button>'
+    + '</div>';
+}
+
+function closePopup(){
+  document.getElementById('popupOverlay').classList.remove('open');
+}
+
+function handleOverlayClick(e){
+  if(e.target === document.getElementById('popupOverlay')) closePopup();
+}
+
+// ── Keyboard ESC ──
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closePopup();
+});
+
+// ── Sidebar ──
+function toggleSb(){
+  sbOpen = !sbOpen;
+  document.getElementById('sb').className = 'sb p1 bd' + (sbOpen ? ' open' : '');
+}
+
+var topNavIds = ['niDashboard','niCourses','niAchievements','niContent'];
+function setActiveNav(id){
+  topNavIds.forEach(function(nid){
+    var el = document.getElementById(nid);
+    if(el) el.classList.remove('on');
+  });
+  var sub = document.getElementById('contentSubmenu');
+  if(id !== 'niContent' && sub) sub.style.display = 'none';
+  var active = document.getElementById(id);
+  if(active) active.classList.add('on');
+  if(id === 'niContent'){
+    if(sub) sub.style.display = 'flex';
+    if(!sbOpen) toggleSb();
+  }
+}
+
+// ── Theme mode ──
+function setMode(m){
+  CM = m;
+  document.getElementById('shell').className = 'shell ' + m;
+  document.getElementById('bd').className = 'tcb' + (m === 'd' ? ' on' : '');
+  document.getElementById('bl').className = 'tcb' + (m === 'l' ? ' on' : '');
+}
+
+// ── Language ──
+function toggleLang(){
+  setLang(LANG === 'ru' ? 'he' : 'ru');
+}
+function setLang(lang){
+  LANG = lang;
+  document.getElementById('langBtn').textContent = lang.toUpperCase();
+  renderAll();
+}
+
+// ── Init ──
+renderAll();
+</script>
+</body>
+</html>

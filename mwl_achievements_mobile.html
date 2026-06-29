@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MWL — Достижения (Mobile)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif}
+
+/* ── Theme ── */
+.shell{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.d{background:#0f172a}.l{background:#f8fafc}
+.d .t1{color:#f1f5f9}.l .t1{color:#0f172a}
+.d .t2{color:#94a3b8}.l .t2{color:#64748b}
+.d .t3{color:#475569}.l .t3{color:#94a3b8}
+.d .p1{background:#1e293b;border-color:#334155}.l .p1{background:#ffffff;border-color:#e2e8f0}
+.d .p2{background:#334155;border-color:#334155}.l .p2{background:#f1f5f9;border-color:#e2e8f0}
+.d .bd{border-color:#334155!important}.l .bd{border-color:#e2e8f0!important}
+
+/* ── Header — mobile: 2-col grid, no center column ── */
+.hdr{
+  height:48px;
+  display:grid;
+  grid-template-columns:1fr auto; /* left | right only — no center */
+  align-items:center;
+  padding:0 14px;
+  border-bottom:1px solid;
+  flex-shrink:0;
+}
+.hdr-left{display:flex;align-items:center;gap:10px}
+.hdr-right{display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.logo{width:26px;height:26px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand{font-size:13px;font-weight:500}.brand b{color:#22D3EE;font-weight:500}
+
+/* Search — collapsible lupe, expands leftward per §22 */
+.srch{position:relative;display:flex;align-items:center;justify-content:center}
+.srch-inp{
+  width:0;max-width:0;opacity:0;overflow:hidden;
+  border-radius:8px;padding:0;border:1px solid transparent;
+  background:transparent;font-family:inherit;
+  font-size:16px; /* prevents iOS zoom */
+  outline:none;
+  transition:width .2s ease,max-width .2s ease,opacity .15s ease,padding .15s ease;
+  position:absolute;right:32px;
+}
+.srch.open .srch-inp{width:160px;max-width:160px;opacity:1;padding:6px 10px}
+.d .srch.open .srch-inp{background:#334155;border-color:#475569;color:#f1f5f9}
+.l .srch.open .srch-inp{background:#f1f5f9;border-color:#e2e8f0;color:#0f172a}
+/* Lupe — ROUNDED SQUARE 28×28 per §22 */
+.srch-btn{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid;flex-shrink:0}
+.d .srch-btn{border-color:#334155;color:#94a3b8}.l .srch-btn{border-color:#e2e8f0;color:#64748b}
+
+/* Lang switcher — ROUNDED RECTANGLE per §22 */
+.lang{display:flex;border-radius:6px;overflow:hidden;border:1px solid}
+.lb{padding:3px 7px;font-size:11px;cursor:pointer}
+.d .lb{color:#94a3b8}.l .lb{color:#64748b}
+.lb.on{background:#22D3EE;color:#0f172a;font-weight:500}
+
+/* Icon buttons — ROUNDED SQUARE 28×28 per §22 */
+.hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid;flex-shrink:0}
+.d .hico{border-color:#334155;color:#94a3b8}.l .hico{border-color:#e2e8f0;color:#64748b}
+
+/* Avatar — STRICT CIRCLE per §22 */
+.hav{width:28px;height:28px;min-width:28px;min-height:28px;border-radius:50%;background:#22D3EE;color:#0f172a;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;border:2px solid #22D3EE;flex-shrink:0;overflow:hidden}
+
+/* ── Ctrl bar (mockup only) ── */
+.ctrl{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid;align-items:center;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.ctrl::-webkit-scrollbar{display:none}
+.tcb{padding:4px 12px;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid;flex-shrink:0}
+.tcb.on{background:#22D3EE!important;color:#0f172a!important;border-color:#22D3EE!important}
+.d .tcb{background:#1e293b;border-color:#334155;color:#94a3b8}
+.l .tcb{background:#ffffff;border-color:#e2e8f0;color:#64748b}
+
+/* ── Body — no sidebar on mobile ── */
+.body{display:flex;flex:1;min-height:0}
+
+/* ── Main — pad-bottom for bottom nav + safe area ── */
+.main{
+  flex:1;overflow-y:auto;
+  padding:12px 12px calc(64px + env(safe-area-inset-bottom,0px));
+  min-width:0;
+}
+.pg-title{font-size:17px;font-weight:500;margin-bottom:14px}
+
+/* ── Stat row — 2×2 on mobile ── */
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat-card{border-radius:12px;border:1px solid;padding:12px 14px;display:flex;flex-direction:column;gap:3px}
+.stat-label{font-size:10px;font-weight:500}
+.stat-val{font-size:22px;font-weight:600;line-height:1.1}
+.stat-sub{font-size:10px}
+.stat-accent{color:#22D3EE}
+.stat-amber{color:#FBBF24}
+
+/* ── Mid row — single column ── */
+.mid-row{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:12px}
+.card{border-radius:12px;border:1px solid;padding:14px}
+.card-title{font-size:13px;font-weight:500;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title svg{stroke:#22D3EE;flex-shrink:0}
+
+/* Activity heatmap — smaller cells on mobile */
+.activity-rows{display:flex;gap:5px}
+.activity-day-labels{display:flex;flex-direction:column;gap:3px;padding-top:2px}
+.activity-day-labels span{font-size:9px;width:18px;text-align:right}
+.activity-cells{display:flex;flex-direction:column;gap:3px}
+.activity-row{display:flex;gap:3px}
+.cell{width:11px;height:11px;border-radius:2px;flex-shrink:0;border:1px solid}
+.d .cell{background:#1e293b;border-color:#334155}
+.l .cell{background:#f1f5f9;border-color:#e2e8f0}
+.cell.l1{background:#164e63;border-color:#0e7490}
+.cell.l2{background:#0e7490;border-color:#22D3EE44}
+.cell.l3{background:#22D3EE;border-color:#22D3EE;opacity:.7}
+.cell.l4{background:#22D3EE;border-color:#22D3EE}
+.activity-legend{display:flex;align-items:center;gap:5px;margin-top:8px;justify-content:flex-end}
+.legend-cells{display:flex;gap:3px}
+
+/* Streak */
+.streak-block{display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid}
+.streak-val{font-size:18px;font-weight:600;color:#FBBF24}
+
+/* Module card */
+.module-card{border-radius:12px;border:1px solid;padding:14px;display:flex;flex-direction:column;gap:10px}
+.module-tag{display:inline-flex;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500;background:#164e63;border:1px solid #0e7490;color:#22D3EE;margin-bottom:2px}
+.ring-wrap{display:flex;justify-content:center;padding:4px 0}
+.atom-list{display:flex;flex-direction:column;gap:5px}
+.atom-item{display:flex;align-items:center;gap:8px;font-size:11px}
+.atom-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-done{background:#4ade80}
+.dot-active{background:#22D3EE}
+.dot-locked{background:#334155}
+
+/* ── Bottom row — single column ── */
+.bottom-row{display:grid;grid-template-columns:1fr;gap:12px}
+.topic-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid}
+.topic-row:last-child{border-bottom:none}
+.topic-name{font-size:12px;flex:1;min-width:0}
+.d .topic-bar-wrap{width:80px;height:5px;background:#334155;border-radius:3px;flex-shrink:0}
+.l .topic-bar-wrap{width:80px;height:5px;background:#e2e8f0;border-radius:3px;flex-shrink:0}
+.topic-bar{height:5px;border-radius:3px;background:#22D3EE}
+.topic-pct{font-size:11px;width:28px;text-align:right;flex-shrink:0}
+.time-rows{display:flex;flex-direction:column;gap:6px}
+.time-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid}
+.time-row:last-child{border-bottom:none}
+
+/* ── Bottom tab bar — direction:ltr always per NAVIGATION.md ── */
+.bnav{
+  position:fixed;left:0;right:0;bottom:0;
+  width:100%;
+  display:flex;
+  direction:ltr; /* never flips on RTL per standard */
+  border-top:1px solid;
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));
+  z-index:10;
+}
+.bni{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;
+  padding:4px 2px;border-radius:8px;cursor:pointer;min-height:44px;
+}
+/* Tab icons — same standard colors as sidebar per §22 */
+.bni svg{flex-shrink:0;display:block;width:20px;height:20px}
+.d .bni svg{stroke:#475569}.l .bni svg{stroke:#64748b}
+.bni.on svg{stroke:#22D3EE!important}
+.bnl{font-size:9.5px;font-weight:500}
+.d .bnl{color:#475569}.l .bnl{color:#64748b}
+.bni.on .bnl{color:#22D3EE!important}
+</style>
+</head>
+<body>
+<div class="shell d" id="shell">
+
+  <!-- HEADER — mobile: 2-col, search as collapsible icon -->
+  <div class="hdr p1 bd">
+    <div class="hdr-left">
+      <div class="logo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 4h-10l6 8l-6 8h10"/></svg>
+      </div>
+      <div class="brand t1">Math <b>With Love</b></div>
+    </div>
+    <div class="hdr-right">
+      <!-- Search: collapsible lupe per §22 -->
+      <div class="srch" id="srchWrap">
+        <input class="srch-inp" id="srchInp" placeholder="Поиск тем, формул...">
+        <div class="srch-btn" id="srchBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+        </div>
+      </div>
+      <!-- Lang switcher — ROUNDED RECTANGLE -->
+      <div class="lang bd" id="langWrap">
+        <span class="lb on" id="lbRu">RU</span>
+        <span class="lb" id="lbHe">HE</span>
+      </div>
+      <!-- Bell — ROUNDED SQUARE -->
+      <div class="hico bd t2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg>
+      </div>
+      <!-- Avatar — STRICT CIRCLE -->
+      <div class="hav">ИГ</div>
+    </div>
+  </div>
+
+  <!-- CTRL BAR (mockup only) -->
+  <div class="ctrl p2 bd">
+    <button class="tcb on" id="bdBtn">🌙 Тёмная</button>
+    <button class="tcb" id="blBtn">☀ Светлая</button>
+  </div>
+
+  <!-- BODY — no sidebar -->
+  <div class="body">
+    <div class="main">
+      <div class="pg-title t1" data-i18n="pageTitle">Достижения</div>
+
+      <!-- Stat cards — 2×2 -->
+      <div class="stat-row">
+        <div class="stat-card p1 bd">
+          <div class="stat-label t2" data-i18n="statAtoms">Пройдено атомов</div>
+          <div class="stat-val t1">12 <span style="font-size:12px;color:#475569">/ 47</span></div>
+          <div class="stat-sub t3" data-i18n="statModuleSub">Модуль: Векторы</div>
+        </div>
+        <div class="stat-card p1 bd">
+          <div class="stat-label t2" data-i18n="statScore">Средний балл</div>
+          <div class="stat-val stat-accent">78<span style="font-size:12px">%</span></div>
+          <div class="stat-sub t3" data-i18n="statScoreSub">По всем тестам</div>
+        </div>
+        <div class="stat-card p1 bd" style="grid-column:1/-1">
+          <div class="stat-label t2" data-i18n="statStreak">Серия дней</div>
+          <div class="stat-val stat-amber">🔥 5</div>
+          <div class="stat-sub t3" data-i18n="statBestStreak">Лучшая серия: 12 дней</div>
+        </div>
+      </div>
+
+      <!-- Activity -->
+      <div class="card p1 bd" style="margin-bottom:12px">
+        <div class="card-title t1">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span data-i18n="activityTitle">Активность за 4 недели</span>
+        </div>
+        <div class="activity-rows">
+          <div class="activity-day-labels t3">
+            <span data-i18n="dayMon">Пн</span><span data-i18n="dayWed">Ср</span>
+            <span data-i18n="dayFri">Пт</span><span data-i18n="daySun">Вс</span>
+          </div>
+          <div class="activity-cells">
+            <div class="activity-row"><div class="cell l2"></div><div class="cell l1"></div><div class="cell l3"></div><div class="cell"></div><div class="cell l1"></div><div class="cell l4"></div><div class="cell"></div></div>
+            <div class="activity-row"><div class="cell l1"></div><div class="cell l3"></div><div class="cell l4"></div><div class="cell l2"></div><div class="cell"></div><div class="cell l1"></div><div class="cell l2"></div></div>
+            <div class="activity-row"><div class="cell l4"></div><div class="cell l4"></div><div class="cell l3"></div><div class="cell l2"></div><div class="cell l4"></div><div class="cell l3"></div><div class="cell l1"></div></div>
+            <div class="activity-row"><div class="cell l2"></div><div class="cell l4"></div><div class="cell l4"></div><div class="cell l3"></div><div class="cell l4"></div><div class="cell"></div><div class="cell"></div></div>
+          </div>
+        </div>
+        <div class="activity-legend">
+          <span class="t3" data-i18n="legendLess">Меньше</span>
+          <div class="legend-cells">
+            <div class="cell" style="width:10px;height:10px"></div>
+            <div class="cell l1" style="width:10px;height:10px"></div>
+            <div class="cell l2" style="width:10px;height:10px"></div>
+            <div class="cell l3" style="width:10px;height:10px"></div>
+            <div class="cell l4" style="width:10px;height:10px"></div>
+          </div>
+          <span class="t3" data-i18n="legendMore">Больше</span>
+        </div>
+        <div class="streak-block" style="border-color:inherit">
+          <span style="font-size:18px">🔥</span>
+          <div>
+            <div style="display:flex;align-items:baseline;gap:4px">
+              <span class="streak-val">5</span>
+              <span class="t2" style="font-size:11px" data-i18n="streakDays">дней подряд</span>
+            </div>
+            <div class="t3" style="font-size:10px" data-i18n="streakBest">Лучшая серия: 12 дней · Всего: 19</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module -->
+      <div class="module-card p1 bd" style="margin-bottom:12px">
+        <div class="card-title t1">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 5-10 5L2 8z"/><path d="M7 11.5v4.5a5 5 0 0 0 10 0v-4.5"/></svg>
+          <span data-i18n="currentModule">Текущий модуль</span>
+        </div>
+        <div>
+          <div class="module-tag" data-i18n="moduleTag">Векторы</div>
+          <div class="t1" style="font-size:13px;font-weight:500" data-i18n="moduleName">Алгебра векторов</div>
+        </div>
+        <div class="ring-wrap">
+          <svg width="90" height="90" viewBox="0 0 110 110">
+            <circle cx="55" cy="55" r="44" fill="none" stroke="#334155" stroke-width="10"/>
+            <circle cx="55" cy="55" r="44" fill="none" stroke="#22D3EE" stroke-width="10" stroke-dasharray="276.5" stroke-dashoffset="212" stroke-linecap="round" transform="rotate(-90 55 55)"/>
+            <text x="55" y="50" text-anchor="middle" font-size="20" font-weight="600" fill="#f1f5f9" font-family="system-ui" id="ringPct">25%</text>
+            <text x="55" y="66" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="system-ui" id="ringSub">12 из 47</text>
+          </svg>
+        </div>
+        <div class="atom-list">
+          <div class="atom-item"><div class="atom-dot dot-done"></div><span class="t1" style="flex:1" data-i18n="atom1">Понятие вектора</span><span style="font-size:10px;color:#4ade80">94%</span></div>
+          <div class="atom-item"><div class="atom-dot dot-done"></div><span class="t1" style="flex:1" data-i18n="atom2">Сложение векторов</span><span style="font-size:10px;color:#4ade80">81%</span></div>
+          <div class="atom-item"><div class="atom-dot dot-active"></div><span style="flex:1;color:#22D3EE" data-i18n="atom3">Скалярное произведение</span><span style="font-size:10px;color:#22D3EE" data-i18n="atomActive">в работе</span></div>
+          <div class="atom-item"><div class="atom-dot dot-locked"></div><span class="t3" style="flex:1" data-i18n="atom4">Угол между векторами</span><span class="t3" style="font-size:10px">—</span></div>
+          <div class="atom-item"><div class="atom-dot dot-locked"></div><span class="t3" style="flex:1" data-i18n="atom5">Проекция вектора</span><span class="t3" style="font-size:10px">—</span></div>
+        </div>
+      </div>
+
+      <!-- Deadlines -->
+      <div class="card p1 bd" style="margin-bottom:12px">
+        <div class="card-title t1">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span data-i18n="deadlinesTitle">Сроки</span>
+        </div>
+        <div>
+          <div class="topic-row bd">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+              <span class="topic-name t1" data-i18n="deadlineModule">Завершить модуль «Векторы»</span>
+              <span class="t3" style="font-size:10px" data-i18n="deadlineModuleSub">Начат 10 июня · Расчётная дата: 15 августа</span>
+            </div>
+            <span style="font-size:11px;font-weight:500;color:#FBBF24;flex-shrink:0;margin-left:8px">50 дн.</span>
+          </div>
+          <div class="topic-row bd">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+              <span class="topic-name t1" data-i18n="deadlineBagrut">Багрут 572 (часть 1)</span>
+              <span class="t3" style="font-size:10px" data-i18n="deadlineBagrutSub">Дата экзамена: 12 января 2027</span>
+            </div>
+            <span style="font-size:11px;font-weight:500;color:#22D3EE;flex-shrink:0;margin-left:8px">200 дн.</span>
+          </div>
+          <div class="topic-row bd">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+              <span class="topic-name t1" data-i18n="deadlineBagrut2">Багрут 571 (часть 2)</span>
+              <span class="t3" style="font-size:10px" data-i18n="deadlineBagrut2Sub">Дата экзамена: 15 мая 2027</span>
+            </div>
+            <span style="font-size:11px;font-weight:500;color:#22D3EE;flex-shrink:0;margin-left:8px">323 дн.</span>
+          </div>
+          <div class="topic-row bd">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px">
+              <span class="topic-name t1" data-i18n="deadlineAtom">Атом: Скалярное произведение</span>
+              <span class="t3" style="font-size:10px" data-i18n="deadlineAtomSub">В работе с 24 июня · Завершить за 3 дня</span>
+            </div>
+            <span style="font-size:11px;font-weight:500;color:#f87171;flex-shrink:0;margin-left:8px">1 дн.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Time -->
+      <div class="card p1 bd">
+        <div class="card-title t1">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+          <span data-i18n="timeTitle">Время обучения</span>
+        </div>
+        <div class="time-rows">
+          <div class="time-row bd"><span class="t2" style="font-size:12px" data-i18n="timeToday">Сегодня</span><span class="t1" style="font-size:13px;font-weight:500;color:#22D3EE">42 мин</span></div>
+          <div class="time-row bd"><span class="t2" style="font-size:12px" data-i18n="timeWeek">На этой неделе</span><span class="t1" style="font-size:13px;font-weight:500">3 ч 18 мин</span></div>
+          <div class="time-row bd"><span class="t2" style="font-size:12px" data-i18n="timeMonth">В этом месяце</span><span class="t1" style="font-size:13px;font-weight:500">11 ч 45 мин</span></div>
+          <div class="time-row bd"><span class="t2" style="font-size:12px" data-i18n="timeTotal">Всего</span><span class="t1" style="font-size:13px;font-weight:500">24 ч 30 мин</span></div>
+          <div class="time-row bd"><span class="t2" style="font-size:12px" data-i18n="timeAvg">Среднее в день</span><span class="t1" style="font-size:13px;font-weight:500">37 мин</span></div>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /body -->
+
+  <!-- BOTTOM TAB BAR — direction:ltr always per NAVIGATION.md -->
+  <div class="bnav p1 bd">
+    <!-- Главная -->
+    <div class="bni" id="bniHome">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></svg>
+      <span class="bnl" data-i18n="navHome">Главная</span>
+    </div>
+    <!-- Темы -->
+    <div class="bni" id="bniTopics">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 5-10 5L2 8z"/><path d="M7 11.5v4.5a5 5 0 0 0 10 0v-4.5"/><line x1="22" y1="8" x2="22" y2="14"/></svg>
+      <span class="bnl" data-i18n="navTopics">Темы</span>
+    </div>
+    <!-- Лаборатория -->
+    <div class="bni" id="bniLab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg>
+      <span class="bnl" data-i18n="navLab">Лаборатория</span>
+    </div>
+    <!-- Йоси -->
+    <div class="bni" id="bniYosi">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"/><path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"/></svg>
+      <span class="bnl" data-i18n="navYosi">Йоси</span>
+    </div>
+    <!-- Профиль — active on achievements page (profile/settings) -->
+    <div class="bni on" id="bniProfile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+      <span class="bnl" data-i18n="navProfile">Профиль</span>
+    </div>
+  </div>
+
+</div><!-- /shell -->
+
+<script>
+var CM = 'd', CL = 'ru';
+
+var TR = {
+  ru:{
+    pageTitle:'Достижения', statAtoms:'Пройдено атомов', statModuleSub:'Модуль: Векторы',
+    statScore:'Средний балл', statScoreSub:'По всем тестам',
+    statStreak:'Серия дней', statBestStreak:'Лучшая серия: 12 дней',
+    activityTitle:'Активность за 4 недели', currentModule:'Текущий модуль',
+    moduleTag:'Векторы', moduleName:'Алгебра векторов',
+    streakDays:'дней подряд', streakBest:'Лучшая серия: 12 дней · Всего: 19',
+    legendLess:'Меньше', legendMore:'Больше',
+    atom1:'Понятие вектора', atom2:'Сложение векторов', atom3:'Скалярное произведение',
+    atom4:'Угол между векторами', atom5:'Проекция вектора', atomActive:'в работе',
+    dayMon:'Пн', dayWed:'Ср', dayFri:'Пт', daySun:'Вс',
+    deadlinesTitle:'Сроки', deadlineModule:'Завершить модуль «Векторы»',
+    deadlineModuleSub:'Начат 10 июня · Расчётная дата: 15 августа',
+    deadlineBagrut:'Багрут 572 (часть 1)', deadlineBagrutSub:'Дата экзамена: 12 января 2027',
+    deadlineBagrut2:'Багрут 571 (часть 2)', deadlineBagrut2Sub:'Дата экзамена: 15 мая 2027',
+    deadlineAtom:'Атом: Скалярное произведение', deadlineAtomSub:'В работе с 24 июня · Завершить за 3 дня',
+    timeTitle:'Время обучения', timeToday:'Сегодня', timeWeek:'На этой неделе',
+    timeMonth:'В этом месяце', timeTotal:'Всего', timeAvg:'Среднее в день',
+    navHome:'Главная', navTopics:'Темы', navLab:'Лаборатория',
+    navYosi:'Йоси', navProfile:'Профиль'
+  },
+  he:{
+    pageTitle:'הישגים', statAtoms:'אטומים שהושלמו', statModuleSub:'מודול: וקטורים',
+    statScore:'ציון ממוצע', statScoreSub:'בכל הבחינות',
+    statStreak:'רצף ימים', statBestStreak:'רצף הטוב ביותר: 12 ימים',
+    activityTitle:'פעילות ב-4 שבועות', currentModule:'מודול נוכחי',
+    moduleTag:'וקטורים', moduleName:'אלגברה של וקטורים',
+    streakDays:'ימים ברצף', streakBest:'רצף הטוב ביותר: 12 ימים · סה"כ: 19',
+    legendLess:'פחות', legendMore:'יותר',
+    atom1:'מושג הוקטור', atom2:'חיבור וקטורים', atom3:'מכפלה סקלרית',
+    atom4:'זווית בין וקטורים', atom5:'היטל וקטור', atomActive:'בעבודה',
+    dayMon:'ב׳', dayWed:'ד׳', dayFri:'ו׳', daySun:'א׳',
+    deadlinesTitle:'לוחות זמנים', deadlineModule:'סיום מודול «וקטורים»',
+    deadlineModuleSub:'התחיל 10 ביוני · תאריך משוער: 15 באוגוסט',
+    deadlineBagrut:'בגרות 572 (חלק 1)', deadlineBagrutSub:'תאריך הבחינה: 12 בינואר 2027',
+    deadlineBagrut2:'בגרות 571 (חלק 2)', deadlineBagrut2Sub:'תאריך הבחינה: 15 במאי 2027',
+    deadlineAtom:'אטום: מכפלה סקלרית', deadlineAtomSub:'בעבודה מ-24 ביוני · לסיים תוך 3 ימים',
+    timeTitle:'זמן לימוד', timeToday:'היום', timeWeek:'השבוע',
+    timeMonth:'החודש', timeTotal:'סה"כ', timeAvg:'ממוצע ביום',
+    navHome:'ראשי', navTopics:'נושאים', navLab:'מעבדה',
+    navYosi:'יוסי', navProfile:'פרופיל'
+  }
+};
+
+function applyI18n(){
+  var t = TR[CL];
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var k = el.getAttribute('data-i18n');
+    if(t[k] !== undefined) el.textContent = t[k];
+  });
+  var inp = document.getElementById('srchInp');
+  if(inp) inp.placeholder = CL==='he' ? 'חיפוש נושאים, נוסחאות...' : 'Поиск тем, формул...';
+  var rs = document.getElementById('ringSub');
+  if(rs) rs.textContent = CL==='he' ? '12 מתוך 47' : '12 из 47';
+}
+
+function setMode(m){
+  CM = m;
+  document.getElementById('shell').className = 'shell ' + m;
+  document.getElementById('bdBtn').className = 'tcb' + (m==='d' ? ' on' : '');
+  document.getElementById('blBtn').className = 'tcb' + (m==='l' ? ' on' : '');
+}
+
+function setLang(lang){
+  CL = lang;
+  document.getElementById('lbRu').className = 'lb' + (lang==='ru' ? ' on' : '');
+  document.getElementById('lbHe').className = 'lb' + (lang==='he' ? ' on' : '');
+  document.getElementById('shell').setAttribute('dir', lang==='he' ? 'rtl' : 'ltr');
+  applyI18n();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('bdBtn').addEventListener('click', function(){ setMode('d'); });
+  document.getElementById('blBtn').addEventListener('click', function(){ setMode('l'); });
+  document.getElementById('lbRu').addEventListener('click', function(){ setLang('ru'); });
+  document.getElementById('lbHe').addEventListener('click', function(){ setLang('he'); });
+
+  // Collapsible search per §22
+  var srchBtn = document.getElementById('srchBtn');
+  var srchWrap = document.getElementById('srchWrap');
+  var srchInp = document.getElementById('srchInp');
+  srchBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    srchWrap.classList.toggle('open');
+    if(srchWrap.classList.contains('open')) srchInp.focus();
+  });
+  document.addEventListener('click', function(e){
+    if(!srchWrap.contains(e.target)) srchWrap.classList.remove('open');
+  });
+
+  // Bottom nav tab switching
+  ['bniHome','bniTopics','bniLab','bniYosi'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('click', function(){
+      document.querySelectorAll('.bni').forEach(function(b){ b.classList.remove('on'); });
+      el.classList.add('on');
+    });
+  });
+
+  applyI18n();
+});
+</script>
+</body>
+</html>

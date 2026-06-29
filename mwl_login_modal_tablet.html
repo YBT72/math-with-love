@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MWL — Login Tablet</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif}
+
+/* ── controls ── */
+.controls{display:flex;gap:8px;padding:12px 16px;justify-content:center;background:#111827;flex-wrap:wrap;align-items:center}
+.ctrl-btn{padding:6px 16px;border-radius:8px;font-size:13px;cursor:pointer;user-select:none;font-weight:500;transition:all 0.15s}
+.ctrl-btn.on{background:#22D3EE;color:#0f172a;border:1px solid #22D3EE}
+.ctrl-btn.off{border:1px solid #334155;color:#94a3b8;background:transparent}
+.sep{width:1px;background:#374151;margin:0 4px;align-self:stretch}
+
+/* ── tablet frame ── */
+.tablet-wrap{display:flex;justify-content:center;align-items:flex-start;padding:24px 16px;min-height:calc(100vh - 52px)}
+.tablet-wrap.dark-bg{background:#1e293b}
+.tablet-wrap.light-bg{background:#cbd5e1}
+
+.tablet{
+  width:768px;height:900px;
+  border-radius:24px;
+  overflow:hidden;
+  position:relative;
+  box-shadow:0 32px 80px rgba(0,0,0,0.5);
+  flex-shrink:0;
+  display:flex;flex-direction:column;
+}
+.tablet.dark{background:#0f172a}
+.tablet.light{background:#f1f5f9}
+
+/* ── top bar (tablet status bar) ── */
+.topbar{
+  height:36px;display:flex;align-items:center;
+  justify-content:space-between;padding:0 20px;
+  flex-shrink:0;
+}
+.dark .topbar{background:#0f172a}
+.light .topbar{background:#f1f5f9}
+.tb-time{font-size:13px;font-weight:600}
+.dark .tb-time{color:#f1f5f9}
+.light .tb-time{color:#0f172a}
+.tb-icons{display:flex;gap:6px;align-items:center}
+.tb-icon{width:16px;height:16px}
+.dark .tb-icon{color:#94a3b8}
+.light .tb-icon{color:#64748b}
+
+/* ── backdrop fills tablet ── */
+.backdrop{
+  flex:1;
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;position:relative;
+}
+.dark .backdrop{background:#0f172a}
+.light .backdrop{background:#f1f5f9}
+.backdrop::before{
+  content:'';position:absolute;inset:0;
+  background-image:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(34,211,238,0.03) 40px,rgba(34,211,238,0.03) 80px)
+}
+
+/* ── modal (identical to desktop, just inside tablet frame) ── */
+.modal{width:100%;max-width:420px;border-radius:16px;overflow:hidden;position:relative;z-index:1}
+.dark .modal{background:#1e293b;border:1px solid #334155;box-shadow:0 24px 64px rgba(0,0,0,0.5)}
+.light .modal{background:#ffffff;border:1px solid #e2e8f0;box-shadow:0 24px 64px rgba(0,0,0,0.12)}
+
+.modal-close{
+  position:absolute;top:14px;inset-inline-end:14px;
+  width:28px;height:28px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:2;
+}
+.dark .modal-close{background:#334155;color:#94a3b8}
+.light .modal-close{background:#f1f5f9;color:#64748b}
+.modal-close svg{width:14px;height:14px}
+
+.modal-top{padding:28px 28px 0;text-align:center}
+.modal-logo{width:44px;height:44px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.modal-logo svg{width:22px;height:22px;fill:#0f172a}
+.modal-title{font-size:20px;font-weight:500;margin-bottom:6px}
+.dark .modal-title{color:#f1f5f9}
+.light .modal-title{color:#0f172a}
+.modal-sub{font-size:13px}
+.dark .modal-sub{color:#94a3b8}
+.light .modal-sub{color:#64748b}
+
+.lang-row{display:flex;justify-content:center;margin:14px 0 0}
+.lang{display:flex;border-radius:8px;overflow:hidden;border:1px solid}
+.dark .lang{border-color:#334155}
+.light .lang{border-color:#e2e8f0}
+.lb{padding:4px 14px;font-size:12px;cursor:pointer;font-weight:500}
+.dark .lb{color:#94a3b8}
+.light .lb{color:#64748b}
+.lb.on{background:#22D3EE;color:#0f172a}
+
+.tabs{display:flex;gap:8px;margin:20px 28px 0}
+.tab{flex:1;text-align:center;padding:8px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer;transition:all 0.15s}
+.tab.on{background:#22D3EE;color:#0f172a;border:1px solid #22D3EE}
+.dark .tab.off{border:1px solid #334155;color:#94a3b8;background:transparent}
+.light .tab.off{border:1px solid #e2e8f0;color:#64748b;background:transparent}
+
+.modal-body{padding:24px 28px 28px}
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;font-weight:500;margin-bottom:6px;display:block}
+.dark .form-label{color:#94a3b8}
+.light .form-label{color:#64748b}
+.input-wrap{position:relative}
+.form-input{
+  width:100%;border-radius:8px;
+  padding:10px 40px 10px 14px;
+  font-size:14px;outline:none;
+  font-family:system-ui,sans-serif;
+  transition:border-color 0.15s,background 0.15s;
+}
+.dark .form-input{background:#334155;border:1px solid #475569;color:#f1f5f9}
+.dark .form-input::placeholder{color:#64748b}
+.dark .form-input:focus{border-color:#22D3EE;background:#3d4f66}
+.light .form-input{background:#ffffff;border:1px solid #cbd5e1;color:#0f172a}
+.light .form-input::placeholder{color:#94a3b8}
+.light .form-input:focus{border-color:#22D3EE}
+.input-icon{position:absolute;inset-inline-end:12px;top:50%;transform:translateY(-50%);cursor:pointer;display:flex;align-items:center}
+.input-icon svg{width:16px;height:16px}
+.dark .input-icon svg{color:#64748b}
+.light .input-icon svg{color:#94a3b8}
+
+.btn-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:8px;padding:10px;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:16px}
+.dark .btn-google{background:#334155;border:1px solid #475569;color:#f1f5f9}
+.light .btn-google{background:#ffffff;border:1px solid #cbd5e1;color:#0f172a}
+.google-icon{width:18px;height:18px;flex-shrink:0}
+
+.divider{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.divider-line{flex:1;height:1px}
+.dark .divider-line{background:#334155}
+.light .divider-line{background:#e2e8f0}
+.divider-text{font-size:11px}
+.dark .divider-text{color:#475569}
+.light .divider-text{color:#94a3b8}
+
+.forgot{text-align:end;margin-top:-10px;margin-bottom:16px}
+.forgot a{font-size:12px;color:#22D3EE;cursor:pointer}
+
+.btn-submit{width:100%;display:flex;align-items:center;justify-content:center;background:#22D3EE;color:#0f172a;border-radius:8px;padding:11px;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:16px;border:none}
+
+.switch-text{text-align:center;font-size:12px}
+.dark .switch-text{color:#64748b}
+.light .switch-text{color:#94a3b8}
+.switch-text a{color:#22D3EE;cursor:pointer}
+
+.register-only{display:none}
+.register-only.show{display:block}
+.forgot-wrap.hide{display:none}
+.rtl{direction:rtl}
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <div class="ctrl-btn on"  id="btn-dark"  onclick="setTheme('dark')">🌙 Тёмная</div>
+  <div class="ctrl-btn off" id="btn-light" onclick="setTheme('light')">☀ Светлая</div>
+  <div class="sep"></div>
+  <div class="ctrl-btn on"  id="btn-login" onclick="setMode('login')">Войти</div>
+  <div class="ctrl-btn off" id="btn-reg"   onclick="setMode('register')">Регистрация</div>
+  <div class="sep"></div>
+  <div class="ctrl-btn on"  id="btn-ru" onclick="setLang('ru')">RU</div>
+  <div class="ctrl-btn off" id="btn-he" onclick="setLang('he')">HE</div>
+</div>
+
+<div class="tablet-wrap dark-bg" id="wrap">
+  <div class="tablet dark" id="tablet">
+
+    <!-- status bar -->
+    <div class="topbar">
+      <div class="tb-time">9:41</div>
+      <div class="tb-icons">
+        <svg class="tb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 6l7 7 4-4 7-7"/><path d="M1 1h4v4H1zM19 1h4v4h-4zM1 19h4v4H1z" opacity=".3"/>
+        </svg>
+        <svg class="tb-icon" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="2" y="6" width="3" height="12" rx="1" opacity=".4"/>
+          <rect x="7" y="4" width="3" height="14" rx="1" opacity=".6"/>
+          <rect x="12" y="2" width="3" height="16" rx="1" opacity=".8"/>
+          <rect x="17" y="1" width="3" height="17" rx="1"/>
+        </svg>
+        <svg class="tb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="7" width="18" height="11" rx="2"/><path d="M22 11v3" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- backdrop with modal -->
+    <div class="backdrop">
+      <div class="modal" id="modal">
+
+        <div class="modal-close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </div>
+
+        <div class="modal-top">
+          <div class="modal-logo">
+            <svg viewBox="0 0 24 24"><path d="M12 2L8 8H4l4 4-2 6 6-3 6 3-2-6 4-4h-4z"/></svg>
+          </div>
+          <div class="modal-title" id="modal-title">Добро пожаловать</div>
+          <div class="modal-sub"   id="modal-sub">Войдите в свой аккаунт</div>
+          <div class="lang-row">
+            <div class="lang">
+              <div class="lb on" id="lb-ru" onclick="setLang('ru')">RU</div>
+              <div class="lb"    id="lb-he" onclick="setLang('he')">HE</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <div class="tab on"  id="tab-login" onclick="setMode('login')">Войти</div>
+          <div class="tab off" id="tab-reg"   onclick="setMode('register')">Регистрация</div>
+        </div>
+
+        <div class="modal-body">
+          <div class="btn-google">
+            <svg class="google-icon" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            <span id="txt-google">Продолжить через Google</span>
+          </div>
+
+          <div class="divider">
+            <div class="divider-line"></div>
+            <div class="divider-text" id="txt-or">или</div>
+            <div class="divider-line"></div>
+          </div>
+
+          <div class="form-group register-only" id="field-name">
+            <label class="form-label" id="lbl-name">Имя</label>
+            <div class="input-wrap">
+              <input class="form-input" type="text" id="inp-name" placeholder="Как тебя зовут?">
+              <span class="input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <div class="input-wrap">
+              <input class="form-input" type="email" placeholder="your@email.com">
+              <span class="input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" id="lbl-pass">Пароль</label>
+            <div class="input-wrap">
+              <input class="form-input" type="password" id="inp-pass" placeholder="••••••••">
+              <span class="input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group register-only" id="field-confirm">
+            <label class="form-label" id="lbl-confirm">Подтвердите пароль</label>
+            <div class="input-wrap">
+              <input class="form-input" type="password" id="inp-confirm" placeholder="••••••••">
+              <span class="input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+
+          <div class="forgot forgot-wrap" id="forgot-wrap">
+            <a id="txt-forgot">Забыли пароль?</a>
+          </div>
+
+          <button class="btn-submit" id="btn-submit">Войти</button>
+
+          <div class="switch-text" id="switch-text">
+            Нет аккаунта? <a onclick="setMode('register')">Зарегистрироваться</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let theme = 'dark', mode = 'login', lang = 'ru';
+
+const TR = {
+  ru: {
+    title_login:'Добро пожаловать', title_reg:'Создать аккаунт',
+    sub_login:'Войдите в свой аккаунт', sub_reg:'Начните учиться бесплатно',
+    tab_login:'Войти', tab_reg:'Регистрация',
+    google:'Продолжить через Google', or:'или',
+    lbl_name:'Имя', ph_name:'Как тебя зовут?',
+    lbl_pass:'Пароль', lbl_confirm:'Подтвердите пароль',
+    forgot:'Забыли пароль?',
+    submit_login:'Войти', submit_reg:'Зарегистрироваться',
+    sw_login:'Нет аккаунта?', sw_login_lnk:'Зарегистрироваться',
+    sw_reg:'Уже есть аккаунт?', sw_reg_lnk:'Войти',
+  },
+  he: {
+    title_login:'ברוך הבא', title_reg:'יצירת חשבון',
+    sub_login:'כנס לחשבונך', sub_reg:'התחל ללמוד בחינם',
+    tab_login:'כניסה', tab_reg:'הרשמה',
+    google:'המשך עם Google', or:'או',
+    lbl_name:'שם', ph_name:'מה שמך?',
+    lbl_pass:'סיסמה', lbl_confirm:'אימות סיסמה',
+    forgot:'שכחת סיסמה?',
+    submit_login:'כניסה', submit_reg:'הרשמה',
+    sw_login:'אין חשבון?', sw_login_lnk:'הירשם',
+    sw_reg:'כבר יש חשבון?', sw_reg_lnk:'כנס',
+  }
+};
+
+function applyI18n() {
+  const t = TR[lang];
+  const isLogin = mode === 'login';
+  document.getElementById('modal').className = 'modal' + (lang === 'he' ? ' rtl' : '');
+  document.getElementById('modal-title').textContent  = isLogin ? t.title_login : t.title_reg;
+  document.getElementById('modal-sub').textContent    = isLogin ? t.sub_login   : t.sub_reg;
+  document.getElementById('tab-login').textContent    = t.tab_login;
+  document.getElementById('tab-reg').textContent      = t.tab_reg;
+  document.getElementById('txt-google').textContent   = t.google;
+  document.getElementById('txt-or').textContent       = t.or;
+  document.getElementById('lbl-name').textContent     = t.lbl_name;
+  document.getElementById('inp-name').placeholder     = t.ph_name;
+  document.getElementById('lbl-pass').textContent     = t.lbl_pass;
+  document.getElementById('lbl-confirm').textContent  = t.lbl_confirm;
+  document.getElementById('txt-forgot').textContent   = t.forgot;
+  document.getElementById('btn-submit').textContent   = isLogin ? t.submit_login : t.submit_reg;
+  document.getElementById('switch-text').innerHTML    = isLogin
+    ? t.sw_login + ' <a onclick="setMode(\'register\')">' + t.sw_login_lnk + '</a>'
+    : t.sw_reg   + ' <a onclick="setMode(\'login\')">'    + t.sw_reg_lnk  + '</a>';
+}
+
+function setTheme(t) {
+  theme = t;
+  document.getElementById('tablet').className   = 'tablet ' + t;
+  document.getElementById('wrap').className     = 'tablet-wrap ' + (t === 'dark' ? 'dark-bg' : 'light-bg');
+  document.getElementById('btn-dark').className  = 'ctrl-btn ' + (t === 'dark'  ? 'on' : 'off');
+  document.getElementById('btn-light').className = 'ctrl-btn ' + (t === 'light' ? 'on' : 'off');
+}
+
+function setMode(m) {
+  mode = m;
+  const isLogin = m === 'login';
+  document.getElementById('tab-login').className = 'tab ' + (isLogin ? 'on' : 'off');
+  document.getElementById('tab-reg').className   = 'tab ' + (!isLogin ? 'on' : 'off');
+  document.getElementById('btn-login').className = 'ctrl-btn ' + (isLogin ? 'on' : 'off');
+  document.getElementById('btn-reg').className   = 'ctrl-btn ' + (!isLogin ? 'on' : 'off');
+  document.getElementById('forgot-wrap').className = 'forgot forgot-wrap' + (isLogin ? '' : ' hide');
+  document.querySelectorAll('.register-only').forEach(el => {
+    el.className = 'form-group register-only' + (!isLogin ? ' show' : '');
+  });
+  applyI18n();
+}
+
+function setLang(l) {
+  lang = l;
+  document.getElementById('lb-ru').className  = 'lb' + (l === 'ru' ? ' on' : '');
+  document.getElementById('lb-he').className  = 'lb' + (l === 'he' ? ' on' : '');
+  document.getElementById('btn-ru').className = 'ctrl-btn ' + (l === 'ru' ? 'on' : 'off');
+  document.getElementById('btn-he').className = 'ctrl-btn ' + (l === 'he' ? 'on' : 'off');
+  applyI18n();
+}
+
+applyI18n();
+</script>
+</body>
+</html>

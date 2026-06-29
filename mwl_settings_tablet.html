@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MWL — Настройки (Tablet)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif}
+
+/* ── Theme classes ── */
+.shell{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.d{background:#0f172a}.l{background:#f8fafc}
+.d .t1{color:#f1f5f9}.l .t1{color:#0f172a}
+.d .t2{color:#94a3b8}.l .t2{color:#64748b}
+.d .t3{color:#475569}.l .t3{color:#94a3b8}
+.d .p1{background:#1e293b;border-color:#334155}.l .p1{background:#ffffff;border-color:#e2e8f0}
+.d .p2{background:#334155;border-color:#334155}.l .p2{background:#f1f5f9;border-color:#e2e8f0}
+.d .bd{border-color:#334155!important}.l .bd{border-color:#e2e8f0!important}
+.d .b2{background:#0f172a!important}.l .b2{background:#f1f5f9!important}
+.d .inp{background:#0f172a;border-color:#334155;color:#f1f5f9}
+.l .inp{background:#ffffff;border-color:#e2e8f0;color:#0f172a}
+.d .inp:focus{border-color:#22D3EE;background:#0f172a}
+.l .inp:focus{border-color:#22D3EE;background:#ffffff}
+.d .inp::placeholder{color:#475569}
+.l .inp::placeholder{color:#94a3b8}
+.d .inp:disabled{background:#1e293b;color:#475569;border-color:#334155}
+.l .inp:disabled{background:#f8fafc;color:#94a3b8;border-color:#e2e8f0}
+
+/* ── Header ── */
+.hdr{height:48px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 14px;border-bottom:1px solid;flex-shrink:0;position:relative}
+.hdr-left{display:flex;align-items:center;gap:10px}
+.hdr-center{display:flex;align-items:center;justify-content:center}
+.hdr-right{display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.logo{width:26px;height:26px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand{font-size:13px;font-weight:500}.brand b{color:#22D3EE;font-weight:500}
+.srch{width:280px;position:relative}
+.srch input{width:100%;border-radius:8px;padding:6px 28px 6px 10px;font-size:12px;outline:none;font-family:inherit;border:1px solid}
+.d .srch input{background:#334155;border-color:#475569;color:#f1f5f9}
+.l .srch input{background:#f1f5f9;border-color:#e2e8f0;color:#0f172a}
+.si2{position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none}
+.lang{display:flex;border-radius:6px;overflow:hidden;border:1px solid}
+.lb{padding:3px 7px;font-size:11px;cursor:pointer}
+.d .lb{color:#94a3b8}.l .lb{color:#64748b}
+.lb.on{background:#22D3EE;color:#0f172a;font-weight:500}
+.hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid}
+
+/* ── Avatar button in header ── */
+.hav-wrap{position:relative}
+.hav{width:28px;height:28px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#0f172a;cursor:pointer;border:2px solid #22D3EE;overflow:hidden;flex-shrink:0;transition:opacity 0.15s}
+.hav:hover{opacity:0.85}
+.hav img{width:100%;height:100%;object-fit:cover}
+
+/* ── Avatar dropdown ── */
+.av-drop{position:absolute;top:calc(100% + 6px);right:0;width:190px;border-radius:10px;border:1px solid;padding:4px;z-index:200;display:none;flex-direction:column;gap:1px}
+.d .av-drop{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.l .av-drop{background:#ffffff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+.av-drop.open{display:flex}
+.av-drop-user{padding:8px 10px 8px;border-bottom:1px solid;margin-bottom:3px}
+.d .av-drop-user{border-color:#334155}
+.l .av-drop-user{border-color:#e2e8f0}
+.av-drop-name{font-size:12px;font-weight:500}
+.av-drop-email{font-size:10px;margin-top:1px}
+.av-drop-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:12px;border:none;background:transparent;width:100%;text-align:start;font-family:inherit}
+.d .av-drop-item{color:#94a3b8}
+.l .av-drop-item{color:#64748b}
+.d .av-drop-item:hover{background:#334155;color:#f1f5f9}
+.l .av-drop-item:hover{background:#f1f5f9;color:#0f172a}
+.av-drop-item.active-page{color:#22D3EE!important}
+.d .av-drop-item.active-page svg{stroke:#22D3EE}
+.l .av-drop-item.active-page svg{stroke:#22D3EE}
+.d .av-drop-item svg{stroke:#475569;transition:stroke 0.15s}
+.l .av-drop-item svg{stroke:#94a3b8;transition:stroke 0.15s}
+.av-drop-item.danger{color:#f87171!important}
+.av-drop-item.danger svg{stroke:#f87171!important}
+.d .av-drop-item.danger:hover{background:rgba(248,113,113,0.08)}
+.l .av-drop-item.danger:hover{background:rgba(248,113,113,0.06)}
+.av-drop-divider{height:1px;margin:3px 0}
+.d .av-drop-divider{background:#334155}
+.l .av-drop-divider{background:#e2e8f0}
+
+/* ── Sidebar ── */
+.body{display:flex;flex:1;min-height:0}
+.sb{width:46px;display:flex;flex-direction:column;padding:8px 0;border-inline:1px solid;transition:width 0.2s ease;overflow:hidden;flex-shrink:0}
+.sb.open{width:164px}
+.sbt{display:flex;align-items:center;justify-content:center;width:46px;height:38px;margin:0 0 8px 0;border-radius:8px;cursor:pointer;border:0;background:transparent;flex-shrink:0}
+.sbt svg{flex-shrink:0}
+.d .sbt svg{stroke:#475569}.l .sbt svg{stroke:#94a3b8}
+.sbt:hover svg{stroke:#94a3b8!important}
+.sg,.sbm,.sbb{display:flex;flex-direction:column;gap:2px}
+.sbm{margin:auto 0}
+.ni{display:flex;align-items:center;width:46px;height:38px;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden;border:0;background:transparent;flex-shrink:0}
+.sb.open .ni{width:100%;border-radius:6px}
+.ni:hover svg{stroke:#94a3b8!important}
+.ni:hover .nl{color:#94a3b8!important}
+.ni .icon-wrap{width:46px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ni svg{flex-shrink:0;transition:stroke 0.15s;display:block}
+.d .ni svg{stroke:#475569}.l .ni svg{stroke:#64748b}
+.ni.on svg{stroke:#22D3EE!important}
+.nl{font-size:12px;font-weight:500;opacity:0;transition:opacity 0.15s,color 0.15s;white-space:nowrap;margin-left:8px}
+.d .nl{color:#475569}.l .nl{color:#64748b}
+.ni.on .nl{color:#22D3EE!important}
+.sb.open .nl{opacity:1}
+
+/* ── Main scroll area ── */
+.main{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:0;min-width:0}
+
+/* ── Page title ── */
+.pg-title{font-size:20px;font-weight:500;margin-bottom:16px}
+
+/* ── Three-column settings grid ── */
+.secs-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:14px;align-items:start}
+
+/* ── Settings section card ── */
+.sec{border-radius:12px;border:1px solid;padding:20px}
+.sec-hdr{display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid}
+.d .sec-hdr{border-color:#334155}
+.l .sec-hdr{border-color:#e2e8f0}
+.sec-title{font-size:14px;font-weight:500}
+.sec-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sec-icon.cyan{background:rgba(34,211,238,0.1)}
+.sec-icon.cyan svg{stroke:#22D3EE}
+.sec-icon.purple{background:rgba(167,139,250,0.1)}
+.sec-icon.purple svg{stroke:#a78bfa}
+.sec-icon.amber{background:rgba(251,191,36,0.1)}
+.sec-icon.amber svg{stroke:#FBBF24}
+
+/* ── Form fields ── */
+.field-row{display:flex;gap:14px;margin-bottom:14px}
+.field-row:last-child{margin-bottom:0}
+.field{display:flex;flex-direction:column;gap:5px;flex:1}
+.field-full{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.field-label{font-size:11px;font-weight:500}
+.field-hint{font-size:10px;margin-top:3px}
+.finp{width:100%;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit;border:1px solid;transition:border-color 0.15s}
+.finp.error{border-color:#f87171!important}
+.err-msg{font-size:10px;color:#f87171;margin-top:3px;display:none}
+.err-msg.show{display:block}
+
+/* ── Email verified badge ── */
+.email-row{display:flex;gap:8px;align-items:flex-start}
+.email-row .finp-wrap{flex:1;display:flex;flex-direction:column;gap:3px}
+.email-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500;white-space:nowrap;margin-top:9px;flex-shrink:0}
+.email-badge.verified{background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);color:#4ade80}
+.email-badge.pending{background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);color:#FBBF24}
+.email-badge.hidden{display:none}
+
+/* ── Avatar upload ── */
+.avatar-section{display:flex;align-items:center;gap:16px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid}
+.d .avatar-section{border-color:#334155}
+.l .avatar-section{border-color:#e2e8f0}
+.av-big{width:64px;height:64px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;color:#0f172a;flex-shrink:0;overflow:hidden;border:2px solid}
+.d .av-big{border-color:#334155}
+.l .av-big{border-color:#e2e8f0}
+.av-big img{width:100%;height:100%;object-fit:cover}
+.av-info{display:flex;flex-direction:column;gap:6px}
+.av-btns{display:flex;gap:8px}
+.av-btn{padding:5px 12px;border-radius:7px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid;transition:opacity 0.15s}
+.av-btn:hover{opacity:0.8}
+.av-btn.upload{background:#22D3EE;color:#0f172a;border-color:#22D3EE}
+.d .av-btn.remove{background:transparent;color:#94a3b8;border-color:#334155}
+.l .av-btn.remove{background:transparent;color:#64748b;border-color:#e2e8f0}
+.av-hint{font-size:10px}
+#avatarInput{display:none}
+
+/* ── Theme toggle ── */
+.theme-opts{display:flex;flex-direction:column;gap:10px}
+.theme-opt{flex:1;border-radius:10px;border:2px solid;padding:14px 12px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:border-color 0.15s,background 0.15s}
+.d .theme-opt{border-color:#334155}
+.l .theme-opt{border-color:#e2e8f0}
+.theme-opt.sel{border-color:#22D3EE!important}
+.d .theme-opt:hover:not(.sel){border-color:#475569}
+.l .theme-opt:hover:not(.sel){border-color:#94a3b8}
+.theme-preview{width:36px;height:36px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px}
+.theme-preview.dark-prev{background:#0f172a;border:1px solid #334155}
+.theme-preview.light-prev{background:#f8fafc;border:1px solid #e2e8f0}
+.theme-opt-name{font-size:13px;font-weight:500}
+.theme-opt-sub{font-size:10px;margin-top:2px}
+.theme-radio{width:14px;height:14px;border-radius:50%;border:2px solid;margin-left:auto;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.d .theme-radio{border-color:#475569}
+.l .theme-radio{border-color:#94a3b8}
+.theme-opt.sel .theme-radio{border-color:#22D3EE}
+.theme-radio-dot{width:6px;height:6px;border-radius:50%;background:#22D3EE;display:none}
+.theme-opt.sel .theme-radio-dot{display:block}
+
+/* ── Language toggle ── */
+.lang-opts{display:flex;flex-direction:column;gap:10px}
+.lang-opt{flex:1;border-radius:10px;border:2px solid;padding:14px 12px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:border-color 0.15s}
+.d .lang-opt{border-color:#334155}
+.l .lang-opt{border-color:#e2e8f0}
+.lang-opt.sel{border-color:#22D3EE!important}
+.d .lang-opt:hover:not(.sel){border-color:#475569}
+.l .lang-opt:hover:not(.sel){border-color:#94a3b8}
+.lang-flag{width:36px;height:36px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px}
+.d .lang-flag{background:rgba(255,255,255,0.05)}
+.l .lang-flag{background:rgba(0,0,0,0.04)}
+.lang-opt-name{font-size:13px;font-weight:500}
+.lang-opt-sub{font-size:10px;margin-top:2px}
+.lang-radio{width:14px;height:14px;border-radius:50%;border:2px solid;margin-left:auto;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.d .lang-radio{border-color:#475569}
+.l .lang-radio{border-color:#94a3b8}
+.lang-opt.sel .lang-radio{border-color:#22D3EE}
+.lang-radio-dot{width:6px;height:6px;border-radius:50%;background:#22D3EE;display:none}
+.lang-opt.sel .lang-radio-dot{display:block}
+
+/* ── Save button & footer row ── */
+.sec-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid}
+.d .sec-footer{border-color:#334155}
+.l .sec-footer{border-color:#e2e8f0}
+.btn-save{padding:7px 18px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;border:none;background:#22D3EE;color:#0f172a;transition:opacity 0.15s}
+.btn-save:hover{opacity:0.85}
+.btn-save:disabled{opacity:0.4;cursor:default}
+.save-status{font-size:11px;display:flex;align-items:center;gap:5px;opacity:0;transition:opacity 0.3s}
+.save-status.show{opacity:1}
+.save-status.ok{color:#4ade80}
+.save-status.err{color:#f87171}
+
+/* ── Ctrl bar (theme switcher for mockup) ── */
+.ctrl{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid;align-items:center;flex-shrink:0}
+.tcb{padding:4px 12px;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid}
+.tcb.on{background:#22D3EE!important;color:#0f172a!important;border-color:#22D3EE!important}
+
+/* ── Overlay for closing dropdown ── */
+.overlay{position:fixed;inset:0;z-index:100;display:none}
+.overlay.open{display:block}
+
+/* ────────────────────────────────────────────────────────
+   TABLET ADAPTATIONS
+   Landscape (≥901px): 3-col grid kept, search narrower
+   Portrait  (≤900px): grid collapses to 1 col, avatar
+   section stacks vertically, padding tightened
+───────────────────────────────────────────────────────── */
+
+/* Touch target bump — applies at all tablet sizes */
+.ni,.sbt,.hico,.hav,.av-btn,.btn-save,.lb{min-height:38px}
+.ni,.sbt{min-width:38px}
+
+/* Landscape tablet baseline: narrow search slightly */
+.srch{width:200px}
+
+/* Portrait tablet */
+@media (max-width:900px){
+  /* Main padding tighter */
+  .main{padding:14px 14px}
+
+  /* Three-col grid → single column */
+  .secs-grid{grid-template-columns:1fr}
+
+  /* Avatar section: stack avatar + buttons vertically */
+  .avatar-section{flex-direction:column;align-items:flex-start;gap:12px}
+
+  /* Email badge wraps below input on narrow width */
+  .email-row{flex-direction:column;gap:4px}
+  .email-badge{margin-top:0;align-self:flex-start}
+
+  /* Theme and lang options: keep vertical (already column),
+     but make cards slightly more compact */
+  .theme-opt,.lang-opt{padding:12px 10px}
+
+  /* Hide search on portrait to save header space */
+  .hdr-center{display:none}
+
+  /* Sec footer: save status + button side by side, full-width button */
+  .sec-footer{flex-direction:row;justify-content:flex-end}
+}
+</style>
+</head>
+<body>
+
+<div class="shell d" id="shell">
+
+  <!-- HEADER -->
+  <div class="hdr p1 bd">
+    <div class="hdr-left">
+      <div class="logo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 4h-10l6 8l-6 8h10"/></svg>
+      </div>
+      <div class="brand t1">Math <b>With Love</b></div>
+    </div>
+    <div class="hdr-center">
+      <div class="srch">
+        <input id="searchInput" placeholder="Поиск тем, формул...">
+        <svg class="t3 si2" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="lang bd">
+        <span class="lb on" id="lbRu" data-lang="ru">RU</span>
+        <span class="lb" id="lbHe" data-lang="he">HE</span>
+      </div>
+      <div class="hico bd t2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg>
+      </div>
+      <!-- Avatar with dropdown -->
+      <div class="hav-wrap">
+        <div class="hav" id="havBtn" title="Аккаунт">
+          <span id="havInitials">ИГ</span>
+        </div>
+        <div class="av-drop p1" id="avDrop">
+          <div class="av-drop-user">
+            <div class="av-drop-name t1" id="dropName">Игаль</div>
+            <div class="av-drop-email t2" id="dropEmail">igal@example.com</div>
+          </div>
+          <button class="av-drop-item active-page" id="dropSettings">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51v.17a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1h-.17a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span data-i18n="navSettings">Настройки</span>
+          </button>
+          <div class="av-drop-divider"></div>
+          <button class="av-drop-item danger" id="dropLogout">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 8v-2a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2"/><path d="M9 12h12l-3-3"/><path d="M18 15l3-3"/></svg>
+            <span data-i18n="logout">Выйти</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOCKUP CTRL BAR -->
+  <div class="ctrl p2 bd">
+    <button class="tcb on" id="bdBtn">🌙 Тёмная</button>
+    <button class="tcb" id="blBtn">☀ Светлая</button>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- SIDEBAR -->
+    <div class="sb p1 bd" id="sb">
+      <div class="sbt" id="sbtBtn">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+      </div>
+      <div class="sg">
+        <div class="ni" id="niDashboard">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></svg></span>
+          <span class="nl" data-i18n="navDashboard">Дашборд</span>
+        </div>
+        <div class="ni" id="niModules">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 5-10 5L2 8z"/><path d="M7 11.5v4.5a5 5 0 0 0 10 0v-4.5"/><line x1="22" y1="8" x2="22" y2="14"/></svg></span>
+          <span class="nl" data-i18n="navModules">Модули</span>
+        </div>
+        <div class="ni" id="niProgress">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="3" y2="21"/><line x1="21" y1="21" x2="3" y2="21"/><path d="M7 17v-3"/><path d="M11 17v-6"/><path d="M15 17v-9"/></svg></span>
+          <span class="nl" data-i18n="navProgress">Прогресс</span>
+        </div>
+        <div class="ni" id="niContent">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M10 13l-1 4 4-1 5-5-3-3z"/><path d="M13.5 10.5l3 3"/></svg></span>
+          <span class="nl" data-i18n="navContent">Редактор</span>
+        </div>
+      </div>
+      <div class="sbm">
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l18 0"/><path d="M12 3l0 18"/><path d="M16.5 4.5l3 3"/><path d="M19.5 4.5l-3 3"/><path d="M6 4l0 4"/><path d="M4 6l4 0"/><path d="M18 16l.01 0"/><path d="M18 20l.01 0"/><path d="M4 18l4 0"/></svg></span>
+          <span class="nl" data-i18n="navFormulas">Формулы</span>
+        </div>
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg></span>
+          <span class="nl" data-i18n="navLab">Лаборатория</span>
+        </div>
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21l8 0"/><path d="M12 17l0 4"/><path d="M7 4l10 0"/><path d="M17 4v8a5 5 0 0 1-10 0v-8"/><path d="M5 9a2 2 0 0 1-2-2v-1a2 2 0 0 1 2-2"/><path d="M19 9a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2"/></svg></span>
+          <span class="nl" data-i18n="navAchievements">Достижения</span>
+        </div>
+      </div>
+      <div class="sbb">
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="17" x2="12.01" y2="17"/><path d="M12 13.5a1.5 1.5 0 0 1 1-1.5a2.6 2.6 0 1 0-3-4"/></svg></span>
+          <span class="nl" data-i18n="navHelp">Помощь</span>
+        </div>
+        <!-- Settings — active -->
+        <div class="ni on" id="niSettings">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51v.17a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1h-.17a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+          <span class="nl" data-i18n="navSettings">Настройки</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main" id="main">
+      <div class="pg-title t1" data-i18n="pageTitle">Настройки</div>
+
+      <div class="secs-grid">
+      <!-- ── SECTION 1: Profile ── -->
+      <div class="sec p1 bd">
+        <div class="sec-hdr">
+          <div class="sec-icon cyan">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+          </div>
+          <span class="sec-title t1" data-i18n="secProfile">Профиль</span>
+        </div>
+
+        <!-- Avatar -->
+        <div class="avatar-section">
+          <div class="av-big" id="avBig">
+            <span id="avBigInitials">ИГ</span>
+          </div>
+          <div class="av-info">
+            <div class="av-btns">
+              <button class="av-btn upload" id="avUploadBtn" data-i18n="avUpload">Загрузить фото</button>
+              <button class="av-btn remove" id="avRemoveBtn" data-i18n="avRemove" style="display:none">Удалить</button>
+            </div>
+            <div class="av-hint t2" data-i18n="avHint">JPG или PNG, не более 2 МБ</div>
+          </div>
+          <input type="file" id="avatarInput" accept="image/jpeg,image/png">
+        </div>
+
+        <!-- First name + Last name -->
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label t2" data-i18n="labelFirstName">Имя</label>
+            <input class="finp inp" id="firstName" type="text" placeholder="Игаль" value="Игаль">
+          </div>
+          <div class="field">
+            <label class="field-label t2" data-i18n="labelLastName">Фамилия</label>
+            <input class="finp inp" id="lastName" type="text" placeholder="Бен-Тов" value="Бен-Тов">
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="field-full">
+          <label class="field-label t2" data-i18n="labelEmail">Email</label>
+          <div class="email-row">
+            <div class="finp-wrap">
+              <input class="finp inp" id="emailInput" type="email" placeholder="email@example.com" value="igal@example.com">
+              <span class="err-msg" id="emailErr" data-i18n="emailErrFmt">Введите корректный email</span>
+            </div>
+            <span class="email-badge verified hidden" id="emailBadge">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l10-10"/></svg>
+              <span id="emailBadgeText" data-i18n="emailVerified">Подтверждён</span>
+            </span>
+          </div>
+          <span class="field-hint t3" data-i18n="emailHint">После изменения потребуется подтверждение по ссылке из письма</span>
+        </div>
+
+        <div class="sec-footer">
+          <span class="save-status" id="profileStatus">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l10-10"/></svg>
+            <span data-i18n="saved">Сохранено</span>
+          </span>
+          <button class="btn-save" id="profileSave" data-i18n="btnSave">Сохранить</button>
+        </div>
+      </div>
+
+      <!-- ── SECTION 2: Appearance ── -->
+      <div class="sec p1 bd">
+        <div class="sec-hdr">
+          <div class="sec-icon purple">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M6.34 17.66l-1.41 1.41"/><path d="M19.07 4.93l-1.41 1.41"/></svg>
+          </div>
+          <span class="sec-title t1" data-i18n="secAppearance">Внешний вид</span>
+        </div>
+
+        <div class="theme-opts">
+          <!-- Dark -->
+          <div class="theme-opt sel" id="themeOptD" data-theme="d">
+            <div class="theme-preview dark-prev">🌙</div>
+            <div>
+              <div class="theme-opt-name t1" data-i18n="themeDark">Тёмная</div>
+              <div class="theme-opt-sub t2" data-i18n="themeDarkSub">Меньше нагрузки на глаза</div>
+            </div>
+            <div class="theme-radio"><div class="theme-radio-dot"></div></div>
+          </div>
+          <!-- Light -->
+          <div class="theme-opt" id="themeOptL" data-theme="l">
+            <div class="theme-preview light-prev">☀️</div>
+            <div>
+              <div class="theme-opt-name t1" data-i18n="themeLight">Светлая</div>
+              <div class="theme-opt-sub t2" data-i18n="themeLightSub">Лучше при ярком освещении</div>
+            </div>
+            <div class="theme-radio"><div class="theme-radio-dot"></div></div>
+          </div>
+        </div>
+
+        <div class="sec-footer">
+          <span class="save-status" id="appearanceStatus">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l10-10"/></svg>
+            <span data-i18n="saved">Сохранено</span>
+          </span>
+          <button class="btn-save" id="appearanceSave" data-i18n="btnSave">Сохранить</button>
+        </div>
+      </div>
+
+      <!-- ── SECTION 3: Language ── -->
+      <div class="sec p1 bd">
+        <div class="sec-hdr">
+          <div class="sec-icon amber">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h7"/><path d="M9 3v2c0 4.418-2.239 8-5 8"/><path d="M5 9c0 2.144 2.952 3.908 6.7 4"/><path d="M12 20l4-9l4 9"/><path d="M19.1 18h-6.2"/></svg>
+          </div>
+          <span class="sec-title t1" data-i18n="secLanguage">Язык интерфейса</span>
+        </div>
+
+        <div class="lang-opts">
+          <!-- Russian -->
+          <div class="lang-opt sel" id="langOptRu" data-lang="ru">
+            <div class="lang-flag">🇷🇺</div>
+            <div>
+              <div class="lang-opt-name t1" data-i18n="langRu">Русский</div>
+              <div class="lang-opt-sub t2" data-i18n="langRuSub">Russian</div>
+            </div>
+            <div class="lang-radio"><div class="lang-radio-dot"></div></div>
+          </div>
+          <!-- Hebrew -->
+          <div class="lang-opt" id="langOptHe" data-lang="he">
+            <div class="lang-flag">🇮🇱</div>
+            <div>
+              <div class="lang-opt-name t1" data-i18n="langHe">Иврит</div>
+              <div class="lang-opt-sub t2" data-i18n="langHeSub">עברית</div>
+            </div>
+            <div class="lang-radio"><div class="lang-radio-dot"></div></div>
+          </div>
+        </div>
+
+        <div class="sec-footer">
+          <span class="save-status" id="languageStatus">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5l10-10"/></svg>
+            <span data-i18n="saved">Сохранено</span>
+          </span>
+          <button class="btn-save" id="languageSave" data-i18n="btnSave">Сохранить</button>
+        </div>
+      </div>
+
+      </div><!-- /secs-grid -->
+    </div><!-- /main -->
+  </div><!-- /body -->
+</div><!-- /shell -->
+
+<!-- Overlay for closing dropdown -->
+<div class="overlay" id="overlay"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────
+var CM = 'd';       // current theme: 'd' | 'l'
+var CL = 'ru';      // current language: 'ru' | 'he'
+var sbOpen = false;
+var pendingTheme = 'd';   // selected (not yet saved) theme
+var pendingLang = 'ru';   // selected (not yet saved) lang
+var avatarDataUrl = null; // custom avatar base64 or null
+
+// ── i18n dictionary ──────────────────────────────────────────────────
+var TR = {
+  ru: {
+    navDashboard: 'Дашборд', navModules: 'Модули', navProgress: 'Прогресс',
+    navContent: 'Редактор', navFormulas: 'Формулы', navLab: 'Лаборатория',
+    navAchievements: 'Достижения', navHelp: 'Помощь', navSettings: 'Настройки',
+    logout: 'Выйти',
+    pageTitle: 'Настройки',
+    secProfile: 'Профиль', secAppearance: 'Внешний вид', secLanguage: 'Язык интерфейса',
+    labelFirstName: 'Имя', labelLastName: 'Фамилия', labelEmail: 'Email',
+    avUpload: 'Загрузить фото', avRemove: 'Удалить', avHint: 'JPG или PNG, не более 2 МБ',
+    emailHint: 'После изменения потребуется подтверждение по ссылке из письма',
+    emailErrFmt: 'Введите корректный email',
+    emailVerified: 'Подтверждён', emailPending: 'Письмо отправлено',
+    themeDark: 'Тёмная', themeDarkSub: 'Меньше нагрузки на глаза',
+    themeLight: 'Светлая', themeLightSub: 'Лучше при ярком освещении',
+    langRu: 'Русский', langRuSub: 'Russian', langHe: 'Иврит', langHeSub: 'עברית',
+    btnSave: 'Сохранить', saved: 'Сохранено'
+  },
+  he: {
+    navDashboard: 'לוח בקרה', navModules: 'מודולים', navProgress: 'התקדמות',
+    navContent: 'עורך', navFormulas: 'נוסחאות', navLab: 'מעבדה',
+    navAchievements: 'הישגים', navHelp: 'עזרה', navSettings: 'הגדרות',
+    logout: 'התנתק',
+    pageTitle: 'הגדרות',
+    secProfile: 'פרופיל', secAppearance: 'מראה', secLanguage: 'שפת ממשק',
+    labelFirstName: 'שם פרטי', labelLastName: 'שם משפחה', labelEmail: 'דוא"ל',
+    avUpload: 'העלאת תמונה', avRemove: 'הסר', avHint: 'JPG או PNG, עד 2 MB',
+    emailHint: 'לאחר שינוי יידרש אישור דרך הקישור שנשלח למייל',
+    emailErrFmt: 'הזן כתובת דוא"ל תקינה',
+    emailVerified: 'מאומת', emailPending: 'המייל נשלח',
+    themeDark: 'כהה', themeDarkSub: 'פחות עומס על העיניים',
+    themeLight: 'בהיר', themeLightSub: 'טוב יותר בתאורה בהירה',
+    langRu: 'רוסית', langRuSub: 'Русский', langHe: 'עברית', langHeSub: 'Hebrew',
+    btnSave: 'שמור', saved: 'נשמר'
+  }
+};
+
+// ── Apply i18n ────────────────────────────────────────────────────────
+function applyI18n() {
+  var t = TR[CL];
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var k = el.getAttribute('data-i18n');
+    if (t[k] !== undefined) el.textContent = t[k];
+  });
+  var si = document.getElementById('searchInput');
+  if (si) si.placeholder = CL === 'he' ? 'חיפוש נושאים, נוסחאות...' : 'Поиск тем, формул...';
+  // Update email badge text based on current state
+  syncEmailBadge();
+}
+
+// ── Theme ────────────────────────────────────────────────────────────
+function setMode(m) {
+  CM = m;
+  pendingTheme = m;
+  document.getElementById('shell').className = 'shell ' + m;
+  document.getElementById('bdBtn').className = 'tcb' + (m === 'd' ? ' on' : '');
+  document.getElementById('blBtn').className = 'tcb' + (m === 'l' ? ' on' : '');
+  // Sync theme option cards
+  document.getElementById('themeOptD').classList.toggle('sel', m === 'd');
+  document.getElementById('themeOptL').classList.toggle('sel', m === 'l');
+}
+
+// ── Language ─────────────────────────────────────────────────────────
+function setLang(lang) {
+  CL = lang;
+  pendingLang = lang;
+  document.getElementById('lbRu').className = 'lb' + (lang === 'ru' ? ' on' : '');
+  document.getElementById('lbHe').className = 'lb' + (lang === 'he' ? ' on' : '');
+  document.getElementById('shell').setAttribute('dir', lang === 'he' ? 'rtl' : 'ltr');
+  // Sync language option cards
+  document.getElementById('langOptRu').classList.toggle('sel', lang === 'ru');
+  document.getElementById('langOptHe').classList.toggle('sel', lang === 'he');
+  applyI18n();
+}
+
+// ── Sidebar ──────────────────────────────────────────────────────────
+function toggleSb() {
+  sbOpen = !sbOpen;
+  document.getElementById('sb').className = 'sb p1 bd' + (sbOpen ? ' open' : '');
+}
+
+// ── Avatar dropdown ──────────────────────────────────────────────────
+function openDrop() {
+  document.getElementById('avDrop').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+function closeDrop() {
+  document.getElementById('avDrop').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+function toggleDrop() {
+  var drop = document.getElementById('avDrop');
+  if (drop.classList.contains('open')) { closeDrop(); } else { openDrop(); }
+}
+
+// ── Avatar upload ────────────────────────────────────────────────────
+function handleAvatarFile(file) {
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    alert(CL === 'he' ? 'הקובץ גדול מדי. מקסימום 2 MB.' : 'Файл слишком большой. Максимум 2 МБ.');
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    avatarDataUrl = e.target.result;
+    // Update all avatar displays
+    setAvatarImg(avatarDataUrl);
+    document.getElementById('avRemoveBtn').style.display = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function setAvatarImg(src) {
+  var avBig = document.getElementById('avBig');
+  var hav = document.getElementById('havBtn');
+  if (src) {
+    // big avatar
+    avBig.innerHTML = '<img src="' + src + '" alt="avatar">';
+    // header avatar
+    document.getElementById('havInitials').style.display = 'none';
+    var img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%';
+    hav.innerHTML = '';
+    hav.appendChild(img);
+  } else {
+    // Restore initials
+    var ini = getInitials();
+    avBig.innerHTML = '<span id="avBigInitials">' + ini + '</span>';
+    hav.innerHTML = '<span id="havInitials">' + ini + '</span>';
+  }
+}
+
+function removeAvatar() {
+  avatarDataUrl = null;
+  document.getElementById('avRemoveBtn').style.display = 'none';
+  setAvatarImg(null);
+  document.getElementById('avatarInput').value = '';
+}
+
+function getInitials() {
+  var fn = document.getElementById('firstName').value.trim();
+  var ln = document.getElementById('lastName').value.trim();
+  var a = fn.charAt(0) || '';
+  var b = ln.charAt(0) || '';
+  return (a + b).toUpperCase() || 'МВ';
+}
+
+// ── Email validation & badge ─────────────────────────────────────────
+var originalEmail = 'igal@example.com';
+var emailState = 'verified'; // 'verified' | 'pending' | 'none'
+
+function isValidEmail(val) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
+}
+
+function syncEmailBadge() {
+  var badge = document.getElementById('emailBadge');
+  var badgeText = document.getElementById('emailBadgeText');
+  var t = TR[CL];
+  if (emailState === 'verified') {
+    badge.className = 'email-badge verified';
+    badgeText.textContent = t.emailVerified;
+  } else if (emailState === 'pending') {
+    badge.className = 'email-badge pending';
+    badgeText.textContent = t.emailPending;
+  } else {
+    badge.className = 'email-badge hidden';
+  }
+}
+
+function validateEmailField() {
+  var val = document.getElementById('emailInput').value;
+  var errEl = document.getElementById('emailErr');
+  var inp = document.getElementById('emailInput');
+  var ok = isValidEmail(val);
+  inp.classList.toggle('error', !ok && val.length > 0);
+  errEl.classList.toggle('show', !ok && val.length > 0);
+  return ok || val.length === 0;
+}
+
+// ── Show save status ──────────────────────────────────────────────────
+function showStatus(id, type) {
+  var el = document.getElementById(id);
+  el.className = 'save-status show ' + type;
+  setTimeout(function() { el.className = 'save-status ' + type; }, 2200);
+}
+
+// ── Save handlers ─────────────────────────────────────────────────────
+function saveProfile() {
+  var emailVal = document.getElementById('emailInput').value.trim();
+  // Validate email
+  if (emailVal.length > 0 && !isValidEmail(emailVal)) {
+    validateEmailField();
+    return;
+  }
+  // Check if email changed
+  if (emailVal !== originalEmail && isValidEmail(emailVal)) {
+    emailState = 'pending';
+    syncEmailBadge();
+  }
+  // Update initials if no custom avatar
+  if (!avatarDataUrl) {
+    var ini = getInitials();
+    var avBigIni = document.getElementById('avBigInitials');
+    if (avBigIni) avBigIni.textContent = ini;
+    var havIni = document.getElementById('havInitials');
+    if (havIni) havIni.textContent = ini;
+    document.getElementById('dropName').textContent =
+      (document.getElementById('firstName').value.trim() + ' ' +
+       document.getElementById('lastName').value.trim()).trim() || 'Пользователь';
+  }
+  showStatus('profileStatus', 'ok');
+}
+
+function saveAppearance() {
+  // Theme is already applied live — just confirm
+  showStatus('appearanceStatus', 'ok');
+}
+
+function saveLanguage() {
+  // Language is already applied live — just confirm
+  showStatus('languageStatus', 'ok');
+}
+
+// ── Logout (mockup) ───────────────────────────────────────────────────
+function doLogout() {
+  closeDrop();
+  alert(CL === 'he' ? 'יציאה מהחשבון (הדמיה)' : 'Выход из аккаунта (симуляция)');
+}
+
+// ── callFn dispatcher (Safari sandbox safe) ───────────────────────────
+function callFn(expr) {
+  var m;
+  if ((m = expr.match(/^(\w+)\(\)$/)))                { window[m[1]](); }
+  else if ((m = expr.match(/^(\w+)\('([^']*)'\)$/)))  { window[m[1]](m[2]); }
+  else if ((m = expr.match(/^(\w+)\((\d+)\)$/)))      { window[m[1]](parseInt(m[2])); }
+}
+
+// ── DOMContentLoaded ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+
+  // Sidebar toggle
+  document.getElementById('sbtBtn').addEventListener('click', toggleSb);
+
+  // Mockup theme ctrl bar
+  document.getElementById('bdBtn').addEventListener('click', function() { setMode('d'); });
+  document.getElementById('blBtn').addEventListener('click', function() { setMode('l'); });
+
+  // Header lang toggle
+  document.getElementById('lbRu').addEventListener('click', function() { setLang('ru'); });
+  document.getElementById('lbHe').addEventListener('click', function() { setLang('he'); });
+
+  // Avatar dropdown
+  document.getElementById('havBtn').addEventListener('click', function(e) {
+    e.stopPropagation();
+    toggleDrop();
+  });
+  document.getElementById('overlay').addEventListener('click', closeDrop);
+  document.getElementById('dropSettings').addEventListener('click', function() {
+    closeDrop();
+    // Already on settings page — no navigation needed
+  });
+  document.getElementById('dropLogout').addEventListener('click', doLogout);
+
+  // Avatar upload
+  document.getElementById('avUploadBtn').addEventListener('click', function() {
+    document.getElementById('avatarInput').click();
+  });
+  document.getElementById('avatarInput').addEventListener('change', function(e) {
+    handleAvatarFile(e.target.files[0]);
+  });
+  document.getElementById('avRemoveBtn').addEventListener('click', removeAvatar);
+
+  // Email validation on input
+  document.getElementById('emailInput').addEventListener('input', function() {
+    validateEmailField();
+    // Reset badge if user edits email back to original
+    if (this.value.trim() === originalEmail) {
+      emailState = 'verified';
+    } else {
+      emailState = 'none';
+    }
+    syncEmailBadge();
+  });
+
+  // Theme option cards
+  document.getElementById('themeOptD').addEventListener('click', function() {
+    pendingTheme = 'd';
+    setMode('d');
+  });
+  document.getElementById('themeOptL').addEventListener('click', function() {
+    pendingTheme = 'l';
+    setMode('l');
+  });
+
+  // Language option cards
+  document.getElementById('langOptRu').addEventListener('click', function() {
+    setLang('ru');
+  });
+  document.getElementById('langOptHe').addEventListener('click', function() {
+    setLang('he');
+  });
+
+  // Save buttons
+  document.getElementById('profileSave').addEventListener('click', saveProfile);
+  document.getElementById('appearanceSave').addEventListener('click', saveAppearance);
+  document.getElementById('languageSave').addEventListener('click', saveLanguage);
+
+  // Init badge
+  emailState = 'verified';
+  syncEmailBadge();
+
+  // Initial i18n
+  applyI18n();
+});
+</script>
+</body>
+</html>
