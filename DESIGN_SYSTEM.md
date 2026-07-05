@@ -967,7 +967,9 @@ Score progress bar: 8px height, cyan-400 fill, animated 0.8s.
 
 ## 15. Atom Editor (Content Constructor)
 
-**Status: draft, mid-iteration — not yet approved.** Author-facing. Scope: desktop + tablet only.
+**Status: draft, mid-iteration — not yet approved.** Author-facing. Scope: desktop only.
+
+**Desktop-only rule (applies to all content constructor screens §15–§18):** The content constructor is a professional authoring tool designed exclusively for desktop use. No tablet or mobile versions are planned or will be created.
 
 Access: same persistent shell as Dashboard — header + collapsible left sidebar (§10a).
 
@@ -1373,6 +1375,107 @@ Logical CSS properties throughout (`padding-inline-*`, `border-inline-*`, `margi
 
 ---
 
+## 19. Shalon Manager (Content Constructor)
+
+**Status: spec approved, mockup pending (`mwl_shalon_manager.html`).** Author-facing. Scope: desktop only.
+Full spec: `MWL_CONTENT_ARCHITECTURE.md §8`.
+
+### Concept
+
+Fifth content constructor screen. Manages the top-level content hierarchy:
+shalon → themes → modules. Atoms are managed in Atom Editor and Graph Map.
+
+**Key rule:** atoms are global — they do not belong to a specific shalon or theme.
+Modules reference atoms via `prerequisite_edges`. Duplicating a shalon copies structure only;
+atoms are shared (editing an atom affects all shalons that reference it).
+
+### Layout
+
+```
+[Sidebar §22] | [Ctrl-bar] | [Tree panel ~300px] | [Detail panel]
+```
+
+Background zones (same as other constructor screens §1):
+- Tree panel: `#13233a` dark / `#f3fbfc` light
+- Detail panel: `#0b1322` dark / `#e2f3f7` light
+
+### Tree panel
+
+Hierarchical tree: shalon → themes (ordered) → modules (ordered).
+
+```
+Row: [chevron] [icon] [name RU or HE] [↑↓ buttons] [+ button]
+  — chevron hidden if no children
+  — + button creates child of this node (theme inside shalon, module inside theme)
+  — ↑↓ buttons reorder within same parent level
+  — double-click → inline edit of RU name
+  — single click → load detail panel
+```
+
+Drag-and-drop (same pattern as Groups Constructor §17):
+- Drop onto node: reparent (with ancestor guard)
+- Drop between nodes: reorder at that position
+- Visual: drag source opacity 0.4, drop target cyan outline
+
+### Ctrl-bar actions
+
+```
+[+ Новый шейлон] [Переименовать] [Дублировать] [RU→HE translate]
+```
+
+- **Новый шейлон**: creates top-level shalon, prompts for RU name inline
+- **Переименовать**: renames selected shalon (or inline double-click)
+- **Дублировать**: copies shalon structure (themes + modules) + shared atom references.
+  New shalon gets suffix « (копия)». Prompt confirms before executing.
+- **Batch translate**: same pattern as Groups Constructor — modal with progress bar,
+  translates all shalon/theme/module names RU↔HE via Anthropic API
+
+### Detail panel
+
+Shown on single-click of any tree node.
+
+```
+For shalon:
+  — RU name (input)
+  — HE name (input)
+  — Description (textarea, optional)
+
+For theme:
+  — RU name (input, synced with inline edit)
+  — HE name (input)
+  — order: shown as read-only (managed via drag-and-drop / ↑↓)
+
+For module:
+  — RU name (input)
+  — HE name (input)
+  — order: shown as read-only
+  — [Открыть редактор атомов] button
+  — [Открыть граф] button
+```
+
+### Navigation to other screens
+
+Click on module → popup dialog:
+```
+┌─────────────────────────────────┐
+│  Перейти в                      │
+│  [Редактор атомов]  [Граф]      │
+│                     [Отмена]    │
+└─────────────────────────────────┘
+```
+
+### Order storage
+
+`order` field (integer) on themes and modules. Open question: column on `topics` table
+or separate `shalon_themes` join table — not finalized. See MWL_CONTENT_ARCHITECTURE.md §9.
+
+### i18n / RTL
+
+Full RU/HE via TR{} dictionary. Tree shows RU or HE names based on active language.
+Inline edit always edits the active language field.
+
+---
+
 ## 20. Settings Page (`/settings`)
 
 Student-facing settings page. Three independent sections, each with its own Save button.
@@ -1619,7 +1722,30 @@ Right-side order (LTR): `[lang-btn]` `[hico…]` `[avatar]`
 .sb.open .nl { opacity: 1; }
 ```
 
-### Active state in Next.js
+### Student shell nav items
+
+| Позиция | Название RU | Название HE | Маршрут | Иконка |
+|---|---|---|---|---|
+| 1 | Главная | דף הבית | /dashboard | home |
+| 2 | Курсы | קורסים | /courses | graduation cap (шапка) |
+| 3 | Статус | סטטוס | /status | map-pin |
+| 4 | Достижения | הישגים | /achievements | trophy |
+| — | Формулы | נוסחאות | /formulas | Σ (Tabler: ti-sum) |
+| — | Лаборатория | מעבדה | /lab | atom |
+| — | Помощь | עזרה | AI Chat | question-circle |
+| — | Настройки | הגדרות | /settings | settings gear |
+
+**Обоснование порядка**:
+- «Главная» — точка входа после логина: приветствие, кнопка «Продолжить», статистика (XP, серия, пройдено), карточка Йоси.
+- «Курсы» — основная учебная навигация: 3-уровневый каталог (шейлон → тема → лабиринт модуля).
+- «Статус» — личное пространство: текущее положение в лабиринте, список открытых/завершённых тем; поддерживает параллельное обучение по нескольким темам.
+- «Достижения» — исторический архив: бейджи, серии, XP.
+
+**Иконка map-pin для «Статус»**: интуитивная метафора «где я сейчас» — положение на маршруте/карте. Не конфликтует с другими иконками системы.
+
+**Mobile bottom nav (5 tabs)**: Главная / Курсы / Статус / Йоси / Профиль
+
+**Retrofit**: применить во всех существующих макетах при следующем касании (dashboard, settings, achievements, courses).
 
 ```tsx
 const pathname = usePathname()
@@ -1718,6 +1844,69 @@ Mobile: sheet снизу (§23). Desktop/tablet: centered modal (§4).
 
 ---
 
+## 25. Courses Theme Page — /courses/[themeId] (уровень 2)
+
+Файлы: `mwl_courses_theme_desktop.html`, `mwl_courses_theme_tablet.html`, `mwl_courses_theme_mobile.html`.
+Статус: **макеты готовы** (все три breakpoint, оба theme, RU/HE, RTL).
+
+### Breadcrumbs
+
+Прозрачный фон, располагаются между хедером и шапкой страницы.
+`padding: 10px 20px 0` (desktop) / `8px 14px 0` (tablet) / `8px 12px 0` (mobile).
+Разделитель — SVG chevron-right, RTL-safe (в HE направление не инвертируется вручную — `dir="rtl"` обрабатывает автоматически).
+
+### Page header
+
+Три элемента в строку: иконка темы + название + бейдж вопросника слева, счётчики модулей и баллов справа.
+Под ними — общий прогресс-бар темы (`height: 4px` desktop, `3px` tablet/mobile).
+
+| Элемент | Desktop | Tablet | Mobile |
+|---|---|---|---|
+| Иконка темы | 36×36px, r=10px | 32×32px, r=9px | 28×28px, r=7px |
+| Заголовок | 20px | 17px | 15px |
+| Счётчик | 16px | 14px | 13px |
+
+### Module card structure
+
+```
+[бейдж номера] ─────────────────── [баллы набрано/макс ★]
+[название модуля]
+[статус label]           [атомов done/total]
+[progress bar]
+───────────────────────────────────
+● Подтема 1
+  Полное описание подтемы
+● Подтема 2
+  Полное описание подтемы
+───────────────────────────────────
+[КТ badge если есть]              [→ arrow]
+```
+
+Цветные точки подтем: зелёная (`#4ade80`) = done, cyan (`#22D3EE`) = active, серая = locked.
+Баллы: amber (`#FBBF24`) фон+рамка. При `earnedPts === 0` — `opacity: 0.4`.
+
+### Статусы модуля
+
+| Статус | Цвет label | Прогресс-бар | Замок |
+|---|---|---|---|
+| `done` | `#4ade80` | green fill | нет |
+| `current` | `#22D3EE` | cyan fill | нет |
+| `locked` | — | нет | ✓, карточка opacity 0.5 |
+
+### КТ-карточка
+
+`border-style: dashed`, `border-color: #FBBF2466`. Hover: `#FBBF24`.
+Бейдж: amber фон/рамка. Нет прогресс-бара (один атом).
+
+### Grid layout
+
+- Desktop: `grid-template-columns: 1fr 1fr; gap: 14px; padding: 0 20px 20px`
+- Tablet landscape: `grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 14px 16px`
+- Tablet portrait: `grid-template-columns: 1fr; gap: 10px`
+- Mobile: `flex-direction: column; gap: 9px; padding: 0 12px 12px`
+
+---
+
 ## 19. Open Questions
 
 - [ ] **Rich text + formulas engineering spike** — `contenteditable` + inline `<math-field>` + RTL bidi is a hard implementation problem. MathLive's virtual keyboard toggle appears despite `virtual-keyboard-mode="off"` in some browsers. Placeholder navigation (#0, #1 slots) inside shadow DOM across bidi boundaries needs careful testing. Must be solved as a dedicated spike in Next.js before Фаза 8, not in HTML mockups.
@@ -1736,5 +1925,9 @@ Mobile: sheet снизу (§23). Desktop/tablet: centered modal (§4).
 
 ---
 
-*Last updated: June 2026 (29/06/2026 — added §23 Mobile Sheet; §24 Courses page; §22 lang-btn updated: single toggle button replaces two-segment RU/HE toggle; search overlay pattern documented).*
-*Approved screens: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile), lesson page (desktop + tablet + mobile), test page (desktop + tablet + mobile, 3 answer types), exam page (desktop + tablet + mobile, both themes), AI chat drawer (all pages, both themes, RU/HE), graph map (desktop, both themes), groups constructor (desktop, both themes), exam schema editor / «Примеры вопросников» (desktop, both themes), settings page (desktop + tablet + mobile, both themes, RU/HE), achievements page (desktop, both themes, RU/HE), courses page /courses level 1 (desktop + tablet + mobile, both themes, RU/HE) — all both themes.*
+*Last updated: July 2026 (05/07/2026 — §22 student shell nav revised: Дашборд восстановлен как позиция 1 (home icon); Курсы → позиция 2; «Статус» (бывш. «Мой статус») → позиция 3, маршрут /status, map-pin icon; Достижения → позиция 4; mobile bottom nav обновлён: Дашборд/Курсы/Статус/Йоси/Профиль).*
+*(05/07/2026 — §22: «Дашборд» переименован в «Главная» / «דף הבית»; иконка «Формулы» — Σ (Tabler: ti-sum). Retrofit: применить при следующем касании каждого файла.)*
+*(05/07/2026 — §15: desktop-only rule добавлено для всего конструктора контента (§15–§18). Tablet и mobile версии редакторов не предусмотрены.)*
+*(05/07/2026 — §19 Shalon Manager добавлен: пятый экран конструктора, спецификация утверждена, мокап pending.)*
+*(30/06/2026 — §22 student shell nav updated: Курсы → позиция 1, Мой статус / מצבי → позиция 2 с иконкой map-pin; §25 Courses theme page level 2 added).*
+*Approved screens: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile), lesson page (desktop + tablet + mobile), test page (desktop + tablet + mobile, 3 answer types), exam page (desktop + tablet + mobile, both themes), AI chat drawer (all pages, both themes, RU/HE), graph map (desktop, both themes), groups constructor (desktop, both themes), exam schema editor (desktop, both themes), settings page (desktop + tablet + mobile, both themes, RU/HE), achievements page (desktop, both themes, RU/HE), courses page level 1 (desktop + tablet + mobile, both themes, RU/HE), courses theme page level 2 (desktop + tablet + mobile, both themes, RU/HE) — all both themes.*

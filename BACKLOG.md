@@ -45,7 +45,7 @@
 - [ ] Подтягивать реальные данные: прогресс, очки, серия дней
 - [ ] Кнопка "Продолжить" → последний незавершённый урок
 - [ ] Sidebar: сохранять состояние (свёрнут/развёрнут) в localStorage
-- [ ] Sidebar: student menu — Дашборд / Темы / Достижения / Лаборатория / Формулы / Помощь / Настройки
+- [ ] Sidebar: student menu — Главная / Курсы / Статус / Достижения / Формулы / Лаборатория / Помощь / Настройки
 - [ ] Sidebar: author submenu «Контент» — Карта графа / Редактор атома / Группы / Примеры вопросников
 
 ---
@@ -60,13 +60,24 @@
 
 ## Конструктор контента — мокапы
 
+**Правило: конструктор контента — только desktop.** Авторы работают на десктопе; планшетная и мобильная версии редакторов не предусмотрены и не будут создаваться.
+
 - [x] Редактор атома desktop (`mwl_atom_editor.html`)
 - [x] Редактор атома tablet (`mwl_atom_editor_tablet.html`)
 - [x] Карта графа desktop (`mwl_graph_map.html`)
-- [x] Конструктор групп desktop (`mwl_groups_v4.html`)
-- [x] Примеры вопросников desktop (`mwl_exam_schema_v2.html`)
+- [x] Конструктор групп desktop (`mwl_groups.html`)
+- [x] Примеры вопросников desktop (`mwl_exam_schema.html`)
       Двухуровневый список (тип → сессии), разделы, вопросы с формулами
       и изображениями, правила выбора, превью, batch-перевод, auto-save индикатор.
+- [ ] Управление шейлоном desktop (`mwl_shalon_manager.html`) — пятый экран конструктора.
+      Иерархическое дерево: шейлон → темы → модули.
+      Создание: кнопка «+» рядом с родительским узлом.
+      Редактирование: двойной клик → inline edit (RU); detail panel справа → RU + HE.
+      Переупорядочивание: drag-and-drop + кнопки ↑↓ на каждом уровне.
+      Ctrl-bar: создать / переименовать / дублировать шейлон + batch-translate RU↔HE.
+      Дублирование шейлона = структура новая + shared ссылки на те же атомы (контент не копируется).
+      Переход в редактор: клик на модуль → popup (Открыть редактор атомов / Открыть граф / Отмена).
+      Спецификация: MWL_CONTENT_ARCHITECTURE.md §8.
 
 ---
 
@@ -113,17 +124,31 @@
 - [x] Страница настроек tablet (`mwl_settings_tablet.html`) — обе темы, RU/HE, RTL
 - [x] Страница настроек mobile (`mwl_settings_mobile.html`) — обе темы, RU/HE, RTL
 - [x] Страница достижений desktop (`mwl_achievements_v2_desktop.html`) — обе темы, RU/HE, RTL
-- [ ] Страница достижений tablet
-- [ ] Страница достижений mobile
+- [x] Страница достижений tablet (`mwl_achievements_tablet.html`)
+- [x] Страница достижений mobile (`mwl_achievements_mobile.html`)
 - [x] /courses — уровень 1: каталог курсов — desktop + tablet + mobile
       Две карточки вопросников (35571 / 35572), список тем с иконками и прогрессом,
       попап силлабуса (ready) + попап «В работе» (in_work), locked темы без клика.
       Оба theme, RU/HE, RTL.
       Файлы: `mwl_courses_desktop.html`, `mwl_courses_tablet.html`, `mwl_courses_mobile.html`.
-- [ ] /courses/[themeId] — уровень 2: список модулей — desktop + tablet + mobile
-      Название модуля, охватываемые подтемы, атомов пройдено/всего, баллы.
-- [ ] /courses/[themeId]/[moduleId] — уровень 3: лабиринт атомов — desktop + tablet + mobile
-      Движок v17, cross-module зависимости пунктиром.
+- [x] /courses/[themeId] — уровень 2: список модулей — desktop + tablet + mobile
+      Крошки, шапка с иконкой темы + счётчики модулей и баллов + прогресс-бар.
+      Карточки модулей: бейдж, название, баллы (набрано/макс), прогресс атомов,
+      подтемы с полными описаниями и цветными точками статуса, КТ-карточка (пунктир amber).
+      Сетка 2 колонки desktop/tablet, одна колонка mobile. Оба theme, RU/HE, RTL.
+      Файлы: `mwl_courses_theme_desktop.html`, `mwl_courses_theme_tablet.html`, `mwl_courses_theme_mobile.html`.
+- [x] /courses/[themeId]/[moduleId] — уровень 3: лабиринт атомов — desktop + tablet + mobile
+      Движок v17 (done/current/next/locked/problem/remedial-needed), статусы engine v17.
+      Узлы: скруглённые прямоугольники (атомы) + ромбы (КТ) — те же формы что в mwl_graph_map.html.
+      Рёбра: сплошная заливка отрезка (без стрелок): cyan = пройден, purple = shortcut, red = return.
+      Desktop/tablet: 3 модуля × 5 узлов, облака модулей, cross-module рёбра пунктиром.
+      Mobile: только текущий модуль (5 узлов), вертикальный layout, bottom sheet легенда.
+      Touch events (tablet/mobile): pan одним пальцем, pinch-zoom двумя.
+      RTL поддержка: zoom-controls, легенда, breadcrumbs зеркалятся через [dir="rtl"].
+      Файлы: `mwl_courses_module_desktop.html`, `mwl_courses_module_tablet.html`, `mwl_courses_module_mobile.html`.
+- [ ] /status — страница статуса студента — desktop + tablet + mobile
+      Активные темы (параллельное обучение): название темы + текущий модуль + кнопка «Продолжить».
+      Обзор всех тем: done / in_progress / not_started, сгруппировано по шейлону.
 - [ ] Лаборатория — после решения о рефакторинге Three.js / React Three Fiber
 
 ---
@@ -154,6 +179,10 @@
 - [x] Добавить §24 Courses page spec в DESIGN_SYSTEM.md
 - [x] Обновить §22 — `.lang-btn` заменяет двухсегментный RU/HE переключатель
 - [ ] Перенести `.lang-btn` в существующие макеты (дашборд, настройки, достижения) при следующем касании этих файлов
+- [ ] **Навигация — retrofit всех макетов**: обновить сайдбар и bottom nav во всех HTML-мокапах:
+      порядок: Главная (home) / Курсы (graduation cap) / Статус (map-pin, /status) / Достижения (trophy);
+      mobile bottom nav: Главная / Курсы / Статус / Йоси / Профиль;
+      применить при следующем касании каждого файла.
 
 ---
 
@@ -171,4 +200,7 @@
 
 ---
 
-*Обновлён: 2026-06-29 · /courses уровень 1 завершён (все три breakpoint). Lang-btn паттерн зафиксирован. §23, §24 добавлены в DESIGN_SYSTEM.md.*
+*Обновлён: 2026-07-05 · Навигация финализирована: Главная (home) → позиция 1; Курсы (graduation cap) → позиция 2; Статус (map-pin, /status) → позиция 3; Достижения → позиция 4. /maze упразднён — лабиринт в /courses/[themeId]/[moduleId]. Добавлены задачи: лабиринт уровень 3 (spec уточнён), /status страница.*
+*Обновлён: 2026-07-05 (3) · Лабиринт уровня 3 отмечен [x]: desktop + tablet + mobile готовы. Имена файлов групп и схемы экзамена исправлены (без суффиксов _v4/_v2).*
+*Обновлён: 2026-07-05 (4) · Конструктор контента — desktop only. Достижения tablet/mobile отмечены [x].*
+*Обновлён: 2026-07-05 (5) · Добавлен пятый экран конструктора: Управление шейлоном (mwl_shalon_manager.html). Спецификация в MWL_CONTENT_ARCHITECTURE.md §8 и DESIGN_SYSTEM.md §19.*

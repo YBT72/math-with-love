@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MWL — Лабиринт атомов (tablet)</title>
+<style>
+/* ============================================================
+   Base tokens & shell — aligned with §22 DESIGN_SYSTEM.md
+   Tablet variant: touch events, compact ctrl-bar, legend overlay
+   ============================================================ */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif}
+.shell{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.d{background:#0f172a}
+.l{background:#f8fafc}
+.d .t1{color:#f1f5f9}.l .t1{color:#0f172a}
+.d .t2{color:#94a3b8}.l .t2{color:#64748b}
+.d .t3{color:#475569}.l .t3{color:#94a3b8}
+.d .p1{background:#1e293b;border-color:#334155}.l .p1{background:#ffffff;border-color:#e2e8f0}
+.d .p2{background:#334155;border-color:#334155}.l .p2{background:#f1f5f9;border-color:#e2e8f0}
+.d .bd{border-color:#334155!important}.l .bd{border-color:#e2e8f0!important}
+
+/* ── Header ── */
+.hdr{height:48px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 14px;border-bottom:1px solid;flex-shrink:0}
+.hdr-left{display:flex;align-items:center;gap:10px}
+.hdr-center{display:flex;align-items:center;justify-content:center;position:relative}
+.hdr-right{display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.logo{width:26px;height:26px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand{font-size:13px;font-weight:500}.brand b{color:#22D3EE;font-weight:500}
+
+/* Tablet search — collapsed to icon by default, expands on tap */
+.srch-wrap{display:flex;align-items:center;justify-content:center}
+.srch-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid;background:transparent;flex-shrink:0;transition:border-color 0.15s}
+.d .srch-icon{border-color:#334155;color:#64748b}
+.l .srch-icon{border-color:#e2e8f0;color:#94a3b8}
+.d .srch-icon:active{border-color:#475569}
+.l .srch-icon:active{border-color:#cbd5e1}
+.srch{
+  display:flex;align-items:center;position:relative;
+  width:0;overflow:hidden;min-width:0;
+  transition:width 0.25s ease;
+}
+.srch.open{width:240px}
+.srch input{
+  width:240px;min-width:0;flex-shrink:0;
+  border-radius:8px;padding:6px 32px 6px 10px;
+  font-size:12px;outline:none;font-family:inherit;border:1px solid;
+  white-space:nowrap;
+}
+.d .srch input{background:#334155;border-color:#475569;color:#f1f5f9}
+.l .srch input{background:#f1f5f9;border-color:#e2e8f0;color:#0f172a}
+.srch-close{position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;padding:2px;background:transparent;border:0}
+.d .srch-close{color:#64748b}.l .srch-close{color:#94a3b8}
+.lang-btn{width:30px;height:30px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid;background:transparent;font-family:inherit;letter-spacing:0.04em;display:flex;align-items:center;justify-content:center;transition:color 0.15s,border-color 0.15s}
+.d .lang-btn{color:#22D3EE;border-color:rgba(34,211,238,0.33)}.l .lang-btn{color:#0e7490;border-color:rgba(34,211,238,0.4)}
+.d .lang-btn:hover{border-color:#22D3EE}.l .lang-btn:hover{border-color:#0e7490}
+.hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid;flex-shrink:0}
+.hav{width:28px;height:28px;min-width:28px;min-height:28px;border-radius:50%;background:#22D3EE;color:#0f172a;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;border:2px solid #22D3EE;flex-shrink:0}
+
+/* ── Dev ctrl-bar ── */
+.ctrl{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid;align-items:center;flex-wrap:wrap;flex-shrink:0}
+.tcb{padding:4px 12px;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid;background:transparent}
+.d .tcb{color:#94a3b8;border-color:#334155}.l .tcb{color:#64748b;border-color:#e2e8f0}
+.tcb.on{background:#22D3EE!important;color:#0f172a!important;border-color:#22D3EE!important}
+.div1{width:1px;height:16px;margin:0 2px}
+.d .div1{background:#334155}.l .div1{background:#e2e8f0}
+
+/* ── Body ── */
+.body{display:flex;flex:1;min-height:0}
+
+/* ── Sidebar — §22 Shell Standard ── */
+.sb{width:46px;display:flex;flex-direction:column;padding:8px 0;border-inline-end:1px solid;transition:width 0.2s ease;overflow:hidden;flex-shrink:0}
+.sb.open{width:164px}
+.sbt{display:flex;align-items:center;justify-content:center;width:46px;height:38px;margin:0 0 8px 0;border-radius:8px;cursor:pointer;border:0;background:transparent;flex-shrink:0}
+.sbt svg{flex-shrink:0}
+.d .sbt svg{stroke:#475569}.l .sbt svg{stroke:#94a3b8}
+.sbt:hover svg{stroke:#94a3b8!important}
+.sg,.sbm,.sbb{display:flex;flex-direction:column;gap:2px}
+.sbm{margin:auto 0}
+.ni{display:flex;align-items:center;width:46px;height:38px;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden;border:0;background:transparent;flex-shrink:0}
+.sb.open .ni{width:100%;border-radius:6px}
+.ni:hover svg{stroke:#94a3b8!important}
+.ni:hover .nl{color:#94a3b8!important}
+.ni .icon-wrap{width:46px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ni svg{flex-shrink:0;transition:stroke 0.15s;display:block}
+.d .ni svg{stroke:#475569}.l .ni svg{stroke:#64748b}
+.ni.on svg{stroke:#22D3EE!important}
+.nl{font-size:12px;font-weight:500;opacity:0;transition:opacity 0.15s,color 0.15s;white-space:nowrap;margin-inline-start:8px}
+.d .nl{color:#475569}.l .nl{color:#64748b}
+.ni.on .nl{color:#22D3EE!important}
+.sb.open .nl{opacity:1}
+
+/* ── Main column ── */
+.main-col{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;position:relative}
+
+/* ── Breadcrumbs — float above canvas ── */
+.breadcrumbs{display:flex;align-items:center;gap:6px;padding:8px 16px 6px;position:absolute;top:0;left:0;z-index:5;pointer-events:auto;border-radius:0 0 8px 0}
+.d .breadcrumbs{background:rgba(15,23,42,0.55)}
+.l .breadcrumbs{background:rgba(226,243,247,0.72)}
+.bc-item{font-size:11.5px;cursor:pointer;transition:color 0.15s}
+.d .bc-item{color:#64748b}.l .bc-item{color:#94a3b8}
+.d .bc-item:hover{color:#94a3b8}.l .bc-item:hover{color:#64748b}
+.bc-sep{display:flex;align-items:center;flex-shrink:0}
+.d .bc-sep svg{stroke:#475569}.l .bc-sep svg{stroke:#cbd5e1}
+.bc-current{font-size:11.5px;font-weight:500}
+.d .bc-current{color:#f1f5f9}.l .bc-current{color:#0f172a}
+
+/* RTL: breadcrumbs flip to right side, separator arrows reverse */
+[dir="rtl"] .breadcrumbs{left:auto;right:0;border-radius:0 0 0 8px}
+[dir="rtl"] .bc-sep svg{transform:scaleX(-1)}
+
+/* ── Canvas ── */
+.canvas-wrap{
+  flex:1;position:relative;overflow:hidden;
+  background-image:radial-gradient(circle at 1px 1px,rgba(148,163,184,0.10) 1px,transparent 0);
+  background-size:24px 24px;
+}
+.d .canvas-wrap{background-color:#0b1322}
+.l .canvas-wrap{background-color:#e2f3f7}
+/* Tablet: disable default touch behaviors on canvas */
+svg.lab-graph{width:100%;height:100%;display:block;touch-action:none;-webkit-user-select:none;user-select:none}
+
+/* ── Zoom controls — 30px (same as desktop) ── */
+.zoom-controls{position:absolute;bottom:18px;right:18px;display:flex;flex-direction:column;gap:6px;border-radius:8px;padding:4px;border:1px solid}
+.d .zoom-controls{background:#1e293b;border-color:#334155}
+.l .zoom-controls{background:#ffffff;border-color:#e2e8f0}
+.zoom-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:5px;cursor:pointer}
+.d .zoom-btn{color:#94a3b8}.l .zoom-btn{color:#64748b}
+.d .zoom-btn:active{background:#334155;color:#e2e8f0}
+.l .zoom-btn:active{background:#f1f5f9;color:#0f172a}
+
+/* RTL: zoom-controls flip to left side */
+[dir="rtl"] .zoom-controls{right:auto;left:18px}
+
+/* ── Legend toggle button ── */
+.leg-toggle{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:5px;cursor:pointer;margin-bottom:2px}
+.d .leg-toggle{color:#94a3b8}.l .leg-toggle{color:#64748b}
+.d .leg-toggle:active{background:#334155;color:#e2e8f0}
+.l .leg-toggle:active{background:#f1f5f9;color:#0f172a}
+.leg-toggle.on svg{stroke:#22D3EE!important}
+
+/* ── Legend — overlay, hidden by default ── */
+.legend{
+  position:absolute;bottom:18px;left:18px;
+  border-radius:10px;padding:12px 14px;border:1px solid;
+  display:flex;flex-direction:column;gap:7px;
+  z-index:20;
+  opacity:0;pointer-events:none;
+  transform:translateY(8px);
+  transition:opacity 0.18s ease,transform 0.18s ease;
+}
+.legend.visible{opacity:1;pointer-events:auto;transform:translateY(0)}
+.d .legend{background:#1e293b;border-color:#334155}
+.l .legend{background:#ffffff;border-color:#e2e8f0}
+.leg-item{display:flex;align-items:center;gap:8px;font-size:11px}
+.d .leg-item{color:#94a3b8}.l .leg-item{color:#64748b}
+/* RTL: legend flips to right side */
+[dir="rtl"] .legend{left:auto;right:18px}
+</style>
+</head>
+<body>
+<div class="shell d" id="shell">
+
+  <!-- Header -->
+  <div class="hdr p1 bd">
+    <div class="hdr-left">
+      <div class="logo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 4.5v9L12 21l-9-4.5v-9z"/><path d="M12 3v18"/><path d="M3 7.5l9 4.5 9-4.5"/></svg>
+      </div>
+      <span class="brand t1"><b>Math</b> With Love</span>
+    </div>
+    <div class="hdr-center">
+      <div class="srch-wrap">
+        <!-- Search icon button — default state -->
+        <div class="srch-icon" id="srchIcon" onclick="openSearch()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <!-- Search field — hidden by default, expands on tap -->
+        <div class="srch" id="srchField">
+          <input type="text" id="searchInput" placeholder="Поиск по лабиринту…" onblur="closeSearch()">
+          <button class="srch-close" onclick="closeSearch()" tabindex="-1">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <button class="lang-btn" id="langBtn" onclick="toggleLang()">RU</button>
+      <div class="hico bd t2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg>
+      </div>
+      <div class="hav">ИА</div>
+    </div>
+  </div>
+
+  <!-- Dev ctrl-bar — tablet: compact, no label, icon buttons for demo states -->
+  <div class="ctrl p2 bd">
+    <button class="tcb on" id="btnDark"  onclick="setMode('d')">🌙</button>
+    <button class="tcb"    id="btnLight" onclick="setMode('l')">☀</button>
+    <div class="div1"></div>
+    <div style="flex:1"></div>
+    <span class="t3" style="font-size:11px;margin-right:4px;">Демо:</span>
+    <!-- State 0: circle (beginning — one node) -->
+    <button class="tcb on" id="btnS0" onclick="setDemo(0)" title="Начало">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/></svg>
+    </button>
+    <!-- State 1: half-filled circle (in progress) -->
+    <button class="tcb" id="btnS1" onclick="setDemo(1)" title="В процессе">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4a8 8 0 0 1 0 16V4z" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="8"/></svg>
+    </button>
+    <!-- State 2: warning triangle (problem) -->
+    <button class="tcb" id="btnS2" onclick="setDemo(2)" title="Проблема">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </button>
+  </div>
+
+  <div class="body">
+
+    <!-- Sidebar — student shell nav per §22 DESIGN_SYSTEM.md -->
+    <div class="sb p1 bd" id="sb">
+      <button class="sbt" onclick="toggleSb()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+      </button>
+      <div class="sg">
+        <!-- pos 1: Dashboard -->
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></svg></span>
+          <span class="nl" data-i18n="navDashboard">Дашборд</span>
+        </div>
+        <!-- pos 2: Courses — ACTIVE -->
+        <div class="ni on">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 5-10 5L2 8z"/><path d="M7 11.5v4.5a5 5 0 0 0 10 0v-4.5"/><line x1="22" y1="8" x2="22" y2="14"/></svg></span>
+          <span class="nl" data-i18n="navCourses">Курсы</span>
+        </div>
+        <!-- pos 3: Status -->
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg></span>
+          <span class="nl" data-i18n="navStatus">Статус</span>
+        </div>
+        <!-- pos 4: Achievements -->
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21l8 0"/><path d="M12 17l0 4"/><path d="M7 4l10 0"/><path d="M17 4v8a5 5 0 0 1-10 0v-8"/><path d="M5 9a2 2 0 0 1-2-2v-1a2 2 0 0 1 2-2"/><path d="M19 9a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2"/></svg></span>
+          <span class="nl" data-i18n="navAchievements">Достижения</span>
+        </div>
+      </div>
+      <div class="sbm">
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16v2a1 1 0 0 1 -1 1h-11l6 -7l-6 -7h11a1 1 0 0 1 1 1v2"/></svg></span>
+          <span class="nl" data-i18n="navFormulas">Формулы</span>
+        </div>
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg></span>
+          <span class="nl" data-i18n="navLab">Лаборатория</span>
+        </div>
+      </div>
+      <div class="sbb">
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="17" x2="12.01" y2="17"/><path d="M12 13.5a1.5 1.5 0 0 1 1-1.5a2.6 2.6 0 1 0-3-4"/></svg></span>
+          <span class="nl" data-i18n="navHelp">Помощь</span>
+        </div>
+        <div class="ni">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51v.17a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82a1.65 1.65 0 0 0-1.51-1h-.17a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+          <span class="nl" data-i18n="navSettings">Настройки</span>
+        </div>
+      </div>
+    </div><!-- /.sb -->
+
+    <!-- Main: canvas fills all space, breadcrumbs float above -->
+    <div class="main-col">
+
+      <!-- Breadcrumbs — absolute, floats above canvas -->
+      <div class="breadcrumbs">
+        <span class="bc-item t2" data-i18n="navCourses">Курсы</span>
+        <span class="bc-sep"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></span>
+        <span class="bc-item t2" data-i18n="bcTheme">Векторы</span>
+        <span class="bc-sep"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></span>
+        <span class="bc-current t1" data-i18n="bcModule">Основы векторов</span>
+      </div>
+
+      <!-- Canvas -->
+      <div class="canvas-wrap" id="canvasWrap">
+        <svg class="lab-graph" id="labSvg"></svg>
+
+        <!-- Zoom controls + legend toggle — 30px (same as desktop) -->
+        <div class="zoom-controls bd">
+          <div class="zoom-btn leg-toggle" id="legToggle" onclick="toggleLegend()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <div style="height:1px;margin:1px 4px" class="bd"></div>
+          <div class="zoom-btn" id="zoomIn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          </div>
+          <div class="zoom-btn" id="zoomOut">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          </div>
+          <div class="zoom-btn" id="zoomFit">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+          </div>
+        </div>
+
+        <!-- Legend — hidden by default, shown via info toggle button -->
+        <div class="legend bd p1" id="legend">
+          <div class="leg-item">
+            <svg width="14" height="14" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="3" fill="none" stroke="#22D3EE" stroke-width="2"/></svg>
+            <span data-i18n="legAtom">Атом</span>
+          </div>
+          <div class="leg-item">
+            <svg width="14" height="14" viewBox="0 0 14 14"><polygon points="7,1 13,7 7,13 1,7" fill="none" stroke="#FBBF24" stroke-width="2"/></svg>
+            <span data-i18n="legKT">Контрольная точка</span>
+          </div>
+          <div style="height:1px;background:rgba(100,116,139,0.2);margin:2px 0"></div>
+          <div class="leg-item">
+            <svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" stroke="#22D3EE" stroke-width="3" stroke-linecap="round"/></svg>
+            <span data-i18n="legDone">Пройден</span>
+          </div>
+          <div class="leg-item">
+            <svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" stroke="#a78bfa" stroke-width="3" stroke-linecap="round"/></svg>
+            <span data-i18n="legShortcut">Shortcut</span>
+          </div>
+          <div class="leg-item">
+            <svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" stroke="#f87171" stroke-width="3" stroke-linecap="round"/></svg>
+            <span data-i18n="legReturn">Возврат</span>
+          </div>
+          <div class="leg-item">
+            <svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4 3"/></svg>
+            <span data-i18n="legCross">Между модулями</span>
+          </div>
+        </div>
+
+      </div><!-- /.canvas-wrap -->
+    </div><!-- /.main-col -->
+  </div><!-- /.body -->
+</div><!-- /.shell -->
+
+<script>
+// ============================================================
+// i18n
+// ============================================================
+var lang = 'ru';
+var TR = {
+  ru:{
+    navDashboard:'Главная', navCourses:'Курсы', navStatus:'Статус',
+    navAchievements:'Достижения', navFormulas:'Формулы', navLab:'Лаборатория',
+    navHelp:'Помощь', navSettings:'Настройки',
+    bcTheme:'Векторы', bcModule:'Основы векторов',
+    legAtom:'Атом', legKT:'Контрольная точка',
+    legDone:'Пройден', legShortcut:'Shortcut', legReturn:'Возврат', legCross:'Между модулями',
+    stDone:'Завершён', stCurrent:'Текущий', stNext:'Доступен',
+    stLocked:'Заблокирован', stProblem:'Проблема',
+    typAtom:'Атом', typKT:'Контрольная точка',
+    modCurrent:'текущий модуль', modOther:'другой модуль',
+    ttLocked:'Сначала пройдите пририквизиты'
+  },
+  he:{
+    navDashboard:'דף הבית', navCourses:'קורסים', navStatus:'סטטוס',
+    navAchievements:'הישגים', navFormulas:'נוסחאות', navLab:'מעבדה',
+    navHelp:'עזרה', navSettings:'הגדרות',
+    bcTheme:'וקטורים', bcModule:'יסודות הוקטורים',
+    legAtom:'אטום', legKT:'נקודת בקרה',
+    legDone:'הושלם', legShortcut:'קיצור', legReturn:'חזרה', legCross:'בין מודולים',
+    stDone:'הושלם', stCurrent:'נוכחי', stNext:'זמין',
+    stLocked:'נעול', stProblem:'בעיה',
+    typAtom:'אטום', typKT:'נקודת בקרה',
+    modCurrent:'מודול נוכחי', modOther:'מודול אחר',
+    ttLocked:'השלם קודם את הדרישות המוקדמות'
+  }
+};
+
+function t(k){ return TR[lang][k] || k; }
+
+function applyI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var k = el.getAttribute('data-i18n');
+    if(TR[lang][k] !== undefined) el.textContent = TR[lang][k];
+  });
+  document.getElementById('searchInput').placeholder =
+    lang === 'ru' ? 'Поиск по лабиринту…' : 'חיפוש במבוך…';
+}
+
+function toggleLang(){
+  lang = lang === 'ru' ? 'he' : 'ru';
+  document.getElementById('langBtn').textContent = lang === 'ru' ? 'RU' : 'HE';
+  document.getElementById('shell').setAttribute('dir', lang === 'he' ? 'rtl' : 'ltr');
+  applyI18n();
+  renderGraph();
+}
+
+// ============================================================
+// Theme
+// ============================================================
+var mode = 'd';
+function setMode(m){
+  mode = m;
+  document.getElementById('shell').className = 'shell ' + m;
+  document.getElementById('btnDark').className  = 'tcb' + (m==='d' ? ' on' : '');
+  document.getElementById('btnLight').className = 'tcb' + (m==='l' ? ' on' : '');
+  renderGraph();
+}
+
+// ============================================================
+// Sidebar toggle
+// ============================================================
+var sbOpen = false;
+function toggleSb(){
+  sbOpen = !sbOpen;
+  document.getElementById('sb').className = 'sb p1 bd' + (sbOpen ? ' open' : '');
+  setTimeout(fitView, 220);
+}
+
+// ============================================================
+// Graph data — 3 modules of theme "Vectors", ~18 nodes total
+//
+// Module A (current): "Основы векторов"     — nodes a1..a4 + kta
+// Module B:           "Скалярное произведение" — nodes b1..b4 + ktb
+// Module C:           "Прямые и плоскости"  — nodes c1..c4 + ktc
+//
+// Cross-module edges connect modules where prerequisites exist.
+// ============================================================
+
+var MODULES = {
+  A: { id:'A', name:'Основы векторов',      nameHe:'יסודות הוקטורים',     current:true  },
+  B: { id:'B', name:'Скалярное произведение', nameHe:'מכפלה סקלרית',        current:false },
+  C: { id:'C', name:'Прямые и плоскости',   nameHe:'ישרים ומישורים',       current:false }
+};
+
+// Node positions — manually laid out to simulate force-directed result.
+// Module A: left cluster; Module B: center-right; Module C: bottom-right.
+var NODES = [
+  // Module A — current
+  {id:'a1', mod:'A', type:'atom',       title:'Определение вектора',     titleHe:'הגדרת וקטור',        x:120, y:160},
+  {id:'a2', mod:'A', type:'atom',       title:'Сложение векторов',        titleHe:'חיבור וקטורים',       x:240, y:100},
+  {id:'a3', mod:'A', type:'atom',       title:'Умножение на скаляр',      titleHe:'כפל בסקלר',           x:240, y:220},
+  {id:'a4', mod:'A', type:'atom',       title:'Линейная комбинация',      titleHe:'צירוף לינארי',        x:370, y:160},
+  {id:'kta',mod:'A', type:'checkpoint', title:'КТ: Основы',               titleHe:'נ.ב.: יסודות',        x:490, y:160},
+
+  // Module B — other
+  {id:'b1', mod:'B', type:'atom',       title:'Скалярное произведение',   titleHe:'מכפלה סקלרית',        x:460, y:360},
+  {id:'b2', mod:'B', type:'atom',       title:'Угол между векторами',      titleHe:'זווית בין וקטורים',   x:590, y:310},
+  {id:'b3', mod:'B', type:'atom',       title:'Проекция вектора',          titleHe:'היטל וקטור',          x:590, y:420},
+  {id:'b4', mod:'B', type:'atom',       title:'Условие перпендикулярности',titleHe:'תנאי אנכיות',         x:720, y:360},
+  {id:'ktb',mod:'B', type:'checkpoint', title:'КТ: Скалярное',             titleHe:'נ.ב.: מכפלה',         x:840, y:360},
+
+  // Module C — other
+  {id:'c1', mod:'C', type:'atom',       title:'Уравнение прямой',          titleHe:'משוואת ישר',          x:680, y:160},
+  {id:'c2', mod:'C', type:'atom',       title:'Уравнение плоскости',       titleHe:'משוואת מישור',        x:810, y:110},
+  {id:'c3', mod:'C', type:'atom',       title:'Расстояние до плоскости',   titleHe:'מרחק למישור',         x:810, y:210},
+  {id:'c4', mod:'C', type:'atom',       title:'Коллинеарность',            titleHe:'קוליניאריות',         x:940, y:160},
+  {id:'ktc',mod:'C', type:'checkpoint', title:'КТ: Прямые',                titleHe:'נ.ב.: ישרים',         x:1060,y:160}
+];
+
+// Edges within and between modules
+var EDGES = [
+  // Module A internal
+  {from:'a1', to:'a2', kind:'intra'},
+  {from:'a1', to:'a3', kind:'intra'},
+  {from:'a2', to:'a4', kind:'intra'},
+  {from:'a3', to:'a4', kind:'intra'},
+  {from:'a4', to:'kta',kind:'intra'},
+  // Module B internal
+  {from:'b1', to:'b2', kind:'intra'},
+  {from:'b1', to:'b3', kind:'intra'},
+  {from:'b2', to:'b4', kind:'intra'},
+  {from:'b3', to:'b4', kind:'intra'},
+  {from:'b4', to:'ktb',kind:'intra'},
+  // Module C internal
+  {from:'c1', to:'c2', kind:'intra'},
+  {from:'c1', to:'c3', kind:'intra'},
+  {from:'c2', to:'c4', kind:'intra'},
+  {from:'c3', to:'c4', kind:'intra'},
+  {from:'c4', to:'ktc',kind:'intra'},
+  // Cross-module: A → B (scalar product requires vector basics)
+  {from:'kta',to:'b1', kind:'cross'},
+  // Cross-module: A → C (line equations require vector definition)
+  {from:'a4', to:'c1', kind:'cross'},
+  // Cross-module: B → C (perpendicularity used in plane equations)
+  {from:'b4', to:'c3', kind:'cross'}
+];
+
+// Build nodeById map
+var nodeById = {};
+NODES.forEach(function(n){ nodeById[n.id] = n; });
+
+// ============================================================
+// Demo states — node statuses per engine v17 logic
+//
+// State 0 — Beginning: only a1 is current, all others locked
+// State 1 — In progress: module A mostly done, b1 available via cross-module,
+//            c1 available via cross-module, current = b2
+// State 2 — Problem: a4 done+problem badge, b1 problem status, b2 current
+// ============================================================
+var STATES = [
+  // State 0: beginning
+  {
+    label: 'Начало',
+    status: {
+      a1:'current', a2:'locked', a3:'locked', a4:'locked', kta:'locked',
+      b1:'locked',  b2:'locked', b3:'locked', b4:'locked', ktb:'locked',
+      c1:'locked',  c2:'locked', c3:'locked', c4:'locked', ktc:'locked'
+    },
+    segs: [], shortcutSegs: [], returnSegs: []
+  },
+  // State 1: in progress
+  {
+    label: 'В процессе',
+    status: {
+      a1:'done',    a2:'done',    a3:'done',    a4:'done',    kta:'done',
+      b1:'done',    b2:'current', b3:'next',    b4:'locked',  ktb:'locked',
+      c1:'next',    c2:'locked',  c3:'locked',  c4:'locked',  ktc:'locked'
+    },
+    segs: ['a1:a2','a1:a3','a2:a4','a3:a4','a4:kta','kta:b1','b1:b2'],
+    shortcutSegs: [],
+    returnSegs: []
+  },
+  // State 2: problem on b1, shortcut visible, return path
+  {
+    label: 'Проблема',
+    status: {
+      a1:'done',    a2:'done',    a3:'done',    a4:'done',    kta:'done',
+      b1:'problem', b2:'current', b3:'next',    b4:'locked',  ktb:'locked',
+      c1:'next',    c2:'locked',  c3:'locked',  c4:'locked',  ktc:'locked'
+    },
+    segs: ['a1:a2','a1:a3','a2:a4','a3:a4','a4:kta','kta:b1'],
+    shortcutSegs: ['kta:b2'],
+    returnSegs: ['b1:a4']
+  }
+];
+
+var demoIdx = 0;
+
+function setDemo(idx){
+  demoIdx = idx;
+  [0,1,2].forEach(function(i){
+    document.getElementById('btnS'+i).className = 'tcb' + (i===idx ? ' on' : '');
+  });
+  renderGraph();
+}
+
+function getStatus(nodeId){
+  return STATES[demoIdx].status[nodeId] || 'locked';
+}
+
+// ============================================================
+// SVG rendering helpers
+// ============================================================
+var NS = 'http://www.w3.org/2000/svg';
+var svg = document.getElementById('labSvg');
+var vX = 0, vY = 0, vS = 1;
+
+function applyTransform(g){
+  g.setAttribute('transform','translate('+vX+','+vY+') scale('+vS+')');
+}
+
+// Convex hull — used to build module blob outline.
+// Uses gift wrapping (Jarvis march) algorithm.
+function cross(O, A, B){
+  return (A.x-O.x)*(B.y-O.y)-(A.y-O.y)*(B.x-O.x);
+}
+function convexHull(pts){
+  var n = pts.length;
+  if(n < 3) return pts.slice();
+  var sorted = pts.slice().sort(function(a,b){ return a.x!==b.x ? a.x-b.x : a.y-b.y; });
+  var lower = [];
+  for(var i=0;i<n;i++){
+    while(lower.length>=2 && cross(lower[lower.length-2],lower[lower.length-1],sorted[i])<=0) lower.pop();
+    lower.push(sorted[i]);
+  }
+  var upper = [];
+  for(var i=n-1;i>=0;i--){
+    while(upper.length>=2 && cross(upper[upper.length-2],upper[upper.length-1],sorted[i])<=0) upper.pop();
+    upper.push(sorted[i]);
+  }
+  lower.pop(); upper.pop();
+  return lower.concat(upper);
+}
+
+// Build a rounded SVG path from hull points with a padding offset.
+function blobPath(points, pad){
+  // Expand hull outward by pad pixels
+  var cx = points.reduce(function(s,p){return s+p.x;},0)/points.length;
+  var cy = points.reduce(function(s,p){return s+p.y;},0)/points.length;
+  var expanded = points.map(function(p){
+    var dx=p.x-cx, dy=p.y-cy, d=Math.sqrt(dx*dx+dy*dy)||1;
+    return {x:p.x+dx/d*pad, y:p.y+dy/d*pad};
+  });
+  if(expanded.length < 2) return '';
+  // Build smooth closed path using quadratic bezier midpoints
+  var d = '';
+  var n = expanded.length;
+  for(var i=0;i<n;i++){
+    var cur  = expanded[i];
+    var next = expanded[(i+1)%n];
+    var mid  = {x:(cur.x+next.x)/2, y:(cur.y+next.y)/2};
+    if(i===0) d += 'M'+mid.x+','+mid.y;
+    else      d += ' Q'+cur.x+','+cur.y+' '+mid.x+','+mid.y;
+  }
+  // Close: Q from last point to first midpoint
+  var last = expanded[n-1];
+  var firstMid = {x:(expanded[0].x+expanded[n-1].x)/2, y:(expanded[0].y+expanded[n-1].y)/2};
+  d += ' Q'+last.x+','+last.y+' '+firstMid.x+','+firstMid.y+' Z';
+  return d;
+}
+
+// Cubic bezier edge path between two nodes
+function edgeCurve(a, b){
+  var dx = (b.x-a.x)*0.45;
+  return 'M'+a.x+','+a.y+' C'+(a.x+dx)+','+a.y+' '+(b.x-dx)+','+b.y+' '+b.x+','+b.y;
+}
+
+// Arc path above/below for shortcut and return edges
+function arcPath(a, b, above){
+  var mx = (a.x+b.x)/2;
+  var offset = above ? -60 : 60;
+  var my = (a.y+b.y)/2 + offset;
+  return 'M'+a.x+','+a.y+' Q'+mx+','+my+' '+b.x+','+b.y;
+}
+
+// Node half-dimensions
+function nodeBox(n){
+  return n.type==='checkpoint' ? {w:38,h:38} : {w:36,h:36};
+}
+
+// Status → stroke color
+function strokeColor(n){
+  if(n.type==='checkpoint') return '#FBBF24';
+  var st = getStatus(n.id);
+  if(st==='done')    return '#22D3EE';
+  if(st==='current') return '#22D3EE';
+  if(st==='next')    return '#22D3EE';
+  if(st==='problem') return '#f87171';
+  return mode==='d' ? '#334155' : '#cbd5e1';
+}
+
+// Status → fill color
+function fillColor(n){
+  var st = getStatus(n.id);
+  if(st==='done'){
+    return mode==='d' ? 'rgba(34,211,238,0.18)' : 'rgba(34,211,238,0.12)';
+  }
+  if(st==='current'){
+    return mode==='d' ? 'rgba(34,211,238,0.10)' : 'rgba(34,211,238,0.08)';
+  }
+  if(st==='next'){
+    return mode==='d' ? 'rgba(34,211,238,0.05)' : 'rgba(34,211,238,0.04)';
+  }
+  if(st==='problem'){
+    return mode==='d' ? 'rgba(248,113,113,0.08)' : 'rgba(248,113,113,0.06)';
+  }
+  // locked
+  return mode==='d' ? 'rgba(30,41,59,0.6)' : 'rgba(255,255,255,0.6)';
+}
+
+// ============================================================
+// Main render function
+// ============================================================
+function renderGraph(){
+  svg.innerHTML = '';
+
+  var gRoot  = document.createElementNS(NS,'g');
+  var gBlobs = document.createElementNS(NS,'g');  // module blobs — bottom layer
+  var gEdges = document.createElementNS(NS,'g');  // edges
+  var gNodes = document.createElementNS(NS,'g');  // nodes — top layer
+
+  gRoot.appendChild(gBlobs);
+  gRoot.appendChild(gEdges);
+  gRoot.appendChild(gNodes);
+  svg.appendChild(gRoot);
+  applyTransform(gRoot);
+
+  // ── Module blob fill color ──
+  var blobFill = mode==='d'
+    ? 'rgba(148,163,184,0.055)'
+    : 'rgba(100,116,139,0.07)';
+
+  // ── Draw blobs ──
+  ['A','B','C'].forEach(function(modId){
+    var modNodes = NODES.filter(function(n){ return n.mod===modId; });
+    var pts = modNodes.map(function(n){ return {x:n.x, y:n.y}; });
+    var hull = convexHull(pts);
+    if(hull.length < 2) return;
+    var pad = 52;
+    var d = blobPath(hull, pad);
+    if(!d) return;
+    var path = document.createElementNS(NS,'path');
+    path.setAttribute('d', d);
+    path.setAttribute('fill', blobFill);
+    path.setAttribute('stroke', 'none');
+    gBlobs.appendChild(path);
+  });
+
+  // ── Draw edges ──
+  var state = STATES[demoIdx];
+
+  EDGES.forEach(function(e){
+    var a = nodeById[e.from];
+    var b = nodeById[e.to];
+    if(!a || !b) return;
+
+    var segKey = e.from+':'+e.to;
+    var isTraversed = state.segs.indexOf(segKey) > -1;
+    var isShortcut  = state.shortcutSegs.indexOf(segKey) > -1;
+    var isReturn    = state.returnSegs.indexOf(segKey) > -1;
+
+    var el = document.createElementNS(NS,'path');
+    el.setAttribute('fill','none');
+    el.setAttribute('stroke-linecap','round');
+
+    if(isReturn){
+      el.setAttribute('d', arcPath(a, b, false));
+      el.setAttribute('stroke','#f87171');
+      el.setAttribute('stroke-width','3');
+    } else if(isShortcut){
+      el.setAttribute('d', arcPath(a, b, true));
+      el.setAttribute('stroke','#a78bfa');
+      el.setAttribute('stroke-width','3');
+    } else if(e.kind==='cross'){
+      el.setAttribute('d', edgeCurve(a, b));
+      el.setAttribute('stroke', isTraversed ? '#22D3EE' : (mode==='d' ? '#475569' : '#94a3b8'));
+      el.setAttribute('stroke-width', isTraversed ? '3' : '1.5');
+      el.setAttribute('stroke-dasharray', isTraversed ? '' : '5 4');
+    } else if(isTraversed){
+      el.setAttribute('d', edgeCurve(a, b));
+      el.setAttribute('stroke','#22D3EE');
+      el.setAttribute('stroke-width','3');
+    } else {
+      el.setAttribute('d', edgeCurve(a, b));
+      el.setAttribute('stroke', mode==='d' ? '#334155' : '#cbd5e1');
+      el.setAttribute('stroke-width','2');
+    }
+
+    gEdges.appendChild(el);
+  });
+
+  // ── Draw nodes ──
+  NODES.forEach(function(n){
+    var st  = getStatus(n.id);
+    var box = nodeBox(n);
+    var mod = MODULES[n.mod];
+
+    var g = document.createElementNS(NS,'g');
+    g.setAttribute('transform','translate('+n.x+','+n.y+')');
+
+    // Dim locked nodes in non-current modules
+    var isLockedOtherMod = st==='locked' && !mod.current;
+    if(isLockedOtherMod) g.setAttribute('opacity','0.35');
+    // Also dim locked nodes in current module (but less)
+    else if(st==='locked') g.setAttribute('opacity','0.5');
+
+    g.style.cursor = (st==='locked') ? 'default' : 'pointer';
+
+    // Shape
+    var shape;
+    var sc = strokeColor(n);
+    var fc = fillColor(n);
+
+    if(n.type==='checkpoint'){
+      shape = document.createElementNS(NS,'polygon');
+      var r = box.w/2;
+      shape.setAttribute('points','0,'+(-r)+' '+r+',0 0,'+r+' '+(-r)+',0');
+    } else {
+      shape = document.createElementNS(NS,'rect');
+      shape.setAttribute('x', -box.w/2);
+      shape.setAttribute('y', -box.h/2);
+      shape.setAttribute('width',  box.w);
+      shape.setAttribute('height', box.h);
+      shape.setAttribute('rx','9');
+    }
+
+    shape.setAttribute('fill',   fc);
+    shape.setAttribute('stroke', sc);
+
+    if(st==='current'){
+      shape.setAttribute('stroke-width','2.5');
+    } else if(st==='next'){
+      shape.setAttribute('stroke-width','1.5');
+    } else if(st==='problem'){
+      shape.setAttribute('stroke-width','2');
+      shape.setAttribute('stroke-dasharray','5 3');
+    } else if(st==='locked'){
+      shape.setAttribute('stroke-width','1.5');
+      shape.setAttribute('stroke-dasharray','3 3');
+    } else {
+      shape.setAttribute('stroke-width','2');
+    }
+
+    g.appendChild(shape);
+
+    // Badge / token inside node
+    var badge = null;
+    if(st==='done'){
+      badge = document.createElementNS(NS,'text');
+      badge.setAttribute('y','4');
+      badge.setAttribute('text-anchor','middle');
+      badge.setAttribute('dominant-baseline','middle');
+      badge.setAttribute('font-size','13');
+      badge.setAttribute('font-weight','700');
+      badge.setAttribute('fill', mode==='d' ? '#22D3EE' : '#0e7490');
+      badge.setAttribute('pointer-events','none');
+      badge.textContent = '✓';
+    } else if(st==='current'){
+      badge = document.createElementNS(NS,'text');
+      badge.setAttribute('y','5');
+      badge.setAttribute('text-anchor','middle');
+      badge.setAttribute('dominant-baseline','middle');
+      badge.setAttribute('font-size','13');
+      badge.setAttribute('pointer-events','none');
+      badge.textContent = '🧑‍🎓';
+    } else if(st==='problem'){
+      badge = document.createElementNS(NS,'text');
+      badge.setAttribute('y','4');
+      badge.setAttribute('text-anchor','middle');
+      badge.setAttribute('dominant-baseline','middle');
+      badge.setAttribute('font-size','12');
+      badge.setAttribute('fill','#f87171');
+      badge.setAttribute('pointer-events','none');
+      badge.textContent = '⚠';
+    }
+    if(badge) g.appendChild(badge);
+
+    // Label below node
+    var displayTitle = (lang==='he' ? n.titleHe : n.title) || '';
+    var labelText = displayTitle.length > 16 ? displayTitle.slice(0,15)+'…' : displayTitle;
+    var label = document.createElementNS(NS,'text');
+    label.setAttribute('y', box.h/2+14+'');
+    label.setAttribute('text-anchor','middle');
+    label.setAttribute('font-size','10');
+    label.setAttribute('font-weight','500');
+    label.setAttribute('pointer-events','none');
+    label.setAttribute('fill', st==='locked'
+      ? (mode==='d' ? '#475569' : '#94a3b8')
+      : (mode==='d' ? '#e2e8f0' : '#0f172a'));
+    label.textContent = labelText;
+    g.appendChild(label);
+
+    // KT sub-label
+    if(n.type==='checkpoint'){
+      var sub = document.createElementNS(NS,'text');
+      sub.setAttribute('y', box.h/2+25+'');
+      sub.setAttribute('text-anchor','middle');
+      sub.setAttribute('font-size','8.5');
+      sub.setAttribute('pointer-events','none');
+      sub.setAttribute('fill', mode==='d' ? '#64748b' : '#94a3b8');
+      sub.textContent = lang==='he' ? 'נ.ב.' : 'КТ';
+      g.appendChild(sub);
+    }
+
+    // Tablet: tap only — no hover tooltip
+    g.addEventListener('click', function(ev){ onNodeClick(ev, n); });
+
+    gNodes.appendChild(g);
+  });
+
+  // ── Animated pulse ring for current node ──
+  var curNode = NODES.filter(function(n){ return getStatus(n.id)==='current'; })[0];
+  if(curNode){
+    var box = nodeBox(curNode);
+    var ring = document.createElementNS(NS,'g');
+    ring.setAttribute('transform','translate('+curNode.x+','+curNode.y+')');
+    ring.style.pointerEvents = 'none';
+    ring.setAttribute('opacity','0.35');
+
+    var rShape;
+    if(curNode.type==='checkpoint'){
+      var r = box.w/2+7;
+      rShape = document.createElementNS(NS,'polygon');
+      rShape.setAttribute('points','0,'+(-r)+' '+r+',0 0,'+r+' '+(-r)+',0');
+    } else {
+      rShape = document.createElementNS(NS,'rect');
+      var pad = 8;
+      rShape.setAttribute('x', -(box.w/2+pad));
+      rShape.setAttribute('y', -(box.h/2+pad));
+      rShape.setAttribute('width',  box.w+pad*2);
+      rShape.setAttribute('height', box.h+pad*2);
+      rShape.setAttribute('rx','13');
+    }
+    rShape.setAttribute('fill','none');
+    rShape.setAttribute('stroke','#22D3EE');
+    rShape.setAttribute('stroke-width','2');
+    rShape.setAttribute('stroke-dasharray','5 3');
+    ring.appendChild(rShape);
+    gNodes.appendChild(ring);
+  }
+}
+
+// ============================================================
+// Node tap handler — tablet: no tooltip, direct navigation
+// ============================================================
+function onNodeClick(ev, n){
+  ev.stopPropagation();
+  var st = getStatus(n.id);
+  if(st==='locked') return; // locked nodes: no feedback on tablet
+  // In production: router.push to /lesson/[id] or /exam/[id]
+  console.log('Navigate → '+(n.type==='checkpoint'?'/exam/':'/lesson/')+n.id);
+}
+
+// ============================================================
+// Search toggle — tablet: icon collapses/expands the search field
+// ============================================================
+var searchOpen = false;
+
+function openSearch(){
+  searchOpen = true;
+  document.getElementById('srchField').classList.add('open');
+  document.getElementById('srchIcon').style.display = 'none';
+  setTimeout(function(){ document.getElementById('searchInput').focus(); }, 260);
+}
+
+function closeSearch(){
+  searchOpen = false;
+  document.getElementById('srchField').classList.remove('open');
+  document.getElementById('srchIcon').style.display = 'flex';
+  document.getElementById('searchInput').value = '';
+}
+
+// ============================================================
+// Legend toggle — close on canvas click (desktop browser) and touch (tablet)
+// ============================================================
+var legendVisible = false;
+function toggleLegend(){
+  legendVisible = !legendVisible;
+  var leg = document.getElementById('legend');
+  var btn = document.getElementById('legToggle');
+  if(legendVisible){
+    leg.classList.add('visible');
+    btn.classList.add('on');
+  } else {
+    leg.classList.remove('visible');
+    btn.classList.remove('on');
+  }
+}
+
+function closeLegendOnOutsideInteraction(ev){
+  if(!legendVisible) return;
+  var legEl = document.getElementById('legend');
+  var btnEl = document.getElementById('legToggle');
+  // Do not close if the interaction target is the legend itself or its toggle button
+  if(legEl.contains(ev.target) || btnEl.contains(ev.target)) return;
+  legendVisible = false;
+  legEl.classList.remove('visible');
+  btnEl.classList.remove('on');
+}
+
+document.getElementById('canvasWrap').addEventListener('click',      closeLegendOnOutsideInteraction);
+document.getElementById('canvasWrap').addEventListener('touchstart', closeLegendOnOutsideInteraction, {passive:true});
+
+// ============================================================
+// Pan & zoom — tablet: touch events only
+// Single finger = pan; two fingers = pinch-zoom
+// ============================================================
+var W=0, H=0;
+function resize(){
+  var wrap = document.getElementById('canvasWrap');
+  W = wrap.clientWidth;
+  H = wrap.clientHeight;
+}
+
+var panStart={x:0,y:0}, viewStart={x:0,y:0};
+var pinchStartDist=0, pinchStartScale=1, pinchMidStart={x:0,y:0};
+var touchMoved = false; // track if touch was a pan vs tap
+
+function getTouchDist(touches){
+  var dx = touches[0].clientX - touches[1].clientX;
+  var dy = touches[0].clientY - touches[1].clientY;
+  return Math.sqrt(dx*dx + dy*dy);
+}
+
+function getTouchMid(touches, rect){
+  return {
+    x: ((touches[0].clientX + touches[1].clientX) / 2) - rect.left,
+    y: ((touches[0].clientY + touches[1].clientY) / 2) - rect.top
+  };
+}
+
+svg.addEventListener('touchstart', function(ev){
+  ev.preventDefault();
+  touchMoved = false;
+  var wrap = document.getElementById('canvasWrap').getBoundingClientRect();
+  if(ev.touches.length === 1){
+    // Single finger — prepare for pan
+    panStart  = {x: ev.touches[0].clientX, y: ev.touches[0].clientY};
+    viewStart = {x: vX, y: vY};
+  } else if(ev.touches.length === 2){
+    // Two fingers — prepare for pinch
+    pinchStartDist  = getTouchDist(ev.touches);
+    pinchStartScale = vS;
+    pinchMidStart   = getTouchMid(ev.touches, wrap);
+    viewStart = {x: vX, y: vY};
+  }
+}, {passive:false});
+
+svg.addEventListener('touchmove', function(ev){
+  ev.preventDefault();
+  touchMoved = true;
+  var g = svg.querySelector('g');
+  if(!g) return;
+  var wrap = document.getElementById('canvasWrap').getBoundingClientRect();
+
+  if(ev.touches.length === 1){
+    // Single finger pan
+    vX = viewStart.x + (ev.touches[0].clientX - panStart.x);
+    vY = viewStart.y + (ev.touches[0].clientY - panStart.y);
+    applyTransform(g);
+  } else if(ev.touches.length === 2){
+    // Pinch zoom — zoom toward midpoint between fingers
+    var dist    = getTouchDist(ev.touches);
+    var mid     = getTouchMid(ev.touches, wrap);
+    var newS    = Math.min(2.5, Math.max(0.2, pinchStartScale * (dist / pinchStartDist)));
+    // Keep midpoint fixed during zoom
+    vX = mid.x - (pinchMidStart.x - viewStart.x) * (newS / pinchStartScale) - (mid.x - pinchMidStart.x);
+    vY = mid.y - (pinchMidStart.y - viewStart.y) * (newS / pinchStartScale) - (mid.y - pinchMidStart.y);
+    vS = newS;
+    applyTransform(g);
+  }
+}, {passive:false});
+
+svg.addEventListener('touchend', function(ev){
+  ev.preventDefault();
+  // If finger lifted without significant movement — treat as tap on canvas (close legend)
+  if(!touchMoved && legendVisible){
+    legendVisible = false;
+    document.getElementById('legend').classList.remove('visible');
+    document.getElementById('legToggle').classList.remove('on');
+  }
+}, {passive:false});
+
+// Zoom control buttons (finger tap on buttons)
+document.getElementById('zoomIn').addEventListener('click', function(){
+  vS = Math.min(2.5, vS*1.2);
+  var g = svg.querySelector('g'); if(g) applyTransform(g);
+});
+document.getElementById('zoomOut').addEventListener('click', function(){
+  vS = Math.max(0.2, vS*0.8);
+  var g = svg.querySelector('g'); if(g) applyTransform(g);
+});
+document.getElementById('zoomFit').addEventListener('click', fitView);
+
+function fitView(){
+  resize();
+  var xs = NODES.map(function(n){return n.x;});
+  var ys = NODES.map(function(n){return n.y;});
+  var minX=Math.min.apply(null,xs)-70, maxX=Math.max.apply(null,xs)+70;
+  var minY=Math.min.apply(null,ys)-60, maxY=Math.max.apply(null,ys)+60;
+  var gw=maxX-minX, gh=maxY-minY;
+  var scale = Math.min(W/gw, H/gh, 1.3);
+  vS = scale;
+  vX = (W-gw*scale)/2 - minX*scale;
+  vY = (H-gh*scale)/2 - minY*scale;
+  var g = svg.querySelector('g');
+  if(g) applyTransform(g);
+}
+
+window.addEventListener('resize', function(){ resize(); fitView(); });
+
+// ============================================================
+// Init
+// ============================================================
+resize();
+renderGraph();
+fitView();
+applyI18n();
+</script>
+</body>
+</html>

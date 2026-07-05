@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="ru" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MWL — Лабиринт атомов (mobile)</title>
+<style>
+/* ============================================================
+   Reset & base
+   ============================================================ */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif}
+.shell{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.d{background:#0f172a}.l{background:#f8fafc}
+.d .t1{color:#f1f5f9}.l .t1{color:#0f172a}
+.d .t2{color:#94a3b8}.l .t2{color:#64748b}
+.d .t3{color:#475569}.l .t3{color:#94a3b8}
+.d .p1{background:#1e293b;border-color:#334155}.l .p1{background:#ffffff;border-color:#e2e8f0}
+.d .p2{background:#334155;border-color:#334155}.l .p2{background:#f1f5f9;border-color:#e2e8f0}
+.d .bd{border-color:#334155!important}.l .bd{border-color:#e2e8f0!important}
+
+/* ============================================================
+   Header
+   ============================================================ */
+.hdr{
+  height:48px;display:grid;grid-template-columns:1fr auto 1fr;
+  align-items:center;padding:0 12px;border-bottom:1px solid;
+  flex-shrink:0;position:relative;z-index:20;
+}
+.hdr-l{display:flex;align-items:center;gap:8px}
+.hdr-c{display:flex;align-items:center;justify-content:center}
+.hdr-r{display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.logo{width:24px;height:24px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand{font-size:12px;font-weight:500}.brand b{color:#22D3EE}
+
+/* Search — mobile: icon by default, overlay on tap */
+.srch-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid;background:transparent}
+.d .srch-icon{border-color:#334155;color:#64748b}.l .srch-icon{border-color:#e2e8f0;color:#94a3b8}
+
+/* Search overlay — covers full header when open */
+.srch-overlay{
+  display:none;position:absolute;inset:0;height:48px;
+  align-items:center;padding:0 12px;gap:8px;z-index:30;
+}
+.srch-overlay.open{display:flex}
+.d .srch-overlay{background:#1e293b}.l .srch-overlay{background:#ffffff}
+.srch-overlay input{
+  flex:1;border-radius:8px;padding:7px 12px;
+  font-size:16px;/* 16px prevents iOS auto-zoom */
+  outline:none;font-family:inherit;border:1px solid;
+}
+.d .srch-overlay input{background:#334155;border-color:#475569;color:#f1f5f9}
+.l .srch-overlay input{background:#f1f5f9;border-color:#e2e8f0;color:#0f172a}
+.srch-close-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:#64748b;border:0;background:transparent}
+
+.lang-btn{width:28px;height:28px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid;background:transparent;font-family:inherit;display:flex;align-items:center;justify-content:center}
+.d .lang-btn{color:#22D3EE;border-color:rgba(34,211,238,0.33)}.l .lang-btn{color:#0e7490;border-color:rgba(34,211,238,0.4)}
+.hav{width:26px;height:26px;min-width:26px;min-height:26px;border-radius:50%;background:#22D3EE;color:#0f172a;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+
+/* ============================================================
+   Dev ctrl-bar
+   ============================================================ */
+.ctrl{display:flex;gap:5px;padding:5px 10px;border-bottom:1px solid;align-items:center;flex-shrink:0;flex-wrap:wrap}
+.tcb{padding:3px 8px;border-radius:7px;font-size:10px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid;background:transparent}
+.d .tcb{color:#94a3b8;border-color:#334155}.l .tcb{color:#64748b;border-color:#e2e8f0}
+.tcb.on{background:#22D3EE!important;color:#0f172a!important;border-color:#22D3EE!important}
+.dv{width:1px;height:14px;margin:0 2px}
+.d .dv{background:#334155}.l .dv{background:#e2e8f0}
+
+/* ============================================================
+   Main — canvas fills all space
+   ============================================================ */
+.main-col{flex:1;position:relative;min-height:0;display:flex;flex-direction:column}
+
+/* Breadcrumb — back arrow, floats above canvas */
+.breadcrumb{
+  position:absolute;top:0;left:0;z-index:5;
+  display:flex;align-items:center;gap:6px;
+  padding:8px 12px 6px;
+  border-radius:0 0 8px 0;
+}
+.d .breadcrumb{background:rgba(15,23,42,0.6)}
+.l .breadcrumb{background:rgba(226,243,247,0.75)}
+.bc-back{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11.5px}
+.d .bc-back{color:#94a3b8}.l .bc-back{color:#64748b}
+.d .bc-back svg{stroke:#64748b}.l .bc-back svg{stroke:#94a3b8}
+[dir="rtl"] .breadcrumb{left:auto;right:0;border-radius:0 0 0 8px}
+[dir="rtl"] .bc-back svg{transform:scaleX(-1)}
+
+/* Canvas */
+.canvas-wrap{
+  flex:1;position:relative;overflow:hidden;
+  background-image:radial-gradient(circle at 1px 1px,rgba(148,163,184,0.08) 1px,transparent 0);
+  background-size:20px 20px;
+}
+.d .canvas-wrap{background-color:#0b1322}
+.l .canvas-wrap{background-color:#e2f3f7}
+svg.lab-graph{
+  width:100%;height:100%;display:block;
+  touch-action:none;-webkit-user-select:none;user-select:none;
+}
+
+/* ============================================================
+   Zoom controls — 30px, bottom-right
+   ============================================================ */
+.zoom-controls{
+  position:absolute;bottom:80px;right:14px;
+  display:flex;flex-direction:column;gap:5px;
+  border-radius:8px;padding:4px;border:1px solid;z-index:6;
+}
+.d .zoom-controls{background:#1e293b;border-color:#334155}
+.l .zoom-controls{background:#ffffff;border-color:#e2e8f0}
+.zoom-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:5px;cursor:pointer}
+.d .zoom-btn{color:#94a3b8}.l .zoom-btn{color:#64748b}
+.d .zoom-btn:active{background:#334155}.l .zoom-btn:active{background:#f1f5f9}
+.leg-toggle.on svg{stroke:#22D3EE!important}
+[dir="rtl"] .zoom-controls{right:auto;left:14px}
+
+/* ============================================================
+   Legend — bottom sheet overlay
+   ============================================================ */
+.leg-backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,0.45);
+  z-index:40;opacity:0;pointer-events:none;
+  transition:opacity 0.2s ease;
+}
+.leg-backdrop.open{opacity:1;pointer-events:auto}
+.leg-sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  border-radius:16px 16px 0 0;border:1px solid;border-bottom:none;
+  padding-bottom:env(safe-area-inset-bottom);
+  transform:translateY(100%);
+  transition:transform 0.22s ease;
+}
+.leg-backdrop.open .leg-sheet{transform:translateY(0)}
+.d .leg-sheet{background:#1e293b;border-color:#334155}
+.l .leg-sheet{background:#ffffff;border-color:#e2e8f0}
+.leg-handle{display:flex;justify-content:center;padding:10px 0 6px}
+.leg-handle-bar{width:36px;height:4px;border-radius:2px}
+.d .leg-handle-bar{background:#334155}.l .leg-handle-bar{background:#e2e8f0}
+.leg-title{font-size:12px;font-weight:600;padding:0 16px 10px}
+.d .leg-title{color:#f1f5f9}.l .leg-title{color:#0f172a}
+.leg-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;padding:0 16px 16px}
+.leg-item{display:flex;align-items:center;gap:8px;font-size:11px}
+.d .leg-item{color:#94a3b8}.l .leg-item{color:#64748b}
+
+/* ============================================================
+   Bottom navigation
+   ============================================================ */
+.bnav{
+  position:absolute;left:0;right:0;bottom:0;
+  display:flex;border-top:1px solid;
+  padding:5px 4px calc(5px + env(safe-area-inset-bottom));
+  z-index:10;flex-shrink:0;
+}
+.d .bnav{background:#1e293b;border-color:#334155}
+.l .bnav{background:#ffffff;border-color:#e2e8f0}
+.bni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:4px 2px;border-radius:8px;cursor:pointer;min-height:44px}
+.d .bni svg{stroke:#475569}.l .bni svg{stroke:#94a3b8}
+.bni.on svg{stroke:#22D3EE!important}
+.bnl{font-size:9.5px;font-weight:500}
+.d .bnl{color:#475569}.l .bnl{color:#64748b}
+.bni.on .bnl{color:#22D3EE!important}
+</style>
+</head>
+<body>
+<div class="shell d" id="shell">
+
+  <!-- Header -->
+  <div class="hdr p1 bd">
+    <div class="hdr-l">
+      <div class="logo">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5"><path d="M12 3l9 4.5v9L12 21l-9-4.5v-9z"/><path d="M12 3v18"/><path d="M3 7.5l9 4.5 9-4.5"/></svg>
+      </div>
+      <span class="brand t1"><b>Math</b> With Love</span>
+    </div>
+    <div class="hdr-c">
+      <div class="srch-icon" onclick="openSearch()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+    </div>
+    <div class="hdr-r">
+      <button class="lang-btn" id="langBtn" onclick="toggleLang()">RU</button>
+      <div class="hav">ИА</div>
+    </div>
+    <!-- Search overlay — full header width -->
+    <div class="srch-overlay" id="srchOverlay">
+      <input type="text" id="searchInput" placeholder="Поиск по лабиринту…" onblur="closeSearch()">
+      <button class="srch-close-btn" onclick="closeSearch()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Dev ctrl-bar -->
+  <div class="ctrl p2 bd">
+    <button class="tcb on" id="btnDark"  onclick="setMode('d')">🌙</button>
+    <button class="tcb"    id="btnLight" onclick="setMode('l')">☀</button>
+    <div class="dv"></div>
+    <span class="t3" style="font-size:10px;">Демо:</span>
+    <button class="tcb on" id="btnS0" onclick="setDemo(0)">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/></svg>
+    </button>
+    <button class="tcb" id="btnS1" onclick="setDemo(1)">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4a8 8 0 0 1 0 16V4z" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="8"/></svg>
+    </button>
+    <button class="tcb" id="btnS2" onclick="setDemo(2)">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </button>
+  </div>
+
+  <!-- Main -->
+  <div class="main-col">
+
+    <!-- Breadcrumb — back arrow -->
+    <div class="breadcrumb">
+      <div class="bc-back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        <span class="t2" data-i18n="bcTheme">Векторы</span>
+      </div>
+    </div>
+
+    <!-- SVG canvas -->
+    <div class="canvas-wrap" id="canvasWrap">
+      <svg class="lab-graph" id="labSvg"></svg>
+
+      <!-- Zoom controls + legend toggle -->
+      <div class="zoom-controls bd">
+        <div class="zoom-btn leg-toggle" id="legToggle" onclick="toggleLegend()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div style="height:1px;margin:1px 4px" class="bd"></div>
+        <div class="zoom-btn" id="zoomIn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        </div>
+        <div class="zoom-btn" id="zoomOut">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        </div>
+        <div class="zoom-btn" id="zoomFit">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend bottom sheet -->
+    <div class="leg-backdrop" id="legBackdrop" onclick="closeLegendOnBackdrop(event)">
+      <div class="leg-sheet bd" id="legSheet">
+        <div class="leg-handle"><div class="leg-handle-bar"></div></div>
+        <div class="leg-title t1" data-i18n="legTitle">Обозначения</div>
+        <div class="leg-grid">
+          <div class="leg-item">
+            <svg width="14" height="14" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="3" fill="none" stroke="#22D3EE" stroke-width="2"/></svg>
+            <span data-i18n="legAtom">Атом</span>
+          </div>
+          <div class="leg-item">
+            <svg width="14" height="14" viewBox="0 0 14 14"><polygon points="7,1 13,7 7,13 1,7" fill="none" stroke="#FBBF24" stroke-width="2"/></svg>
+            <span data-i18n="legKT">КТ</span>
+          </div>
+          <div class="leg-item">
+            <svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" stroke="#22D3EE" stroke-width="3" stroke-linecap="round"/></svg>
+            <span data-i18n="legDone">Пройден</span>
+          </div>
+          <div class="leg-item">
+            <svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" stroke="#a78bfa" stroke-width="3" stroke-linecap="round"/></svg>
+            <span data-i18n="legShortcut">Shortcut</span>
+          </div>
+          <div class="leg-item">
+            <svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" stroke="#f87171" stroke-width="3" stroke-linecap="round"/></svg>
+            <span data-i18n="legReturn">Возврат</span>
+          </div>
+          <div class="leg-item">
+            <svg width="20" height="4"><line x1="0" y1="2" x2="20" y2="2" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4 3"/></svg>
+            <span data-i18n="legCross">Между модулями</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom navigation -->
+    <div class="bnav">
+      <!-- Home -->
+      <div class="bni" id="bniHome">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></svg>
+        <span class="bnl" data-i18n="navHome">Главная</span>
+      </div>
+      <!-- Courses — ACTIVE -->
+      <div class="bni on" id="bniCourses">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 5-10 5L2 8z"/><path d="M7 11.5v4.5a5 5 0 0 0 10 0v-4.5"/><line x1="22" y1="8" x2="22" y2="14"/></svg>
+        <span class="bnl" data-i18n="navCourses">Курсы</span>
+      </div>
+      <!-- Status -->
+      <div class="bni" id="bniStatus">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+        <span class="bnl" data-i18n="navStatus">Статус</span>
+      </div>
+      <!-- Yosi -->
+      <div class="bni" id="bniYosi">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a9 9 0 0 1 9 9c0 3.18-1.65 5.97-4.13 7.59L17 21H7l.13-2.41A9 9 0 0 1 3 11a9 9 0 0 1 9-9z"/><line x1="9" y1="12" x2="9.01" y2="12"/><line x1="12" y1="12" x2="12.01" y2="12"/><line x1="15" y1="12" x2="15.01" y2="12"/></svg>
+        <span class="bnl">Йоси</span>
+      </div>
+      <!-- Profile -->
+      <div class="bni" id="bniProfile">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <span class="bnl" data-i18n="navProfile">Профиль</span>
+      </div>
+    </div>
+
+  </div><!-- /.main-col -->
+</div><!-- /.shell -->
+
+<script>
+// ============================================================
+// i18n
+// ============================================================
+var lang = 'ru';
+var TR = {
+  ru:{
+    navHome:'Главная', navCourses:'Курсы', navStatus:'Статус',
+    navProfile:'Профиль',
+    bcTheme:'Векторы',
+    legTitle:'Обозначения', legAtom:'Атом', legKT:'КТ',
+    legDone:'Пройден', legShortcut:'Shortcut',
+    legReturn:'Возврат', legCross:'Между модулями',
+    stDone:'Завершён', stCurrent:'Текущий', stNext:'Доступен',
+    stLocked:'Заблокирован', stProblem:'Проблема',
+    typAtom:'Атом', typKT:'Контрольная точка'
+  },
+  he:{
+    navHome:'דף הבית', navCourses:'קורסים', navStatus:'סטטוס',
+    navProfile:'פרופיל',
+    bcTheme:'וקטורים',
+    legTitle:'מקרא', legAtom:'אטום', legKT:'נ.ב.',
+    legDone:'הושלם', legShortcut:'קיצור',
+    legReturn:'חזרה', legCross:'בין מודולים',
+    stDone:'הושלם', stCurrent:'נוכחי', stNext:'זמין',
+    stLocked:'נעול', stProblem:'בעיה',
+    typAtom:'אטום', typKT:'נקודת בקרה'
+  }
+};
+
+function t(k){ return TR[lang][k] || k; }
+
+function applyI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var k = el.getAttribute('data-i18n');
+    if(TR[lang][k] !== undefined) el.textContent = TR[lang][k];
+  });
+  var inp = document.getElementById('searchInput');
+  if(inp) inp.placeholder = lang==='ru' ? 'Поиск по лабиринту…' : 'חיפוש במבוך…';
+}
+
+function toggleLang(){
+  lang = lang==='ru' ? 'he' : 'ru';
+  document.getElementById('langBtn').textContent = lang==='ru' ? 'RU' : 'HE';
+  document.getElementById('shell').setAttribute('dir', lang==='he' ? 'rtl' : 'ltr');
+  applyI18n();
+  renderGraph();
+}
+
+// ============================================================
+// Theme
+// ============================================================
+var mode = 'd';
+function setMode(m){
+  mode = m;
+  document.getElementById('shell').className = 'shell ' + m;
+  document.getElementById('btnDark').className  = 'tcb' + (m==='d'?' on':'');
+  document.getElementById('btnLight').className = 'tcb' + (m==='l'?' on':'');
+  renderGraph();
+}
+
+// ============================================================
+// Search overlay
+// ============================================================
+function openSearch(){
+  var ov = document.getElementById('srchOverlay');
+  ov.classList.add('open');
+  setTimeout(function(){ document.getElementById('searchInput').focus(); }, 50);
+}
+
+function closeSearch(){
+  document.getElementById('srchOverlay').classList.remove('open');
+  document.getElementById('searchInput').value = '';
+}
+
+// ============================================================
+// Legend bottom sheet
+// ============================================================
+var legendOpen = false;
+
+function toggleLegend(){
+  legendOpen = !legendOpen;
+  var bd  = document.getElementById('legBackdrop');
+  var btn = document.getElementById('legToggle');
+  bd.classList.toggle('open', legendOpen);
+  btn.classList.toggle('on',  legendOpen);
+}
+
+function closeLegendOnBackdrop(ev){
+  // Close only when tapping the backdrop, not the sheet itself
+  if(ev.target === document.getElementById('legBackdrop')){
+    legendOpen = false;
+    document.getElementById('legBackdrop').classList.remove('open');
+    document.getElementById('legToggle').classList.remove('on');
+  }
+}
+
+// ============================================================
+// Graph data — Module A only (vertical layout, no cross-module)
+// Vertical layout: x = column, y = tier (increases downward)
+// Tier 0 → top, each tier +110px
+// Within a tier, nodes spread horizontally from center
+// ============================================================
+var NODES = [
+  // Tier 0 — root
+  {id:'a1', type:'atom',       title:'Определение вектора', titleHe:'הגדרת וקטור',    x:0,   y:0},
+  // Tier 1 — two branches
+  {id:'a2', type:'atom',       title:'Сложение векторов',   titleHe:'חיבור וקטורים',  x:-75, y:110},
+  {id:'a3', type:'atom',       title:'Умножение на скаляр', titleHe:'כפל בסקלר',       x:75,  y:110},
+  // Tier 2 — converge
+  {id:'a4', type:'atom',       title:'Линейная комбинация', titleHe:'צירוף לינארי',    x:0,   y:220},
+  // Tier 3 — checkpoint
+  {id:'kta',type:'checkpoint', title:'КТ: Основы',          titleHe:'נ.ב.: יסודות',   x:0,   y:330}
+];
+
+var EDGES = [
+  {f:'a1', t:'a2', k:'main'},
+  {f:'a1', t:'a3', k:'main'},
+  {f:'a2', t:'a4', k:'main'},
+  {f:'a3', t:'a4', k:'main'},
+  {f:'a4', t:'kta',k:'main'}
+];
+
+var NB = {};
+NODES.forEach(function(n){ NB[n.id] = n; });
+
+// ============================================================
+// Demo states — engine v17 statuses
+// ============================================================
+var STATES = [
+  // State 0: beginning
+  {
+    st: {a1:'current', a2:'locked', a3:'locked', a4:'locked', kta:'locked'},
+    sg: [], sc: [], sr: []
+  },
+  // State 1: in progress
+  {
+    st: {a1:'done', a2:'done', a3:'next', a4:'next', kta:'locked'},
+    sg: ['a1:a2','a2:a4'],
+    sc: [], sr: []
+  },
+  // State 2: problem + shortcut
+  {
+    st: {a1:'done', a2:'problem', a3:'done', a4:'current', kta:'locked'},
+    sg: ['a1:a2','a1:a3','a3:a4'],
+    sc: ['a1:a4'],
+    sr: ['a2:a1']
+  }
+];
+
+var demoIdx = 0;
+
+function setDemo(i){
+  demoIdx = i;
+  [0,1,2].forEach(function(j){
+    document.getElementById('btnS'+j).className = 'tcb'+(j===i?' on':'');
+  });
+  renderGraph();
+}
+
+function gs(id){ return STATES[demoIdx].st[id] || 'locked'; }
+
+// ============================================================
+// SVG helpers
+// ============================================================
+var NS = 'http://www.w3.org/2000/svg';
+var svg = document.getElementById('labSvg');
+var vX=0, vY=0, vS=1;
+
+function applyT(g){ g.setAttribute('transform','translate('+vX+','+vY+') scale('+vS+')'); }
+
+// Curved edge path between two nodes
+function curvePath(a, b){
+  var dy = (b.y - a.y) * 0.5;
+  return 'M'+a.x+','+a.y+' C'+a.x+','+(a.y+dy)+' '+b.x+','+(b.y-dy)+' '+b.x+','+b.y;
+}
+
+// Arc path — used for shortcut (left) and return (right)
+function arcPath(a, b, side){
+  var mx = (a.x+b.x)/2 + (side==='left' ? -60 : 60);
+  var my = (a.y+b.y)/2;
+  return 'M'+a.x+','+a.y+' Q'+mx+','+my+' '+b.x+','+b.y;
+}
+
+// Node fill color by status
+var FILL_D = {
+  done:    'rgba(34,211,238,0.18)',
+  current: 'rgba(34,211,238,0.10)',
+  next:    'rgba(34,211,238,0.05)',
+  locked:  'rgba(15,23,42,0.5)',
+  problem: 'rgba(248,113,113,0.08)'
+};
+var FILL_L = {
+  done:    'rgba(34,211,238,0.14)',
+  current: 'rgba(34,211,238,0.08)',
+  next:    'rgba(34,211,238,0.04)',
+  locked:  'rgba(255,255,255,0.5)',
+  problem: 'rgba(248,113,113,0.06)'
+};
+
+function strokeCol(n){
+  if(n.type==='checkpoint') return '#FBBF24';
+  var st = gs(n.id);
+  if(st==='done'||st==='current'||st==='next') return '#22D3EE';
+  if(st==='problem') return '#f87171';
+  return mode==='d' ? '#334155' : '#cbd5e1';
+}
+
+function fillCol(n){
+  var st = gs(n.id);
+  return (mode==='d' ? FILL_D : FILL_L)[st] || (mode==='d'?'rgba(15,23,42,0.5)':'rgba(255,255,255,0.5)');
+}
+
+// ============================================================
+// Render graph
+// ============================================================
+function renderGraph(){
+  svg.innerHTML = '';
+  var gR = document.createElementNS(NS,'g');
+  var gE = document.createElementNS(NS,'g');
+  var gN = document.createElementNS(NS,'g');
+  gR.appendChild(gE);
+  gR.appendChild(gN);
+  svg.appendChild(gR);
+  applyT(gR);
+
+  var state = STATES[demoIdx];
+
+  // -- Edges --
+  EDGES.forEach(function(e){
+    var a = NB[e.f], b = NB[e.t];
+    if(!a||!b) return;
+    var sk = e.f+':'+e.t;
+    var isTr = state.sg.indexOf(sk) > -1;
+    var isSc = state.sc.indexOf(sk) > -1;
+    var isRe = state.sr.indexOf(sk) > -1;
+
+    var el = document.createElementNS(NS,'path');
+    el.setAttribute('fill','none');
+    el.setAttribute('stroke-linecap','round');
+
+    if(isRe){
+      el.setAttribute('d', arcPath(a,b,'right'));
+      el.setAttribute('stroke','#f87171');
+      el.setAttribute('stroke-width','3');
+    } else if(isSc){
+      el.setAttribute('d', arcPath(a,b,'left'));
+      el.setAttribute('stroke','#a78bfa');
+      el.setAttribute('stroke-width','3');
+    } else if(isTr){
+      el.setAttribute('d', curvePath(a,b));
+      el.setAttribute('stroke','#22D3EE');
+      el.setAttribute('stroke-width','3');
+    } else {
+      el.setAttribute('d', curvePath(a,b));
+      el.setAttribute('stroke', mode==='d'?'#334155':'#cbd5e1');
+      el.setAttribute('stroke-width','2');
+    }
+    gE.appendChild(el);
+  });
+
+  // -- Nodes --
+  NODES.forEach(function(n){
+    var st = gs(n.id);
+    var w = 36, h = 36;
+    var sc = strokeCol(n), fc = fillCol(n);
+
+    var g = document.createElementNS(NS,'g');
+    g.setAttribute('transform','translate('+n.x+','+n.y+')');
+    if(st==='locked') g.setAttribute('opacity','0.45');
+    g.style.cursor = st==='locked' ? 'default' : 'pointer';
+
+    // Shape
+    var shape;
+    if(n.type==='checkpoint'){
+      shape = document.createElementNS(NS,'polygon');
+      var r = w/2;
+      shape.setAttribute('points','0,'+(-r)+' '+r+',0 0,'+r+' '+(-r)+',0');
+    } else {
+      shape = document.createElementNS(NS,'rect');
+      shape.setAttribute('x',-w/2); shape.setAttribute('y',-h/2);
+      shape.setAttribute('width',w); shape.setAttribute('height',h);
+      shape.setAttribute('rx','9');
+    }
+    shape.setAttribute('fill',fc);
+    shape.setAttribute('stroke',sc);
+    if(st==='current')       shape.setAttribute('stroke-width','2.5');
+    else if(st==='next')     shape.setAttribute('stroke-width','1.5');
+    else if(st==='problem'){ shape.setAttribute('stroke-width','2'); shape.setAttribute('stroke-dasharray','5 3'); }
+    else if(st==='locked'){  shape.setAttribute('stroke-width','1.5'); shape.setAttribute('stroke-dasharray','3 3'); }
+    else                     shape.setAttribute('stroke-width','2');
+    g.appendChild(shape);
+
+    // Badge
+    var badge = null;
+    if(st==='done'){
+      badge = document.createElementNS(NS,'text');
+      badge.setAttribute('y','4'); badge.setAttribute('text-anchor','middle');
+      badge.setAttribute('font-size','13'); badge.setAttribute('font-weight','700');
+      badge.setAttribute('fill', mode==='d'?'#22D3EE':'#0e7490');
+      badge.setAttribute('pointer-events','none');
+      badge.textContent = '✓';
+    } else if(st==='current'){
+      badge = document.createElementNS(NS,'text');
+      badge.setAttribute('y','5'); badge.setAttribute('text-anchor','middle');
+      badge.setAttribute('font-size','13'); badge.setAttribute('pointer-events','none');
+      badge.textContent = '🧑‍🎓';
+    } else if(st==='problem'){
+      badge = document.createElementNS(NS,'text');
+      badge.setAttribute('y','4'); badge.setAttribute('text-anchor','middle');
+      badge.setAttribute('font-size','12'); badge.setAttribute('fill','#f87171');
+      badge.setAttribute('pointer-events','none');
+      badge.textContent = '⚠';
+    }
+    if(badge) g.appendChild(badge);
+
+    // Label below node
+    var title = (lang==='he' ? n.titleHe : n.title) || '';
+    var label = document.createElementNS(NS,'text');
+    label.setAttribute('y', h/2+14+'');
+    label.setAttribute('text-anchor','middle');
+    label.setAttribute('font-size','10');
+    label.setAttribute('font-weight','500');
+    label.setAttribute('pointer-events','none');
+    label.setAttribute('fill', st==='locked'?(mode==='d'?'#475569':'#94a3b8'):(mode==='d'?'#e2e8f0':'#0f172a'));
+    label.textContent = title.length>16 ? title.slice(0,15)+'…' : title;
+    g.appendChild(label);
+
+    if(n.type==='checkpoint'){
+      var sub = document.createElementNS(NS,'text');
+      sub.setAttribute('y', h/2+25+'');
+      sub.setAttribute('text-anchor','middle');
+      sub.setAttribute('font-size','8.5');
+      sub.setAttribute('fill', mode==='d'?'#64748b':'#94a3b8');
+      sub.setAttribute('pointer-events','none');
+      sub.textContent = lang==='he'?'נ.ב.':'КТ';
+      g.appendChild(sub);
+    }
+
+    // Tap: direct navigation (no tooltip on mobile)
+    g.addEventListener('click', function(ev){ onNodeTap(ev, n); });
+
+    gN.appendChild(g);
+  });
+
+  // Pulse ring for current node
+  var curN = NODES.filter(function(n){ return gs(n.id)==='current'; })[0];
+  if(curN){
+    var rg = document.createElementNS(NS,'g');
+    rg.setAttribute('transform','translate('+curN.x+','+curN.y+')');
+    rg.setAttribute('opacity','0.3');
+    rg.style.pointerEvents = 'none';
+    var rs;
+    if(curN.type==='checkpoint'){
+      rs = document.createElementNS(NS,'polygon');
+      var rr = 25;
+      rs.setAttribute('points','0,'+(-rr)+' '+rr+',0 0,'+rr+' '+(-rr)+',0');
+    } else {
+      rs = document.createElementNS(NS,'rect');
+      rs.setAttribute('x','-24'); rs.setAttribute('y','-24');
+      rs.setAttribute('width','48'); rs.setAttribute('height','48');
+      rs.setAttribute('rx','13');
+    }
+    rs.setAttribute('fill','none');
+    rs.setAttribute('stroke','#22D3EE');
+    rs.setAttribute('stroke-width','2');
+    rs.setAttribute('stroke-dasharray','5 3');
+    rg.appendChild(rs);
+    gN.appendChild(rg);
+  }
+}
+
+// ============================================================
+// Node tap handler — no tooltip, direct navigation
+// ============================================================
+function onNodeTap(ev, n){
+  ev.stopPropagation();
+  var st = gs(n.id);
+  if(st==='locked') return;
+  console.log('Navigate → '+(n.type==='checkpoint'?'/exam/':'/lesson/')+n.id);
+}
+
+// ============================================================
+// Touch pan + pinch-zoom
+// ============================================================
+var panStart={x:0,y:0}, viewStart={x:0,y:0};
+var pinchStartDist=0, pinchStartScale=1, pinchMidStart={x:0,y:0};
+var touchMoved=false;
+
+function getTouchDist(ts){
+  var dx=ts[0].clientX-ts[1].clientX, dy=ts[0].clientY-ts[1].clientY;
+  return Math.sqrt(dx*dx+dy*dy);
+}
+function getTouchMid(ts, rect){
+  return {x:((ts[0].clientX+ts[1].clientX)/2)-rect.left, y:((ts[0].clientY+ts[1].clientY)/2)-rect.top};
+}
+
+svg.addEventListener('touchstart', function(ev){
+  ev.preventDefault();
+  touchMoved = false;
+  var wrap = document.getElementById('canvasWrap').getBoundingClientRect();
+  if(ev.touches.length===1){
+    panStart  = {x:ev.touches[0].clientX, y:ev.touches[0].clientY};
+    viewStart = {x:vX, y:vY};
+  } else if(ev.touches.length===2){
+    pinchStartDist  = getTouchDist(ev.touches);
+    pinchStartScale = vS;
+    pinchMidStart   = getTouchMid(ev.touches, wrap);
+    viewStart = {x:vX, y:vY};
+  }
+},{passive:false});
+
+svg.addEventListener('touchmove', function(ev){
+  ev.preventDefault();
+  touchMoved = true;
+  var g = svg.querySelector('g');
+  if(!g) return;
+  var wrap = document.getElementById('canvasWrap').getBoundingClientRect();
+  if(ev.touches.length===1){
+    vX = viewStart.x + (ev.touches[0].clientX - panStart.x);
+    vY = viewStart.y + (ev.touches[0].clientY - panStart.y);
+    applyT(g);
+  } else if(ev.touches.length===2){
+    var dist  = getTouchDist(ev.touches);
+    var mid   = getTouchMid(ev.touches, wrap);
+    var newS  = Math.min(3, Math.max(0.2, pinchStartScale*(dist/pinchStartDist)));
+    vX = mid.x - (pinchMidStart.x - viewStart.x)*(newS/pinchStartScale) - (mid.x - pinchMidStart.x);
+    vY = mid.y - (pinchMidStart.y - viewStart.y)*(newS/pinchStartScale) - (mid.y - pinchMidStart.y);
+    vS = newS;
+    applyT(g);
+  }
+},{passive:false});
+
+svg.addEventListener('touchend', function(ev){
+  ev.preventDefault();
+},{passive:false});
+
+// Zoom buttons
+document.getElementById('zoomIn').addEventListener('click', function(){
+  vS=Math.min(3,vS*1.25); var g=svg.querySelector('g'); if(g) applyT(g);
+});
+document.getElementById('zoomOut').addEventListener('click', function(){
+  vS=Math.max(0.2,vS*0.8); var g=svg.querySelector('g'); if(g) applyT(g);
+});
+document.getElementById('zoomFit').addEventListener('click', fitView);
+
+// ============================================================
+// Fit view — fit graph width to canvas, center vertically
+// ============================================================
+function fitView(){
+  var wrap = document.getElementById('canvasWrap');
+  // Account for bottom nav height (~64px)
+  var W = wrap.clientWidth;
+  var H = wrap.clientHeight;
+  var xs = NODES.map(function(n){return n.x;});
+  var ys = NODES.map(function(n){return n.y;});
+  var minX=Math.min.apply(null,xs)-60, maxX=Math.max.apply(null,xs)+60;
+  var minY=Math.min.apply(null,ys)-50, maxY=Math.max.apply(null,ys)+60;
+  var gw=maxX-minX, gh=maxY-minY;
+  // Fit by width primarily (vertical graph — pan down for rest)
+  vS = Math.min(W/gw, H/gh, 1.4);
+  vX = (W-gw*vS)/2 - minX*vS;
+  vY = (H-gh*vS)/2 - minY*vS;
+  var g = svg.querySelector('g');
+  if(g) applyT(g);
+}
+
+window.addEventListener('resize', function(){ renderGraph(); fitView(); });
+
+// ============================================================
+// Init
+// ============================================================
+renderGraph();
+setTimeout(fitView, 50);
+applyI18n();
+</script>
+</body>
+</html>

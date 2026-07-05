@@ -61,9 +61,10 @@ Controls which UI shell is rendered.
 Header: [Logo] [Platform name]    [RU/HE] [Avatar menu]
 Sidebar (desktop/tablet) — 3 groups:
   Group 1 — Main:
-    - Дашборд         → /dashboard
-    - Курсы           → /courses
-    - Достижения      → /achievements
+    - Главная          → /dashboard      icon: home                    ← первая позиция, точка входа после логина
+    - Курсы           → /courses        icon: graduation cap (шапка)  ← каталог курсов, 3 уровня
+    - Статус          → /status         icon: map-pin                 ← текущее положение + список тем
+    - Достижения      → /achievements   icon: trophy
   Group 2 — Tools:
     - Формулы         → /formulas
     - Лаборатория     → /lab  (placeholder)
@@ -71,11 +72,19 @@ Sidebar (desktop/tablet) — 3 groups:
     - Помощь          → opens AI Chat (Yosi) in help context mode
     - Настройки       → /settings
 Bottom nav (mobile only, 5 tabs):
-  - Главная           → /dashboard
-  - Курсы             → /courses
-  - Достижения        → /achievements
+  - Главная            → /dashboard      icon: home
+  - Курсы             → /courses        icon: graduation cap
+  - Статус            → /status         icon: map-pin
   - Йоси              → opens AI Chat drawer
   - Профиль           → /settings
+
+Notes:
+  - Главная (/dashboard) — точка входа после логина: приветствие, кнопка «Продолжить», статистика, Йоси
+  - Курсы (/courses) — 3-уровневый каталог: шейлон → тема → лабиринт модуля
+  - Статус (/status) — текущее положение студента в лабиринте + список открытых/завершённых тем;
+    студент может параллельно учиться по нескольким темам
+  - Иконка map-pin для «Статус»: интуитивная метафора «где я сейчас» — положение на маршруте
+  - Retrofit: применить во всех существующих макетах при следующем касании
 ```
 
 ### Author shell
@@ -344,30 +353,38 @@ Submit → results overlay (full-screen)
 
 ## 4. Maze / Labyrinth navigation
 
+Лабиринт живёт внутри раздела Курсы (уровень 3). Отдельного URL /maze нет.
+
 ```
-/maze
+/courses/[themeId]/[moduleId]
   ↓
-Renders Progress Maze SVG (ProgressMaze.tsx)
-Node states:
-  done          → teal fill, checkmark
-  current       → cyan border pulse
-  next          → visible, clickable
-  problem       → red badge
-  remedial-need → amber badge
+Renders Atom Labyrinth SVG — engine v17 (ProgressMaze.tsx)
+Node states — engine v17:
+  done          → solid fill in group color, dark checkmark
+  current       → colored ring (2.5px) + 🧑‍🎓 token
+  next          → lighter ring, dimmed fill — clickable
   locked        → greyed out, not clickable
-  checkpoint    → amber stroke (always distinct)
-  ↓
-Click on unlocked node:
-  atom node     → /lesson/[atomId]  (step 1, or resume at current step)
-  checkpoint    → /exam/[checkpointId]
-  ↓
-Click on locked node:
-  → tooltip: "Сначала пройдите: [prerequisite atom names]"
-  ↓
+  problem       → red dashed ring
+  remedial-need → red dashed ring + remedial node below
+  checkpoint    → amber stroke (always distinct), diamond shape
+
+Edges:
+  traversed path  → solid cyan line, 3px
+  shortcut (used) → solid purple arc above row, 3px
+  return path     → solid red arc below row, 3px
+  cross-module dep (locked) → dashed gray line to neighbor module node
+
+Hover on node → info panel (name, status, type)
+Click on unlocked atom node → /lesson/[atomId]  (step 1, or resume at current step)
+Click on unlocked checkpoint → /exam/[checkpointId]
+Click on locked node → tooltip: "Сначала пройдите: [prerequisite atom names]"
+
 Checkpoint unlock animation:
   Node border animates amber glow
   Toast bubble appears above node: "🏆 Контрольная точка открыта!"
   Toast auto-dismisses after 4s
+
+Back button → /courses/[themeId]  (module list)
 ```
 
 ---
@@ -411,15 +428,27 @@ Syllabus popup (theme ready):
 ### Level 2 — /courses/[themeId] (Theme → module list)
 
 ```
-Breadcrumbs: Курсы / [Theme name]
+Breadcrumbs: Курсы / [Theme name]  (transparent bg, below header)
 
-List of modules, each showing:
-  - Module name
-  - List of sub-topics covered
-  - Atom count per sub-topic: completed / total
-  - Points earned in this module
+Page header:
+  - Theme icon (SVG, color: #22D3EE) + theme name + exam badge
+  - Right: modules done/total + points earned/max
+  - Below: overall theme progress bar
 
-Click on module → /courses/[themeId]/[moduleId]
+Module cards (2-col grid desktop/tablet landscape, 1-col tablet portrait/mobile):
+  Each card:
+    - Module number badge + score (earned/max pts, amber)
+    - Module name
+    - Status label (Завершён / В процессе) + atom count (done/total)
+    - Progress bar (green = done, cyan = in progress)
+    - Divider
+    - Subtopic list: dot (green/cyan/gray) + name + full description
+    - Footer: КТ indicator (amber) + arrow →
+
+Locked modules: opacity 0.5, lock icon instead of score, no arrow
+KT card: dashed amber border, КТ badge
+
+Click on unlocked module → /courses/[themeId]/[moduleId]
 ```
 
 ### Level 3 — /courses/[themeId]/[moduleId] (Atom labyrinth)
@@ -431,6 +460,33 @@ Atom labyrinth — engine v17 (same as dashboard maze)
 Cross-module prerequisite dependencies shown as dashed lines on locked nodes
 Click on unlocked atom node → /lesson/[atomId]
 Click on locked atom node → tooltip with missing prerequisites
+```
+
+---
+
+## 5b. Status page (/status)
+
+```
+/status
+  ↓
+Student personal space — «где я сейчас»
+
+Two sections:
+
+1. Active themes (параллельное обучение — может быть несколько):
+   For each active theme:
+     - Theme name + exam badge
+     - Current module name + progress bar
+     - "Продолжить" button → /courses/[themeId]/[moduleId] (current node)
+
+2. All themes overview:
+   List of all themes the student has touched, grouped by shalon (35571 / 35572):
+     done       → green checkmark, score
+     in_progress → cyan, last module name
+     not_started → gray, locked visual
+
+Sidebar active item: Статус (map-pin icon)
+Breadcrumbs: none (top-level page)
 ```
 
 ---
@@ -462,11 +518,13 @@ Re-access: sidebar "Как работает платформа" → /onboarding
 ```
 /                          Landing page (public)
 /onboarding                Welcome Tour (protected, student — first login only)
-/dashboard                 Student dashboard (protected)
+/dashboard                 Главная — точка входа после логина: приветствие, кнопка «Продолжить», статистика, Йоси (protected)
+                           Entry point after login for all student roles.
 /courses                   Course catalog: two exam-type cards (35571 / 35572), themes with progress (protected)
 /courses/[themeId]         Theme detail: module list with atom counts and points (protected)
 /courses/[themeId]/[moduleId]  Atom labyrinth for a specific module — engine v17 (protected)
-/achievements              Progress + achievements (protected)
+/status                    Student status: active themes + current labyrinth position(s) + all themes overview (protected)
+/achievements              Achievements: badges, streaks, XP history (protected)
 /formulas                  Formula reference — official + platform (protected)
 /lab                       Laboratory — interactive 3D/graph env (protected, placeholder)
 /lesson/[atomId]           Lesson theory step (protected)
@@ -497,6 +555,7 @@ Re-access: sidebar "Как работает платформа" → /onboarding
 | /dashboard | ✓ | ✓ | redirect → /constructor/dashboard | ✓ |
 | /courses | ✓ | ✓ | ✓ | ✓ |
 | /courses/* | ✓ | ✓ | ✓ | ✓ |
+| /status | ✓ | ✓ | ✗ → /dashboard | ✓ |
 | /achievements | ✓ | ✓ | ✗ → /dashboard | ✓ |
 | /formulas | ✓ | ✓ | ✓ | ✓ |
 | /lab | ✓ | ✓ | ✓ | ✓ |
@@ -566,5 +625,7 @@ Checkpoint unlock toast also triggers labyrinth node animation (separate from to
 
 ---
 
-*Created: 2026-06-26 · Updated: 2026-06-29 — /courses three-level hierarchy added (§5); student shell updated: Курсы /courses, Достижения /achievements; URL structure and access matrix updated*
+*Created: 2026-06-26 · Updated: 2026-06-30 — Student shell restructured: Курсы → первая позиция, Дашборд → «Мой статус» / «מצבי» с иконкой map-pin. §5 Level 2 spec updated.*
+*Updated: 2026-07-05 — Student shell revised: Дашборд восстановлен как первый пункт (home icon, точка входа после логина); Курсы → второй пункт; «Мой статус» переименован в «Статус» и перенесён на /status (третий пункт, map-pin); /maze упразднён как отдельный URL — лабиринт живёт в /courses/[themeId]/[moduleId]; добавлен §5b spec для /status; добавлен /status в URL structure и access control matrix.*
+*Updated: 2026-07-05 (2) — «Дашборд» переименован в «Главная» / «דף הבית» (студенческий пункт меню, позиция 1, home icon). Иконка «Формулы» — Σ (Tabler: ti-sum). Retrofit: применить при следующем касании каждого файла.*
 *Cross-references: PLAN.md (phases), DESIGN_SYSTEM.md (components), MWL_CONTENT_ARCHITECTURE.md (content model)*
