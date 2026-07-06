@@ -865,19 +865,60 @@ wrong:   dark bg #250808 color #f87171  |  light bg #fef2f2 color #dc2626
 ## 13. AI Chat Drawer (Professor Yosi)
 
 Approved: all pages, both themes, RU (LTR) + HE (RTL) (June 2026).
+Voice input: deferred until after pilot launch.
 
 ### Trigger button
+
+Amber pill-button, `position: fixed`, bottom-right corner, `24px` offset from edges.
 
 ```
 dark:  bg #FBBF2418, border 1.5px #FBBF2455, color #FBBF24
 light: bg #FEF9EC,   border 1.5px #FBBF2488, color #92400e
-icon 🧑‍🏫 + text "Спросить Йоси" / "שאל את יוסי"
 border-radius: 24px
+icon: compass SVG (inline, no text) OR compass + "Спросить Йоси" / "שאל את יוסי"
 ```
 
-### Drawer
+Icon: deferred decision (PNG vs SVG). Both variants (icon-only and icon+text) need to be shown in mockup.
 
-Slides up from bottom, `transform: translateY`, `cubic-bezier(0.32,0.72,0,1)`, 350ms. Dim overlay behind. Max-height 90%. Handle: 36×4px pill, slate-700/slate-300.
+### Layout by breakpoint
+
+| Breakpoint | Component type | Size | Position |
+|---|---|---|---|
+| Desktop | Floating card | 380×520px | fixed bottom-right, 24px offset |
+| Tablet landscape | Floating card | 340×460px | fixed bottom-right, 20px offset |
+| Tablet portrait | Bottom sheet | 75% screen height | slides up from bottom |
+| Mobile | Bottom sheet | 75% screen height | slides up from bottom |
+
+### Floating card (desktop / tablet landscape)
+
+No backdrop. Closes on × button or click outside. Not draggable (fixed position).
+Animation: `opacity + transform: translateY(8px → 0)`, 200ms ease-out.
+
+### Bottom sheet (tablet portrait / mobile)
+
+Slides up from bottom, `transform: translateY`, `cubic-bezier(0.32,0.72,0,1)`, 350ms.
+Backdrop: `rgba(0,0,0,0.4)`. Closes on × or tap on backdrop.
+Handle: 36×4px pill, `#334155` dark / `#cbd5e1` light.
+
+### Context strip
+
+Single line at top of drawer/card. Two slots separated by `·`.
+
+```
+[compass icon] {current page}  ·  [route icon] {theme} / {module}
+```
+
+- Compass icon (16×16) = navigational context (current page)
+- Route icon (16×16) = learning context (current theme / module)
+- Both icons: stroke `#94a3b8` dark / `#64748b` light, same as `.t2`
+- Strip bg: `#1e293b` dark / `#f8fafc` light, border-bottom 1px
+
+### Opening behaviour
+
+Opens with automatic greeting from Yosi. No empty state.
+Greeting examples:
+- RU: «Привет! Я профессор Йоси. Чем могу помочь?»
+- HE: «שלום! אני פרופסור יוסי. במה אוכל לעזור?»
 
 ### Messages
 
@@ -895,13 +936,23 @@ Student bubble:
   border-radius LTR 10px 3px 10px 10px | RTL 3px 10px 10px 10px
 ```
 
+### Input area
+
+Textarea with auto-resize + char counter (always visible). Send button right of textarea.
+
+```
+Placeholder RU: «Задай вопрос профессору Йоси…»
+Placeholder HE: «שאל את פרופסור יוסי…»
+```
+
 ### RTL full mirror (HE mode)
 
 - `drawer`, `ctx-strip` → `dir="rtl"`
-- Input padding swaps, buttons group moves before textarea in DOM
-- `textarea` → `dir="rtl"`, `text-align:right`
+- Input padding swaps, send button moves to left of textarea
+- `textarea` → `dir="rtl"`, `text-align: right`
 - Bubble border-radius flips (see above)
 - Yosi right side, student left side
+- Context strip: compass right slot, route left slot
 
 ### Text answer type (AI-checked)
 
@@ -911,7 +962,7 @@ Third answer type — free-form textarea, checked by AI against a pre-stored ref
 AI checking indicator:
   dark:  bg #0f1e2e, border slate-800
   light: bg #f0f8fb, border slate-200
-  🤖 icon + "AI проверяет..." text + 3 amber bounce dots
+  spinner icon + "AI проверяет..." text + 3 amber bounce dots
 
 AI feedback block:
   correct: dark bg #0a2010 border green-400/20  | light bg #f0fdf4
@@ -1968,6 +2019,107 @@ Mobile: sheet снизу (§23). Desktop/tablet: centered modal (§4).
 
 ---
 
+## 26. Input Fields
+
+Reference implementation: `mwl_settings_desktop.html` — classes `.finp` + `.inp`.
+Strategy: tokens documented here for Next.js `<Input />` component. HTML mockups keep existing class names — no retrofit needed.
+
+### Text input
+
+```css
+/* Base — layout and shape */
+.finp {
+  width: 100%;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  border: 1px solid;
+  transition: border-color 0.15s;
+}
+
+/* Default state */
+.d .inp { background: #0f172a; border-color: #334155; color: #f1f5f9; }
+.l .inp { background: #ffffff; border-color: #e2e8f0; color: #0f172a; }
+
+/* Placeholder */
+.d .inp::placeholder { color: #475569; }
+.l .inp::placeholder { color: #94a3b8; }
+
+/* Focus state — cyan border, background unchanged */
+.d .inp:focus { border-color: #22D3EE; background: #0f172a; }
+.l .inp:focus { border-color: #22D3EE; background: #ffffff; }
+
+/* Error state — red border (applies alongside .inp) */
+.finp.error { border-color: #f87171 !important; }
+
+/* Disabled state — reduced opacity, no interaction */
+.d .inp:disabled { background: #1e293b; color: #475569; border-color: #334155; cursor: not-allowed; }
+.l .inp:disabled { background: #f8fafc; color: #94a3b8; border-color: #e2e8f0; cursor: not-allowed; }
+
+/* Readonly state — same colors as disabled, cursor allows text selection */
+.d .inp:read-only { background: #1e293b; color: #475569; border-color: #334155; cursor: text; }
+.l .inp:read-only { background: #f8fafc; color: #94a3b8; border-color: #e2e8f0; cursor: text; }
+```
+
+### Field group structure
+
+Label above field, hint/error below. All three are optional.
+
+```html
+<div class="field">
+  <label class="field-label t2">Имя</label>
+  <input class="finp inp" type="text" placeholder="…">
+  <span class="field-hint t3">Hint text</span>       <!-- optional -->
+  <span class="err-msg">Error message</span>          <!-- hidden by default -->
+</div>
+```
+
+```css
+.field        { display: flex; flex-direction: column; gap: 5px; }
+.field-label  { font-size: 11px; font-weight: 500; }
+.field-hint   { font-size: 10px; margin-top: 3px; }
+.err-msg      { font-size: 10px; color: #f87171; margin-top: 3px; display: none; }
+.err-msg.show { display: block; }
+```
+
+### Textarea
+
+Same tokens as text input. Fixed height via `rows` or `min-height`. `resize: none`.
+
+```css
+textarea.finp.inp {
+  resize: none;
+  line-height: 1.6;
+  min-height: 90px;
+}
+```
+
+### Answer input in test/exam (numeric)
+
+Spec deferred — depends on atom content structure. Current mockup uses inline styles (64×34px, monospace, centered). Will be formalised as a separate component when atom content authoring begins.
+
+### Correct / incorrect states (test answer fields)
+
+Applied after student submits answer. Uses semantic colors from §1.
+
+```css
+/* Correct */
+.d .inp.correct { border-color: #4ade80; background: rgba(74,222,128,0.05); }
+.l .inp.correct { border-color: #16a34a; background: rgba(22,163,74,0.05); }
+
+/* Incorrect */
+.d .inp.incorrect { border-color: #f87171; background: rgba(248,113,113,0.05); }
+.l .inp.incorrect { border-color: #dc2626; background: rgba(220,38,38,0.05); }
+```
+
+### Label positioning
+
+Static label above field (current standard in all mockups). Floating label (animates on focus) not used — deferred decision.
+
+---
+
 ## 19. Open Questions
 
 - [ ] **Rich text + formulas engineering spike** — `contenteditable` + inline `<math-field>` + RTL bidi is a hard implementation problem. MathLive's virtual keyboard toggle appears despite `virtual-keyboard-mode="off"` in some browsers. Placeholder navigation (#0, #1 slots) inside shadow DOM across bidi boundaries needs careful testing. Must be solved as a dedicated spike in Next.js before Фаза 8, not in HTML mockups.
@@ -1980,14 +2132,15 @@ Mobile: sheet снизу (§23). Desktop/tablet: centered modal (§4).
 - [ ] Formula AI-check: prompt format, equivalent-form comparison, backend not designed.
 - [x] Terminology finalized: "Курсы" (/courses) is the student-facing navigation label for the course catalog. "Темы" is the internal architecture term (content grouping). "Атом" is the base content unit. "Блок" retired.
 - [ ] Maze navigation layer: architecturally sketched (§7 MWL_CONTENT_ARCHITECTURE), not implemented.
-- [ ] Input fields spec: states default/focus/error/disabled — not yet added to this document.
+- [x] Input fields spec: states default/focus/error/disabled/readonly — added as §26.
 - [x] Settings page spec — added as §20.
 - [ ] Mobile formula rendering: KaTeX font size on student-facing mobile screens — open when needed.
 
 ---
 
 *Last updated: July 2026 (05/07/2026 — §22 student shell nav revised: Дашборд восстановлен как позиция 1 (home icon); Курсы → позиция 2; «Статус» (бывш. «Мой статус») → позиция 3, маршрут /status, map-pin icon; Достижения → позиция 4; mobile bottom nav обновлён: Дашборд/Курсы/Статус/Йоси/Профиль).*
-*Last updated: 2026-07-06 — §22 updated: (1) lang-btn replaced by globe-dropdown (.lg-wrap/.lg-dropdown/.lg-item) — new standard for all breakpoints; (2) avatar-dropdown added (.av-wrap/.av-dropdown/.av-item, 140px, 3 items: Profile/Settings/Logout, danger style for Logout); (3) mobile bottom nav tabs finalised: Главная/Курсы/Статус/Лаборатория/Помощь(?); (4) bottom nav RTL rule changed — direction:ltr removed, .bnav now mirrors on dir=rtl; (5) search input position: inset-inline-end replaces right (RTL-safe).*
+*Last updated: 2026-07-06 — §13 Yosi component fully specified: floating card (desktop/tablet landscape) vs bottom sheet (tablet portrait/mobile), context strip (compass + route icons), opening greeting, input area with char counter, RTL full mirror, voice input deferred to post-pilot. §26 Input Fields added.*
+*Last updated: 2026-07-06 — §22 updated: globe-dropdown, avatar-dropdown, bottom nav RTL mirroring, search inset-inline-end.*
 *(05/07/2026 — §22: «Дашборд» переименован в «Главная» / «דף הבית»; иконка «Формулы» — Σ (Tabler: ti-sum). Retrofit: применить при следующем касании каждого файла.)*
 *(05/07/2026 — §15: desktop-only rule добавлено для всего конструктора контента (§15–§18). Tablet и mobile версии редакторов не предусмотрены.)*
 *(05/07/2026 — §19 Shalon Manager добавлен: пятый экран конструктора, спецификация утверждена, мокап pending.)*
