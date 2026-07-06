@@ -1743,9 +1743,70 @@ Right-side order (LTR): `[lang-btn]` `[hico…]` `[avatar]`
 
 **Иконка map-pin для «Статус»**: интуитивная метафора «где я сейчас» — положение на маршруте/карте. Не конфликтует с другими иконками системы.
 
-**Mobile bottom nav (5 tabs)**: Главная / Курсы / Статус / Йоси / Профиль
+**Mobile bottom nav (5 tabs)**: Главная / Курсы / Статус / Лаборатория / Помощь(?)
 
-**Retrofit**: применить во всех существующих макетах при следующем касании (dashboard, settings, achievements, courses).
+Помощь(?) — заглушка; при реализации компонента Йоси (Phase 6) откроет AI Chat Drawer.
+
+**RTL поведение bottom nav**: `.bnav` зеркалируется при `dir="rtl"` — `direction:ltr` НЕ применяется. Табы визуально меняют порядок на зеркальный при иврите.
+
+**Retrofit**: применить во всех существующих макетах при следующем касании (dashboard, settings, achievements, courses, lesson, test, exam). Убрать `direction:ltr` с `.bnav` во всех mobile-макетах.
+
+### Lang globe dropdown
+
+Заменяет `.lang-btn` во всех макетах. Иконка глобуса в `.hico` 28×28, клик → dropdown с языками.
+
+```css
+.lg-wrap { position: relative; flex-shrink: 0; }
+.lg-dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  min-width: 80px; border-radius: 10px; border: 1px solid;
+  overflow: hidden; z-index: 100;
+  opacity: 0; transform: translateY(-6px); pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease;
+}
+.lg-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.d .lg-dropdown { background: #1e293b; border-color: #334155; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.l .lg-dropdown { background: #ffffff; border-color: #e2e8f0; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+.lg-item { display: flex; align-items: center; justify-content: space-between;
+           gap: 10px; padding: 9px 14px; cursor: pointer; font-size: 12px;
+           font-weight: 500; transition: background .1s; min-height: 44px; }
+.lg-item.on { color: #22D3EE; }
+.lg-check { width: 12px; height: 12px; flex-shrink: 0; opacity: 0; }
+.lg-item.on .lg-check { opacity: 1; }
+.lg-overlay { position: fixed; inset: 0; z-index: 99; display: none; }
+.lg-overlay.open { display: block; }
+/* RTL */
+[dir="rtl"] .lg-dropdown { right: auto; left: 0; }
+```
+
+Search input: `position: absolute; inset-inline-end: 32px` (RTL-safe, replaces `right: 32px`).
+
+### Avatar dropdown
+
+Аватар в хедере — кликабельный, открывает dropdown с пунктами Профиль / Настройки / Выйти.
+
+```css
+.av-wrap { position: relative; flex-shrink: 0; }
+.av-dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  width: 140px; border-radius: 10px; border: 1px solid;
+  overflow: hidden; z-index: 100;
+  opacity: 0; transform: translateY(-6px); pointer-events: none;
+  transition: opacity .15s ease, transform .15s ease;
+}
+.av-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.av-item { display: flex; align-items: center; gap: 10px;
+           padding: 9px 14px; cursor: pointer; font-size: 12px;
+           font-weight: 500; min-height: 44px; transition: background .1s; }
+.av-item.danger { color: #f87171; }
+.av-divider { height: 1px; margin: 2px 0; }
+.av-overlay { position: fixed; inset: 0; z-index: 99; display: none; }
+.av-overlay.open { display: block; }
+/* RTL */
+[dir="rtl"] .av-dropdown { right: auto; left: 0; }
+```
+
+Behaviour: opening one dropdown closes the other. Both use separate overlays.
 
 ```tsx
 const pathname = usePathname()
@@ -1926,6 +1987,7 @@ Mobile: sheet снизу (§23). Desktop/tablet: centered modal (§4).
 ---
 
 *Last updated: July 2026 (05/07/2026 — §22 student shell nav revised: Дашборд восстановлен как позиция 1 (home icon); Курсы → позиция 2; «Статус» (бывш. «Мой статус») → позиция 3, маршрут /status, map-pin icon; Достижения → позиция 4; mobile bottom nav обновлён: Дашборд/Курсы/Статус/Йоси/Профиль).*
+*Last updated: 2026-07-06 — §22 updated: (1) lang-btn replaced by globe-dropdown (.lg-wrap/.lg-dropdown/.lg-item) — new standard for all breakpoints; (2) avatar-dropdown added (.av-wrap/.av-dropdown/.av-item, 140px, 3 items: Profile/Settings/Logout, danger style for Logout); (3) mobile bottom nav tabs finalised: Главная/Курсы/Статус/Лаборатория/Помощь(?); (4) bottom nav RTL rule changed — direction:ltr removed, .bnav now mirrors on dir=rtl; (5) search input position: inset-inline-end replaces right (RTL-safe).*
 *(05/07/2026 — §22: «Дашборд» переименован в «Главная» / «דף הבית»; иконка «Формулы» — Σ (Tabler: ti-sum). Retrofit: применить при следующем касании каждого файла.)*
 *(05/07/2026 — §15: desktop-only rule добавлено для всего конструктора контента (§15–§18). Tablet и mobile версии редакторов не предусмотрены.)*
 *(05/07/2026 — §19 Shalon Manager добавлен: пятый экран конструктора, спецификация утверждена, мокап pending.)*

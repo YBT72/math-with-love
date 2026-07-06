@@ -146,9 +146,11 @@
       Touch events (tablet/mobile): pan одним пальцем, pinch-zoom двумя.
       RTL поддержка: zoom-controls, легенда, breadcrumbs зеркалятся через [dir="rtl"].
       Файлы: `mwl_courses_module_desktop.html`, `mwl_courses_module_tablet.html`, `mwl_courses_module_mobile.html`.
-- [ ] /status — страница статуса студента — desktop + tablet + mobile
+- [x] /status — страница статуса студента — desktop + tablet + mobile
       Активные темы (параллельное обучение): название темы + текущий модуль + кнопка «Продолжить».
       Обзор всех тем: done / in_progress / not_started, сгруппировано по шейлону.
+      Файлы: `mwl_status_desktop.html`, `mwl_status_tablet.html`, `mwl_status_mobile.html`.
+      Оба theme, RU/HE, RTL. Глобус-dropdown (lang), аватар-dropdown (profile/settings/logout).
 - [ ] Лаборатория — после решения о рефакторинге Three.js / React Three Fiber
 
 ---
@@ -177,12 +179,15 @@
 - [x] Синхронизировать терминологию — «Курсы» (/courses) студенческий термин, «Темы» архитектурный
 - [x] Добавить §23 Mobile Sheet popup в DESIGN_SYSTEM.md
 - [x] Добавить §24 Courses page spec в DESIGN_SYSTEM.md
-- [x] Обновить §22 — `.lang-btn` заменяет двухсегментный RU/HE переключатель
-- [ ] Перенести `.lang-btn` в существующие макеты (дашборд, настройки, достижения) при следующем касании этих файлов
+- [x] Обновить §22 — `.lang-btn` заменён на глобус-dropdown (`.lg-wrap/.lg-dropdown/.lg-item`)
+- [ ] **Retrofit глобус-dropdown** — заменить `.lang-btn` на глобус-dropdown во всех макетах при следующем касании: dashboard, settings, achievements, courses, lesson, test, exam и все прочие.
+- [ ] **Retrofit аватар-dropdown** — добавить `.av-wrap/.av-dropdown` (Профиль / Настройки / Выйти) во всех макетах при следующем касании.
+- [ ] **Retrofit bottom nav RTL** — убрать `direction:ltr` с `.bnav` во всех существующих mobile-макетах: `mwl_achievements_mobile.html`, `mwl_courses_mobile.html`, `mwl_courses_theme_mobile.html`, `mwl_courses_module_mobile.html`, `mwl_dashboard_mobile.html`, `mwl_settings_mobile.html`, `mwl_exam_mobile.html`, `mwl_test_mobile.html`, `mwl_lesson_mobile.html`.
 - [ ] **Навигация — retrofit всех макетов**: обновить сайдбар и bottom nav во всех HTML-мокапах:
       порядок: Главная (home) / Курсы (graduation cap) / Статус (map-pin, /status) / Достижения (trophy);
-      mobile bottom nav: Главная / Курсы / Статус / Йоси / Профиль;
+      mobile bottom nav: Главная / Курсы / Статус / Лаборатория / Помощь(?);
       применить при следующем касании каждого файла.
+- [ ] **Компонент Йоси (AI Chat Drawer)** — спроектировать универсальный компонент: trigger-кнопка amber стиль (§13), drawer slide-up, поле ввода, ответ Йоси. Поведение по брейкпоинтам уточнить отдельно. Иконка trigger — решение отложено. Колокольчик в хедере убрать при реализации.
 
 ---
 
@@ -204,3 +209,4 @@
 *Обновлён: 2026-07-05 (3) · Лабиринт уровня 3 отмечен [x]: desktop + tablet + mobile готовы. Имена файлов групп и схемы экзамена исправлены (без суффиксов _v4/_v2).*
 *Обновлён: 2026-07-05 (4) · Конструктор контента — desktop only. Достижения tablet/mobile отмечены [x].*
 *Обновлён: 2026-07-05 (5) · Добавлен пятый экран конструктора: Управление шейлоном (mwl_shalon_manager.html). Спецификация в MWL_CONTENT_ARCHITECTURE.md §8 и DESIGN_SYSTEM.md §19.*
+*Обновлён: 2026-07-06 · /status отмечен [x]: desktop + tablet + mobile готовы. Lang-btn заменён на глобус-dropdown (новый стандарт). Добавлены retrofit-задачи: глобус-dropdown, аватар-dropdown, bottom nav RTL (direction:ltr убран), навигация. Добавлена задача: компонент Йоси (AI Chat Drawer). Mobile bottom nav финализирован: Главная / Курсы / Статус / Лаборатория / Помощь(?).*

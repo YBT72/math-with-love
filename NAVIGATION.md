@@ -75,8 +75,11 @@ Bottom nav (mobile only, 5 tabs):
   - Главная            → /dashboard      icon: home
   - Курсы             → /courses        icon: graduation cap
   - Статус            → /status         icon: map-pin
-  - Йоси              → opens AI Chat drawer
-  - Профиль           → /settings
+  - Лаборатория       → /lab            icon: atom/lab
+  - Помощь(?)         → opens AI Chat drawer (Yosi) — stub until Phase 6
+
+RTL behaviour: .bnav mirrors on dir="rtl" (direction:ltr removed — tabs reverse order in HE).
+Retrofit: remove direction:ltr from .bnav in all existing mobile mockups.
 
 Notes:
   - Главная (/dashboard) — точка входа после логина: приветствие, кнопка «Продолжить», статистика, Йоси
@@ -628,4 +631,5 @@ Checkpoint unlock toast also triggers labyrinth node animation (separate from to
 *Created: 2026-06-26 · Updated: 2026-06-30 — Student shell restructured: Курсы → первая позиция, Дашборд → «Мой статус» / «מצבי» с иконкой map-pin. §5 Level 2 spec updated.*
 *Updated: 2026-07-05 — Student shell revised: Дашборд восстановлен как первый пункт (home icon, точка входа после логина); Курсы → второй пункт; «Мой статус» переименован в «Статус» и перенесён на /status (третий пункт, map-pin); /maze упразднён как отдельный URL — лабиринт живёт в /courses/[themeId]/[moduleId]; добавлен §5b spec для /status; добавлен /status в URL structure и access control matrix.*
 *Updated: 2026-07-05 (2) — «Дашборд» переименован в «Главная» / «דף הבית» (студенческий пункт меню, позиция 1, home icon). Иконка «Формулы» — Σ (Tabler: ti-sum). Retrofit: применить при следующем касании каждого файла.*
+*Updated: 2026-07-06 — Bottom nav tabs finalised: Главная/Курсы/Статус/Лаборатория/Помощь(?). Помощь(?) opens Yosi AI Chat (stub until Phase 6). RTL rule changed: direction:ltr removed from .bnav — tabs now mirror on dir=rtl. Lang switcher updated: lang-btn replaced by globe-dropdown (new standard). Avatar in header now opens dropdown (Profile/Settings/Logout).*
 *Cross-references: PLAN.md (phases), DESIGN_SYSTEM.md (components), MWL_CONTENT_ARCHITECTURE.md (content model)*

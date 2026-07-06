@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MWL — Статус</title>
+<title>MWL — Статус (Tablet)</title>
 <style>
 /* ============================================================
-   Base tokens & shell — aligned with §22 DESIGN_SYSTEM.md
+   Base tokens & shell — aligned with DESIGN_SYSTEM.md §22
    ============================================================ */
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,sans-serif}
@@ -26,14 +26,31 @@ body{font-family:system-ui,sans-serif}
 .hdr-right{display:flex;align-items:center;justify-content:flex-end;gap:6px}
 .logo{width:26px;height:26px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .brand{font-size:13px;font-weight:500}.brand b{color:#22D3EE;font-weight:500}
-.srch{width:280px;position:relative}
-.srch input{width:100%;border-radius:8px;padding:6px 28px 6px 10px;font-size:12px;outline:none;font-family:inherit;border:1px solid}
-.d .srch input{background:#334155;border-color:#475569;color:#f1f5f9}
-.l .srch input{background:#f1f5f9;border-color:#e2e8f0;color:#0f172a}
-.si2{position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none}
+
+/* Search — collapsible lupe per §22 tablet */
+.srch{position:relative;display:flex;align-items:center;justify-content:center}
+.srch-inp{
+  width:0;max-width:0;opacity:0;overflow:hidden;
+  border-radius:8px;padding:0;border:1px solid transparent;
+  background:transparent;font-family:inherit;font-size:12px;outline:none;
+  transition:width .2s ease,max-width .2s ease,opacity .15s ease,padding .15s ease;
+  position:absolute;right:32px;
+}
+.srch.open .srch-inp{width:200px;max-width:200px;opacity:1;padding:6px 10px}
+.d .srch.open .srch-inp{background:#334155;border-color:#475569;color:#f1f5f9}
+.l .srch.open .srch-inp{background:#f1f5f9;border-color:#e2e8f0;color:#0f172a}
+.srch-btn{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid;flex-shrink:0}
+.d .srch-btn{border-color:#334155;color:#94a3b8}.l .srch-btn{border-color:#e2e8f0;color:#64748b}
+
 /* Lang globe button + dropdown */
 .lg-wrap{position:relative;flex-shrink:0}
-.lg-dropdown{position:absolute;top:calc(100% + 8px);right:0;min-width:80px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.lg-dropdown{
+  position:absolute;top:calc(100% + 8px);right:0;
+  min-width:80px;border-radius:10px;border:1px solid;
+  overflow:hidden;z-index:100;
+  opacity:0;transform:translateY(-6px);pointer-events:none;
+  transition:opacity .15s ease,transform .15s ease;
+}
 .lg-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
 .d .lg-dropdown{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
 .l .lg-dropdown{background:#ffffff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
@@ -45,9 +62,28 @@ body{font-family:system-ui,sans-serif}
 .lg-item.on .lg-check{opacity:1}
 .lg-overlay{position:fixed;inset:0;z-index:99;display:none}
 .lg-overlay.open{display:block}
-/* Avatar dropdown */
+/* RTL: both dropdowns flip to left-aligned */
+[dir="rtl"] .av-dropdown{right:auto;left:0}
+[dir="rtl"] .lg-dropdown{right:auto;left:0}
+
+/* Icon button */
+.hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid;flex-shrink:0}
+.d .hico{border-color:#334155;color:#94a3b8}.l .hico{border-color:#e2e8f0;color:#64748b}
+
+/* Avatar */
+.hav{width:28px;height:28px;min-width:28px;min-height:28px;border-radius:50%;background:#22D3EE;color:#0f172a;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;border:2px solid #22D3EE;flex-shrink:0;position:relative;user-select:none}
+
+/* ============================================================
+   Avatar dropdown — new component
+   ============================================================ */
 .av-wrap{position:relative;flex-shrink:0}
-.av-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:140px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.av-dropdown{
+  position:absolute;top:calc(100% + 8px);right:0;
+  width:140px;border-radius:10px;border:1px solid;
+  overflow:hidden;z-index:100;
+  opacity:0;transform:translateY(-6px);pointer-events:none;
+  transition:opacity .15s ease,transform .15s ease;
+}
 .av-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
 .d .av-dropdown{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
 .l .av-dropdown{background:#ffffff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
@@ -60,145 +96,150 @@ body{font-family:system-ui,sans-serif}
 .d .av-divider{background:#334155}.l .av-divider{background:#e2e8f0}
 .av-item.danger{color:#f87171}
 .av-item.danger svg{stroke:#f87171;opacity:1}
+/* Backdrop — closes dropdown on outside click */
 .av-overlay{position:fixed;inset:0;z-index:99;display:none}
 .av-overlay.open{display:block}
-[dir="rtl"] .av-dropdown{right:auto;left:0}
-[dir="rtl"] .lg-dropdown{right:auto;left:0}
-.hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid;flex-shrink:0}
-.hav{width:28px;height:28px;min-width:28px;min-height:28px;border-radius:50%;background:#22D3EE;color:#0f172a;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;border:2px solid #22D3EE;flex-shrink:0}
 
-/* -- Ctrl-bar -- */
+/* -- Ctrl-bar (mockup only) -- */
 .ctrl{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid;align-items:center;flex-shrink:0}
 .tcb{padding:4px 12px;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid;background:transparent}
 .d .tcb{color:#94a3b8;border-color:#334155}.l .tcb{color:#64748b;border-color:#e2e8f0}
 .tcb.on{background:#22D3EE!important;color:#0f172a!important;border-color:#22D3EE!important}
-
+.div1{width:1px;height:16px;margin:0 2px}
+.d .div1{background:#334155}.l .div1{background:#e2e8f0}
 
 /* -- Body -- */
 .body{display:flex;flex:1;min-height:0}
 
-/* -- Sidebar §22 -- */
-.sb{width:46px;display:flex;flex-direction:column;padding:8px 0;border-inline-end:1px solid;transition:width 0.2s ease;overflow:hidden;flex-shrink:0}
+/* -- Sidebar §22 — border-inline for tablet (both sides) -- */
+.sb{width:46px;display:flex;flex-direction:column;padding:8px 0;border-inline:1px solid;transition:width .2s ease;overflow:hidden;flex-shrink:0}
 .sb.open{width:164px}
-.sbt{display:flex;align-items:center;justify-content:center;width:46px;height:38px;margin:0 0 8px 0;border-radius:8px;cursor:pointer;border:0;background:transparent;flex-shrink:0}
+.sbt{display:flex;align-items:center;justify-content:center;width:46px;height:38px;margin:0 0 8px 0;border-radius:8px;cursor:pointer;border:0;background:transparent;flex-shrink:0;min-height:44px;min-width:44px}
 .d .sbt svg{stroke:#475569}.l .sbt svg{stroke:#94a3b8}
 .sbt:hover svg{stroke:#94a3b8!important}
 .sg,.sbm,.sbb{display:flex;flex-direction:column;gap:2px}
 .sbm{margin:auto 0}
-.ni{display:flex;align-items:center;width:46px;height:38px;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden;border:0;background:transparent;flex-shrink:0}
+.ni{display:flex;align-items:center;width:46px;height:38px;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden;border:0;background:transparent;flex-shrink:0;min-height:44px}
 .sb.open .ni{width:100%;border-radius:6px}
 .ni:hover svg{stroke:#94a3b8!important}
 .ni:hover .nl{color:#94a3b8!important}
 .ni .icon-wrap{width:46px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.ni svg{flex-shrink:0;transition:stroke 0.15s;display:block}
+.ni svg{flex-shrink:0;transition:stroke .15s;display:block;width:16px;height:16px}
 .d .ni svg{stroke:#475569}.l .ni svg{stroke:#64748b}
 .ni.on svg{stroke:#22D3EE!important}
-.nl{font-size:12px;font-weight:500;opacity:0;transition:opacity 0.15s,color 0.15s;white-space:nowrap;margin-inline-start:8px}
+.nl{font-size:12px;font-weight:500;opacity:0;transition:opacity .15s,color .15s;white-space:nowrap;margin-inline-start:8px}
 .d .nl{color:#475569}.l .nl{color:#64748b}
 .ni.on .nl{color:#22D3EE!important}
 .sb.open .nl{opacity:1}
 
 /* -- Main content area -- */
 .main-col{flex:1;display:flex;flex-direction:column;min-width:0;overflow-y:auto}
-.page-body{padding:24px 28px;display:flex;flex-direction:column;gap:28px;max-width:1200px;width:100%}
+.page-body{padding:20px 20px;display:flex;flex-direction:column;gap:20px;max-width:100%;width:100%}
 
 /* -- Page title -- */
-.page-title{font-size:18px;font-weight:600}
+.page-title{font-size:17px;font-weight:600}
 .d .page-title{color:#f1f5f9}.l .page-title{color:#0f172a}
 
 /* ============================================================
-   Section 1 — Active themes row
+   Section 1 — Active themes row (landscape: horizontal)
    ============================================================ */
-.active-row{display:flex;gap:16px;align-items:stretch}
+.active-row{display:flex;gap:12px;align-items:stretch}
 
 /* Active theme card */
-.act-card{flex:1;border-radius:12px;border:1px solid;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.act-card{flex:1;border-radius:12px;border:1px solid;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .d .act-card{background:#1e293b;border-color:#334155}.l .act-card{background:#ffffff;border-color:#e2e8f0}
-
 .act-header{display:flex;align-items:center;gap:8px}
 .shalon-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;flex-shrink:0;background:rgba(34,211,238,0.12);color:#22D3EE;border:1px solid rgba(34,211,238,0.25)}
-.act-title{font-size:14px;font-weight:600}
+.act-title{font-size:13px;font-weight:600}
 .d .act-title{color:#f1f5f9}.l .act-title{color:#0f172a}
 
-/* Theme progress (thin bar) */
+/* Progress bars */
 .prog-block{display:flex;flex-direction:column;gap:4px}
 .prog-label{display:flex;justify-content:space-between;align-items:center}
-.prog-label-text{font-size:10.5px}
+.prog-label-text{font-size:10px}
 .d .prog-label-text{color:#64748b}.l .prog-label-text{color:#94a3b8}
-.prog-pct{font-size:10.5px;font-weight:600}
+.prog-pct{font-size:10px;font-weight:600}
 .d .prog-pct{color:#94a3b8}.l .prog-pct{color:#64748b}
 .prog-bar{height:4px;border-radius:2px;overflow:hidden}
 .d .prog-bar{background:#334155}.l .prog-bar{background:#e2e8f0}
-.prog-fill{height:100%;border-radius:2px;background:#22D3EE;transition:width 0.3s ease}
-.prog-bar.module-bar{height:6px}
+.prog-fill{height:100%;border-radius:2px;background:#22D3EE;transition:width .3s ease}
+.prog-bar.module-bar{height:5px}
 
 /* Current module block */
-.module-block{display:flex;flex-direction:column;gap:6px;border-radius:8px;padding:10px 12px;border:1px solid}
+.module-block{display:flex;flex-direction:column;gap:5px;border-radius:8px;padding:9px 11px;border:1px solid}
 .d .module-block{background:rgba(34,211,238,0.05);border-color:rgba(34,211,238,0.15)}
 .l .module-block{background:rgba(34,211,238,0.04);border-color:rgba(34,211,238,0.2)}
-.module-label{font-size:9.5px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;color:#22D3EE}
-.module-name{font-size:12px;font-weight:500}
+.module-label{font-size:9px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;color:#22D3EE}
+.module-name{font-size:11px;font-weight:500}
 .d .module-name{color:#e2e8f0}.l .module-name{color:#0f172a}
 
 /* Continue button */
-.btn-continue{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:0;background:#22D3EE;color:#0f172a;font-family:inherit;transition:background 0.15s;align-self:flex-start}
+.btn-continue{display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 12px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;border:0;background:#22D3EE;color:#0f172a;font-family:inherit;transition:background .15s;align-self:flex-start;min-height:36px}
 .btn-continue:hover{background:#06b6d4}
 .btn-continue svg{flex-shrink:0}
 
-/* Yosi card */
-.yosi-card{width:168px;flex-shrink:0;border-radius:12px;border:1px solid;overflow:hidden;display:flex;flex-direction:column}
+/* Yosi card — tablet: same as desktop, slightly narrower */
+.yosi-card{width:148px;flex-shrink:0;border-radius:12px;border:1px solid;overflow:hidden;display:flex;flex-direction:column}
 .d .yosi-card{background:#1e293b;border-color:#334155}.l .yosi-card{background:#ffffff;border-color:#e2e8f0}
-.yosi-icon{height:72px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid;flex-shrink:0}
+.yosi-icon{height:64px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid;flex-shrink:0}
 .d .yosi-icon{background:rgba(34,211,238,0.06);border-color:#334155}.l .yosi-icon{background:rgba(34,211,238,0.05);border-color:#e2e8f0}
-.yosi-body{padding:10px 12px;flex:1;display:flex;flex-direction:column;gap:4px}
-.yosi-name{font-size:11px;font-weight:500;color:#22D3EE}
-.yosi-msg{font-size:10px;line-height:1.55}
+.yosi-body{padding:9px 11px;flex:1;display:flex;flex-direction:column;gap:4px}
+.yosi-name{font-size:10px;font-weight:500;color:#22D3EE}
+.yosi-msg{font-size:9.5px;line-height:1.55}
 .d .yosi-msg{color:#94a3b8}.l .yosi-msg{color:#64748b}
 
 /* ============================================================
-   Section 2 — All themes overview
+   Section 2 — All themes overview (2-col grid on tablet)
    ============================================================ */
-.themes-section{display:flex;flex-direction:column;gap:14px}
+.themes-section{display:flex;flex-direction:column;gap:12px}
 .shalon-label{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase}
 .d .shalon-label{color:#475569}.l .shalon-label{color:#94a3b8}
-.themes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.themes-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 
 /* Theme card */
-.theme-card{border-radius:10px;border:1px solid;padding:14px;display:flex;flex-direction:column;gap:8px;cursor:pointer;transition:border-color 0.15s}
+.theme-card{border-radius:10px;border:1px solid;padding:12px;display:flex;flex-direction:column;gap:7px;cursor:pointer;transition:border-color .15s}
 .d .theme-card{background:#1e293b;border-color:#334155}.l .theme-card{background:#ffffff;border-color:#e2e8f0}
 .d .theme-card:hover{border-color:#475569}.l .theme-card:hover{border-color:#cbd5e1}
 .theme-card.locked{cursor:default;opacity:0.55}
 .d .theme-card.locked:hover{border-color:#334155}.l .theme-card.locked:hover{border-color:#e2e8f0}
-
 .tc-header{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.tc-name{font-size:12px;font-weight:600}
+.tc-name{font-size:11px;font-weight:600}
 .d .tc-name{color:#f1f5f9}.l .tc-name{color:#0f172a}
 .tc-name.locked-text{color:#475569!important}
-
-/* Status badge */
-.tc-badge{font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:8px;flex-shrink:0;white-space:nowrap}
+.tc-badge{font-size:9px;font-weight:600;padding:2px 6px;border-radius:8px;flex-shrink:0;white-space:nowrap}
 .badge-done{background:rgba(34,197,94,0.12);color:#22c55e;border:1px solid rgba(34,197,94,0.2)}
 .badge-progress{background:rgba(34,211,238,0.12);color:#22D3EE;border:1px solid rgba(34,211,238,0.2)}
 .badge-locked{background:rgba(71,85,105,0.15);color:#64748b;border:1px solid rgba(71,85,105,0.2)}
-
-/* Theme card content */
 .tc-score{font-size:11px;font-weight:500;color:#22c55e}
-.tc-module{font-size:10.5px}
+.tc-module{font-size:10px}
 .d .tc-module{color:#64748b}.l .tc-module{color:#94a3b8}
 .tc-prog{height:3px;border-radius:2px;overflow:hidden;margin-top:2px}
 .d .tc-prog{background:#334155}.l .tc-prog{background:#e2e8f0}
 .tc-prog-fill{height:100%;border-radius:2px;background:#22D3EE}
 .tc-prog-fill.done-fill{background:#22c55e}
-
-/* Shalon divider */
 .shalon-divider{height:1px;margin:4px 0}
 .d .shalon-divider{background:#334155}.l .shalon-divider{background:#e2e8f0}
+
+/* ============================================================
+   Portrait fallback ≤900px — stack active-row, 1-col grid
+   ============================================================ */
+@media(max-width:900px){
+  .active-row{flex-direction:column}
+  .yosi-card{width:100%}
+  .yosi-icon{height:52px}
+  .themes-grid{grid-template-columns:1fr}
+  .page-body{padding:14px}
+}
+
+/* Touch targets */
+.ni,.sbt{min-height:44px}
+.btn-continue{min-height:40px}
 </style>
 </head>
 <body>
 <div class="shell d" id="shell">
 
-  <!-- Header -->
+  <!-- HEADER -->
   <div class="hdr p1 bd">
     <div class="hdr-left">
       <div class="logo">
@@ -207,9 +248,12 @@ body{font-family:system-ui,sans-serif}
       <span class="brand t1"><b>Math</b> With Love</span>
     </div>
     <div class="hdr-center">
-      <div class="srch">
-        <input type="text" id="searchInput" placeholder="Поиск…">
-        <span class="si2 t3"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+      <!-- Search: collapsible lupe -->
+      <div class="srch" id="srchWrap">
+        <input class="srch-inp" id="srchInp" placeholder="Поиск…">
+        <div class="srch-btn bd" id="srchBtn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
       </div>
     </div>
     <div class="hdr-right">
@@ -238,26 +282,30 @@ body{font-family:system-ui,sans-serif}
       <div class="av-wrap">
         <div class="hav" id="havBtn" onclick="toggleDropdown()">ИА</div>
         <div class="av-dropdown p1 bd" id="avDropdown">
+          <!-- Profile -->
           <div class="av-item" onclick="closeDropdown()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
             <span data-i18n="dropProfile">Профиль</span>
           </div>
+          <!-- Settings -->
           <div class="av-item" onclick="closeDropdown()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span data-i18n="dropSettings">Настройки</span>
           </div>
           <div class="av-divider"></div>
+          <!-- Logout -->
           <div class="av-item danger" onclick="closeDropdown()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             <span data-i18n="dropLogout">Выйти</span>
           </div>
         </div>
       </div>
+      <!-- Backdrop -->
       <div class="av-overlay" id="avOverlay" onclick="closeDropdown()"></div>
     </div>
   </div>
 
-  <!-- Dev ctrl-bar -->
+  <!-- Dev ctrl-bar — theme toggle only. Lang selection via Settings page -->
   <div class="ctrl p2 bd">
     <button class="tcb on" id="btnDark"  onclick="setMode('d')">🌙 Тёмная</button>
     <button class="tcb"    id="btnLight" onclick="setMode('l')">☀ Светлая</button>
@@ -273,46 +321,46 @@ body{font-family:system-ui,sans-serif}
       <div class="sg">
         <!-- Home -->
         <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></svg></span>
+          <span class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></svg></span>
           <span class="nl" data-i18n="navHome">Главная</span>
         </div>
         <!-- Courses -->
         <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 5-10 5L2 8z"/><path d="M7 11.5v4.5a5 5 0 0 0 10 0v-4.5"/><line x1="22" y1="8" x2="22" y2="14"/></svg></span>
+          <span class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 5-10 5L2 8z"/><path d="M7 11.5v4.5a5 5 0 0 0 10 0v-4.5"/><line x1="22" y1="8" x2="22" y2="14"/></svg></span>
           <span class="nl" data-i18n="navCourses">Курсы</span>
         </div>
         <!-- Status — ACTIVE -->
         <div class="ni on">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg></span>
+          <span class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg></span>
           <span class="nl" data-i18n="navStatus">Статус</span>
         </div>
         <!-- Achievements -->
         <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21l8 0"/><path d="M12 17l0 4"/><path d="M7 4l10 0"/><path d="M17 4v8a5 5 0 0 1-10 0v-8"/><path d="M5 9a2 2 0 0 1-2-2v-1a2 2 0 0 1 2-2"/><path d="M19 9a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2"/></svg></span>
+          <span class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21l8 0"/><path d="M12 17l0 4"/><path d="M7 4l10 0"/><path d="M17 4v8a5 5 0 0 1-10 0v-8"/><path d="M5 9a2 2 0 0 1-2-2v-1a2 2 0 0 1 2-2"/><path d="M19 9a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2"/></svg></span>
           <span class="nl" data-i18n="navAchievements">Достижения</span>
         </div>
       </div>
       <div class="sbm">
-        <!-- Formulas — ti-sum -->
+        <!-- Formulas -->
         <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16v2a1 1 0 0 1 -1 1h-11l6 -7l-6 -7h11a1 1 0 0 1 1 1v2"/></svg></span>
+          <span class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16v2a1 1 0 0 1 -1 1h-11l6 -7l-6 -7h11a1 1 0 0 1 1 1v2"/></svg></span>
           <span class="nl" data-i18n="navFormulas">Формулы</span>
         </div>
         <!-- Lab -->
         <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg></span>
+          <span class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg></span>
           <span class="nl" data-i18n="navLab">Лаборатория</span>
         </div>
       </div>
       <div class="sbb">
         <!-- Help -->
         <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="17" x2="12.01" y2="17"/><path d="M12 13.5a1.5 1.5 0 0 1 1-1.5a2.6 2.6 0 1 0-3-4"/></svg></span>
+          <span class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="17" x2="12.01" y2="17"/><path d="M12 13.5a1.5 1.5 0 0 1 1-1.5a2.6 2.6 0 1 0-3-4"/></svg></span>
           <span class="nl" data-i18n="navHelp">Помощь</span>
         </div>
         <!-- Settings -->
         <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51v.17a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82a1.65 1.65 0 0 0-1.51-1h-.17a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+          <span class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51v.17a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82a1.65 1.65 0 0 0-1.51-1h-.17a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
           <span class="nl" data-i18n="navSettings">Настройки</span>
         </div>
       </div>
@@ -325,26 +373,22 @@ body{font-family:system-ui,sans-serif}
         <!-- Page title -->
         <div class="page-title" data-i18n="pageTitle">Мой статус</div>
 
-        <!-- Section 1: Active themes + Yosi -->
+        <!-- Section 1: Active themes + Yosi — horizontal on landscape -->
         <div class="active-row">
 
-          <!-- Active theme card 1: Векторы -->
+          <!-- Active theme card 1 -->
           <div class="act-card">
             <div class="act-header">
               <span class="shalon-badge">35572</span>
               <span class="act-title" data-i18n="theme1Name">Векторы</span>
             </div>
-            <!-- Theme progress -->
             <div class="prog-block">
               <div class="prog-label">
                 <span class="prog-label-text" data-i18n="labelThemeProgress">Прогресс по теме</span>
                 <span class="prog-pct">38%</span>
               </div>
-              <div class="prog-bar">
-                <div class="prog-fill" style="width:38%"></div>
-              </div>
+              <div class="prog-bar"><div class="prog-fill" style="width:38%"></div></div>
             </div>
-            <!-- Current module block -->
             <div class="module-block">
               <span class="module-label" data-i18n="labelCurrentModule">Текущий модуль</span>
               <span class="module-name" data-i18n="theme1Module">Скалярное произведение</span>
@@ -353,35 +397,28 @@ body{font-family:system-ui,sans-serif}
                   <span class="prog-label-text" data-i18n="labelModuleProgress">Прогресс модуля</span>
                   <span class="prog-pct">60%</span>
                 </div>
-                <div class="prog-bar module-bar">
-                  <div class="prog-fill" style="width:60%"></div>
-                </div>
+                <div class="prog-bar module-bar"><div class="prog-fill" style="width:60%"></div></div>
               </div>
             </div>
-            <!-- Continue button -->
             <button class="btn-continue" onclick="onContinue('vectors')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               <span data-i18n="btnContinue">Продолжить</span>
             </button>
           </div>
 
-          <!-- Active theme card 2: Тригонометрия -->
+          <!-- Active theme card 2 -->
           <div class="act-card">
             <div class="act-header">
               <span class="shalon-badge">35572</span>
               <span class="act-title" data-i18n="theme2Name">Тригонометрия</span>
             </div>
-            <!-- Theme progress -->
             <div class="prog-block">
               <div class="prog-label">
                 <span class="prog-label-text" data-i18n="labelThemeProgress">Прогресс по теме</span>
                 <span class="prog-pct">15%</span>
               </div>
-              <div class="prog-bar">
-                <div class="prog-fill" style="width:15%"></div>
-              </div>
+              <div class="prog-bar"><div class="prog-fill" style="width:15%"></div></div>
             </div>
-            <!-- Current module block -->
             <div class="module-block">
               <span class="module-label" data-i18n="labelCurrentModule">Текущий модуль</span>
               <span class="module-name" data-i18n="theme2Module">Единичная окружность</span>
@@ -390,14 +427,11 @@ body{font-family:system-ui,sans-serif}
                   <span class="prog-label-text" data-i18n="labelModuleProgress">Прогресс модуля</span>
                   <span class="prog-pct">30%</span>
                 </div>
-                <div class="prog-bar module-bar">
-                  <div class="prog-fill" style="width:30%"></div>
-                </div>
+                <div class="prog-bar module-bar"><div class="prog-fill" style="width:30%"></div></div>
               </div>
             </div>
-            <!-- Continue button -->
             <button class="btn-continue" onclick="onContinue('trig')">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               <span data-i18n="btnContinue">Продолжить</span>
             </button>
           </div>
@@ -405,23 +439,22 @@ body{font-family:system-ui,sans-serif}
           <!-- Yosi card -->
           <div class="yosi-card">
             <div class="yosi-icon bd">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"/><path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"/></svg>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"/><path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"/></svg>
             </div>
             <div class="yosi-body">
               <div class="yosi-name" data-i18n="yosiName">Профессор Йоси</div>
-              <div class="yosi-msg t2" id="yosiMsg">Отличный темп! Продолжай двигаться вперёд.</div>
+              <div class="yosi-msg t2" id="yosiMsg">Отличный темп!</div>
             </div>
           </div>
 
         </div><!-- /.active-row -->
 
-        <!-- Section 2: All themes overview — shalon 35572 -->
+        <!-- Section 2: All themes overview -->
         <div class="themes-section">
 
           <div class="shalon-label">35572</div>
           <div class="themes-grid">
 
-            <!-- done -->
             <div class="theme-card" onclick="onThemeClick('alg')">
               <div class="tc-header">
                 <span class="tc-name" data-i18n="tc1Name">Алгебра и функции</span>
@@ -431,7 +464,6 @@ body{font-family:system-ui,sans-serif}
               <div class="tc-prog"><div class="tc-prog-fill done-fill" style="width:100%"></div></div>
             </div>
 
-            <!-- in_progress -->
             <div class="theme-card" onclick="onThemeClick('vec')">
               <div class="tc-header">
                 <span class="tc-name" data-i18n="theme1Name">Векторы</span>
@@ -441,7 +473,6 @@ body{font-family:system-ui,sans-serif}
               <div class="tc-prog"><div class="tc-prog-fill" style="width:38%"></div></div>
             </div>
 
-            <!-- in_progress -->
             <div class="theme-card" onclick="onThemeClick('trig')">
               <div class="tc-header">
                 <span class="tc-name" data-i18n="theme2Name">Тригонометрия</span>
@@ -451,24 +482,21 @@ body{font-family:system-ui,sans-serif}
               <div class="tc-prog"><div class="tc-prog-fill" style="width:15%"></div></div>
             </div>
 
-            <!-- not_started -->
-            <div class="theme-card locked" onclick="onThemeClick('stat')">
+            <div class="theme-card locked">
               <div class="tc-header">
                 <span class="tc-name locked-text" data-i18n="tc4Name">Статистика и вероятность</span>
                 <span class="tc-badge badge-locked" data-i18n="badgeLocked">Не начато</span>
               </div>
             </div>
 
-            <!-- not_started -->
-            <div class="theme-card locked" onclick="onThemeClick('diff')">
+            <div class="theme-card locked">
               <div class="tc-header">
                 <span class="tc-name locked-text" data-i18n="tc5Name">Дифференциальное исчисление</span>
                 <span class="tc-badge badge-locked" data-i18n="badgeLocked">Не начато</span>
               </div>
             </div>
 
-            <!-- not_started -->
-            <div class="theme-card locked" onclick="onThemeClick('geom')">
+            <div class="theme-card locked">
               <div class="tc-header">
                 <span class="tc-name locked-text" data-i18n="tc6Name">Аналитическая геометрия</span>
                 <span class="tc-badge badge-locked" data-i18n="badgeLocked">Не начато</span>
@@ -482,7 +510,6 @@ body{font-family:system-ui,sans-serif}
           <div class="shalon-label" style="margin-top:6px">35571</div>
           <div class="themes-grid">
 
-            <!-- not_started -->
             <div class="theme-card locked">
               <div class="tc-header">
                 <span class="tc-name locked-text" data-i18n="tc7Name">Линейная алгебра</span>
@@ -490,7 +517,6 @@ body{font-family:system-ui,sans-serif}
               </div>
             </div>
 
-            <!-- not_started -->
             <div class="theme-card locked">
               <div class="tc-header">
                 <span class="tc-name locked-text" data-i18n="tc8Name">Интегральное исчисление</span>
@@ -498,7 +524,6 @@ body{font-family:system-ui,sans-serif}
               </div>
             </div>
 
-            <!-- not_started -->
             <div class="theme-card locked">
               <div class="tc-header">
                 <span class="tc-name locked-text" data-i18n="tc9Name">Комплексные числа</span>
@@ -569,19 +594,17 @@ var TR = {
   }
 };
 
-function t(k){ return TR[lang][k] || k; }
-
 function applyI18n(){
   document.querySelectorAll('[data-i18n]').forEach(function(el){
     var k = el.getAttribute('data-i18n');
     if(TR[lang][k] !== undefined) el.textContent = TR[lang][k];
   });
-  var inp = document.getElementById('searchInput');
-  if(inp) inp.placeholder = t('searchPh');
+  var inp = document.getElementById('srchInp');
+  if(inp) inp.placeholder = TR[lang].searchPh;
 }
 
 // ============================================================
-// Yosi messages — random motivational
+// Yosi motivational messages
 // ============================================================
 var YOSI_MSGS = {
   ru: [
@@ -602,8 +625,8 @@ var YOSI_MSGS = {
 
 function updateYosi(){
   var msgs = YOSI_MSGS[lang];
-  var msg = msgs[Math.floor(Math.random() * msgs.length)];
-  document.getElementById('yosiMsg').textContent = msg;
+  var el = document.getElementById('yosiMsg');
+  if(el) el.textContent = msgs[Math.floor(Math.random() * msgs.length)];
 }
 
 // ============================================================
@@ -621,10 +644,20 @@ function setMode(m){
 function setLang(l){
   lang = l;
   document.getElementById('shell').setAttribute('dir', l === 'he' ? 'rtl' : 'ltr');
+  // Update checkmarks in lang dropdown
   document.getElementById('lgItemRu').className = 'lg-item' + (l==='ru' ? ' on' : '');
   document.getElementById('lgItemHe').className = 'lg-item' + (l==='he' ? ' on' : '');
   applyI18n();
   updateYosi();
+}
+
+// ============================================================
+// Sidebar toggle
+// ============================================================
+var sbOpen = false;
+function toggleSb(){
+  sbOpen = !sbOpen;
+  document.getElementById('sb').className = 'sb p1 bd' + (sbOpen ? ' open' : '');
 }
 
 // ============================================================
@@ -633,9 +666,10 @@ function setLang(l){
 function toggleDropdown(){
   var dd = document.getElementById('avDropdown');
   var isOpen = dd.classList.contains('open');
-  closeLangDD();
-  if(isOpen){ closeDropdown(); }
-  else {
+  closeLangDD(); // always close lang dropdown first
+  if(isOpen){
+    closeDropdown();
+  } else {
     dd.classList.add('open');
     document.getElementById('avOverlay').classList.add('open');
   }
@@ -652,9 +686,10 @@ function closeDropdown(){
 function toggleLangDD(){
   var dd = document.getElementById('lgDropdown');
   var isOpen = dd.classList.contains('open');
-  closeDropdown();
-  if(isOpen){ closeLangDD(); }
-  else {
+  closeDropdown(); // always close avatar dropdown first
+  if(isOpen){
+    closeLangDD();
+  } else {
     dd.classList.add('open');
     document.getElementById('lgOverlay').classList.add('open');
   }
@@ -666,24 +701,34 @@ function closeLangDD(){
 }
 
 // ============================================================
-// Sidebar toggle
+// Search toggle
 // ============================================================
-var sbOpen = false;
-function toggleSb(){
-  sbOpen = !sbOpen;
-  document.getElementById('sb').className = 'sb p1 bd' + (sbOpen ? ' open' : '');
-}
+document.getElementById('srchBtn').addEventListener('click', function(){
+  var w = document.getElementById('srchWrap');
+  var isOpen = w.classList.contains('open');
+  if(isOpen){
+    w.classList.remove('open');
+    document.getElementById('srchInp').value = '';
+  } else {
+    w.classList.add('open');
+    document.getElementById('srchInp').focus();
+  }
+});
+
+// Close search on outside click
+document.addEventListener('click', function(e){
+  var w = document.getElementById('srchWrap');
+  if(w.classList.contains('open') && !w.contains(e.target)){
+    w.classList.remove('open');
+    document.getElementById('srchInp').value = '';
+  }
+});
 
 // ============================================================
 // Navigation handlers (mock)
 // ============================================================
-function onContinue(themeId){
-  console.log('Navigate → /courses/35572/' + themeId + '/current-node');
-}
-
-function onThemeClick(themeId){
-  console.log('Navigate → /courses/35572/' + themeId);
-}
+function onContinue(themeId){ console.log('Navigate → /courses/35572/' + themeId + '/current'); }
+function onThemeClick(themeId){ console.log('Navigate → /courses/35572/' + themeId); }
 
 // ============================================================
 // Init
