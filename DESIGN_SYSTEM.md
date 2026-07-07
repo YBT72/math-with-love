@@ -1428,7 +1428,7 @@ Logical CSS properties throughout (`padding-inline-*`, `border-inline-*`, `margi
 
 ## 19. Shalon Manager (Content Constructor)
 
-**Status: spec approved, mockup pending (`mwl_shalon_manager.html`).** Author-facing. Scope: desktop only.
+**Status: mockup complete (`mwl_shalon_manager.html`).** Author-facing. Scope: desktop only — no tablet or mobile variants.
 Full spec: `MWL_CONTENT_ARCHITECTURE.md §8`.
 
 ### Concept
@@ -1447,62 +1447,79 @@ atoms are shared (editing an atom affects all shalons that reference it).
 ```
 
 Background zones (same as other constructor screens §1):
-- Tree panel: `#13233a` dark / `#f3fbfc` light
-- Detail panel: `#0b1322` dark / `#e2f3f7` light
+- Tree panel: `#13233a` dark / `#f0f9fc` light
+- Detail panel: `#0b1322` dark / `#e8f4f8` light
 
 ### Tree panel
 
 Hierarchical tree: shalon → themes (ordered) → modules (ordered).
 
 ```
-Row: [chevron] [icon] [name RU or HE] [↑↓ buttons] [+ button]
+Row: [chevron] [icon] [name — active language] [↑↓ buttons] [+ button]
   — chevron hidden if no children
   — + button creates child of this node (theme inside shalon, module inside theme)
   — ↑↓ buttons reorder within same parent level
-  — double-click → inline edit of RU name
-  — single click → load detail panel
+  — double-click → inline edit of active language name
+  — single click on shalon/theme → load detail panel
+  — single click on module → open nav popup (Atom Editor / Graph / Cancel)
 ```
 
 Drag-and-drop (same pattern as Groups Constructor §17):
-- Drop onto node: reparent (with ancestor guard)
-- Drop between nodes: reorder at that position
-- Visual: drag source opacity 0.4, drop target cyan outline
+- Same-type D&D only (shalon↔shalon, theme↔theme, module↔module)
+- Drop before/after: reorder at that position
+- Visual: drag source opacity 0.4, insert line cyan 2px, drop-into cyan outline
 
 ### Ctrl-bar actions
 
 ```
-[+ Новый шейлон] [Переименовать] [Дублировать] [RU→HE translate]
+[+ Новый шейлон] [Переименовать] [Дублировать]
 ```
 
-- **Новый шейлон**: creates top-level shalon, prompts for RU name inline
-- **Переименовать**: renames selected shalon (or inline double-click)
+- **Новый шейлон**: creates top-level shalon, prompts for RU name via modal
+- **Переименовать**: renames selected shalon via modal (only enabled when shalon is selected)
 - **Дублировать**: copies shalon structure (themes + modules) + shared atom references.
-  New shalon gets suffix « (копия)». Prompt confirms before executing.
-- **Batch translate**: same pattern as Groups Constructor — modal with progress bar,
-  translates all shalon/theme/module names RU↔HE via Anthropic API
+  New shalon gets suffix « (копия)» / « (עותק)». Confirm modal before executing.
+- **Batch translate removed** — translation now happens automatically on Save (see Detail panel)
 
 ### Detail panel
 
-Shown on single-click of any tree node.
+Single language field — shows active language (RU or HE). Switching language switches field content.
+Save button: deactivated by default → activates on any field change → on click: saves + triggers auto-translate.
 
 ```
 For shalon:
-  — RU name (input)
-  — HE name (input)
-  — Description (textarea, optional)
+  — Name field (active language: titleRu or titleHe)
+  — Description field (active language: descRu or descHe)
+  — [Сохранить изменения] button
 
 For theme:
-  — RU name (input, synced with inline edit)
-  — HE name (input)
-  — order: shown as read-only (managed via drag-and-drop / ↑↓)
+  — Name field (active language: titleRu or titleHe)
+  — Order: read-only (managed via drag-and-drop / ↑↓)
+  — [Сохранить изменения] button
 
 For module:
-  — RU name (input)
-  — HE name (input)
-  — order: shown as read-only
+  — Name field (active language: titleRu or titleHe)
+  — Order: read-only
   — [Открыть редактор атомов] button
   — [Открыть граф] button
+  — [Сохранить изменения] button
 ```
+
+**Data model:** `titleRu`/`titleHe` for names; `descRu`/`descHe` for descriptions (shalon only).
+Inline double-click in tree edits the active language field.
+
+### Save + auto-translate flow
+
+On click "Сохранить изменения":
+1. Save data to model immediately → show toast "Сохранено ✓"
+2. Button enters shimmer state "Переводим..." (deactivated, shimmer animation)
+3. Call Anthropic API (server-side in production via FastAPI — browser fetch in mockup)
+4. On success: apply translation to opposite language fields → show toast "Переведено ✓" → button returns to idle
+5. On error: show toast "Перевод не удался" → button returns to active state with text "↺ Повторить перевод"
+
+`beforeunload` warning if translation is in flight.
+Toast position: `bottom: 24px; inset-inline-end: 24px` (RTL-safe, mirrors on HE).
+Toast duration: 2.5 seconds. Sequential toasts stack in same container.
 
 ### Navigation to other screens
 
@@ -1510,8 +1527,9 @@ Click on module → popup dialog:
 ```
 ┌─────────────────────────────────┐
 │  Перейти в                      │
-│  [Редактор атомов]  [Граф]      │
-│                     [Отмена]    │
+│  [Редактор атомов]              │
+│  [Карта графа]                  │
+│  [Отмена]                       │
 └─────────────────────────────────┘
 ```
 
@@ -1524,6 +1542,7 @@ or separate `shalon_themes` join table — not finalized. See MWL_CONTENT_ARCHIT
 
 Full RU/HE via TR{} dictionary. Tree shows RU or HE names based on active language.
 Inline edit always edits the active language field.
+Globe-dropdown in header for language switching (same standard as all screens §22).
 
 ---
 
@@ -2146,3 +2165,5 @@ Static label above field (current standard in all mockups). Floating label (anim
 *(05/07/2026 — §19 Shalon Manager добавлен: пятый экран конструктора, спецификация утверждена, мокап pending.)*
 *(30/06/2026 — §22 student shell nav updated: Курсы → позиция 1, Мой статус / מצבי → позиция 2 с иконкой map-pin; §25 Courses theme page level 2 added).*
 *Approved screens: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile), lesson page (desktop + tablet + mobile), test page (desktop + tablet + mobile, 3 answer types), exam page (desktop + tablet + mobile, both themes), AI chat drawer (all pages, both themes, RU/HE), graph map (desktop, both themes), groups constructor (desktop, both themes), exam schema editor (desktop, both themes), settings page (desktop + tablet + mobile, both themes, RU/HE), achievements page (desktop, both themes, RU/HE), courses page level 1 (desktop + tablet + mobile, both themes, RU/HE), courses theme page level 2 (desktop + tablet + mobile, both themes, RU/HE) — all both themes.*
+*(07/07/2026 — §19 Shalon Manager: статус mockup→complete (desktop only, no tablet/mobile); detail panel переработан — одно поле активного языка, descRu/descHe раздельно, batch-translate убран, авто-перевод при Save с shimmer+toast flow; sidebar редактора финализирован — flat без подменю: Главная/Шейлоны/Группы/Атом/Экзамен/Граф // Лаборатория // Помощь/Настройки; globe-dropdown + bell + avatar-dropdown в header.)*
+*(07/07/2026 — §13 AI Chat Drawer полностью переписан: убран ctx-strip; floating card vs bottom sheet по breakpoints; PNG Йоси по ситуации; динамический статус; контекстные приветствия по странице; session-only история; char counter 500/≤100; кнопка → иконка стрелки; экзамен — только sidebar. "Text answer type (AI-checked)" перенесена в §12.)*

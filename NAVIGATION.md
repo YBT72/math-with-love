@@ -93,18 +93,35 @@ Notes:
 ### Author shell
 
 ```
-Header: [Logo] [Platform name]    [RU/HE] [Mode toggle] [Avatar menu]
-Sidebar (desktop only — tablet layout not yet designed):
-  - Дашборд редактора  → /constructor/dashboard
-  - Карта графа        → /constructor/graph
-  - Редактор атома     → /constructor/atom/new (or last edited)
-  - Группы             → /constructor/groups
-  - Примеры экз.       → /constructor/examples
-  ──
-  - Помощь             → opens AI Chat (Yosi) in help context mode
-  - Настройки          → /settings
-Note: tablet menus hidden until tablet layouts are designed.
+Header: [Logo] [Platform name] [Search] [Globe-dropdown] [Bell] [Avatar menu]
+Sidebar (desktop only — no tablet or mobile variants for constructor screens):
+  Group 1:
+  - Главная (редактор дашборд) → /constructor/dashboard  [home icon]
+  - Шейлоны                   → /constructor/shalon      [book icon]
+  - Группы                    → /constructor/groups      [4-squares icon]
+  - Атом                      → /constructor/atom        [doc+lines icon]
+  - Экзамен                   → /constructor/exam        [hourglass icon]
+  - Граф                      → /constructor/graph       [graph-nodes icon]
+  ── separator ──
+  Group 2:
+  - Лаборатория               → /constructor/lab         [atom/3-ellipses icon]
+  ── separator ──
+  Group 3:
+  - Помощь                    → opens Yosi AI Chat (help context mode)
+  - Настройки                 → /settings                [gear icon]
 ```
+
+No sub-menus. Flat structure. No tablet or mobile sidebar for constructor screens.
+Globe-dropdown replaces RU/HE toggle in header (standard since 07/07/2026).
+Avatar dropdown: Профиль / Настройки / — / Выйти.
+
+**Editor dashboard (`/constructor/dashboard`):** separate from student `/dashboard`.
+Shows content status: shalons / themes / modules / atoms with readiness indicators
+(done / in progress / not started / draft).
+
+**Production translation:** Save button triggers auto-translate via FastAPI backend
+(not browser fetch) — avoids CORS and survives page close. Result saved to Supabase.
+`beforeunload` warning shown in browser until FastAPI confirms task received.
 
 ### Author student-mode banner
 
@@ -633,3 +650,4 @@ Checkpoint unlock toast also triggers labyrinth node animation (separate from to
 *Updated: 2026-07-05 (2) — «Дашборд» переименован в «Главная» / «דף הבית» (студенческий пункт меню, позиция 1, home icon). Иконка «Формулы» — Σ (Tabler: ti-sum). Retrofit: применить при следующем касании каждого файла.*
 *Updated: 2026-07-06 — Bottom nav tabs finalised: Главная/Курсы/Статус/Лаборатория/Помощь(?). Помощь(?) opens Yosi AI Chat (stub until Phase 6). RTL rule changed: direction:ltr removed from .bnav — tabs now mirror on dir=rtl. Lang switcher updated: lang-btn replaced by globe-dropdown (new standard). Avatar in header now opens dropdown (Profile/Settings/Logout).*
 *Cross-references: PLAN.md (phases), DESIGN_SYSTEM.md (components), MWL_CONTENT_ARCHITECTURE.md (content model)*
+*(07/07/2026 — Author shell sidebar финализирован: flat структура без подменю (Главная/Шейлоны/Группы/Атом/Экзамен/Граф // Лаборатория // Помощь/Настройки). Globe-dropdown вместо RU/HE toggle. Desktop only для конструктора — tablet/mobile не предусмотрены. Editor dashboard = /constructor/dashboard (отдельно от /dashboard студента).)*

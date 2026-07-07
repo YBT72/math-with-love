@@ -119,15 +119,15 @@
 - [x] Примеры вопросников desktop (`mwl_exam_schema.html`)
       Двухуровневый список (тип → сессии), разделы, вопросы с формулами
       и изображениями, правила выбора, превью, batch-перевод, auto-save индикатор.
-- [ ] Управление шейлоном desktop (`mwl_shalon_manager.html`) — пятый экран конструктора.
-      Иерархическое дерево: шейлон → темы → модули.
-      Создание: кнопка «+» рядом с родительским узлом.
-      Редактирование: двойной клик → inline edit (RU); detail panel справа → RU + HE.
-      Переупорядочивание: drag-and-drop + кнопки ↑↓ на каждом уровне.
-      Ctrl-bar: создать / переименовать / дублировать шейлон + batch-translate RU↔HE.
-      Дублирование шейлона = структура новая + shared ссылки на те же атомы (контент не копируется).
-      Переход в редактор: клик на модуль → popup (Открыть редактор атомов / Открыть граф / Отмена).
-      Спецификация: MWL_CONTENT_ARCHITECTURE.md §8.
+- [x] Управление шейлоном desktop (`mwl_shalon_manager.html`) — пятый экран конструктора. ГОТОВО (07/07/2026).
+      Иерархическое дерево: шейлон → темы → модули. D&D + ↑↓ + inline edit + expand/collapse.
+      Detail panel: одно поле активного языка (titleRu/titleHe, descRu/descHe разделены).
+      Save → toast "Сохранено ✓" → авто-перевод через API → shimmer → toast "Переведено ✓".
+      Batch-translate убран — перевод автоматически при сохранении.
+      Новый sidebar редактора: Главная/Шейлоны/Группы/Атом/Экзамен/Граф // Лаборатория // Помощь/Настройки (без подменю).
+      Globe-dropdown в header вместо RU/HE toggle. Bell + Avatar dropdown (Профиль/Настройки/Выйти).
+      Desktop only — tablet и mobile версии не создаются.
+      Спецификация: MWL_CONTENT_ARCHITECTURE.md §8, DESIGN_SYSTEM.md §19.
 
 ---
 
@@ -207,7 +207,10 @@
       Файлы: `mwl_test_desktop.html`, `mwl_test_tablet.html`, `mwl_test_mobile.html`.
 - [x] Страница экзамена — desktop + tablet + mobile
       Файлы: `mwl_exam_desktop.html`, `mwl_exam_tablet.html`, `mwl_exam_mobile.html`.
-- [ ] Компонент Йоси (AI Chat Drawer) — макет не сделан (спецификация в §13 DESIGN_SYSTEM.md)
+- [x] Компонент Йоси (AI Chat Drawer) — макеты готовы (desktop + tablet + mobile, оба theme, RU/HE, RTL)
+      Файлы: `mwl_ai_chat_desktop.html`, `mwl_ai_chat_tablet.html`, `mwl_ai_chat_mobile.html`.
+      Floating card (desktop/tablet landscape) + bottom sheet (tablet portrait/mobile).
+      Trigger: icon-circle 52px amber. Context-aware greeting. Char counter 500. PNG Йоси по ситуации.
 - [ ] Лаборатория — после решения о рефакторинге Three.js / React Three Fiber
 
 ---
@@ -244,7 +247,11 @@
       порядок: Главная (home) / Курсы (graduation cap) / Статус (map-pin, /status) / Достижения (trophy);
       mobile bottom nav: Главная / Курсы / Статус / Лаборатория / Помощь(?);
       применить при следующем касании каждого файла.
-- [ ] **Компонент Йоси (AI Chat Drawer)** — спроектировать универсальный компонент: trigger-кнопка amber стиль (§13), drawer slide-up, поле ввода, ответ Йоси. Поведение по брейкпоинтам уточнить отдельно. Иконка trigger — решение отложено. Колокольчик в хедере убрать при реализации.
+- [x] **Компонент Йоси (AI Chat Drawer)** — §13 DESIGN_SYSTEM.md полностью переписан (07/07/2026):
+      trigger icon-circle 52px amber + glow, floating card vs bottom sheet по breakpoint,
+      PNG Йоси по ситуации, динамический статус, контекстные приветствия по странице,
+      char counter 500/≤100, session-only история, экзамен — только sidebar Help.
+      Макеты: desktop + tablet (ResizeObserver) + mobile (bottom nav Help tab). RTL полное зеркало.
 
 ---
 
@@ -257,7 +264,7 @@
 - [ ] RTL поддержка: везде использовать логические CSS-свойства
       (`padding-inline-*`, `margin-inline-*`, `border-inline-*`) вместо физических
       `padding-left/right` — особенно в компонентах сайдбара и модалок
-- [ ] Мобильный мокап login/register модала (планшет и мобайл)
+- [x] Мобильный мокап login/register модала (планшет и мобайл) — `mwl_login_modal_tablet.html`, `mwl_login_modal_mobile.html`. ГОТОВО.
 - [ ] Финализировать название платформы
 
 ---
@@ -267,3 +274,6 @@
 *Обновлён: 2026-07-05 (4) · Конструктор контента — desktop only. Достижения tablet/mobile отмечены [x].*
 *Обновлён: 2026-07-05 (5) · Добавлен пятый экран конструктора: Управление шейлоном (mwl_shalon_manager.html). Спецификация в MWL_CONTENT_ARCHITECTURE.md §8 и DESIGN_SYSTEM.md §19.*
 *Обновлён: 2026-07-06 · /status отмечен [x]: desktop + tablet + mobile готовы. Lang-btn заменён на глобус-dropdown (новый стандарт). Добавлены retrofit-задачи: глобус-dropdown, аватар-dropdown, bottom nav RTL (direction:ltr убран), навигация. Добавлена задача: компонент Йоси (AI Chat Drawer). Mobile bottom nav финализирован: Главная / Курсы / Статус / Лаборатория / Помощь(?). Landing page, dashboard, lesson, test, exam — отмечены как готовые макеты. Добавлен раздел правил взаимодействия с Claude.*
+*Обновлён: 2026-07-07 · Компонент Йоси [x]: макеты desktop + tablet + mobile готовы. §13 DESIGN_SYSTEM.md переписан. Trigger icon-circle, floating card / bottom sheet, context-aware greeting, PNG по ситуации, char counter 500, RTL. Задача в дизайн-системе также закрыта [x].*
+*Обновлён: 2026-07-07 · Shalon Manager [x]: mockup complete (desktop only). Detail panel: одно поле активного языка, descRu/descHe раздельно, авто-перевод при Save. Sidebar редактора финализирован (flat, без подменю). Globe-dropdown + bell + avatar-dropdown в header. Batch-translate убран. AI Chat Drawer [x]: все три breakpoints готовы, §13 переписан.*
+*Обновлён: 2026-07-07 (вечер) · Login/register modal tablet + mobile отмечены [x]. Все основные макеты завершены. Открыты только retrofit-задачи (глобус-dropdown, аватар-dropdown, bottom nav RTL, навигация).*

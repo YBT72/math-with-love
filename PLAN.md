@@ -123,15 +123,25 @@
 
 ## Фаза 6 — AI Chat Drawer (Профессор Йоси)
 
+Макеты готовы (07/07/2026): `mwl_ai_chat_desktop.html`, `mwl_ai_chat_tablet.html`, `mwl_ai_chat_mobile.html`.
+Спецификация: DESIGN_SYSTEM.md §13 (обновлён 07/07/2026).
+
 - [ ] `components/AIChatPanel.tsx`
-- [ ] Trigger button (amber style)
-- [ ] Drawer slide-up с dim overlay
-- [ ] Context strip
-- [ ] Yosi / student bubbles + typing indicator
-- [ ] Input: textarea с auto-resize + char counter
-- [ ] Voice recording (Web Speech API / заглушка)
-- [ ] RTL full mirror
+- [x] Trigger button — icon-circle 52px, amber border + glow ring
+- [x] Floating card (desktop/tablet landscape: 380×520 / 340×460px) + bottom sheet (tablet portrait/mobile: 75vh)
+- [x] Dim overlay (bottom sheet режим); без overlay на floating card
+- [x] Handle-пилюля (bottom sheet only)
+- [x] Context-aware greeting — меняется при каждом открытии по текущей странице
+- [~] Context strip — убран (контекст передаётся через системный промпт, не показывается студенту)
+- [x] Yosi / student bubbles + typing indicator (3 amber bounce dots)
+- [x] PNG Йоси по ситуации (icon / thinking / happy / encourage / present)
+- [x] Динамический статус (онлайн / думает... / отвечает...)
+- [x] Input: textarea auto-resize + char counter (лимит 500, показ при ≤100)
+- [x] RTL full mirror (HE mode)
+- [x] Экзамен — триггер скрыт, Йоси только через sidebar Help
+- [ ] Voice recording (Web Speech API) — отложено до после пилота
 - [ ] Подключить Claude API
+- [ ] Session history (в рамках сессии, не персистентна)
 
 ---
 
@@ -167,12 +177,24 @@
 
 ### Фаза 8b — Реализация экранов конструктора
 
-- [ ] Пересмотреть Supabase-схему: `atoms`, `groups`, `group_members`, `prerequisite_edges`, `checkpoints`, `shalon_types`, `shalon_sessions`
+Макеты всех 5 экранов конструктора готовы (07/07/2026).
+Author shell sidebar стандарт финализирован: Главная/Шейлоны/Группы/Атом/Экзамен/Граф // Лаборатория // Помощь/Настройки (без подменю, desktop only).
+Globe-dropdown вместо RU/HE toggle во всех конструкторах.
+
+- [x] `mwl_shalon_manager.html` — макет готов (desktop only, no tablet/mobile)
+- [x] `mwl_groups_editor.html` — макет готов
+- [x] `mwl_atom_editor.html` / `mwl_atom_editor_tablet.html` — макеты готовы
+- [x] `mwl_exam_schema_editor.html` — макет готов
+- [x] `mwl_graph_map_editor.html` — макет готов
+- [ ] `app/constructor/dashboard/page.tsx` — дашборд редактора (статус контента: шейлоны/темы/модули/атомы с индикаторами готовности)
+- [ ] `app/constructor/shalon/page.tsx` — Шейлон менеджер
 - [ ] `app/constructor/graph/page.tsx` — Карта графа
 - [ ] `app/constructor/atom/[id]/page.tsx` — Редактор атома
 - [ ] `app/constructor/groups/page.tsx` — Конструктор групп
-- [ ] `app/constructor/examples/page.tsx` — Примеры вопросников
-- [ ] Подключить batch-перевод к реальному Anthropic API endpoint
+- [ ] `app/constructor/exam/page.tsx` — Схема экзамена
+- [ ] Пересмотреть Supabase-схему: `atoms`, `groups`, `group_members`, `prerequisite_edges`, `checkpoints`, `shalon_types`, `shalon_sessions`
+- [ ] Auto-translate через FastAPI backend (не browser fetch) — server-side, результат в Supabase
+- [ ] Retrofit globe-dropdown + avatar-dropdown в старые мокапы конструктора (logged in backlog)
 
 ---
 
@@ -207,3 +229,5 @@ Claude Code (VS Code) + claude.ai/chat тянут из **одного пула**
 *Создан: 2026-06-19 · Обновлён: 2026-06-27 (Фазы 0.5 и 0.6 завершены — макеты конструктора и студенческих страниц готовы)*
 *Обновлён: 2026-07-05 — Фаза 1: Sidebar student menu обновлён (Главная / Курсы / Статус / Достижения / Формулы / Лаборатория / Помощь / Настройки); «Дашборд» → «Главная» / «דף הבית»; иконка Формулы — Σ (ti-sum).*
 *Обновлён: 2026-07-06 — Фаза 0.6 дополнена: /status страница завершена (desktop + tablet + mobile). Новые компоненты: глобус-dropdown (lang), аватар-dropdown (Профиль/Настройки/Выйти). Mobile bottom nav RTL: direction:ltr убран — зеркалируется при HE. Табы финализированы: Главная/Курсы/Статус/Лаборатория/Помощь(?).*
+*Обновлён: 2026-07-07 — Фаза 6: макеты AI Chat Drawer готовы (desktop + tablet + mobile). Список пунктов обновлён: [x] готово / [ ] реализация Next.js ещё нет. Voice recording и Claude API подключение — остаются открытыми.*
+*Обновлён: 2026-07-07 — Фаза 8b обновлена: все 5 макетов конструктора готовы. Author sidebar стандарт финализирован (flat, без подменю). Добавлен /constructor/dashboard. Auto-translate через FastAPI backend (не browser fetch). Retrofit globe-dropdown в старые мокапы — в backlog. Создан ARCHITECTURE.md — полная техническая архитектура для Claude Code (shell, routes, DB, auth, i18n, Phase 0).*

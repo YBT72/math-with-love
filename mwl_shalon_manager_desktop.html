@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MWL — Шейлоны</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif}
+.shell{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.d{background:#0f172a}.l{background:#f8fafc}
+.d .t1{color:#f1f5f9}.l .t1{color:#0f172a}
+.d .t2{color:#94a3b8}.l .t2{color:#64748b}
+.d .t3{color:#475569}.l .t3{color:#94a3b8}
+.d .p1{background:#1e293b}.l .p1{background:#ffffff}
+.d .bd{border-color:#334155!important}.l .bd{border-color:#e2e8f0!important}
+
+/* ── Header ── */
+.hdr{height:48px;display:flex;align-items:center;padding:0 14px;gap:10px;border-bottom:1px solid;flex-shrink:0}
+.logo{width:26px;height:26px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo svg{stroke:#0f172a}
+.brand{font-size:13px;font-weight:500}.brand b{color:#22D3EE;font-weight:500}
+.srch{flex:1;max-width:280px;margin:0 10px;position:relative}
+.srch input{width:100%;border-radius:8px;padding:6px 28px 6px 10px;font-size:12px;outline:none;font-family:inherit;border:1px solid}
+.d .srch input{background:#334155;border-color:#475569;color:#f1f5f9}
+.l .srch input{background:#f1f5f9;border-color:#e2e8f0;color:#0f172a}
+.srch-ic{position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%);pointer-events:none}
+.hdr-r{display:flex;align-items:center;gap:6px;margin-inline-start:auto}
+.hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid}
+/* Globe lang dropdown */
+.lg-wrap{position:relative;flex-shrink:0}
+.lg-dropdown{position:absolute;top:calc(100% + 8px);right:0;min-width:80px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.lg-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.d .lg-dropdown{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.l .lg-dropdown{background:#ffffff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+.lg-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s}
+.d .lg-item{color:#94a3b8}.l .lg-item{color:#64748b}
+.d .lg-item:hover{background:#334155}.l .lg-item:hover{background:#f1f5f9}
+.lg-item.on{color:#22D3EE}
+.lg-check{width:12px;height:12px;flex-shrink:0;opacity:0}
+.lg-item.on .lg-check{opacity:1}
+.lg-overlay{position:fixed;inset:0;z-index:99;display:none}
+.lg-overlay.open{display:block}
+/* Avatar dropdown */
+.av-wrap{position:relative;flex-shrink:0}
+.hav{width:28px;height:28px;min-width:28px;min-height:28px;border-radius:50%;background:#22D3EE;color:#0f172a;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;border:2px solid #22D3EE;flex-shrink:0}
+.av-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:140px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.av-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.d .av-dropdown{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.l .av-dropdown{background:#ffffff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+.av-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s}
+.d .av-item{color:#e2e8f0}.l .av-item{color:#0f172a}
+.d .av-item:hover{background:#334155}.l .av-item:hover{background:#f1f5f9}
+.av-item svg{flex-shrink:0;opacity:.7}
+.d .av-item svg{stroke:#94a3b8}.l .av-item svg{stroke:#64748b}
+.av-item.danger{color:#f87171}
+.av-item.danger svg{stroke:#f87171;opacity:1}
+.av-divider{height:1px;margin:2px 0}
+.d .av-divider{background:#334155}.l .av-divider{background:#e2e8f0}
+.av-overlay{position:fixed;inset:0;z-index:99;display:none}
+.av-overlay.open{display:block}
+[dir="rtl"] .lg-dropdown{right:auto;left:0}
+[dir="rtl"] .av-dropdown{right:auto;left:0}
+
+/* ── Ctrl-bar ── */
+.ctrl{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid;align-items:center;flex-wrap:wrap;flex-shrink:0}
+.tcb{padding:4px 12px;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid;background:transparent}
+.d .tcb{color:#94a3b8;border-color:#334155}.l .tcb{color:#64748b;border-color:#e2e8f0}
+.tcb.on{background:#22D3EE!important;color:#0f172a!important;border-color:#22D3EE!important}
+.tcb:disabled{opacity:.4;cursor:not-allowed}
+.div1{width:1px;height:16px;flex-shrink:0}
+.d .div1{background:#334155}.l .div1{background:#e2e8f0}
+
+/* ── Body ── */
+.body{display:flex;flex:1;min-height:0}
+
+/* ── Sidebar ── */
+.sb{width:46px;display:flex;flex-direction:column;padding:8px 0;border-inline-end:1px solid;overflow:hidden;flex-shrink:0;transition:width .2s ease}
+.sb.open{width:164px;padding:8px 6px}
+.sbt{display:flex;align-items:center;justify-content:center;width:38px;height:38px;margin:0 auto 8px;border-radius:8px;cursor:pointer;border:0;background:transparent;flex-shrink:0}
+.d .sbt svg{stroke:#475569}.l .sbt svg{stroke:#94a3b8}
+.sb-g{display:flex;flex-direction:column;gap:2px}
+.sb-mid{margin:auto 0;display:flex;flex-direction:column;gap:2px}
+.sb-bot{display:flex;flex-direction:column;gap:2px}
+.sb-sep{height:1px;margin:6px 4px}
+.d .sb-sep{background:#1e293b}.l .sb-sep{background:#e2e8f0}
+.ni{display:flex;align-items:center;width:38px;height:38px;margin:0 auto;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden;border:0;background:transparent;flex-shrink:0;transition:background .15s}
+.sb.open .ni{width:100%;margin:0;padding:0 8px}
+.d .ni:hover{background:#1e293b}.l .ni:hover{background:#f1f5f9}
+.ni .iw{width:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb.open .ni .iw{width:18px}
+.ni svg{flex-shrink:0;display:block;transition:stroke .15s}
+.d .ni svg{stroke:#475569}.l .ni svg{stroke:#64748b}
+.ni.on svg{stroke:#22D3EE!important}
+.nl{font-size:12px;font-weight:500;opacity:0;transition:opacity .15s,color .15s;white-space:nowrap;margin-inline-start:8px}
+.d .nl{color:#475569}.l .nl{color:#64748b}
+.ni.on .nl{color:#22D3EE!important}
+.sb.open .nl{opacity:1}
+
+/* ── Main ── */
+.sm-col{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
+.sm-main{flex:1;display:flex;min-height:0}
+
+/* ── Tree panel ── */
+.sm-tree{width:300px;flex-shrink:0;overflow-y:auto;border-inline-end:1px solid;padding:12px 10px}
+.d .sm-tree{background:#13233a}.l .sm-tree{background:#f0f9fc}
+.tree-title{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;margin:4px 4px 10px}
+.d .tree-title{color:#475569}.l .tree-title{color:#94a3b8}
+
+/* Tree node */
+.sn-row{display:flex;align-items:center;gap:4px;padding:5px 4px;border-radius:7px;cursor:pointer;user-select:none;position:relative}
+.d .sn-row{color:#cbd5e1}.l .sn-row{color:#334155}
+.d .sn-row:hover{background:#1e3040}.l .sn-row:hover{background:#ddf0f7}
+.sn-row.active{background:rgba(34,211,238,.12)!important}
+.sn-row.active .sn-label{color:#22D3EE!important;font-weight:500}
+.sn-row.drag-src{opacity:.4}
+.sn-row.drag-into{outline:2px solid #22D3EE;border-radius:7px;background:rgba(34,211,238,.1)!important}
+.ins-line{height:2px;background:#22D3EE;border-radius:2px;margin:1px 4px;pointer-events:none;display:none}
+.ins-line.show{display:block}
+.sn-chev{width:14px;height:14px;flex-shrink:0;transition:transform .15s;cursor:pointer}
+.sn-chev.open{transform:rotate(90deg)}
+.sn-chev.empty{visibility:hidden}
+.sn-icon{font-size:13px;flex-shrink:0}
+.sn-label{flex:1;font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.sn-label input.ie{background:transparent;border:none;border-bottom:1px solid #22D3EE;outline:none;font-size:12.5px;font-family:inherit;color:inherit;width:100%;padding:0}
+.sn-acts{display:none;align-items:center;gap:2px;flex-shrink:0}
+.sn-row:hover .sn-acts,.sn-row.active .sn-acts{display:flex}
+.sa{width:18px;height:18px;border-radius:4px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.d .sa{color:#475569}.l .sa{color:#94a3b8}
+.d .sa:hover{background:#334155;color:#22D3EE}.l .sa:hover{background:#c8e8f0;color:#0891b2}
+.sa-add{width:18px;height:18px;border-radius:4px;border:1px solid;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;font-size:14px;line-height:1}
+.d .sa-add{color:#475569;border-color:#475569}.l .sa-add{color:#94a3b8;border-color:#94a3b8}
+.d .sa-add:hover{border-color:#22D3EE;color:#22D3EE}.l .sa-add:hover{border-color:#0891b2;color:#0891b2}
+.sn-ch{padding-inline-start:18px}
+.add-row{display:flex;align-items:center;gap:6px;padding:6px 4px;border-radius:7px;cursor:pointer;font-size:12px;margin-top:4px}
+.d .add-row{color:#64748b}.l .add-row{color:#94a3b8}
+.d .add-row:hover{background:#1e3040;color:#cbd5e1}.l .add-row:hover{background:#ddf0f7;color:#475569}
+
+/* ── Detail panel ── */
+.sm-det{flex:1;overflow-y:auto;padding:24px 28px;display:flex;flex-direction:column;gap:20px}
+.d .sm-det{background:#0b1322}.l .sm-det{background:#e8f4f8}
+.det-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:10px;opacity:.4}
+.det-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid;width:fit-content}
+.d .det-badge{background:#1e293b;border-color:#334155;color:#94a3b8}.l .det-badge{background:#ffffff;border-color:#e2e8f0;color:#475569}
+.det-title{font-size:18px;font-weight:600}
+.det-sec{display:flex;flex-direction:column;gap:14px}
+.det-field{display:flex;flex-direction:column;gap:5px}
+.f-lbl{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.d .f-lbl{color:#475569}.l .f-lbl{color:#64748b}
+.f-inp{border-radius:8px;padding:8px 11px;font-size:13px;font-family:inherit;border:1px solid;outline:none;width:100%;background:transparent}
+.d .f-inp{border-color:#334155;color:#f1f5f9;background:#0f172a}
+.d .f-inp:focus{border-color:#22D3EE55}
+.l .f-inp{border-color:#e2e8f0;color:#0f172a;background:#ffffff}
+.l .f-inp:focus{border-color:#0891b266}
+.f-inp[readonly]{opacity:.5;cursor:not-allowed}
+textarea.f-inp{resize:vertical;min-height:72px}
+.f-note{font-size:11px}
+.d .f-note{color:#475569}.l .f-note{color:#94a3b8}
+
+/* Module nav buttons */
+.mod-btns{display:flex;gap:8px;flex-wrap:wrap}
+.mod-btn{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid;background:transparent;font-family:inherit}
+.d .mod-btn{border-color:#475569;color:#94a3b8}.l .mod-btn{border-color:#94a3b8;color:#64748b}
+.d .mod-btn:hover{border-color:#22D3EE;color:#22D3EE}.l .mod-btn:hover{border-color:#0891b2;color:#0891b2}
+
+/* Save button states */
+.det-save{align-self:flex-start;padding:8px 20px;border-radius:8px;font-size:12.5px;font-weight:500;cursor:pointer;border:1px solid;font-family:inherit;transition:opacity .15s;position:relative;overflow:hidden;min-width:160px;text-align:center}
+.det-save:disabled{cursor:not-allowed;opacity:.45}
+.det-save.idle{background:transparent}
+.d .det-save.idle{border-color:#334155;color:#475569}
+.l .det-save.idle{border-color:#e2e8f0;color:#94a3b8}
+.det-save.dirty{background:#22D3EE;border-color:#22D3EE;color:#0f172a}
+.det-save.dirty:hover{opacity:.9}
+/* Shimmer animation for translating state */
+.det-save.translating{border-color:#22D3EE44;color:#22D3EE;background:transparent;cursor:not-allowed}
+.det-save.translating::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(34,211,238,.25) 50%,transparent 100%);
+  background-size:200% 100%;
+  animation:shimmer 1.4s infinite linear;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── Toast ── */
+.toast-wrap{position:fixed;bottom:24px;inset-inline-end:24px;display:flex;flex-direction:column;gap:8px;z-index:500;pointer-events:none}
+.toast{padding:10px 16px;border-radius:10px;font-size:12.5px;font-weight:500;border:1px solid;display:flex;align-items:center;gap:8px;opacity:0;transform:translateY(8px);transition:opacity .25s ease,transform .25s ease;pointer-events:none;max-width:280px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.hide{opacity:0;transform:translateY(8px)}
+.d .toast.success{background:#0a2010;border-color:#22c55e44;color:#4ade80}
+.l .toast.success{background:#f0fdf4;border-color:#86efac;color:#15803d}
+.d .toast.translate{background:#0f1e2e;border-color:#22D3EE44;color:#22D3EE}
+.l .toast.translate{background:#e0f7fa;border-color:#22D3EE88;color:#0891b2}
+.d .toast.error{background:#200808;border-color:#f8717144;color:#f87171}
+.l .toast.error{background:#fef2f2;border-color:#fca5a5;color:#b91c1c}
+
+/* ── Modals ── */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:200}
+.mo.show{display:flex}
+.md{border-radius:12px;padding:20px 22px;width:340px;border:1px solid;display:flex;flex-direction:column;gap:14px}
+.md-title{font-size:14px;font-weight:600}
+.md-body{font-size:13px;line-height:1.6}
+.d .md-body{color:#94a3b8}.l .md-body{color:#64748b}
+.md-inp{border-radius:8px;padding:8px 11px;font-size:13px;font-family:inherit;border:1px solid;outline:none;width:100%;background:transparent}
+.d .md-inp{border-color:#334155;color:#f1f5f9;background:#0f172a}
+.d .md-inp:focus{border-color:#22D3EE55}
+.l .md-inp{border-color:#e2e8f0;color:#0f172a;background:#f8fafc}
+.md-acts{display:flex;gap:8px;justify-content:flex-end}
+.mb{padding:7px 16px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid;font-family:inherit;background:transparent}
+.d .mb{border-color:#334155;color:#94a3b8}.l .mb{border-color:#e2e8f0;color:#64748b}
+.mb-ok{background:#22D3EE!important;border-color:#22D3EE!important;color:#0f172a!important}
+
+/* Nav popup */
+.nav-pop{width:280px}
+.nav-pop-sub{font-size:13px;font-weight:500;margin-bottom:2px}
+.d .nav-pop-sub{color:#94a3b8}.l .nav-pop-sub{color:#64748b}
+.nav-pop-name{font-size:15px;font-weight:600;margin-bottom:4px}
+.nav-pop-btns{display:flex;flex-direction:column;gap:8px}
+.nav-pop-btn{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:9px;cursor:pointer;border:1px solid;font-size:13px;font-weight:500;font-family:inherit;background:transparent;width:100%}
+.d .nav-pop-btn{border-color:#334155;color:#cbd5e1}.l .nav-pop-btn{border-color:#e2e8f0;color:#334155}
+.d .nav-pop-btn:hover{border-color:#22D3EE;color:#22D3EE}.l .nav-pop-btn:hover{border-color:#0891b2;color:#0891b2}
+
+/* RTL */
+[dir="rtl"] .srch input{text-align:right}
+[dir="rtl"] .sn-label input.ie{text-align:right}
+[dir="rtl"] .f-inp{text-align:right}
+[dir="rtl"] .toast-wrap{inset-inline-end:24px;inset-inline-start:auto}
+</style>
+</head>
+<body>
+<div class="shell d" id="shell">
+
+  <!-- Header -->
+  <div class="hdr p1 bd">
+    <div class="logo">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 4h-10l6 8l-6 8h10"/></svg>
+    </div>
+    <div class="brand t1">Math <b>With Love</b></div>
+    <div class="srch">
+      <input placeholder="Поиск..." id="srch-inp">
+      <span class="srch-ic t3">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+      </span>
+    </div>
+    <div class="hdr-r">
+      <!-- Globe lang dropdown -->
+      <div class="lg-wrap">
+        <div class="hico bd t2" id="lgBtn" onclick="toggleLangDD()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div class="lg-dropdown p1 bd" id="lgDropdown">
+          <div class="lg-item on" id="lgItemRu" onclick="setLang('ru');closeLangDD()">
+            <span>RU</span>
+            <svg class="lg-check" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="lg-item" id="lgItemHe" onclick="setLang('he');closeLangDD()">
+            <span>HE</span>
+            <svg class="lg-check" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="lg-overlay" id="lgOverlay" onclick="closeLangDD()"></div>
+      <!-- Bell (placeholder) -->
+      <div class="hico bd t2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg>
+      </div>
+      <!-- Avatar dropdown -->
+      <div class="av-wrap">
+        <div class="hav" id="havBtn" onclick="toggleDropdown()">ИА</div>
+        <div class="av-dropdown p1 bd" id="avDropdown">
+          <div class="av-item" onclick="closeDropdown()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+            <span data-i18n="dropProfile">Профиль</span>
+          </div>
+          <div class="av-item" onclick="closeDropdown()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span data-i18n="dropSettings">Настройки</span>
+          </div>
+          <div class="av-divider"></div>
+          <div class="av-item danger" onclick="closeDropdown()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span data-i18n="dropLogout">Выйти</span>
+          </div>
+        </div>
+      </div>
+      <div class="av-overlay" id="avOverlay" onclick="closeDropdown()"></div>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- Sidebar (flat, no sub-menus) -->
+    <div class="sb p1 bd" id="sb">
+      <!-- Toggle button -->
+      <button class="sbt" onclick="toggleSb()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+      </button>
+      <!-- Top group -->
+      <div class="sb-g">
+        <!-- Home -->
+        <div class="ni" title="Главная">
+          <span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></svg></span>
+          <span class="nl" data-i18n="navHome">Главная</span>
+        </div>
+        <!-- Shalons (active) -->
+        <div class="ni on" title="Шейлоны">
+          <span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+          <span class="nl" data-i18n="navShalon">Шейлоны</span>
+        </div>
+        <!-- Groups -->
+        <div class="ni" title="Группы">
+          <span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="13" width="7" height="7" rx="1.5"/><rect x="14" y="13" width="7" height="7" rx="1.5"/></svg></span>
+          <span class="nl" data-i18n="navGroups">Группы</span>
+        </div>
+        <!-- Atom editor -->
+        <div class="ni" title="Атом">
+          <span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg></span>
+          <span class="nl" data-i18n="navAtom">Атом</span>
+        </div>
+        <!-- Exam schema -->
+        <div class="ni" title="Экзамен">
+          <span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6a1 1 0 0 1 1 1v3.5a1 1 0 0 1-.4.8l-3.6 2.7l3.6 2.7a1 1 0 0 1 .4.8v3.5a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-3.5a1 1 0 0 1 .4-.8l3.6-2.7l-3.6-2.7a1 1 0 0 1-.4-.8v-3.5a1 1 0 0 1 1-1z"/></svg></span>
+          <span class="nl" data-i18n="navExam">Экзамен</span>
+        </div>
+        <!-- Graph -->
+        <div class="ni" title="Граф">
+          <span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="6" cy="20" r="2"/><circle cx="18" cy="20" r="2"/><path d="M7.8 7.2l2.5 4.1M16.2 7.2l-2.5 4.1M10.5 14.7l-2.7 3.8M13.5 14.7l2.7 3.8"/></svg></span>
+          <span class="nl" data-i18n="navGraph">Граф</span>
+        </div>
+      </div>
+      <!-- Separator -->
+      <div class="sb-sep"></div>
+      <!-- Middle group -->
+      <div class="sb-mid">
+        <!-- Lab -->
+        <div class="ni" title="Лаборатория">
+          <span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="9" ry="4"/><ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(120 12 12)"/></svg></span>
+          <span class="nl" data-i18n="navLab">Лаборатория</span>
+        </div>
+      </div>
+      <!-- Separator -->
+      <div class="sb-sep"></div>
+      <!-- Bottom group -->
+      <div class="sb-bot">
+        <div class="ni" title="Помощь">
+          <span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="17" x2="12.01" y2="17"/><path d="M12 13.5a1.5 1.5 0 0 1 1-1.5a2.6 2.6 0 1 0-3-4"/></svg></span>
+          <span class="nl" data-i18n="navHelp">Помощь</span>
+        </div>
+        <div class="ni" title="Настройки">
+          <span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51v.17a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82a1.65 1.65 0 0 0-1.51-1h-.17a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+          <span class="nl" data-i18n="navSettings">Настройки</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main content column -->
+    <div class="sm-col">
+
+      <!-- Ctrl-bar -->
+      <div class="ctrl p1 bd">
+        <button class="tcb on" id="btn-d" onclick="setMode('d')">🌙 <span data-i18n="themeDark">Тёмная</span></button>
+        <button class="tcb" id="btn-l" onclick="setMode('l')">☀ <span data-i18n="themeLight">Светлая</span></button>
+        <div class="div1"></div>
+        <span class="t2" style="font-size:12px" id="ctx-lbl">Шейлоны</span>
+        <div style="flex:1"></div>
+        <button class="tcb" onclick="createShalon()">+ <span data-i18n="btnNew">Новый шейлон</span></button>
+        <button class="tcb" id="btn-rename" onclick="openRenameModal()" disabled>✎ <span data-i18n="btnRename">Переименовать</span></button>
+        <button class="tcb" id="btn-dup" onclick="duplicateShalon()" disabled>⧉ <span data-i18n="btnDup">Дублировать</span></button>
+      </div>
+
+      <div class="sm-main">
+
+        <!-- Tree panel -->
+        <div class="sm-tree bd" id="tree-wrap"></div>
+
+        <!-- Detail panel -->
+        <div class="sm-det" id="det-wrap"></div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-wrap" id="toast-wrap"></div>
+
+  <!-- Modal: create / rename -->
+  <div class="mo" id="mo-name">
+    <div class="md p1 bd">
+      <div class="md-title t1" id="mo-name-title">Новый шейлон</div>
+      <input class="md-inp t1" id="mo-name-inp" placeholder="Название">
+      <div class="md-acts">
+        <button class="mb" onclick="closeMoName()"><span data-i18n="btnCancel">Отмена</span></button>
+        <button class="mb mb-ok" onclick="confirmName()"><span data-i18n="btnSave">Сохранить</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: duplicate confirm -->
+  <div class="mo" id="mo-dup">
+    <div class="md p1 bd">
+      <div class="md-title t1" data-i18n="dupTitle">Дублировать шейлон</div>
+      <div class="md-body t2" id="mo-dup-body"></div>
+      <div class="md-acts">
+        <button class="mb" onclick="closeMoDup()"><span data-i18n="btnCancel">Отмена</span></button>
+        <button class="mb mb-ok" onclick="confirmDup()"><span data-i18n="btnDup">Дублировать</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: module navigation -->
+  <div class="mo" id="mo-nav">
+    <div class="md nav-pop p1 bd">
+      <div class="nav-pop-sub t2" data-i18n="navPopTitle">Перейти в</div>
+      <div class="nav-pop-name t1" id="mo-nav-name"></div>
+      <div class="nav-pop-btns">
+        <button class="nav-pop-btn" onclick="closeMoNav()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg>
+          <span data-i18n="navPopAtom">Редактор атомов</span>
+        </button>
+        <button class="nav-pop-btn" onclick="closeMoNav()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="6" cy="20" r="2"/><circle cx="18" cy="20" r="2"/><path d="M7.8 7.2l2.5 4.1M16.2 7.2l-2.5 4.1M10.5 14.7l-2.7 3.8M13.5 14.7l2.7 3.8"/></svg>
+          <span data-i18n="navPopGraph">Карта графа</span>
+        </button>
+        <button class="mb" style="width:100%;justify-content:center" onclick="closeMoNav()">
+          <span data-i18n="btnCancel">Отмена</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /shell -->
+
+<script>
+// ===================== Sidebar =====================
+var sbOpen = false;
+function toggleSb() {
+  sbOpen = !sbOpen;
+  document.getElementById('sb').classList.toggle('open', sbOpen);
+}
+
+// ===================== Theme =====================
+function setMode(m) {
+  document.getElementById('shell').className = 'shell ' + m;
+  document.getElementById('btn-d').className = 'tcb' + (m === 'd' ? ' on' : '');
+  document.getElementById('btn-l').className = 'tcb' + (m === 'l' ? ' on' : '');
+}
+
+// ===================== Language =====================
+var currentLang = 'ru';
+
+var TR = {
+  ru: {
+    navHome:'Главная', navShalon:'Шейлоны', navGroups:'Группы',
+    navAtom:'Атом', navExam:'Экзамен', navGraph:'Граф',
+    navLab:'Лаборатория', navHelp:'Помощь', navSettings:'Настройки',
+    themeDark:'Тёмная', themeLight:'Светлая',
+    ctxLbl:'Шейлоны',
+    btnNew:'Новый шейлон', btnRename:'Переименовать', btnDup:'Дублировать',
+    btnCancel:'Отмена', btnSave:'Сохранить',
+    moNewShalon:'Новый шейлон', moNewTheme:'Новая тема', moNewModule:'Новый модуль',
+    moRenameShalon:'Переименовать шейлон',
+    phShalon:'Название шейлона', phTheme:'Название темы', phModule:'Название модуля',
+    dupTitle:'Дублировать шейлон',
+    dupBody:'Создать копию шейлона «%s»? Структура (темы и модули) будет скопирована. Атомы останутся общими.',
+    navPopTitle:'Перейти в', navPopAtom:'Редактор атомов', navPopGraph:'Карта графа',
+    detTypeShalon:'Шейлон', detTypeTheme:'Тема', detTypeModule:'Модуль',
+    detLblName:'Название', detLblDesc:'Описание', detLblOrder:'Порядок (auto)',
+    detNoteOrder:'Порядок управляется через drag-and-drop или кнопки ↑↓ в дереве',
+    detSave:'Сохранить изменения', detSaving:'Переводим...',
+    detRetry:'↺ Повторить перевод',
+    detOpenAtom:'Открыть редактор атомов', detOpenGraph:'Открыть граф',
+    detEmptyTitle:'Выберите элемент',
+    detEmptyNote:'Нажмите на шейлон, тему или модуль в дереве слева',
+    treeTitle:'Структура',
+    toastSaved:'Сохранено ✓',
+    toastTranslated:'Переведено ✓',
+    toastTransErr:'Перевод не удался — попробуйте ещё раз',
+    dropProfile:'Профиль', dropSettings:'Настройки', dropLogout:'Выйти'
+  },
+  he: {
+    navHome:'ראשי', navShalon:'שאלונים', navGroups:'קבוצות',
+    navAtom:'אטום', navExam:'בגרות', navGraph:'גרף',
+    navLab:'מעבדה', navHelp:'עזרה', navSettings:'הגדרות',
+    themeDark:'כהה', themeLight:'בהיר',
+    ctxLbl:'שאלונים',
+    btnNew:'שאלון חדש', btnRename:'שינוי שם', btnDup:'שכפול',
+    btnCancel:'ביטול', btnSave:'שמירה',
+    moNewShalon:'שאלון חדש', moNewTheme:'נושא חדש', moNewModule:'מודול חדש',
+    moRenameShalon:'שינוי שם שאלון',
+    phShalon:'שם השאלון', phTheme:'שם הנושא', phModule:'שם המודול',
+    dupTitle:'שכפול שאלון',
+    dupBody:'ליצור עותק של השאלון «%s»? המבנה יועתק. האטומים יישארו משותפים.',
+    navPopTitle:'עבור אל', navPopAtom:'עורך אטומים', navPopGraph:'מפת הגרף',
+    detTypeShalon:'שאלון', detTypeTheme:'נושא', detTypeModule:'מודול',
+    detLblName:'שם', detLblDesc:'תיאור', detLblOrder:'סדר (auto)',
+    detNoteOrder:'הסדר מנוהל על ידי גרירה ושחרור או כפתורי ↑↓ בעץ',
+    detSave:'שמור שינויים', detSaving:'מתרגם...',
+    detRetry:'↺ נסה שוב',
+    detOpenAtom:'פתח עורך אטומים', detOpenGraph:'פתח גרף',
+    detEmptyTitle:'בחר פריט',
+    detEmptyNote:'לחץ על שאלון, נושא או מודול בעץ משמאל',
+    treeTitle:'מבנה',
+    toastSaved:'נשמר ✓',
+    toastTranslated:'תורגם ✓',
+    toastTransErr:'התרגום נכשל — נסה שוב',
+    dropProfile:'פרופיל', dropSettings:'הגדרות', dropLogout:'יציאה'
+  }
+};
+
+function applyI18n() {
+  var t = TR[currentLang];
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var k = el.getAttribute('data-i18n');
+    if (t[k] !== undefined) el.textContent = t[k];
+  });
+  document.getElementById('ctx-lbl').textContent = t.ctxLbl;
+}
+
+function setLang(l) {
+  currentLang = l;
+  var isHe = l === 'he';
+  document.getElementById('lgItemRu').className = 'lg-item' + (l === 'ru' ? ' on' : '');
+  document.getElementById('lgItemHe').className = 'lg-item' + (isHe ? ' on' : '');
+  document.getElementById('shell').setAttribute('dir', isHe ? 'rtl' : 'ltr');
+  applyI18n();
+  renderTree();
+  renderDetail();
+}
+
+// ===================== Data model =====================
+var items = [
+  {id:'sh1',type:'shalon',titleRu:'35572 — 5 יחידות',titleHe:'35572 — 5 יחידות',descRu:'Основной вопросник Багрут (5 единиц)',descHe:'שאלון הבגרות הראשי במתמטיקה (5 יחידות)',parentId:null,order:0},
+  {id:'th1',type:'theme',titleRu:'Векторы',titleHe:'וקטורים',desc:'',parentId:'sh1',order:0},
+  {id:'mo1',type:'module',titleRu:'Стереометрия — введение',titleHe:'סטריאומטריה — מבוא',desc:'',parentId:'th1',order:0},
+  {id:'mo2',type:'module',titleRu:'Основы векторов',titleHe:'יסודות הוקטורים',desc:'',parentId:'th1',order:1},
+  {id:'mo3',type:'module',titleRu:'Скалярное произведение',titleHe:'מכפלה סקלרית',desc:'',parentId:'th1',order:2},
+  {id:'mo4',type:'module',titleRu:'Прямые и плоскости',titleHe:'ישרים ומישורים',desc:'',parentId:'th1',order:3},
+  {id:'mo5',type:'module',titleRu:'Расстояния',titleHe:'מרחקים',desc:'',parentId:'th1',order:4},
+  {id:'mo6',type:'module',titleRu:'Углы',titleHe:'זוויות',desc:'',parentId:'th1',order:5},
+  {id:'th2',type:'theme',titleRu:'Тригонометрия',titleHe:'טריגונומטריה',desc:'',parentId:'sh1',order:1},
+  {id:'mo7',type:'module',titleRu:'Единичная окружность',titleHe:'מעגל היחידה',desc:'',parentId:'th2',order:0},
+  {id:'mo8',type:'module',titleRu:'Тригонометрические функции',titleHe:'פונקציות טריגונומטריות',desc:'',parentId:'th2',order:1},
+  {id:'mo9',type:'module',titleRu:'Уравнения',titleHe:'משוואות',desc:'',parentId:'th2',order:2},
+  {id:'th3',type:'theme',titleRu:'Производная',titleHe:'נגזרת',desc:'',parentId:'sh1',order:2},
+  {id:'mo10',type:'module',titleRu:'Понятие производной',titleHe:'מושג הנגזרת',desc:'',parentId:'th3',order:0},
+  {id:'mo11',type:'module',titleRu:'Правила дифференцирования',titleHe:'כללי גזירה',desc:'',parentId:'th3',order:1},
+  {id:'mo12',type:'module',titleRu:'Исследование функции',titleHe:'חקירת פונקציה',desc:'',parentId:'th3',order:2},
+  {id:'sh2',type:'shalon',titleRu:'35571 — 4 יחידות',titleHe:'35571 — 4 יחידות',descRu:'Вопросник Багрут (4 единицы)',descHe:'שאלון הבגרות במתמטיקה (4 יחידות)',parentId:null,order:1},
+  {id:'th4',type:'theme',titleRu:'Векторы',titleHe:'וקטורים',desc:'',parentId:'sh2',order:0},
+  {id:'mo13',type:'module',titleRu:'Основы векторов',titleHe:'יסודות הוקטורים',desc:'',parentId:'th4',order:0},
+  {id:'mo14',type:'module',titleRu:'Скалярное произведение',titleHe:'מכפלה סקלרית',desc:'',parentId:'th4',order:1},
+  {id:'th5',type:'theme',titleRu:'Тригонометрия',titleHe:'טריגונומטריה',desc:'',parentId:'sh2',order:1},
+  {id:'mo15',type:'module',titleRu:'Единичная окружность',titleHe:'מעגל היחידה',desc:'',parentId:'th5',order:0},
+  {id:'mo16',type:'module',titleRu:'Тригонометрические функции',titleHe:'פונקציות טריגונומטריות',desc:'',parentId:'th5',order:1},
+];
+
+var selectedId  = null;
+var expanded    = {sh1:true, th1:true, sh2:false};
+var dragId      = null;
+var nameMode    = null; // 'newShalon'|'newTheme'|'newModule'|'renameShalon'
+var nameParent  = null;
+var isDetDirty  = false;
+var isTranslating = false; // true while API call in flight
+
+// Warn before closing page if translation is running
+window.addEventListener('beforeunload', function(e) {
+  if (isTranslating) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
+// ===================== Helpers =====================
+function byId(id)        { return items.find(function(x){ return x.id === id; }); }
+function childrenOf(pid) { return items.filter(function(x){ return x.parentId === pid; }).sort(function(a,b){ return (a.order||0)-(b.order||0); }); }
+function siblingsOf(id)  { var it = byId(id); return childrenOf(it ? it.parentId : null); }
+function normOrders(pid) { childrenOf(pid).forEach(function(x,i){ x.order = i; }); }
+function isAnc(id, anc)  {
+  var cur = byId(id);
+  while(cur && cur.parentId) { if(cur.parentId === anc) return true; cur = byId(cur.parentId); }
+  return false;
+}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ===================== Ctrl-bar =====================
+function updateCtrl() {
+  var item = selectedId ? byId(selectedId) : null;
+  var ok   = item && item.type === 'shalon';
+  document.getElementById('btn-rename').disabled = !ok;
+  document.getElementById('btn-dup').disabled    = !ok;
+}
+
+// ===================== Tree =====================
+function renderTree() {
+  var t    = TR[currentLang];
+  var wrap = document.getElementById('tree-wrap');
+  var html = '<div class="tree-title t3">' + t.treeTitle + '</div>';
+  childrenOf(null).forEach(function(sh) { html += renderNode(sh); });
+  html += '<div class="add-row t3" onclick="createShalon()">'
+    + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> '
+    + t.btnNew + '</div>';
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('.sn-row[data-id]').forEach(function(row) {
+    attachDrag(row, byId(row.getAttribute('data-id')));
+  });
+}
+
+function renderNode(item) {
+  var t        = TR[currentLang];
+  var kids     = childrenOf(item.id);
+  var isExp    = !!expanded[item.id];
+  var isAct    = selectedId === item.id;
+  var label    = currentLang === 'ru' ? item.titleRu : item.titleHe;
+  var icon     = item.type === 'shalon' ? '📋' : item.type === 'theme' ? '📁' : '📄';
+  var sibs     = siblingsOf(item.id);
+  var idx      = sibs.indexOf(item);
+  var html     = '';
+
+  html += '<div class="ins-line" data-before="' + item.id + '"></div>';
+  html += '<div class="sn-row' + (isAct ? ' active' : '') + '" data-id="' + item.id + '" '
+    + 'onclick="selectNode(\'' + item.id + '\')" '
+    + 'ondblclick="startIE(\'' + item.id + '\')">';
+  html += '<span class="sn-chev' + (kids.length ? (isExp ? ' open' : '') : ' empty') + '" '
+    + 'onclick="event.stopPropagation();toggleExp(\'' + item.id + '\')">'
+    + '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>';
+  html += '<span class="sn-icon">' + icon + '</span>';
+  html += '<span class="sn-label" id="lbl-' + item.id + '">' + esc(label || '') + '</span>';
+  html += '<span class="sn-acts">';
+  html += idx > 0
+    ? '<button class="sa" onclick="event.stopPropagation();moveNode(\'' + item.id + '\',-1)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg></button>'
+    : '<span style="width:18px"></span>';
+  html += idx < sibs.length - 1
+    ? '<button class="sa" onclick="event.stopPropagation();moveNode(\'' + item.id + '\',1)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>'
+    : '<span style="width:18px"></span>';
+  if (item.type === 'shalon')
+    html += '<button class="sa-add" onclick="event.stopPropagation();createChild(\'' + item.id + '\',\'theme\')">+</button>';
+  else if (item.type === 'theme')
+    html += '<button class="sa-add" onclick="event.stopPropagation();createChild(\'' + item.id + '\',\'module\')">+</button>';
+  else
+    html += '<span style="width:18px"></span>';
+  html += '</span></div>';
+
+  if (kids.length && isExp) {
+    html += '<div class="sn-ch">';
+    kids.forEach(function(ch) { html += renderNode(ch); });
+    html += '<div class="ins-line" data-after="' + kids[kids.length-1].id + '"></div>';
+    html += '</div>';
+  }
+  return html;
+}
+
+// ===================== Node interactions =====================
+function selectNode(id) {
+  var item = byId(id);
+  selectedId = id;
+  if (item && item.type === 'module') { openMoNav(id); }
+  updateCtrl();
+  renderTree();
+  renderDetail();
+}
+
+function toggleExp(id) { expanded[id] = !expanded[id]; renderTree(); }
+
+function moveNode(id, dir) {
+  var item = byId(id);
+  var sibs = siblingsOf(id);
+  var idx  = sibs.indexOf(item);
+  var ni   = idx + dir;
+  if (ni < 0 || ni >= sibs.length) return;
+  var tmp = item.order; item.order = sibs[ni].order; sibs[ni].order = tmp;
+  renderTree();
+}
+
+function startIE(id) {
+  var lbl = document.getElementById('lbl-' + id);
+  if (!lbl) return;
+  var item = byId(id);
+  var cur  = currentLang === 'ru' ? item.titleRu : item.titleHe;
+  lbl.innerHTML = '<input class="ie" value="' + esc(cur) + '" '
+    + 'onclick="event.stopPropagation()" '
+    + 'onkeydown="onIEKey(event,\'' + id + '\')" '
+    + 'onblur="commitIE(\'' + id + '\')">';
+  var inp = lbl.querySelector('input');
+  inp.focus(); inp.select();
+}
+
+function onIEKey(e, id) {
+  if (e.key === 'Enter')  { e.preventDefault(); commitIE(id); }
+  if (e.key === 'Escape') { renderTree(); }
+  e.stopPropagation();
+}
+
+function commitIE(id) {
+  var lbl = document.getElementById('lbl-' + id);
+  if (!lbl) return;
+  var inp = lbl.querySelector('input');
+  if (!inp) return;
+  var val = inp.value.trim();
+  if (val) {
+    var item = byId(id);
+    if (currentLang === 'ru') item.titleRu = val;
+    else item.titleHe = val;
+    // Sync detail panel field if this item is currently selected
+    if (selectedId === id) {
+      var fi = document.getElementById('det-name');
+      if (fi) fi.value = val;
+    }
+  }
+  renderTree();
+}
+
+// ===================== Create / duplicate =====================
+function createShalon() {
+  nameMode = 'newShalon'; nameParent = null;
+  openMoName(TR[currentLang].moNewShalon, TR[currentLang].phShalon, '');
+}
+function createChild(pid, type) {
+  nameMode   = type === 'theme' ? 'newTheme' : 'newModule';
+  nameParent = pid;
+  var t = TR[currentLang];
+  openMoName(type === 'theme' ? t.moNewTheme : t.moNewModule,
+             type === 'theme' ? t.phTheme    : t.phModule, '');
+}
+
+function confirmName() {
+  var val = document.getElementById('mo-name-inp').value.trim();
+  if (!val) return;
+  if (nameMode === 'newShalon') {
+    var id = 'sh' + Date.now();
+    items.push({id:id,type:'shalon',titleRu:val,titleHe:'',descRu:'',descHe:'',parentId:null,order:childrenOf(null).length});
+    selectedId = id; expanded[id] = true;
+  } else if (nameMode === 'newTheme') {
+    var id = 'th' + Date.now();
+    items.push({id:id,type:'theme',titleRu:val,titleHe:'',desc:'',parentId:nameParent,order:childrenOf(nameParent).length});
+    selectedId = id; expanded[nameParent] = true;
+  } else if (nameMode === 'newModule') {
+    var id = 'mo' + Date.now();
+    items.push({id:id,type:'module',titleRu:val,titleHe:'',desc:'',parentId:nameParent,order:childrenOf(nameParent).length});
+    selectedId = id; expanded[nameParent] = true;
+  } else if (nameMode === 'renameShalon') {
+    var item = byId(selectedId);
+    if (item) { if (currentLang === 'ru') item.titleRu = val; else item.titleHe = val; }
+  }
+  closeMoName();
+  updateCtrl(); renderTree(); renderDetail();
+}
+
+function openRenameModal() {
+  if (!selectedId) return;
+  var item = byId(selectedId);
+  if (!item || item.type !== 'shalon') return;
+  nameMode = 'renameShalon';
+  openMoName(TR[currentLang].moRenameShalon, TR[currentLang].phShalon,
+             currentLang === 'ru' ? item.titleRu : item.titleHe);
+}
+
+function duplicateShalon() {
+  if (!selectedId) return;
+  var item = byId(selectedId);
+  if (!item || item.type !== 'shalon') return;
+  var name = currentLang === 'ru' ? item.titleRu : item.titleHe;
+  document.getElementById('mo-dup-body').innerHTML = TR[currentLang].dupBody.replace('%s', esc(name));
+  document.getElementById('mo-dup').classList.add('show');
+}
+
+function confirmDup() {
+  var item = byId(selectedId);
+  if (!item) return;
+  var nid = 'sh' + Date.now();
+  items.push({id:nid,type:'shalon',titleRu:item.titleRu+' (копия)',titleHe:item.titleHe+' (עותק)',descRu:item.descRu||'',descHe:item.descHe||'',parentId:null,order:childrenOf(null).length});
+  childrenOf(item.id).forEach(function(th) {
+    var tid = 'th' + Date.now() + Math.random().toString(36).slice(2,5);
+    items.push({id:tid,type:'theme',titleRu:th.titleRu,titleHe:th.titleHe,desc:th.desc,parentId:nid,order:th.order});
+    childrenOf(th.id).forEach(function(mo) {
+      var mid = 'mo' + Date.now() + Math.random().toString(36).slice(2,5);
+      items.push({id:mid,type:'module',titleRu:mo.titleRu,titleHe:mo.titleHe,desc:mo.desc,parentId:tid,order:mo.order});
+    });
+  });
+  selectedId = nid; expanded[nid] = false;
+  closeMoDup(); updateCtrl(); renderTree(); renderDetail();
+}
+
+// ===================== Detail panel =====================
+function setDetDirty(dirty) {
+  isDetDirty = dirty;
+  var btn = document.getElementById('det-save-btn');
+  if (!btn) return;
+  if (dirty) {
+    btn.className = 'det-save dirty';
+    btn.textContent = TR[currentLang].detSave;
+    btn.disabled = false;
+  } else {
+    btn.className = 'det-save idle';
+    btn.textContent = TR[currentLang].detSave;
+    btn.disabled = true;
+  }
+}
+
+function renderDetail() {
+  var wrap = document.getElementById('det-wrap');
+  var t    = TR[currentLang];
+  isDetDirty = false;
+
+  if (!selectedId) {
+    wrap.innerHTML = '<div class="det-empty">'
+      + '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>'
+      + '<div class="t1" style="font-size:14px;font-weight:500">' + t.detEmptyTitle + '</div>'
+      + '<div class="t3" style="font-size:12px">' + t.detEmptyNote + '</div></div>';
+    return;
+  }
+
+  var item  = byId(selectedId);
+  if (!item) return;
+
+  var tLbl  = item.type === 'shalon' ? t.detTypeShalon : item.type === 'theme' ? t.detTypeTheme : t.detTypeModule;
+  var name  = currentLang === 'ru' ? item.titleRu : item.titleHe;
+  var order = siblingsOf(item.id).indexOf(item) + 1;
+
+  var html = '<div class="det-badge">' + tLbl + '</div>';
+  html += '<div class="det-title t1">' + esc(name || '—') + '</div>';
+  html += '<div class="det-sec">';
+
+  // Single name field (active language)
+  html += '<div class="det-field">'
+    + '<label class="f-lbl t2">' + t.detLblName + '</label>'
+    + '<input class="f-inp t1" id="det-name" value="' + esc(name || '') + '" oninput="setDetDirty(true)">'
+    + '</div>';
+
+  // Description (shalon only) — uses descRu or descHe based on active language
+  if (item.type === 'shalon') {
+    var desc = currentLang === 'ru' ? (item.descRu || '') : (item.descHe || '');
+    html += '<div class="det-field">'
+      + '<label class="f-lbl t2">' + t.detLblDesc + '</label>'
+      + '<textarea class="f-inp t1" id="det-desc" oninput="setDetDirty(true)">' + esc(desc) + '</textarea>'
+      + '</div>';
+  }
+
+  // Order (read-only, theme/module)
+  if (item.type !== 'shalon') {
+    html += '<div class="det-field">'
+      + '<label class="f-lbl t2">' + t.detLblOrder + '</label>'
+      + '<input class="f-inp t1" value="' + order + '" readonly>'
+      + '<span class="f-note t3" style="margin-top:3px">' + t.detNoteOrder + '</span>'
+      + '</div>';
+  }
+
+  html += '</div>';
+
+  // Module nav buttons
+  if (item.type === 'module') {
+    html += '<div class="mod-btns">'
+      + '<button class="mod-btn" onclick="closeMoNav()">'
+      + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg> '
+      + t.detOpenAtom + '</button>'
+      + '<button class="mod-btn" onclick="closeMoNav()">'
+      + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="6" cy="20" r="2"/><circle cx="18" cy="20" r="2"/><path d="M7.8 7.2l2.5 4.1M16.2 7.2l-2.5 4.1M10.5 14.7l-2.7 3.8M13.5 14.7l2.7 3.8"/></svg> '
+      + t.detOpenGraph + '</button>'
+      + '</div>';
+  }
+
+  // Save button — starts disabled (idle)
+  html += '<button class="det-save idle" id="det-save-btn" onclick="saveDetail()" disabled>'
+    + t.detSave + '</button>';
+
+  wrap.innerHTML = html;
+}
+
+// ===================== Save + auto-translate =====================
+async function saveDetail() {
+  if (!selectedId || !isDetDirty) return;
+  var item   = byId(selectedId);
+  if (!item) return;
+  var t      = TR[currentLang];
+  var btn    = document.getElementById('det-save-btn');
+  var nameEl = document.getElementById('det-name');
+  var descEl = document.getElementById('det-desc');
+
+  // Apply values to data model
+  var newName = nameEl ? nameEl.value.trim() : '';
+  if (newName) {
+    if (currentLang === 'ru') item.titleRu = newName;
+    else item.titleHe = newName;
+  }
+  // Save description to the correct language field
+  if (descEl && item.type === 'shalon') {
+    if (currentLang === 'ru') item.descRu = descEl.value;
+    else item.descHe = descEl.value;
+  }
+
+  // Show "Сохранено" toast and mark clean
+  showToast(t.toastSaved, 'success');
+  setDetDirty(false);
+  renderTree();
+
+  // Auto-translate: translate all changed fields to the other language
+  var toLang   = currentLang === 'ru' ? 'Hebrew' : 'Russian';
+  var fromLang = currentLang === 'ru' ? 'Russian' : 'Hebrew';
+
+  // Collect fields to translate for this item (active language → other language)
+  var fields = [];
+  if (newName) fields.push(newName);
+  var descVal = currentLang === 'ru' ? item.descRu : item.descHe;
+  if (descEl && item.type === 'shalon' && descVal) fields.push(descVal);
+  if (!fields.length) return;
+
+  // Switch button to shimmer/translating state
+  isTranslating = true;
+  btn.className    = 'det-save translating';
+  btn.textContent  = t.detSaving;
+  btn.disabled     = true;
+
+  var capturedItemId = selectedId; // capture for async closure
+
+  var prompt = 'Translate the following ' + fromLang + ' texts to ' + toLang
+    + '. Return ONLY a JSON array of strings in the same order, no extra text, no markdown.\n\n'
+    + JSON.stringify(fields);
+
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    var data = await resp.json();
+    var raw  = (data.content||[]).map(function(c){ return c.text||''; }).join('');
+    var clean = raw.replace(/```[^`]*```/g,'').replace(/```/g,'').trim();
+    var translated = JSON.parse(clean);
+
+    if (!Array.isArray(translated) || translated.length !== fields.length)
+      throw new Error('Unexpected response length');
+
+    // Apply translations to the correct target field (opposite of currentLang)
+    var target = byId(capturedItemId);
+    if (target) {
+      if (currentLang === 'ru') {
+        target.titleHe = translated[0] || target.titleHe;
+        if (translated[1] !== undefined) target.descHe = translated[1];
+      } else {
+        target.titleRu = translated[0] || target.titleRu;
+        if (translated[1] !== undefined) target.descRu = translated[1];
+      }
+    }
+
+    // Show translated toast (visible wherever user is now)
+    var tNow = TR[currentLang];
+    showToast(tNow.toastTranslated, 'translate');
+
+    // Restore button to idle (save is complete)
+    if (btn) { btn.className = 'det-save idle'; btn.textContent = tNow.detSave; btn.disabled = true; }
+
+  } catch(err) {
+    var tNow = TR[currentLang];
+    showToast(tNow.toastTransErr, 'error');
+    // Allow retry: mark button as dirty again
+    if (btn) {
+      btn.className   = 'det-save dirty';
+      btn.textContent = tNow.detRetry;
+      btn.disabled    = false;
+    }
+    isDetDirty = true;
+  } finally {
+    isTranslating = false;
+  }
+}
+
+// ===================== Toast =====================
+function showToast(msg, type) {
+  var wrap  = document.getElementById('toast-wrap');
+  var toast = document.createElement('div');
+  var shell = document.getElementById('shell');
+  var isDark = shell.classList.contains('d');
+  toast.className = 'toast ' + type + (isDark ? '' : '');
+  toast.textContent = msg;
+  wrap.appendChild(toast);
+  // Trigger enter animation
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() { toast.classList.add('show'); });
+  });
+  // Auto-dismiss after 2.5s
+  setTimeout(function() {
+    toast.classList.remove('show');
+    toast.classList.add('hide');
+    setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+  }, 2500);
+}
+
+// ===================== Drag-and-drop =====================
+function attachDrag(row, item) {
+  if (!item) return;
+  row.setAttribute('draggable','true');
+
+  row.addEventListener('dragstart', function(e) {
+    dragId = item.id;
+    row.classList.add('drag-src');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
+  row.addEventListener('dragend', function() {
+    clearDrag(); dragId = null; renderTree();
+  });
+
+  row.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    if (!dragId || dragId === item.id) return;
+    if (isAnc(item.id, dragId)) return;
+    var dragged = byId(dragId);
+    if (!dragged || dragged.type !== item.type) return;
+    e.dataTransfer.dropEffect = 'move';
+    document.querySelectorAll('.drag-into').forEach(function(el){ el.classList.remove('drag-into'); });
+    document.querySelectorAll('.ins-line.show').forEach(function(el){ el.classList.remove('show'); });
+    var rect = row.getBoundingClientRect();
+    var rel  = (e.clientY - rect.top) / rect.height;
+    if (rel < 0.35) {
+      var prev = row.previousElementSibling;
+      if (prev && prev.classList.contains('ins-line')) prev.classList.add('show');
+      row._dm = 'before';
+    } else if (rel > 0.65) {
+      var nxt = row.nextElementSibling;
+      if (nxt && nxt.classList.contains('ins-line')) nxt.classList.add('show');
+      row._dm = 'after';
+    } else {
+      row.classList.add('drag-into'); row._dm = 'into';
+    }
+  });
+
+  row.addEventListener('dragleave', function() { row.classList.remove('drag-into'); });
+
+  row.addEventListener('drop', function(e) {
+    e.preventDefault();
+    if (!dragId || dragId === item.id) return;
+    if (isAnc(item.id, dragId)) return;
+    var dragged = byId(dragId);
+    if (!dragged || dragged.type !== item.type) return;
+    var mode    = row._dm || 'before';
+    var oldPid  = dragged.parentId;
+    var newPid  = item.parentId;
+    dragged.parentId = newPid;
+    var sibs    = childrenOf(newPid).filter(function(s){ return s.id !== dragId; });
+    var idx     = sibs.findIndex(function(s){ return s.id === item.id; });
+    if (mode === 'after') idx++;
+    sibs.splice(idx, 0, dragged);
+    sibs.forEach(function(s,i){ s.order = i; });
+    if (oldPid !== newPid) normOrders(oldPid);
+    clearDrag(); dragId = null; renderTree();
+  });
+}
+
+function clearDrag() {
+  document.querySelectorAll('.drag-src,.drag-into').forEach(function(el){
+    el.classList.remove('drag-src','drag-into');
+  });
+  document.querySelectorAll('.ins-line.show').forEach(function(el){ el.classList.remove('show'); });
+}
+
+// ===================== Modals =====================
+function openMoName(title, ph, val) {
+  document.getElementById('mo-name-title').textContent = title;
+  var inp = document.getElementById('mo-name-inp');
+  inp.placeholder = ph; inp.value = val;
+  document.getElementById('mo-name').classList.add('show');
+  setTimeout(function(){ inp.focus(); inp.select(); }, 50);
+}
+function closeMoName() { document.getElementById('mo-name').classList.remove('show'); }
+function closeMoDup()  { document.getElementById('mo-dup').classList.remove('show'); }
+
+function openMoNav(id) {
+  var item = byId(id);
+  var name = currentLang === 'ru' ? item.titleRu : item.titleHe;
+  document.getElementById('mo-nav-name').textContent = name;
+  document.getElementById('mo-nav').classList.add('show');
+}
+function closeMoNav() { document.getElementById('mo-nav').classList.remove('show'); }
+
+// Close modals on overlay click
+['mo-name','mo-dup','mo-nav'].forEach(function(id) {
+  document.getElementById(id).addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('show');
+  });
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') { closeMoName(); closeMoDup(); closeMoNav(); }
+  if (e.key === 'Enter' && document.getElementById('mo-name').classList.contains('show')) confirmName();
+});
+
+// ===================== Dropdown toggles =====================
+function toggleLangDD() {
+  var dd = document.getElementById('lgDropdown');
+  var isOpen = dd.classList.contains('open');
+  closeDropdown();
+  if (isOpen) { closeLangDD(); }
+  else { dd.classList.add('open'); document.getElementById('lgOverlay').classList.add('open'); }
+}
+function closeLangDD() {
+  document.getElementById('lgDropdown').classList.remove('open');
+  document.getElementById('lgOverlay').classList.remove('open');
+}
+function toggleDropdown() {
+  var dd = document.getElementById('avDropdown');
+  var isOpen = dd.classList.contains('open');
+  closeLangDD();
+  if (isOpen) { closeDropdown(); }
+  else { dd.classList.add('open'); document.getElementById('avOverlay').classList.add('open'); }
+}
+function closeDropdown() {
+  document.getElementById('avDropdown').classList.remove('open');
+  document.getElementById('avOverlay').classList.remove('open');
+}
+
+// ===================== Init =====================
+applyI18n();
+renderTree();
+renderDetail();
+updateCtrl();
+</script>
+</body>
+</html>
