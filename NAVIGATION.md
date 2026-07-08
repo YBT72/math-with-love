@@ -58,62 +58,90 @@ Controls which UI shell is rendered.
 ### Student shell
 
 ```
-Header: [Logo] [Platform name]    [RU/HE] [Avatar menu]
+Header (desktop/tablet/mobile — identical structure):
+  [Logo] [Platform name]  →  flex gap  →  [Search]  →  flex gap  →  [Globe-dropdown] [Bell] [Avatar-dropdown]
+
 Sidebar (desktop/tablet) — 3 groups:
   Group 1 — Main:
-    - Главная          → /dashboard      icon: home                    ← первая позиция, точка входа после логина
-    - Курсы           → /courses        icon: graduation cap (шапка)  ← каталог курсов, 3 уровня
-    - Статус          → /status         icon: map-pin                 ← текущее положение + список тем
-    - Достижения      → /achievements   icon: trophy
+    - Главная       → /dashboard      icon: home           ← точка входа после логина
+    - Курсы         → /courses        icon: graduation-cap ← каталог, 3 уровня
+    - Статус        → /status         icon: map-pin        ← текущее положение + список тем
+    - Достижения    → /achievements   icon: trophy
+  ── separator ──
   Group 2 — Tools:
-    - Формулы         → /formulas
-    - Лаборатория     → /lab  (placeholder)
+    - Формулы       → /formulas       icon: Σ (ti-sum)
+    - Лаборатория   → /lab            icon: atom (placeholder)
+  ── separator ──
   Group 3 — System:
-    - Помощь          → opens AI Chat (Yosi) in help context mode
-    - Настройки       → /settings
-Bottom nav (mobile only, 5 tabs):
-  - Главная            → /dashboard      icon: home
-  - Курсы             → /courses        icon: graduation cap
-  - Статус            → /status         icon: map-pin
-  - Лаборатория       → /lab            icon: atom/lab
-  - Помощь(?)         → opens AI Chat drawer (Yosi) — stub until Phase 6
+    - Помощь        → opens Yosi AI Chat (help context mode)   icon: message-circle
+    - Настройки     → /settings                                icon: gear
 
-RTL behaviour: .bnav mirrors on dir="rtl" (direction:ltr removed — tabs reverse order in HE).
-Retrofit: remove direction:ltr from .bnav in all existing mobile mockups.
+Bottom nav (mobile only, 5 tabs):
+  - Главная       → /dashboard      icon: home
+  - Курсы         → /courses        icon: graduation-cap
+  - Статус        → /status         icon: map-pin
+  - Лаборатория   → /lab            icon: atom
+  - Помощь(?)     → popup menu (opens upward above tab):
+      ┌─────────────────────┐
+      │  Σ  Формулы         │  → /formulas
+      │  💬 Диалог с Йоси   │  → opens Yosi AI Chat
+      └─────────────────────┘
+      Closes on tap outside. No bottom sheet — context menu only.
+
+RTL: .bnav mirrors on dir="rtl" (direction:ltr removed — tabs reverse order in HE).
+
+Avatar-dropdown (desktop/tablet/mobile):
+  [Display name]
+  [email]
+  ──────────────
+  Профиль    → /settings#profile
+  Настройки  → /settings
+  ──────────────
+  Выйти
 
 Notes:
-  - Главная (/dashboard) — точка входа после логина: приветствие, кнопка «Продолжить», статистика, Йоси
+  - Главная (/dashboard) — точка входа: приветствие, кнопка «Продолжить», статистика, Йоси
   - Курсы (/courses) — 3-уровневый каталог: шейлон → тема → лабиринт модуля
-  - Статус (/status) — текущее положение студента в лабиринте + список открытых/завершённых тем;
-    студент может параллельно учиться по нескольким темам
-  - Иконка map-pin для «Статус»: интуитивная метафора «где я сейчас» — положение на маршруте
-  - Retrofit: применить во всех существующих макетах при следующем касании
+  - Статус (/status) — текущее положение студента + список тем; параллельное обучение
+  - map-pin для «Статус»: метафора «где я сейчас»
+  - Достижения и Настройки недоступны из bottom nav — только через avatar-dropdown
+  - Поиск: always-visible open field на desktop; icon с overlay-expansion на tablet/mobile
 ```
 
 ### Author shell
 
 ```
-Header: [Logo] [Platform name] [Search] [Globe-dropdown] [Bell] [Avatar menu]
+Header (desktop only — no tablet/mobile for constructor):
+  [Logo] [Platform name]  →  flex gap  →  [Search]  →  flex gap  →  [Globe-dropdown] [Bell] [Avatar-dropdown]
+
 Sidebar (desktop only — no tablet or mobile variants for constructor screens):
   Group 1:
-  - Главная (редактор дашборд) → /constructor/dashboard  [home icon]
-  - Шейлоны                   → /constructor/shalon      [book icon]
-  - Группы                    → /constructor/groups      [4-squares icon]
-  - Атом                      → /constructor/atom        [doc+lines icon]
-  - Экзамен                   → /constructor/exam        [hourglass icon]
-  - Граф                      → /constructor/graph       [graph-nodes icon]
+  - Главная       → /constructor/dashboard   icon: home
+  - Шейлоны       → /constructor/shalon      icon: book
+  - Группы        → /constructor/groups      icon: 4-squares
+  - Атом          → /constructor/atom        icon: doc+lines
+  - Экзамен       → /constructor/exam        icon: hourglass
+  - Граф          → /constructor/graph       icon: graph-nodes
   ── separator ──
   Group 2:
-  - Лаборатория               → /constructor/lab         [atom/3-ellipses icon]
+  - Лаборатория   → /constructor/lab         icon: atom
   ── separator ──
   Group 3:
-  - Помощь                    → opens Yosi AI Chat (help context mode)
-  - Настройки                 → /settings                [gear icon]
+  - Помощь        → opens Yosi AI Chat (help context mode)   icon: message-circle
+  - Настройки     → /settings                                icon: gear
+
+Avatar-dropdown (identical to student shell):
+  [Display name]
+  [email]
+  ──────────────
+  Профиль    → /settings#profile
+  Настройки  → /settings
+  ──────────────
+  Выйти
 ```
 
 No sub-menus. Flat structure. No tablet or mobile sidebar for constructor screens.
 Globe-dropdown replaces RU/HE toggle in header (standard since 07/07/2026).
-Avatar dropdown: Профиль / Настройки / — / Выйти.
 
 **Editor dashboard (`/constructor/dashboard`):** separate from student `/dashboard`.
 Shows content status: shalons / themes / modules / atoms with readiness indicators
@@ -142,13 +170,30 @@ Content: [icon] "Режим студента — вы просматривает
 
 ### 2a — Not authenticated user
 
-Any protected route → redirect to `/` (landing page) with `?modal=login` query param.
-Landing page reads query param → opens AuthModal automatically.
+Any protected route → redirect to `/login` with `?next=` query param (original URL).
+After successful login → redirect back to `next` (or `/dashboard` if `next` is absent).
 
 ```
-/dashboard (no session)  →  / ?modal=login
-/lesson/123 (no session) →  / ?modal=login
+/dashboard (no session)  →  /login?next=/dashboard
+/lesson/123 (no session) →  /login?next=/lesson/123
 ```
+
+**Auth routes (Next.js App Router):**
+
+| Route | Description | Access |
+|---|---|---|
+| `/login` | Login page (email/password + Google OAuth) | public |
+| `/register` | Registration page (name + email + password) | public |
+| `/auth/callback` | Supabase OAuth callback handler | public |
+| `/auth/reset-password` | Password reset (token in query param) | public |
+
+Both `/login` and `/register` are standalone pages — not modals.
+If user is already authenticated → redirect to `/dashboard`.
+
+**Mockup note:** In HTML mockups (`mwl_landing_page_*.html`, `mwl_login_modal_*.html`),
+the AuthModal component is an embedded overlay that simulates navigation to `/login` and `/register`.
+This is a mockup-only pattern — it does NOT represent the production architecture.
+In Next.js: clicking "Войти" navigates to `/login`; "Начать бесплатно" / "Создать аккаунт" navigate to `/register`.
 
 ### 2b — Login flow
 
@@ -388,6 +433,50 @@ After each Check:
 All counters update immediately after answer evaluation.
 Question number circles re-render to reflect new status.
 ```
+
+### 3d-exam — Exam page flow
+
+```
+/exam/[examId]
+
+Fullscreen. No sidebar, no bottom nav, no globe/bell/avatar. No Yosi FAB.
+Formulas FAB present (допустимые формулы экзамена).
+
+Student navigates freely between questions via Q-circles (topbar).
+No forced order. Can skip and return.
+
+For each question:
+  Student enters answer (numeric / choice / text)
+  No per-question Check button
+  Q-circle updates: unanswered → answered (neutral, not colored)
+
+When all desired questions filled:
+  "Сдать экзамен" button (bottom of answer zone or fixed bottom bar)
+  → Confirmation dialog: "Вы уверены? Неотвеченные вопросы: N"
+  → On confirm: submit all answers
+
+After submission:
+  Results overlay (full-screen)
+  Shows: total score / max score / per-question breakdown / time elapsed
+  "Завершить" → navigate back to /maze or /courses
+
+Timer: optional (same adaptive green/amber/red as test page)
+Points badge: "Вопрос N · X баллов" inline in question label
+Q-circles: answered (cyan tint) / unanswered (transparent) — no correct/wrong colors until after submission
+```
+
+### Exam vs Test — key differences summary
+
+| Feature | Test | Exam |
+|---|---|---|
+| Check per-question | ✅ кнопка «Проверить» | ❌ нет |
+| Yosi FAB | ✅ | ❌ нет |
+| Skip & return | ✅ | ✅ |
+| Q-circles colors in-session | correct/partial/wrong | answered/unanswered only |
+| Final submission | «Завершить» (last Q) | «Сдать экзамен» (explicit) |
+| AI text review | ✅ (обучающий тест) | ❌ |
+| Points badge | ✅ | ✅ |
+| Dev ctrl-bar | mockup-only | mockup-only |
 
 ### 3d — Points & progress on atom completion
 
@@ -653,6 +742,9 @@ Re-access: sidebar "Как работает платформа" → /onboarding
 
 /admin                     Admin panel (admin only, placeholder)
 
+/login                     Login page — email/password + Google OAuth (public)
+/register                  Registration page — name + email + password (public)
+/auth/callback             Supabase OAuth callback handler (public)
 /auth/reset-password       Password reset (public, token in query param)
 ```
 
@@ -663,6 +755,8 @@ Re-access: sidebar "Как работает платформа" → /onboarding
 | Route | student | author (student mode) | author (author mode) | admin |
 |---|---|---|---|---|
 | / | ✓ | ✓ | ✓ | ✓ |
+| /login | redirect → /dashboard | redirect → /dashboard | redirect → /constructor/dashboard | redirect → /admin |
+| /register | redirect → /dashboard | redirect → /dashboard | redirect → /constructor/dashboard | redirect → /admin |
 | /dashboard | ✓ | ✓ | redirect → /constructor/dashboard | ✓ |
 | /courses | ✓ | ✓ | ✓ | ✓ |
 | /courses/* | ✓ | ✓ | ✓ | ✓ |
@@ -743,3 +837,7 @@ Checkpoint unlock toast also triggers labyrinth node animation (separate from to
 *Cross-references: PLAN.md (phases), DESIGN_SYSTEM.md (components), MWL_CONTENT_ARCHITECTURE.md (content model)*
 *(07/07/2026 — Author shell sidebar финализирован: flat структура без подменю (Главная/Шейлоны/Группы/Атом/Экзамен/Граф // Лаборатория // Помощь/Настройки). Globe-dropdown вместо RU/HE toggle. Desktop only для конструктора — tablet/mobile не предусмотрены. Editor dashboard = /constructor/dashboard (отдельно от /dashboard студента).)*
 *Обновлён: 2026-07-08 — §3c расширен: детальная спецификация test page flow — типы ответов (numeric/choice/text+AI), цвета Q-circles, логика таймера, правила оценки ответов, правила обновления stats block.*
+*Обновлён: 2026-07-08 — §3d-exam добавлен: полный flow экзамена, таблица отличий test vs exam. §3c уточнён: skip & return для обоих, points badge (вариант A — inline в строке вопроса), Q-circles всегда кликабельны.*
+*Обновлён: 2026-07-08 — §2a переработан: auth routes зафиксированы как отдельные страницы (/login, /register, /auth/callback). Redirect pattern: protected route → /login?next=. Mockup note добавлен: AuthModal в мокапах = симуляция этих переходов, не продакшн-архитектура. URL structure и access control matrix обновлены.*
+*Обновлён: 2026-07-08 (ночь) — Landing page mockups завершены: header содержит только «Войти» (без кнопки регистрации); CTA «Начать бесплатно» и «Создать аккаунт» → openModal('register'); кнопка «Посмотреть курсы» — поведение TBD. Auth modal в мокапах: desktop/tablet centered overlay, mobile bottom sheet. В продакшне — переходы на /login и /register соответственно.*
+*Обновлён: 2026-07-09 — §1 Shell specs финализированы. Header стандарт для обоих shell: [Logo][Name] → gap → [Search] → gap → [Globe][Bell][Avatar]. Поиск и Bell присутствуют в обоих shell (student + author). Student sidebar: 3 группы (Main/Tools/System), иконки финализированы. Bottom nav: «Помощь(?)» → context menu вверх (не bottom sheet) с двумя пунктами: Формулы и Диалог с Йоси. Avatar-dropdown финализирован: Name / Email / — / Профиль / Настройки / — / Выйти — одинаков для обоих shell. Достижения и Настройки в mobile только через avatar-dropdown.*

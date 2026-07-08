@@ -189,18 +189,42 @@ Fullscreen режим (без сайдбара, без bottom nav, без globe/
 - [ ] 🧑‍🏫 Йоси FAB → Yosi hint popup (desktop: anchored card; mobile: bottom sheet)
 - [ ] Position: fixed bottom-right
 
-### RTL + responsive
-- [ ] `inset-inline-end` for FAB positioning
-- [ ] `border-inline-start` for left-border accents
-- [ ] Mobile: topbar chip truncated, Q-circles scroll horizontally if >7
-- [ ] Mobile: answer inputs full-width, choice grid 1×4 (single column)
+### Question navigation (уточнение 2026-07-08)
+- [ ] Q-circles кликабельны → переход к любому вопросу
+- [ ] Студент может оставить вопрос пустым, уйти, вернуться и заполнить
+- [ ] Никакой принудительной линейной последовательности
+- [ ] Points badge в строке вопроса: "Вопрос N · X баллов" (значение из данных атома)
+
+### Dev ctrl-bar — MOCKUP ONLY
+Строка с кнопками темы/типа/таймера существует только в мокапах.
+В Next.js НЕ реализовывать. См. ARCHITECTURE.md §12.
 
 ---
 
 ## Фаза 5 — Страница экзамена
 
-- [ ] `app/exam/[id]/page.tsx`
-- [ ] Отличия от теста: нет Skip, нет Check per-question, Prev/Next nav, points row
+Fullscreen режим. Спецификация: NAVIGATION.md §3d (TBD). Макеты: `mwl_exam_*.html`.
+
+### Отличия от теста (Фаза 4)
+- **Нет Йоси** — FAB с подсказкой AI отсутствует полностью
+- **Нет Check per-question** — нет кнопки «Проверить» после каждого вопроса
+- **Финальная кнопка «Сдать»** — проверка всех ответов одновременно в конце
+- **Нет AI-проверки текста** — текстовые ответы оцениваются только в финале (или вручную)
+- **Q-circles** — показывают только answered/unanswered до сдачи (нет correct/partial/wrong в процессе)
+
+### Общее с тестом
+- [ ] Fullscreen shell (нет sidebar, bottom nav, globe, bell, avatar)
+- [ ] Topbar: topic chip | Q-circles (кликабельны) | timer + exit
+- [ ] Q-circles кликабельны → свободная навигация между вопросами
+- [ ] Студент может оставить вопрос, вернуться, заполнить
+- [ ] Points badge: "Вопрос N · X баллов" в строке вопроса
+- [ ] Progress bar
+- [ ] Stats block (адаптированный для экзамена: баллы за заполненные вопросы)
+- [ ] Формулы FAB (без Йоси)
+- [ ] 3 типа ответов: numeric / choice / text
+- [ ] RTL + responsive
+
+### Dev ctrl-bar — MOCKUP ONLY, не реализовывать в Next.js
 - [ ] Exit confirmation dialog
 - [ ] Results screen (full-screen overlay)
 - [ ] "Ответ сохранён" индикатор
@@ -320,3 +344,4 @@ Claude Code (VS Code) + claude.ai/chat тянут из **одного пула**
 *Обновлён: 2026-07-07 — Фаза 6: макеты AI Chat Drawer готовы (desktop + tablet + mobile). Список пунктов обновлён: [x] готово / [ ] реализация Next.js ещё нет. Voice recording и Claude API подключение — остаются открытыми.*
 *Обновлён: 2026-07-07 — Фаза 8b обновлена: все 5 макетов конструктора готовы. Author sidebar стандарт финализирован (flat, без подменю). Добавлен /constructor/dashboard. Auto-translate через FastAPI backend (не browser fetch). Retrofit globe-dropdown в старые мокапы — в backlog. Создан ARCHITECTURE.md — полная техническая архитектура для Claude Code (shell, routes, DB, auth, i18n, Phase 0).*
 *Обновлён: 2026-07-08 — Фаза 4 детализирована: полная спецификация страницы теста (shell, topbar, Q-circles, timer, stats block, zone 1, 3 типа ответов, AI-проверка текста, action buttons, FABs, dev toolbar). Спецификация также зафиксирована в DESIGN_SYSTEM.md §27 и NAVIGATION.md §3c.*
+*Обновлён: 2026-07-08 — Фаза 4 дополнена: навигация по вопросам, points badge, dev ctrl-bar mockup-only. Фаза 5 переписана: полная спецификация экзамена (отличия от теста, отсутствие Йоси, «Сдать» вместо per-question Check).*

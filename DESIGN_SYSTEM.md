@@ -2330,15 +2330,38 @@ Right: "Проверить"    — primary cyan (#22D3EE bg, #0f172a text); disa
 
 Same spec as lesson page (§ Lesson): Формулы + Йоси FABs, fixed bottom-right, `inset-inline-end: 24px`.
 
-### Dev toolbar (mockup only, не реализовывать в Next.js)
+### Points badge per question
 
+Displayed inline in the question label row:
 ```
-Buttons outside shell (not part of production UI):
-  — Theme toggle (🌙 Тёмная / ☀️ Светлая)
-  — Question type toggle (🔢 Числовой / ☑ A/B/C/D / ✍ Текстовый)
-  — Timer toggle + quick-sim buttons (⚡ amber, 🔴 красный)
-Listed in §12 ARCHITECTURE.md mockup-only elements.
+Вопрос 3 · 5 баллов
 ```
+Implementation:
+```tsx
+<span className="q-label t3">
+  Вопрос {n}
+  <span className="q-points">· {points} {pointsLabel}</span>
+</span>
+```
+```css
+.q-points { font-size: 10px; font-weight: 500; color: #FBBF24; margin-inline-start: 6px; }
+```
+Points value comes from atom/exam schema data. Applies to both test and exam pages.
+
+### Question navigation rules (test + exam)
+
+- Q-circles in topbar are **always clickable** → navigate to any question index
+- Student can leave a question blank, navigate away, and return later to fill it
+- No forced linear progression — free navigation throughout the session
+- Unanswered questions remain in `unanswered` state (transparent circle) until answered
+- On test: after Check, circle updates to correct/partial/wrong color immediately
+- On exam: circles show only answered/unanswered until final submission
+
+### Dev toolbar — MOCKUP ONLY, never implement
+
+The ctrl-bar row in test/exam mockups (theme toggle, question type switcher, timer sim buttons)
+**must not exist in Next.js implementation**. See ARCHITECTURE.md §12 for full specification.
+In production: theme via ThemeContext, question type from atom data, timer is real countdown.
 
 ---
 
@@ -2353,3 +2376,5 @@ Listed in §12 ARCHITECTURE.md mockup-only elements.
 *Approved screens: landing page (desktop + tablet + mobile), login/register modal, dashboard (desktop + tablet + mobile), lesson page (desktop + tablet + mobile), test page (desktop + tablet + mobile, 3 answer types), exam page (desktop + tablet + mobile, both themes), AI chat drawer (all pages, both themes, RU/HE), graph map (desktop, both themes), groups constructor (desktop, both themes), exam schema editor (desktop, both themes), settings page (desktop + tablet + mobile, both themes, RU/HE), achievements page (desktop, both themes, RU/HE), courses page level 1 (desktop + tablet + mobile, both themes, RU/HE), courses theme page level 2 (desktop + tablet + mobile, both themes, RU/HE) — all both themes.*
 *(07/07/2026 — §19 Shalon Manager: статус mockup→complete (desktop only, no tablet/mobile); detail panel переработан — одно поле активного языка, descRu/descHe раздельно, batch-translate убран, авто-перевод при Save с shimmer+toast flow; sidebar редактора финализирован — flat без подменю: Главная/Шейлоны/Группы/Атом/Экзамен/Граф // Лаборатория // Помощь/Настройки; globe-dropdown + bell + avatar-dropdown в header.)*
 *(07/07/2026 — §13 AI Chat Drawer полностью переписан: убран ctx-strip; floating card vs bottom sheet по breakpoints; PNG Йоси по ситуации; динамический статус; контекстные приветствия по странице; session-only история; char counter 500/≤100; кнопка → иконка стрелки; экзамен — только sidebar. "Text answer type (AI-checked)" перенесена в §12.)*
+*Обновлён: 2026-07-08 — §27 дополнен: points badge spec (q-points класс, amber цвет), правила навигации по вопросам, dev ctrl-bar явно помечен как mockup-only со ссылкой на ARCHITECTURE.md §12.*
+*Обновлён: 2026-07-08 (ночь) — Auth Modal задокументирован в «Approved screens». Desktop/tablet: centered overlay (position:fixed, backdrop rgba+blur, card max-width 420px, border-radius 16px). Mobile: bottom sheet (border-radius 20px 20px 0 0, drag handle 36×4px, max-height 92vh, safe-area-inset-bottom). Оба варианта: tabs Войти/Регистрация, Google OAuth кнопка, поля name(reg-only)/email/password/confirm(reg-only), forgot link(login-only), submit btn, switch-mode link. Язык — только от глобального CL (нет отдельного переключателя внутри modal). Закрытие: клик на backdrop, Escape. Mockup: встроен в landing page. Продакшн: отдельные роуты /login и /register.*

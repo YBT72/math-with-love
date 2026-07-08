@@ -68,21 +68,33 @@
 ## Landing page
 
 - [x] Дизайн мокапа landing page (desktop + tablet + mobile) — `mwl_landing_page_desktop.html`, `mwl_landing_page_tablet.html`, `mwl_landing_page_mobile.html`
+      Globe-dropdown (lang), кнопка «Войти» (без кнопки регистрации в header).
+      Auth modal встроен: desktop/tablet — centered overlay с backdrop blur; mobile — bottom sheet.
+      Все CTA («Войти» / «Начать бесплатно» / «Создать аккаунт») открывают modal через openModal('login'/'register').
+      Логотип убран из header мокапа — встраивается при реализации (Next.js).
+      Кнопка «Посмотреть курсы» — поведение TBD (scroll-to или openModal). Сейчас: openModal('register').
+      i18n: полный RU/HE, dir="rtl", applyI18n(). Modal синхронизирует язык с глобальным CL.
 - [ ] Реализовать landing page по утверждённому дизайну (Next.js)
 - [ ] Подключить реальные изображения профессора Йоси (yosi-present.png)
 - [ ] Финализировать название платформы (сейчас "Math With Love" — временное)
 - [ ] Создать favicon на основе yosi-icon.png (32×32 и 180×180)
+- [ ] Решить поведение кнопки «Посмотреть курсы» (scroll-to section vs openModal('register'))
 
 ---
 
 ## Login / Register modal
 
-- [ ] Реализовать модальное окно по утверждённому дизайну
-- [ ] Переключение Войти ↔ Регистрация без перезагрузки
-- [ ] Валидация полей
-- [ ] Показ ошибок под полями
+- [x] Мокап auth modal — desktop (`mwl_login_modal_desktop.html`), tablet (`mwl_login_modal_tablet.html`), mobile (`mwl_login_modal_mobile.html`)
+- [x] Auth modal встроен в landing page (desktop + tablet + mobile) — mockup-only overlay
+      Desktop/tablet: centered card overlay + backdrop blur.
+      Mobile: bottom sheet (выезжает снизу, drag handle, max-height 92vh).
+      Архитектура продакшна: /login и /register — отдельные роуты Next.js (см. NAVIGATION.md §2a).
+- [ ] Реализовать /login и /register как отдельные страницы Next.js
+- [ ] Переключение Войти ↔ Регистрация без перезагрузки (client-side mode toggle)
+- [ ] Валидация полей (email format, password strength, confirm match)
+- [ ] Показ ошибок под полями (inline, не modal alert)
 - [ ] Состояние загрузки на кнопке Submit (spinner)
-- [ ] Закрытие по клику на backdrop или кнопку ✕
+- [ ] Google OAuth через Supabase + /auth/callback handler
 
 ---
 
@@ -242,12 +254,15 @@
 - [x] Добавить §24 Courses page spec в DESIGN_SYSTEM.md
 - [x] Обновить §22 — `.lang-btn` заменён на глобус-dropdown (`.lg-wrap/.lg-dropdown/.lg-item`)
 - [ ] **Retrofit глобус-dropdown** — заменить `.lang-btn` на глобус-dropdown во всех макетах при следующем касании: dashboard, settings, achievements, courses, lesson, test, exam и все прочие.
-- [ ] **Retrofit аватар-dropdown** — добавить `.av-wrap/.av-dropdown` (Профиль / Настройки / Выйти) во всех макетах при следующем касании.
-- [ ] **Retrofit bottom nav RTL** — убрать `direction:ltr` с `.bnav` во всех существующих mobile-макетах: `mwl_achievements_mobile.html`, `mwl_courses_mobile.html`, `mwl_courses_theme_mobile.html`, `mwl_courses_module_mobile.html`, `mwl_dashboard_mobile.html`, `mwl_settings_mobile.html`, `mwl_exam_mobile.html`, `mwl_test_mobile.html`, `mwl_lesson_mobile.html`.
-- [ ] **Навигация — retrofit всех макетов**: обновить сайдбар и bottom nav во всех HTML-мокапах:
-      порядок: Главная (home) / Курсы (graduation cap) / Статус (map-pin, /status) / Достижения (trophy);
-      mobile bottom nav: Главная / Курсы / Статус / Лаборатория / Помощь(?);
-      применить при следующем касании каждого файла.
+- [ ] **Retrofit аватар-dropdown** — добавить во всех макетах где отсутствует (dashboard desktop/tablet/mobile и др.).
+      Стандарт (одинаков для student + author shell):
+      [Display name] / [email] / — / Профиль → /settings#profile / Настройки → /settings / — / Выйти
+- [ ] **Retrofit bottom nav RTL** — убрать `direction:ltr` с `.bnav` во всех оставшихся mobile-макетах.
+- [ ] **Навигация — retrofit всех макетов**: обновить sidebar и bottom nav под финализированный стандарт (NAVIGATION.md §1, зафиксирован 09/07/2026):
+      Sidebar student: Главная/Курсы/Статус/Достижения // Формулы/Лаборатория // Помощь/Настройки.
+      Bottom nav mobile: Главная/Курсы/Статус/Лаборатория/Помощь(?→popup вверх: Формулы + Йоси).
+      Header оба shell: [Logo][Name] → gap → [Search] → gap → [Globe][Bell][Avatar].
+      Применить при следующем касании каждого файла.
 - [x] **Компонент Йоси (AI Chat Drawer)** — §13 DESIGN_SYSTEM.md полностью переписан (07/07/2026):
       trigger icon-circle 52px amber + glow, floating card vs bottom sheet по breakpoint,
       PNG Йоси по ситуации, динамический статус, контекстные приветствия по странице,
@@ -278,3 +293,5 @@
 *Обновлён: 2026-07-07 · Компонент Йоси [x]: макеты desktop + tablet + mobile готовы. §13 DESIGN_SYSTEM.md переписан. Trigger icon-circle, floating card / bottom sheet, context-aware greeting, PNG по ситуации, char counter 500, RTL. Задача в дизайн-системе также закрыта [x].*
 *Обновлён: 2026-07-07 · Shalon Manager [x]: mockup complete (desktop only). Detail panel: одно поле активного языка, descRu/descHe раздельно, авто-перевод при Save. Sidebar редактора финализирован (flat, без подменю). Globe-dropdown + bell + avatar-dropdown в header. Batch-translate убран. AI Chat Drawer [x]: все три breakpoints готовы, §13 переписан.*
 *Обновлён: 2026-07-07 (вечер) · Login/register modal tablet + mobile отмечены [x]. Все основные макеты завершены. Открыты только retrofit-задачи (глобус-dropdown, аватар-dropdown, bottom nav RTL, навигация).*
+*Обновлён: 2026-07-08 (ночь) · Landing page retrofit завершён: globe-dropdown добавлен во все три варианта (desktop/tablet/mobile), логотип убран из header мокапа, кнопка регистрации убрана из header. Auth modal встроен в landing: desktop/tablet — centered overlay, mobile — bottom sheet. Секция «Login / Register modal» обновлена: архитектура продакшна (отдельные роуты /login, /register) зафиксирована в NAVIGATION.md §2a. Добавлена открытая задача: поведение кнопки «Посмотреть курсы».*
+*Обновлён: 2026-07-09 · Навигация финализирована. Header стандарт: [Logo][Name]→gap→[Search]→gap→[Globe][Bell][Avatar] — одинаков для student и author shell. Avatar-dropdown стандарт: Name/Email/—/Профиль/Настройки/—/Выйти. Bottom nav «Помощь(?)»: context menu вверх (не bottom sheet) — Формулы + Диалог с Йоси. Retrofit-задачи обновлены под новый стандарт. Завтра: retrofit avatar-dropdown + навигация во всех макетах.*

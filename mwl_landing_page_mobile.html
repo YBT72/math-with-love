@@ -1,26 +1,45 @@
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<!DOCTYPE html>
+<html lang="ru" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math With Love</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9}
 
-.hdr{background:#1e293b;border-bottom:1px solid #334155;height:48px;display:flex;align-items:center;padding:0 16px;gap:8px}
-.logo{width:26px;height:26px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.logo svg{width:13px;height:13px;fill:#0f172a}
-.sitename{font-size:13px;font-weight:500;color:#f1f5f9;flex:1}
-.sitename span{color:#22D3EE}
-.lang{display:flex;border-radius:6px;overflow:hidden;border:1px solid #334155;flex-shrink:0}
-.lb{padding:4px 8px;font-size:11px;color:#94a3b8;user-select:none}
-.lb.on{background:#22D3EE;color:#0f172a;font-weight:500}
+/* ── Globe dropdown ── */
+.lg-wrap{position:relative;flex-shrink:0}
+.lg-dropdown{position:absolute;top:calc(100% + 8px);right:0;min-width:80px;border-radius:10px;border:1px solid #334155;background:#1e293b;box-shadow:0 8px 24px rgba(0,0,0,0.4);overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.lg-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.lg-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;font-weight:500;color:#94a3b8;transition:background .1s}
+.lg-item:hover{background:#334155}
+.lg-item.on{color:#22D3EE}
+.lg-check{width:12px;height:12px;flex-shrink:0;opacity:0}
+.lg-item.on .lg-check{opacity:1}
+.lg-overlay{position:fixed;inset:0;z-index:99;display:none}
+.lg-overlay.open{display:block}
+[dir="rtl"] .lg-dropdown{right:auto;left:0}
 
-/* Icon buttons with tooltip */
-.icon-btn{position:relative;width:34px;height:34px;border-radius:7px;border:1px solid #334155;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:#94a3b8}
+/* ── Icon buttons ── */
+.icon-btn{position:relative;width:32px;height:32px;border-radius:7px;border:1px solid #334155;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:#94a3b8;transition:background .1s,color .1s}
+.icon-btn:hover{background:#334155;color:#f1f5f9}
 .icon-btn.primary{background:#22D3EE;border-color:#22D3EE;color:#0f172a}
-.icon-btn i{font-size:18px}
-.tooltip{position:absolute;bottom:-32px;left:50%;transform:translateX(-50%);background:#334155;color:#f1f5f9;font-size:10px;padding:4px 8px;border-radius:5px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity 0.15s;z-index:100}
+.icon-btn.primary:hover{background:#06b6d4}
+.tooltip{position:absolute;bottom:-30px;left:50%;transform:translateX(-50%);background:#334155;color:#f1f5f9;font-size:10px;padding:3px 7px;border-radius:5px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity 0.15s;z-index:200}
 .tooltip::before{content:'';position:absolute;top:-4px;left:50%;transform:translateX(-50%);border:4px solid transparent;border-bottom-color:#334155;border-top:none}
 .icon-btn:hover .tooltip{opacity:1}
 
+/* Globe button same size */
+.hico{width:32px;height:32px;border-radius:7px;border:1px solid #334155;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#94a3b8;flex-shrink:0;transition:background .1s,color .1s}
+.hico:hover{background:#334155;color:#f1f5f9}
+
+/* ── Header ── */
+.hdr{background:#1e293b;border-bottom:1px solid #334155;height:48px;display:flex;align-items:center;padding:0 16px;gap:8px}
+.sitename{font-size:13px;font-weight:500;color:#f1f5f9;flex:1}
+.sitename span{color:#22D3EE}
+
+/* ── Hero ── */
 .hero{padding:24px 16px 20px;text-align:center}
 .badge{display:inline-flex;align-items:center;gap:5px;background:#0f172a;border:1px solid #22D3EE;border-radius:999px;padding:4px 12px;font-size:11px;color:#22D3EE;margin-bottom:16px}
 .hero-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:20px;text-align:left}
@@ -35,20 +54,25 @@ body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9}
 .prof-name{font-size:10px;font-weight:500;color:#22D3EE;margin-bottom:3px}
 .prof-text{font-size:9px;color:#94a3b8;line-height:1.4}
 .btns{display:flex;flex-direction:column;gap:8px;width:100%}
-.btn-p{display:flex;align-items:center;justify-content:center;background:#22D3EE;color:#0f172a;border-radius:9px;padding:13px;font-size:14px;font-weight:500;width:100%}
-.btn-s{display:flex;align-items:center;justify-content:center;color:#94a3b8;border:1px solid #334155;border-radius:9px;padding:13px;font-size:14px;width:100%}
+.btn-p{display:flex;align-items:center;justify-content:center;background:#22D3EE;color:#0f172a;border-radius:9px;padding:13px;font-size:14px;font-weight:500;width:100%;cursor:pointer;border:none;font-family:inherit}
+.btn-p:hover{background:#06b6d4}
+.btn-s{display:flex;align-items:center;justify-content:center;color:#94a3b8;border:1px solid #334155;border-radius:9px;padding:13px;font-size:14px;width:100%;cursor:pointer;background:transparent;font-family:inherit}
+.btn-s:hover{border-color:#94a3b8;color:#f1f5f9}
 
+/* ── Stats ── */
 .stats{background:#1e293b;border-top:1px solid #334155;border-bottom:1px solid #334155;display:grid;grid-template-columns:repeat(3,1fr)}
 .stat{text-align:center;padding:12px 4px;border-right:1px solid #334155}
 .stat:last-child{border-right:none}
 .stat-n{font-size:20px;font-weight:500;color:#22D3EE}
 .stat-l{font-size:10px;color:#94a3b8;margin-top:2px}
 
+/* ── Sections ── */
 .sec{padding:20px 16px 0}
 .slbl{font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:#475569;margin-bottom:4px}
 .stit{font-size:16px;font-weight:500;color:#f1f5f9;margin-bottom:3px}
 .ssub{font-size:11px;color:#94a3b8;margin-bottom:14px}
 
+/* ── Course cards ── */
 .cgrid{display:flex;flex-direction:column;gap:8px}
 .cc{background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px;position:relative}
 .cc.act{border:2px solid #22D3EE}
@@ -64,6 +88,7 @@ body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9}
 .abadge{position:absolute;top:10px;right:10px;background:#22D3EE;color:#0f172a;font-size:8px;font-weight:500;padding:2px 6px;border-radius:999px}
 .lbadge{position:absolute;top:10px;right:10px;font-size:12px;color:#475569}
 
+/* ── Lesson preview ── */
 .lesson-stack{display:flex;flex-direction:column;gap:10px;margin-top:14px}
 .fbox{background:#1e293b;border:1px solid #334155;border-radius:10px;padding:16px}
 .f-lbl{font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:#475569;margin-bottom:10px}
@@ -76,6 +101,7 @@ body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9}
 .vbox span{font-size:12px}
 .vbox small{font-size:10px;opacity:0.5}
 
+/* ── Gamification ── */
 .ggrid{display:flex;flex-direction:column;gap:8px;margin-top:14px}
 .gc{background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px}
 .gi{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
@@ -85,124 +111,515 @@ body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9}
 .gc-tit{font-size:12px;font-weight:500;color:#f1f5f9}
 .gc-sub{font-size:11px;color:#94a3b8;margin-top:2px}
 
+/* ── CTA ── */
 .cta{background:#1e293b;border-top:1px solid #334155;margin-top:20px;padding:28px 16px;text-align:center}
 .cta h2{font-size:20px;font-weight:500;color:#f1f5f9;margin-bottom:8px}
 .cta p{font-size:12px;color:#94a3b8;margin-bottom:20px}
-.cta-btn{display:flex;align-items:center;justify-content:center;background:#22D3EE;color:#0f172a;border-radius:9px;padding:13px;font-size:14px;font-weight:500;width:100%}
+.cta-btn{display:flex;align-items:center;justify-content:center;background:#22D3EE;color:#0f172a;border-radius:9px;padding:13px;font-size:14px;font-weight:500;width:100%;cursor:pointer;border:none;font-family:inherit}
+.cta-btn:hover{background:#06b6d4}
 
+/* ── Footer ── */
 .ftr{padding:14px 16px;text-align:center;font-size:10px;color:#475569;border-top:1px solid #334155}
-</style>
 
+/* ── RTL adjustments ── */
+[dir="rtl"] .stat{border-right:none;border-left:1px solid #334155}
+[dir="rtl"] .stat:last-child{border-left:none}
+[dir="rtl"] .tooltip{left:auto;right:50%;transform:translateX(50%)}
+
+/* ── Auth bottom sheet overlay ── */
+.auth-overlay{position:fixed;inset:0;z-index:200;display:none;flex-direction:column;justify-content:flex-end;background:rgba(15,23,42,0.7)}
+.auth-overlay.open{display:flex}
+
+/* Bottom sheet card */
+.auth-sheet{width:100%;background:#1e293b;border-radius:20px 20px 0 0;border-top:1px solid #334155;box-shadow:0 -8px 32px rgba(0,0,0,0.4);max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+
+/* Drag handle */
+.sheet-handle{display:flex;justify-content:center;padding:12px 0 4px}
+.sheet-handle-bar{width:36px;height:4px;background:#334155;border-radius:2px}
+
+/* Header */
+.sheet-top{padding:4px 24px 0;text-align:center}
+.sheet-logo{width:40px;height:40px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.sheet-logo svg{width:20px;height:20px;fill:#0f172a}
+.sheet-title{font-size:18px;font-weight:500;margin-bottom:4px;color:#f1f5f9}
+.sheet-sub{font-size:13px;color:#94a3b8}
+
+/* Tabs */
+.sheet-tabs{display:flex;gap:6px;margin:16px 24px 0}
+.sheet-tab{flex:1;text-align:center;padding:9px;font-size:13px;font-weight:500;border-radius:10px;cursor:pointer;user-select:none;transition:all 0.15s;border:1px solid #334155;color:#94a3b8;background:transparent}
+.sheet-tab.on{background:#22D3EE;color:#0f172a;border-color:#22D3EE}
+
+/* Body */
+.sheet-body{padding:16px 24px calc(24px + env(safe-area-inset-bottom, 0px))}
+
+/* Google */
+.sheet-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:12px;padding:12px;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:14px;background:#334155;border:1px solid #475569;color:#f1f5f9;font-family:system-ui,sans-serif}
+.sheet-google:hover{background:#3d4f66}
+.google-icon{width:18px;height:18px;flex-shrink:0}
+
+/* Divider */
+.sheet-divider{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sheet-div-line{flex:1;height:1px;background:#334155}
+.sheet-div-text{font-size:11px;color:#475569}
+
+/* Form */
+.sheet-form-group{margin-bottom:14px}
+.sheet-form-label{font-size:12px;font-weight:500;margin-bottom:5px;display:block;color:#94a3b8}
+.sheet-input-wrap{position:relative}
+.sheet-form-input{width:100%;border-radius:12px;padding:12px 40px 12px 14px;font-size:16px;outline:none;font-family:system-ui,sans-serif;transition:border-color 0.15s;background:#334155;border:1px solid #475569;color:#f1f5f9}
+.sheet-form-input::placeholder{color:#64748b}
+.sheet-form-input:focus{border-color:#22D3EE}
+.sheet-input-icon{position:absolute;inset-inline-end:13px;top:50%;transform:translateY(-50%);display:flex;align-items:center}
+.sheet-input-icon svg{width:17px;height:17px;color:#64748b}
+
+.sheet-forgot{text-align:end;margin-top:-8px;margin-bottom:14px}
+.sheet-forgot a{font-size:12px;color:#22D3EE;cursor:pointer}
+.sheet-forgot.hide{display:none}
+
+.sheet-btn-submit{width:100%;display:flex;align-items:center;justify-content:center;background:#22D3EE;color:#0f172a;border-radius:12px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:14px;border:none;font-family:system-ui,sans-serif}
+.sheet-btn-submit:hover{background:#06b6d4}
+
+.sheet-switch{text-align:center;font-size:13px;color:#64748b}
+.sheet-switch a{color:#22D3EE;cursor:pointer}
+
+.sheet-reg-only{display:none}
+.sheet-reg-only.show{display:block}
+
+</style>
+</head>
+<body>
+
+<div id="shell" dir="ltr">
+
+<!-- Header -->
 <div class="hdr">
-  <div class="logo"><svg viewBox="0 0 24 24"><path d="M12 2L8 8H4l4 4-2 6 6-3 6 3-2-6 4-4h-4z"/></svg></div>
-  <div class="sitename">Math <span>With Love</span></div>
-  <div class="lang"><span class="lb on">RU</span><span class="lb">HE</span></div>
-  <div class="icon-btn">
-    <i class="ti ti-login" aria-hidden="true"></i>
-    <div class="tooltip">Войти</div>
+  <div class="sitename" id="sitename">Math <span>With Love</span></div>
+
+  <!-- Globe dropdown -->
+  <div class="lg-wrap">
+    <div class="hico" id="lgBtn" onclick="callFn('toggleLangDD()')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+    </div>
+    <div class="lg-dropdown" id="lgDropdown">
+      <div class="lg-item on" id="lgItemRu" onclick="callFn('setLang(\'ru\');closeLangDD()')">
+        <span>RU</span>
+        <svg class="lg-check" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="lg-item" id="lgItemHe" onclick="callFn('setLang(\'he\');closeLangDD()')">
+        <span>HE</span>
+        <svg class="lg-check" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+    </div>
   </div>
-  <div class="icon-btn primary">
-    <i class="ti ti-user-plus" aria-hidden="true"></i>
-    <div class="tooltip">Регистрация</div>
+  <div class="lg-overlay" id="lgOverlay" onclick="callFn('closeLangDD()')"></div>
+
+  <!-- Login icon button -->
+  <div class="icon-btn" id="btnLogin" onclick="openModal('login')">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+    <div class="tooltip" id="ttLogin">Войти</div>
   </div>
 </div>
+</div>
 
+<!-- Hero -->
 <div class="hero">
-  <div class="badge">★ Багрут 572 · Векторная математика</div>
+  <div class="badge" id="heroBadge">★ Багрут 572 · Векторная математика</div>
   <div class="hero-top">
     <div class="hero-l">
-      <div class="h1">Математика,<br>которую хочется<br><em>понять</em></div>
-      <div class="hero-p">Интерактивная платформа для изучения векторов. 3D визуализации, умные задачи, прогресс шаг за шагом.</div>
+      <div class="h1" id="heroH1">Математика,<br>которую хочется<br><em>понять</em></div>
+      <div class="hero-p" id="heroP">Интерактивная платформа для изучения векторов. 3D визуализации, умные задачи, прогресс шаг за шагом.</div>
     </div>
     <div class="prof">
       <div class="prof-img">
         <svg viewBox="0 0 80 100"><ellipse cx="40" cy="30" rx="20" ry="22"/><path d="M14 95 Q14 65 40 65 Q66 65 66 95"/><rect x="30" y="52" width="20" height="14" rx="3"/><line x1="26" y1="40" x2="20" y2="46"/><line x1="54" y1="40" x2="60" y2="46"/><path d="M32 74 L40 88 L48 74"/></svg>
       </div>
       <div class="prof-body">
-        <div class="prof-name">Проф. Йоси</div>
-        <div class="prof-text">Твой проводник в мире векторов!</div>
+        <div class="prof-name" id="profName">Проф. Йоси</div>
+        <div class="prof-text" id="profText">Твой проводник в мире векторов!</div>
       </div>
     </div>
   </div>
   <div class="btns">
-    <div class="btn-p">Начать бесплатно</div>
-    <div class="btn-s">Посмотреть курсы</div>
+    <button class="btn-p" id="btnStart" onclick="openModal('register')">Начать бесплатно</button>
+    <button class="btn-s" id="btnCourses" onclick="openModal('register')">Посмотреть курсы</button>
   </div>
 </div>
 
+<!-- Stats -->
 <div class="stats">
-  <div class="stat"><div class="stat-n">4</div><div class="stat-l">модуля</div></div>
-  <div class="stat"><div class="stat-n">40+</div><div class="stat-l">задач</div></div>
-  <div class="stat"><div class="stat-n">3D</div><div class="stat-l">визуализации</div></div>
+  <div class="stat"><div class="stat-n">4</div><div class="stat-l" id="stat1">модуля</div></div>
+  <div class="stat"><div class="stat-n">40+</div><div class="stat-l" id="stat2">задач</div></div>
+  <div class="stat"><div class="stat-n">3D</div><div class="stat-l" id="stat3">визуализации</div></div>
 </div>
 
+<!-- Courses section -->
 <div class="sec">
-  <div class="slbl">Программа</div>
-  <div class="stit">Курсы платформы</div>
-  <div class="ssub">Следующий модуль открывается после 100% правильных ответов.</div>
+  <div class="slbl" id="secLbl1">Программа</div>
+  <div class="stit" id="secTit1">Курсы платформы</div>
+  <div class="ssub" id="secSub1">Следующий модуль открывается после 100% правильных ответов.</div>
   <div class="cgrid">
-    <div class="cc act"><span class="abadge">Активный</span>
+    <div class="cc act"><span class="abadge" id="badgeActive">Активный</span>
       <div class="cc-ico"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
-      <div class="cc-tag">Модуль 1</div><div class="cc-tit">Основы векторов</div>
-      <div class="cc-desc">Длина вектора, направление, линейные операции.</div>
-      <div class="prog"><div class="prog-f" style="width:60%"></div></div><div class="prog-l">60% завершено</div>
+      <div class="cc-tag" id="mod1tag">Модуль 1</div><div class="cc-tit" id="mod1tit">Основы векторов</div>
+      <div class="cc-desc" id="mod1desc">Длина вектора, направление, линейные операции.</div>
+      <div class="prog"><div class="prog-f" style="width:60%"></div></div><div class="prog-l" id="mod1prog">60% завершено</div>
     </div>
     <div class="cc lck"><span class="lbadge">🔒</span>
       <div class="cc-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></div>
-      <div class="cc-tag">Модуль 2</div><div class="cc-tit">Скалярное произведение</div>
-      <div class="cc-desc">Угол между векторами, перпендикулярность.</div>
-      <div class="prog"><div class="prog-f" style="width:0%"></div></div><div class="prog-l">Заблокировано</div>
+      <div class="cc-tag" id="mod2tag">Модуль 2</div><div class="cc-tit" id="mod2tit">Скалярное произведение</div>
+      <div class="cc-desc" id="mod2desc">Угол между векторами, перпендикулярность.</div>
+      <div class="prog"><div class="prog-f" style="width:0%"></div></div><div class="prog-l" id="mod2prog">Заблокировано</div>
     </div>
     <div class="cc lck"><span class="lbadge">🔒</span>
       <div class="cc-ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
-      <div class="cc-tag">Модуль 3</div><div class="cc-tit">Прямые и плоскости</div>
-      <div class="cc-desc">Уравнения прямых и плоскостей.</div>
-      <div class="prog"><div class="prog-f" style="width:0%"></div></div><div class="prog-l">Заблокировано</div>
+      <div class="cc-tag" id="mod3tag">Модуль 3</div><div class="cc-tit" id="mod3tit">Прямые и плоскости</div>
+      <div class="cc-desc" id="mod3desc">Уравнения прямых и плоскостей.</div>
+      <div class="prog"><div class="prog-f" style="width:0%"></div></div><div class="prog-l" id="mod3prog">Заблокировано</div>
     </div>
     <div class="cc lck"><span class="lbadge">🔒</span>
       <div class="cc-ico"><svg viewBox="0 0 24 24"><path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg></div>
-      <div class="cc-tag">Модуль 4</div><div class="cc-tit">Пространственные задачи</div>
-      <div class="cc-desc">Расстояния, углы, стереометрия.</div>
-      <div class="prog"><div class="prog-f" style="width:0%"></div></div><div class="prog-l">Заблокировано</div>
+      <div class="cc-tag" id="mod4tag">Модуль 4</div><div class="cc-tit" id="mod4tit">Пространственные задачи</div>
+      <div class="cc-desc" id="mod4desc">Расстояния, углы, стереометрия.</div>
+      <div class="prog"><div class="prog-f" style="width:0%"></div></div><div class="prog-l" id="mod4prog">Заблокировано</div>
     </div>
   </div>
 </div>
 
+<!-- Lesson preview section -->
 <div class="sec">
-  <div class="slbl">Как это выглядит</div>
-  <div class="stit">Урок изнутри</div>
-  <div class="ssub">Формула + 3D + задача на одном экране.</div>
+  <div class="slbl" id="secLbl2">Как это выглядит</div>
+  <div class="stit" id="secTit2">Урок изнутри</div>
+  <div class="ssub" id="secSub2">Формула + 3D + задача на одном экране.</div>
   <div class="lesson-stack">
     <div class="fbox">
-      <div class="f-lbl">Скалярное произведение</div>
+      <div class="f-lbl" id="fLbl">Скалярное произведение</div>
       <div class="f-highlight">
         <div class="f-main">a&#8407; &middot; b&#8407; = |a&#8407;| &middot; |b&#8407;| &middot; cos &theta;</div>
         <div class="f-alt">= a&#8321;b&#8321; + a&#8322;b&#8322; + a&#8323;b&#8323;</div>
       </div>
-      <div class="f-desc">Результат скалярного произведения — число, не вектор.</div>
+      <div class="f-desc" id="fDesc">Результат скалярного произведения — число, не вектор.</div>
     </div>
     <div class="vbox">
       <svg viewBox="0 0 24 24"><path d="M3 17L9 11L13 15L21 7"/><path d="M17 7h4v4"/></svg>
-      <span>3D визуализация</span><small>React Three Fiber</small>
+      <span id="vboxSpan">3D визуализация</span><small>React Three Fiber</small>
     </div>
   </div>
 </div>
 
+<!-- Gamification section -->
 <div class="sec">
-  <div class="slbl">Мотивация</div>
-  <div class="stit">Игровые элементы</div>
-  <div class="ssub">Только твой личный прогресс.</div>
+  <div class="slbl" id="secLbl3">Мотивация</div>
+  <div class="stit" id="secTit3">Игровые элементы</div>
+  <div class="ssub" id="secSub3">Только твой личный прогресс.</div>
   <div class="ggrid">
-    <div class="gc"><div class="gi a">🔥</div><div><div class="gc-tit">Серия дней</div><div class="gc-sub">Занимайся каждый день</div></div></div>
-    <div class="gc"><div class="gi c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2"><path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg></div><div><div class="gc-tit">Очки XP</div><div class="gc-sub">За каждый правильный ответ</div></div></div>
-    <div class="gc"><div class="gi g">✓</div><div><div class="gc-tit">100% прогресс</div><div class="gc-sub">Тема открыта — идёшь дальше</div></div></div>
+    <div class="gc"><div class="gi a">🔥</div><div><div class="gc-tit" id="g1tit">Серия дней</div><div class="gc-sub" id="g1sub">Занимайся каждый день</div></div></div>
+    <div class="gc"><div class="gi c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2"><path d="M12 2l3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/></svg></div><div><div class="gc-tit" id="g2tit">Очки XP</div><div class="gc-sub" id="g2sub">За каждый правильный ответ</div></div></div>
+    <div class="gc"><div class="gi g">✓</div><div><div class="gc-tit" id="g3tit">100% прогресс</div><div class="gc-sub" id="g3sub">Тема открыта — идёшь дальше</div></div></div>
   </div>
 </div>
 
+<!-- CTA -->
 <div class="cta">
-  <h2>Готов начать?</h2>
-  <p>Бесплатно. Без рекламы. Только математика, которую хочется понять.</p>
-  <div class="cta-btn">Создать аккаунт</div>
+  <h2 id="ctaH2">Готов начать?</h2>
+  <p id="ctaP">Бесплатно. Без рекламы. Только математика, которую хочется понять.</p>
+  <button class="cta-btn" id="ctaBtn" onclick="openModal('register')">Создать аккаунт</button>
 </div>
 
-<div class="ftr">Math With Love · Багрут 572 · Векторная математика</div>
+<!-- Footer -->
+<div class="ftr" id="ftr">Math With Love · Багрут 572 · Векторная математика</div>
+
+
+<!-- Auth bottom sheet overlay -->
+<div class="auth-overlay" id="authOverlay" style="display:none" onclick="handleOverlayClick(event)">
+  <div class="auth-sheet" id="authSheet">
+
+    <!-- Drag handle -->
+    <div class="sheet-handle"><div class="sheet-handle-bar"></div></div>
+
+    <!-- Header -->
+    <div class="sheet-top">
+      <div class="sheet-logo">
+        <svg viewBox="0 0 24 24"><path d="M12 2L8 8H4l4 4-2 6 6-3 6 3-2-6 4-4h-4z"/></svg>
+      </div>
+      <div class="sheet-title" id="mTitle">Добро пожаловать</div>
+      <div class="sheet-sub"   id="mSub">Войдите в свой аккаунт</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="sheet-tabs">
+      <div class="sheet-tab on" id="mTabLogin" onclick="setModalMode('login')">Войти</div>
+      <div class="sheet-tab"    id="mTabReg"   onclick="setModalMode('register')">Регистрация</div>
+    </div>
+
+    <div class="sheet-body">
+
+      <!-- Google OAuth -->
+      <div class="sheet-google">
+        <svg class="google-icon" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        <span id="mGoogle">Продолжить через Google</span>
+      </div>
+
+      <!-- Divider -->
+      <div class="sheet-divider">
+        <div class="sheet-div-line"></div>
+        <div class="sheet-div-text" id="mOr">или</div>
+        <div class="sheet-div-line"></div>
+      </div>
+
+      <!-- Name (register only) -->
+      <div class="sheet-form-group sheet-reg-only" id="mFieldName">
+        <label class="sheet-form-label" id="mLblName">Имя</label>
+        <div class="sheet-input-wrap">
+          <input class="sheet-form-input" type="text" id="mInpName" placeholder="Как тебя зовут?">
+          <span class="sheet-input-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="sheet-form-group">
+        <label class="sheet-form-label">Email</label>
+        <div class="sheet-input-wrap">
+          <input class="sheet-form-input" type="email" placeholder="your@email.com">
+          <span class="sheet-input-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="sheet-form-group">
+        <label class="sheet-form-label" id="mLblPass">Пароль</label>
+        <div class="sheet-input-wrap">
+          <input class="sheet-form-input" type="password" placeholder="••••••••">
+          <span class="sheet-input-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
+        </div>
+      </div>
+
+      <!-- Confirm password (register only) -->
+      <div class="sheet-form-group sheet-reg-only" id="mFieldConfirm">
+        <label class="sheet-form-label" id="mLblConfirm">Подтвердите пароль</label>
+        <div class="sheet-input-wrap">
+          <input class="sheet-form-input" type="password" placeholder="••••••••">
+          <span class="sheet-input-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
+        </div>
+      </div>
+
+      <!-- Forgot password -->
+      <div class="sheet-forgot" id="mForgot">
+        <a id="mTxtForgot">Забыли пароль?</a>
+      </div>
+
+      <!-- Submit -->
+      <button class="sheet-btn-submit" id="mBtnSubmit">Войти</button>
+
+      <!-- Switch mode -->
+      <div class="sheet-switch" id="mSwitch">
+        Нет аккаунта? <a onclick="setModalMode('register')">Зарегистрироваться</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</div><!-- /shell -->
+
+<script>
+var CL = 'ru';
+
+var TR = {
+  ru: {
+    sitename: 'Math <span style="color:#22D3EE">With Love</span>',
+    heroBadge: '★ Багрут 572 · Векторная математика',
+    heroH1: 'Математика,<br>которую хочется<br><em style="color:#22D3EE;font-style:normal">понять</em>',
+    heroP: 'Интерактивная платформа для изучения векторов. 3D визуализации, умные задачи, прогресс шаг за шагом.',
+    btnStart: 'Начать бесплатно', btnCourses: 'Посмотреть курсы',
+    ttLogin: 'Войти',
+    profName: 'Проф. Йоси', profText: 'Твой проводник в мире векторов!',
+    stat1: 'модуля', stat2: 'задач', stat3: 'визуализации',
+    secLbl1: 'Программа', secTit1: 'Курсы платформы',
+    secSub1: 'Следующий модуль открывается после 100% правильных ответов.',
+    badgeActive: 'Активный',
+    mod1tag: 'Модуль 1', mod1tit: 'Основы векторов', mod1desc: 'Длина вектора, направление, линейные операции.', mod1prog: '60% завершено',
+    mod2tag: 'Модуль 2', mod2tit: 'Скалярное произведение', mod2desc: 'Угол между векторами, перпендикулярность.', mod2prog: 'Заблокировано',
+    mod3tag: 'Модуль 3', mod3tit: 'Прямые и плоскости', mod3desc: 'Уравнения прямых и плоскостей.', mod3prog: 'Заблокировано',
+    mod4tag: 'Модуль 4', mod4tit: 'Пространственные задачи', mod4desc: 'Расстояния, углы, стереометрия.', mod4prog: 'Заблокировано',
+    secLbl2: 'Как это выглядит', secTit2: 'Урок изнутри', secSub2: 'Формула + 3D + задача на одном экране.',
+    fLbl: 'Скалярное произведение', fDesc: 'Результат скалярного произведения — число, не вектор.', vboxSpan: '3D визуализация',
+    secLbl3: 'Мотивация', secTit3: 'Игровые элементы', secSub3: 'Только твой личный прогресс.',
+    g1tit: 'Серия дней', g1sub: 'Занимайся каждый день',
+    g2tit: 'Очки XP', g2sub: 'За каждый правильный ответ',
+    g3tit: '100% прогресс', g3sub: 'Тема открыта — идёшь дальше',
+    ctaH2: 'Готов начать?', ctaP: 'Бесплатно. Без рекламы. Только математика, которую хочется понять.',
+    ctaBtn: 'Создать аккаунт',
+    ftr: 'Math With Love · Багрут 572 · Векторная математика'
+  },
+  he: {
+    sitename: 'Math <span style="color:#22D3EE">With Love</span>',
+    heroBadge: '★ בגרות 572 · מתמטיקה וקטורית',
+    heroH1: 'מתמטיקה<br>שרוצים<br><em style="color:#22D3EE;font-style:normal">להבין</em>',
+    heroP: 'פלטפורמה אינטראקטיבית ללימוד וקטורים. ויזואליזציות תלת-ממד, תרגילים חכמים, התקדמות צעד אחר צעד.',
+    btnStart: 'התחל בחינם', btnCourses: 'צפה בקורסים',
+    ttLogin: 'כניסה',
+    profName: 'פרופ. יוסי', profText: 'המדריך שלך בעולם הוקטורים!',
+    stat1: 'מודולים', stat2: 'תרגילים', stat3: 'ויזואליזציות',
+    secLbl1: 'תוכנית', secTit1: 'קורסי הפלטפורמה',
+    secSub1: 'המודול הבא נפתח לאחר 100% תשובות נכונות.',
+    badgeActive: 'פעיל',
+    mod1tag: 'מודול 1', mod1tit: 'יסודות הוקטורים', mod1desc: 'אורך וקטור, כיוון, פעולות לינאריות.', mod1prog: '60% הושלם',
+    mod2tag: 'מודול 2', mod2tit: 'מכפלה סקלרית', mod2desc: 'זווית בין וקטורים, ניצבות.', mod2prog: 'נעול',
+    mod3tag: 'מודול 3', mod3tit: 'ישרים ומישורים', mod3desc: 'משוואות ישרים ומישורים במרחב.', mod3prog: 'נעול',
+    mod4tag: 'מודול 4', mod4tit: 'בעיות מרחביות', mod4desc: 'מרחקים, זוויות, סטריאומטריה.', mod4prog: 'נעול',
+    secLbl2: 'כך זה נראה', secTit2: 'שיעור מבפנים', secSub2: 'נוסחה + ויזואליזציה + תרגיל על מסך אחד.',
+    fLbl: 'מכפלה סקלרית', fDesc: 'התוצאה — מספר, לא וקטור.', vboxSpan: 'ויזואליזציה תלת-ממד',
+    secLbl3: 'מוטיבציה', secTit3: 'אלמנטים של משחק', secSub3: 'רק ההתקדמות האישית שלך.',
+    g1tit: 'רצף ימים', g1sub: 'תתרגל כל יום',
+    g2tit: 'נקודות XP', g2sub: 'על כל תשובה נכונה',
+    g3tit: '100% התקדמות', g3sub: 'ממשיך הלאה',
+    ctaH2: 'מוכן להתחיל?', ctaP: 'בחינם. ללא פרסומות. רק מתמטיקה שרוצים להבין.',
+    ctaBtn: 'יצירת חשבון',
+    ftr: 'Math With Love · בגרות 572 · מתמטיקה וקטורית'
+  }
+};
+
+function callFn(expr) {
+  var parts = expr.split(';');
+  parts.forEach(function(e) {
+    e = e.trim();
+    if (!e) return;
+    var m;
+    if ((m = e.match(/^(\w+)\(\)$/)))                    { window[m[1]](); }
+    else if ((m = e.match(/^(\w+)\('([^']*)'\)$/)))       { window[m[1]](m[2]); }
+    else if ((m = e.match(/^(\w+)\((\d+)\)$/)))           { window[m[1]](parseInt(m[2])); }
+    else if ((m = e.match(/^(\w+)\('([^']*)',(\d+)\)$/))) { window[m[1]](m[2], parseInt(m[3])); }
+  });
+}
+
+function toggleLangDD() {
+  var dd = document.getElementById('lgDropdown');
+  var isOpen = dd.classList.contains('open');
+  if (isOpen) { closeLangDD(); }
+  else { dd.classList.add('open'); document.getElementById('lgOverlay').classList.add('open'); }
+}
+
+function closeLangDD() {
+  document.getElementById('lgDropdown').classList.remove('open');
+  document.getElementById('lgOverlay').classList.remove('open');
+}
+
+function setLang(lang) {
+  CL = lang;
+  document.getElementById('shell').setAttribute('dir', lang === 'he' ? 'rtl' : 'ltr');
+  document.getElementById('lgItemRu').className = 'lg-item' + (lang === 'ru' ? ' on' : '');
+  document.getElementById('lgItemHe').className = 'lg-item' + (lang === 'he' ? ' on' : '');
+  applyI18n();
+}
+
+function applyI18n() {
+  var t = TR[CL];
+  Object.keys(t).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = t[id];
+  });
+  if (document.getElementById('authOverlay') &&
+      document.getElementById('authOverlay').style.display === 'flex') {
+    applyModalI18n();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  applyI18n();
+});
+
+// ── Auth bottom sheet ─────────────────────────────────────────────────
+var modalMode = 'login';
+
+var MODAL_TR = {
+  ru: {
+    title_login:'Добро пожаловать', title_reg:'Создать аккаунт',
+    sub_login:'Войдите в свой аккаунт', sub_reg:'Начните учиться бесплатно',
+    tab_login:'Войти', tab_reg:'Регистрация',
+    google:'Продолжить через Google', or:'или',
+    lbl_name:'Имя', ph_name:'Как тебя зовут?',
+    lbl_pass:'Пароль', lbl_confirm:'Подтвердите пароль',
+    forgot:'Забыли пароль?',
+    submit_login:'Войти', submit_reg:'Зарегистрироваться',
+    sw_login:'Нет аккаунта?', sw_login_lnk:'Зарегистрироваться',
+    sw_reg:'Уже есть аккаунт?', sw_reg_lnk:'Войти'
+  },
+  he: {
+    title_login:'ברוך הבא', title_reg:'יצירת חשבון',
+    sub_login:'כנס לחשבונך', sub_reg:'התחל ללמוד בחינם',
+    tab_login:'כניסה', tab_reg:'הרשמה',
+    google:'המשך עם Google', or:'או',
+    lbl_name:'שם', ph_name:'מה שמך?',
+    lbl_pass:'סיסמה', lbl_confirm:'אימות סיסמה',
+    forgot:'שכחת סיסמה?',
+    submit_login:'כניסה', submit_reg:'הרשמה',
+    sw_login:'אין חשבון?', sw_login_lnk:'הירשם',
+    sw_reg:'כבר יש חשבון?', sw_reg_lnk:'כנס'
+  }
+};
+
+function openModal(mode) {
+  modalMode = mode || 'login';
+  var ov = document.getElementById('authOverlay');
+  ov.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  setModalMode(modalMode);
+}
+
+function closeModal() {
+  document.getElementById('authOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function handleOverlayClick(e) {
+  // Close only when clicking the backdrop, not the sheet itself
+  if (e.target === document.getElementById('authOverlay')) { closeModal(); }
+}
+
+function setModalMode(m) {
+  modalMode = m;
+  var isLogin = m === 'login';
+  document.getElementById('mTabLogin').className = 'sheet-tab' + (isLogin ? ' on' : '');
+  document.getElementById('mTabReg').className   = 'sheet-tab' + (!isLogin ? ' on' : '');
+  document.getElementById('mForgot').className   = 'sheet-forgot' + (isLogin ? '' : ' hide');
+  document.querySelectorAll('.sheet-reg-only').forEach(function(el) {
+    el.className = 'sheet-form-group sheet-reg-only' + (!isLogin ? ' show' : '');
+  });
+  applyModalI18n();
+}
+
+function applyModalI18n() {
+  var t = MODAL_TR[CL];
+  var isLogin = modalMode === 'login';
+  // Apply RTL direction on sheet for Hebrew
+  document.getElementById('authSheet').style.direction = CL === 'he' ? 'rtl' : 'ltr';
+  document.getElementById('mTitle').textContent      = isLogin ? t.title_login : t.title_reg;
+  document.getElementById('mSub').textContent        = isLogin ? t.sub_login   : t.sub_reg;
+  document.getElementById('mTabLogin').textContent   = t.tab_login;
+  document.getElementById('mTabReg').textContent     = t.tab_reg;
+  document.getElementById('mGoogle').textContent     = t.google;
+  document.getElementById('mOr').textContent         = t.or;
+  document.getElementById('mLblName').textContent    = t.lbl_name;
+  document.getElementById('mInpName').placeholder    = t.ph_name;
+  document.getElementById('mLblPass').textContent    = t.lbl_pass;
+  document.getElementById('mLblConfirm').textContent = t.lbl_confirm;
+  document.getElementById('mTxtForgot').textContent  = t.forgot;
+  document.getElementById('mBtnSubmit').textContent  = isLogin ? t.submit_login : t.submit_reg;
+  document.getElementById('mSwitch').innerHTML = isLogin
+    ? t.sw_login + ' <a onclick="setModalMode(\'register\')">' + t.sw_login_lnk + '</a>'
+    : t.sw_reg   + ' <a onclick="setModalMode(\'login\')">'    + t.sw_reg_lnk  + '</a>';
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') { closeModal(); }
+});
+
+</script>
+
+</body>
+</html>

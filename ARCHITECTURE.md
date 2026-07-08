@@ -421,6 +421,14 @@ or a sim-bar with:
 **Never implement:** `.ctrl`, `.sim-bar`, `.tcb` (theme control button), `.sim-btn`,
 `.tog` (language toggle inside ctrl-bar) as React components.
 
+**Test/Exam ctrl-bar** (added 2026-07-08): The test and exam mockups contain an additional
+ctrl-bar with buttons for theme, question type (numeric/choice/text), timer simulation,
+and demo state switching. This entire row is mockup-only:
+- Theme → `ThemeContext`
+- Question type → driven by atom data (author-defined per question, not user-selectable)
+- Timer → real countdown from step-defined duration, no simulation buttons
+- Never implement `.ctrl-bar`, `.tcb`, `.tcb-amber`, `.tcb-red` from test/exam mockups
+
 ### Mode indicator
 
 ```html
@@ -441,3 +449,4 @@ const { setLang } = useLocale();   // LocaleContext
 ---
 
 *Created: 07/07/2026*
+*Обновлён: 2026-07-08 — §12 дополнен: test/exam ctrl-bar явно добавлен в список mockup-only элементов (.ctrl-bar, .tcb, .tcb-amber, .tcb-red).*

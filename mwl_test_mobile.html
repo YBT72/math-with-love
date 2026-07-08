@@ -1,341 +1,349 @@
-
+<!DOCTYPE html>
+<html lang="ru" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MWL — Тест (Mobile)</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: sans-serif; background: #0a0f1a; padding: 8px; display:flex;flex-direction:column;align-items:center; }
-.ctrls { display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin-bottom:10px;width:100%; }
-.ctrl { padding:4px 10px;font-size:11px;font-weight:500;cursor:pointer;border-radius:6px;font-family:sans-serif; }
-.phone { width:375px;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px #00000066; }
-.mtag { font-family:monospace;font-size:11px;padding:1px 4px;border-radius:3px; }
-.dot { width:5px;height:5px;border-radius:50%;background:#FBBF24;animation:bounce 1.2s infinite; }
-.dot:nth-child(2){animation-delay:0.2s;}.dot:nth-child(3){animation-delay:0.4s;}
-@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:0.4;}30%{transform:translateY(-5px);opacity:1;}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif}
+.shell{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+.d{background:#0f172a}.l{background:#f8fafc}
+.d .t1{color:#f1f5f9}.l .t1{color:#0f172a}
+.d .t2{color:#94a3b8}.l .t2{color:#64748b}
+.d .t3{color:#475569}.l .t3{color:#94a3b8}
+.d .p1{background:#1e293b;border-color:#334155}.l .p1{background:#ffffff;border-color:#e2e8f0}
+.d .p2{background:#0f172a;border-color:#1e293b}.l .p2{background:#f8fafc;border-color:#e2e8f0}
+.d .bd{border-color:#334155!important}.l .bd{border-color:#e2e8f0!important}
+/* Topbar */
+.topbar{height:42px;display:flex;align-items:center;padding:0 10px;gap:6px;border-bottom:1px solid;flex-shrink:0}
+.topic-chip{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;background:rgba(34,211,238,0.12);color:#22D3EE;border:1px solid rgba(34,211,238,0.25);white-space:nowrap;flex-shrink:0}
+/* Q-circles — scrollable center */
+.q-circles-wrap{flex:1;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;display:flex;align-items:center;justify-content:center}
+.q-circles-wrap::-webkit-scrollbar{display:none}
+.q-circles{display:flex;align-items:center;white-space:nowrap}
+.q-circle{width:24px;height:24px;border-radius:50%;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;border:1.5px solid;background:transparent;transition:all .15s}
+.d .q-circle.unanswered{border-color:#334a5a;color:#556677}.l .q-circle.unanswered{border-color:#c0ccd8;color:#99aabb}
+.q-circle.active{font-weight:700;border-width:2px}.d .q-circle.active{background:rgba(34,211,238,0.1);border-color:#22D3EE;color:#22D3EE}.l .q-circle.active{background:rgba(34,211,238,0.1);border-color:#22D3EE;color:#0e7490}
+.q-circle.correct{background:rgba(74,222,128,0.12);border-color:rgba(74,222,128,0.4);color:#4ade80}
+.q-circle.partial{background:rgba(251,191,36,0.12);border-color:rgba(251,191,36,0.4);color:#FBBF24}
+.q-circle.wrong{background:rgba(248,113,113,0.12);border-color:rgba(248,113,113,0.4);color:#f87171}
+.q-circle.skipped{background:rgba(51,65,85,0.12);border-color:rgba(51,65,85,0.4);color:#64748b}
+.q-sep{width:5px;height:1px;flex-shrink:0;display:inline-block}.d .q-sep{background:#1e3040}.l .q-sep{background:#d0dde8}
+/* Timer + exit */
+.tb-right{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.timer-wrap{display:none;border-radius:20px;padding:3px 8px;border:1.5px solid;transition:all .4s}
+.timer-val{font-size:12px;font-weight:700;font-family:monospace}
+.timer-wrap.green{border-color:#4ade80;background:rgba(74,222,128,0.13)}.timer-wrap.green .timer-val{color:#4ade80}
+.timer-wrap.amber{border-color:#FBBF24;background:rgba(251,191,36,0.13)}.timer-wrap.amber .timer-val{color:#FBBF24}
+.timer-wrap.red{border-color:#f87171}.timer-wrap.red .timer-val{color:#f87171}
+.timer-wrap.red-a{border-color:#f87171;background:rgba(248,113,113,0.2)}.timer-wrap.red-a .timer-val{color:#f87171}
+.exit-btn{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;border:1px solid;background:transparent;cursor:pointer;flex-shrink:0}
+.d .exit-btn{border-color:#334155;color:#64748b}.l .exit-btn{border-color:#e2e8f0;color:#64748b}
+/* Dev ctrl-bar */
+.ctrl-bar{display:flex;gap:4px;padding:5px 10px;border-bottom:1px solid;align-items:center;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tcb{padding:3px 8px;border-radius:6px;font-size:10px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid;background:transparent;flex-shrink:0}
+.d .tcb{color:#94a3b8;border-color:#334155}.l .tcb{color:#64748b;border-color:#e2e8f0}
+.tcb.on{background:#22D3EE!important;color:#0f172a!important;border-color:#22D3EE!important}
+.tcb-amber{background:rgba(251,191,36,0.1)!important;border-color:rgba(251,191,36,0.3)!important;color:#FBBF24!important}
+.tcb-red{background:rgba(248,113,113,0.1)!important;border-color:rgba(248,113,113,0.3)!important;color:#f87171!important}
+/* Progress */
+.prog-wrap{padding:4px 10px 5px;flex-shrink:0}
+.prog-track{height:3px;border-radius:2px}.d .prog-track{background:#1e293b}.l .prog-track{background:#e2e8f0}
+.prog-fill{height:100%;border-radius:2px;width:42%;transition:width .3s,background .4s;background:#22D3EE}
+.prog-fill.amber{background:#FBBF24}.prog-fill.red{background:#f87171}
+/* Stats */
+.stats{display:flex;padding:5px 10px;border-top:1px solid;border-bottom:1px solid;flex-shrink:0}
+.d .stats{border-color:#334155}.l .stats{border-color:#e2e8f0}
+.stat-cell{display:flex;align-items:center;gap:3px;flex:1}
+.stat-icon{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+.stat-icon.ok{background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.27);color:#4ade80}
+.stat-icon.part{background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.27);color:#FBBF24}
+.stat-icon.err{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.27);color:#f87171}
+.stat-icon.sk{background:rgba(51,65,85,0.1);border:1px solid rgba(51,65,85,0.27);color:#64748b}
+.stat-icon.xp{background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.27);color:#FBBF24}
+.stat-num{font-size:12px;font-weight:700}.stat-num.xp-num{color:#FBBF24}.stat-lbl{font-size:8px;line-height:1}
+.stat-sep{width:1px;margin:0 2px}.d .stat-sep{background:#334155}.l .stat-sep{background:#e2e8f0}
+/* Main */
+.main{flex:1;overflow-y:auto;min-height:0}
+/* Question */
+.q-block{padding:12px 12px 10px;border-bottom:1px solid}
+.d .q-block{border-color:#334155}.l .q-block{border-color:#e2e8f0}
+.q-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px}
+.q-text{font-size:12px;line-height:1.7}
+.mtag{font-family:monospace;font-size:11px;padding:1px 5px;border-radius:4px}
+.d .mtag{color:#22D3EE;background:rgba(34,211,238,0.08)}.l .mtag{color:#0e7490;background:rgba(14,116,144,0.08)}
+/* Viz */
+.viz-block{border-bottom:1px solid}
+.d .viz-block{border-color:#334155}.l .viz-block{border-color:#e2e8f0}
+.viz-bar{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-bottom:1px solid}
+.d .viz-bar{border-color:#334155}.l .viz-bar{border-color:#e2e8f0}
+.viz-lbl{font-size:9px}.viz-btns{display:flex;gap:3px}
+.viz-btn{font-size:9px;padding:2px 6px;border-radius:4px;cursor:pointer;border:1px solid;background:transparent;font-family:inherit}
+.d .viz-btn{border-color:#334155;color:#64748b}.l .viz-btn{border-color:#e2e8f0;color:#94a3b8}
+.viz-btn.on{border-color:#22D3EE!important;color:#22D3EE!important}
+.viz-area{display:flex;justify-content:center;padding:8px 0 6px}
+.d .viz-area{background:#060d18}.l .viz-area{background:#e8f2f8}
+.viz-cap{font-size:9px;text-align:center;padding:3px 0 5px}
+/* Answer */
+.az{padding:10px 12px;display:flex;flex-direction:column;gap:10px;padding-bottom:76px}
+.az-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em}
+.num-row{display:flex;align-items:center;gap:5px;flex-wrap:nowrap}
+.pt-lbl{font-size:12px;font-weight:600;min-width:40px;flex-shrink:0;white-space:nowrap}
+.ax-lbl{font-size:10px;font-family:monospace;font-weight:600}
+.num-inp{width:56px;height:34px;border-radius:6px;font-size:13px;text-align:center;font-family:monospace;outline:none;border:1px solid}
+.d .num-inp{background:#c8e8f4;border-color:#6ab8d4;color:#0b2233}.l .num-inp{background:#e0f4fa;border-color:#6ac8e0;color:#0b3a4a}
+/* Choice — 2×2 on mobile */
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.choice-btn{padding:10px 10px;border-radius:8px;font-size:12px;cursor:pointer;text-align:left;font-family:inherit;border:1px solid;transition:all .15s;min-height:44px}
+.d .choice-btn{background:#0f172a;border-color:#334155;color:#f1f5f9}.l .choice-btn{background:#f8fafc;border-color:#e2e8f0;color:#0f172a}
+.choice-btn.picked{background:rgba(34,211,238,0.12)!important;border-color:#22D3EE!important;color:#22D3EE!important}
+.choice-letter{font-weight:700;margin-inline-end:6px}
+/* Text */
+.txt-header{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.ai-badge{display:flex;align-items:center;gap:3px;font-size:9px;padding:2px 7px;border-radius:10px;border:1px solid;white-space:nowrap}
+.d .ai-badge{background:rgba(34,211,238,0.1);border-color:rgba(34,211,238,0.27);color:#22D3EE}.l .ai-badge{background:rgba(8,145,178,0.08);border-color:rgba(8,145,178,0.27);color:#0e7490}
+.ref-block{font-size:10px;padding:6px 10px;border-radius:5px;border-inline-start:3px solid #334155;line-height:1.5}
+.d .ref-block{background:#0f172a;color:#475569}.l .ref-block{background:#f8fafc;color:#94a3b8}
+.ref-meta{font-size:9px;opacity:0.6;margin-bottom:2px}
+.txt-ans{width:100%;border-radius:7px;padding:9px 10px;font-size:13px;font-family:inherit;outline:none;resize:vertical;line-height:1.6;min-height:80px;border:1.5px solid}
+.d .txt-ans{background:#0f172a;border-color:#334155;color:#f1f5f9}.l .txt-ans{background:#f8fafc;border-color:#e2e8f0;color:#0f172a}
+.txt-footer{display:flex;align-items:center;justify-content:space-between}
+.txt-count{font-size:9px}.txt-hint{font-size:9px}
+/* AI checking */
+.ai-checking{display:none;align-items:center;gap:7px;padding:8px 11px;border-radius:7px;border:1px solid}
+.d .ai-checking{background:#0f172a;border-color:#334155}.l .ai-checking{background:#f0f8fb;border-color:#d0dde8}
+.ai-checking-txt{font-size:12px}
+.dot{width:5px;height:5px;border-radius:50%;background:#FBBF24;animation:bounce 1.2s infinite;flex-shrink:0}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+.result{font-size:12px;padding:8px 12px;border-radius:7px;display:none;line-height:1.6;border:1px solid}
+.result.ok{display:block;border-color:rgba(74,222,128,0.27)}.result.part{display:block;border-color:rgba(251,191,36,0.27)}.result.err{display:block;border-color:rgba(248,113,113,0.2)}
+.d .result.ok{background:rgba(8,37,26,0.5);color:#86efac}.l .result.ok{background:#f0fdf4;color:#166534}
+.d .result.part{background:rgba(42,31,0,0.5);color:#fde68a}.l .result.part{background:#fffbeb;color:#92400e}
+.d .result.err{background:rgba(37,8,8,0.5);color:#fca5a5}.l .result.err{background:#fef2f2;color:#991b1b}
+.ai-feedback{display:none;border-radius:7px;padding:10px 12px;border:1px solid;font-size:12px;line-height:1.6}
+.ai-fb-head{display:flex;align-items:center;gap:5px;margin-bottom:6px}
+.ai-fb-title{font-size:11px;font-weight:600}
+.ai-score-badge{font-size:10px;padding:2px 7px;border-radius:10px;margin-inline-start:auto;font-weight:600;border:1px solid}
+.ai-feedback.ok{border-color:rgba(74,222,128,0.2)}.d .ai-feedback.ok{background:rgba(8,37,26,0.4);color:#86efac}.l .ai-feedback.ok{background:#f0fdf4;color:#166534}
+.ai-feedback.part{border-color:rgba(251,191,36,0.2)}.d .ai-feedback.part{background:rgba(42,31,0,0.4);color:#fde68a}.l .ai-feedback.part{background:#fffbeb;color:#78350f}
+.ai-feedback.err{border-color:rgba(248,113,113,0.2)}.d .ai-feedback.err{background:rgba(37,8,8,0.4);color:#fca5a5}.l .ai-feedback.err{background:#fef2f2;color:#991b1b}
+.btn-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.btn-skip{padding:8px 14px;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit;background:transparent;border:1px solid;min-height:44px}
+.d .btn-skip{border-color:#334155;color:#64748b}.l .btn-skip{border-color:#e2e8f0;color:#64748b}
+.btn-group{display:flex;gap:7px}
+.btn-check{padding:0 22px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;border:none;background:#22D3EE;color:#0f172a;white-space:nowrap;min-height:44px}
+.btn-check:disabled{opacity:.5;pointer-events:none}
+.btn-next{padding:0 16px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;border:none;background:#22D3EE;color:#0f172a;display:none;white-space:nowrap;min-height:44px}
+/* FABs */
+.fab-group{position:fixed;bottom:16px;inset-inline-end:12px;display:flex;flex-direction:column;gap:8px;align-items:flex-end;z-index:50}
+.fab{width:44px;height:44px;border-radius:12px;border:1px solid;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.d .fab{background:#1e293b;border-color:#334155;box-shadow:0 4px 16px rgba(0,0,0,.4)}.l .fab{background:#ffffff;border-color:#e2e8f0;box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.d .fab svg{stroke:#64748b}.l .fab svg{stroke:#64748b}
+/* Yosi bottom sheet */
+.yosi-sheet{position:fixed;bottom:0;left:0;right:0;border-radius:16px 16px 0 0;border:1px solid;border-bottom:none;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -8px 40px rgba(0,0,0,.4);transform:translateY(100%);transition:transform .25s ease;z-index:300}
+.yosi-sheet.open{transform:translateY(0)}
+.d .yosi-sheet{background:#1e293b;border-color:#334155}.l .yosi-sheet{background:#ffffff;border-color:#e2e8f0}
+.sheet-handle{width:36px;height:4px;border-radius:2px;margin:10px auto 0;flex-shrink:0}.d .sheet-handle{background:#334155}.l .sheet-handle{background:#e2e8f0}
+.yosi-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 10px}
+.yosi-av{width:28px;height:28px;border-radius:50%;background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.3);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.yosi-close{width:26px;height:26px;border-radius:7px;border:1px solid;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;font-size:15px;line-height:1}
+.d .yosi-close{border-color:#334155;color:#64748b}.l .yosi-close{border-color:#e2e8f0;color:#94a3b8}
+.yosi-body{padding:0 16px 24px;font-size:13px;line-height:1.65}
+/* Formulas bottom sheet */
+.fm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;opacity:0;pointer-events:none;transition:opacity .2s}
+.fm-overlay.open{opacity:1;pointer-events:all}
+.fm-sheet{position:fixed;bottom:0;left:0;right:0;max-height:75dvh;border-radius:16px 16px 0 0;border:1px solid;border-bottom:none;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -8px 40px rgba(0,0,0,.4);transform:translateY(100%);transition:transform .25s ease;z-index:300}
+.fm-overlay.open .fm-sheet{transform:translateY(0)}
+.d .fm-sheet{background:#1e293b;border-color:#334155}.l .fm-sheet{background:#ffffff;border-color:#e2e8f0}
+.fm-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid;flex-shrink:0}
+.d .fm-head{border-color:#334155}.l .fm-head{border-color:#e2e8f0}
+.fm-title{font-size:13px;font-weight:600}
+.fm-close{width:26px;height:26px;border-radius:6px;border:1px solid;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;font-size:15px;line-height:1}
+.d .fm-close{border-color:#334155;color:#64748b}.l .fm-close{border-color:#e2e8f0;color:#94a3b8}
+.fm-body{overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:12px}
+.fm-section{display:flex;flex-direction:column;gap:6px}
+.fm-section-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1px}
+.fm-row{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:7px;border:1px solid;flex-wrap:wrap}
+.d .fm-row{border-color:#334155;background:#0f172a}.l .fm-row{border-color:#e2e8f0;background:#f8fafc}
+.fm-formula{font-family:monospace;font-size:12px;color:#22D3EE}.fm-desc{font-size:11px}
 </style>
-
-<div class="ctrls">
-  <button class="ctrl" id="bd" onclick="setTh('dark')"  style="background:#22D3EE;border:1px solid #22D3EE;color:#0a3540;box-shadow:0 0 0 2px #22D3EE33;">🌙 Тёмная</button>
-  <button class="ctrl" id="bl" onclick="setTh('light')" style="background:#e8f4f8;border:1px solid #b0cdd8;color:#445566;">☀️ Светлая</button>
-  <div style="width:1px;background:#223;margin:0 1px;"></div>
-  <button class="ctrl" id="bn" onclick="setQt('numeric')" style="background:#22D3EE;border:1px solid #22D3EE;color:#0a3540;">🔢</button>
-  <button class="ctrl" id="bc" onclick="setQt('choice')"  style="background:#1a3a4e;border:1px solid #2a5a70;color:#7a9ab0;">☑</button>
-  <button class="ctrl" id="bt" onclick="setQt('text')"    style="background:#1a3a4e;border:1px solid #2a5a70;color:#7a9ab0;">✍</button>
-  <div style="width:1px;background:#223;margin:0 1px;"></div>
-  <button class="ctrl" id="btmr" onclick="togTimer()" style="background:#1a3a4e;border:1px solid #2a5a70;color:#7a9ab0;">⏱</button>
-  <button class="ctrl" onclick="simT(90)"  style="background:#FBBF2418;border:1px solid #FBBF2444;color:#FBBF24;">⚡</button>
-  <button class="ctrl" onclick="simT(25)"  style="background:#f8717118;border:1px solid #f8717144;color:#f87171;">🔴</button>
-</div>
-
-<div class="phone" id="sh">
-
-  <!-- TOPBAR: чип | кружки | таймер | выйти -->
-  <div id="tb" style="display:flex;align-items:center;justify-content:space-between;padding:0 10px;height:40px;gap:6px;">
-    <span id="chip" style="font-size:10px;border-radius:20px;padding:2px 7px;flex-shrink:0;">Векторы</span>
-    <div style="display:flex;align-items:center;gap:3px;flex:1;justify-content:center;overflow:hidden;" id="qnums"></div>
-    <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
-      <div id="twrap" style="display:none;border-radius:20px;padding:3px 9px;transition:all 0.4s;">
-        <span id="tval" style="font-size:13px;font-weight:700;font-family:monospace;letter-spacing:0.05em;">05:00</span>
-      </div>
-      <div id="xbtn" style="font-size:10px;cursor:pointer;padding:3px 6px;border-radius:5px;background:transparent;">✕</div>
+</head>
+<body>
+<div class="shell d" id="shell">
+  <!-- Topbar -->
+  <div class="topbar p1 bd">
+    <span class="topic-chip">Векторы</span>
+    <div class="q-circles-wrap"><div class="q-circles" id="qCircles"></div></div>
+    <div class="tb-right">
+      <div class="timer-wrap green" id="timerWrap"><span class="timer-val" id="timerVal">05:00</span></div>
+      <button class="exit-btn" onclick="exitTest()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
   </div>
-
-  <!-- PROGRESS -->
-  <div id="pr" style="padding:4px 10px 6px;">
-    <div style="height:3px;border-radius:2px;" id="ptk">
-      <div id="pfl" style="height:100%;border-radius:2px;width:42%;transition:background 0.4s,width 0.3s;"></div>
+  <!-- Dev ctrl-bar -->
+  <div class="ctrl-bar p2 bd">
+    <button class="tcb on" id="ctDark" onclick="setTheme('d')">🌙</button>
+    <button class="tcb" id="ctLight" onclick="setTheme('l')">☀</button>
+    <button class="tcb on" id="ctNum" onclick="setQType('numeric')">🔢</button>
+    <button class="tcb" id="ctCh" onclick="setQType('choice')">☑</button>
+    <button class="tcb" id="ctTxt" onclick="setQType('text')">✍</button>
+    <button class="tcb" id="ctTmr" onclick="toggleTimer()">⏱</button>
+    <button class="tcb tcb-amber" onclick="simTimer(90)">⚡</button>
+    <button class="tcb tcb-red" onclick="simTimer(25)">🔴</button>
+  </div>
+  <!-- Progress -->
+  <div class="prog-wrap p1"><div class="prog-track bd"><div class="prog-fill" id="progFill"></div></div></div>
+  <!-- Stats -->
+  <div class="stats p1 bd">
+    <div class="stat-cell"><div class="stat-icon ok">✓</div><div><div class="stat-num t1" id="sOk">2</div><div class="stat-lbl t3">верно</div></div></div>
+    <div class="stat-sep"></div>
+    <div class="stat-cell"><div class="stat-icon part">~</div><div><div class="stat-num t1" id="sPart">1</div><div class="stat-lbl t3">часть</div></div></div>
+    <div class="stat-sep"></div>
+    <div class="stat-cell"><div class="stat-icon err">✗</div><div><div class="stat-num t1" id="sErr">0</div><div class="stat-lbl t3">ошибок</div></div></div>
+    <div class="stat-sep"></div>
+    <div class="stat-cell"><div class="stat-icon sk">→</div><div><div class="stat-num t1" id="sSk">1</div><div class="stat-lbl t3">пропущ.</div></div></div>
+    <div class="stat-sep"></div>
+    <div class="stat-cell"><div class="stat-icon xp">★</div><div><div class="stat-num xp-num" id="sXp">20</div><div class="stat-lbl t3">очков</div></div></div>
+  </div>
+  <!-- Main -->
+  <div class="main">
+    <!-- Question -->
+    <div class="q-block">
+      <div class="q-label t3" id="qLabel">Вопрос 3</div>
+      <div class="q-text t1">Даны <span class="mtag">a⃗=(3,−1,2)</span> и <span class="mtag">b⃗=(−1,4,0)</span>.<br>Найдите <span class="mtag">a⃗+b⃗</span>.</div>
+    </div>
+    <!-- Viz -->
+    <div class="viz-block">
+      <div class="viz-bar"><span class="viz-lbl t3">Three.js</span><div class="viz-btns"><button class="viz-btn on">3D</button><button class="viz-btn t2">2D</button></div></div>
+      <div class="viz-area">
+        <svg width="200" height="148" viewBox="0 0 220 180">
+          <defs>
+            <marker id="ma" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#22D3EE"/></marker>
+            <marker id="mb" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#a78bfa"/></marker>
+            <marker id="mc" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#4ade80"/></marker>
+          </defs>
+          <line x1="20" y1="90" x2="200" y2="90" stroke="#334a5a" stroke-width="0.5"/>
+          <line x1="110" y1="10" x2="110" y2="170" stroke="#334a5a" stroke-width="0.5"/>
+          <line x1="110" y1="90" x2="175" y2="70" stroke="#22D3EE" stroke-width="2" marker-end="url(#ma)"/>
+          <line x1="110" y1="90" x2="90" y2="10" stroke="#a78bfa" stroke-width="2" marker-end="url(#mb)"/>
+          <line x1="110" y1="90" x2="150" y2="50" stroke="#4ade80" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#mc)"/>
+          <text x="178" y="68" font-size="11" font-family="system-ui" fill="#22D3EE">a⃗</text>
+          <text x="74" y="14" font-size="11" font-family="system-ui" fill="#a78bfa">b⃗</text>
+          <text x="153" y="48" font-size="11" font-family="system-ui" fill="#4ade80">a⃗+b⃗</text>
+          <circle cx="110" cy="90" r="3" fill="#8899aa"/>
+        </svg>
+      </div>
+      <div class="viz-cap t3">Перетащите · Three.js</div>
+    </div>
+    <!-- Answer zone -->
+    <div class="az">
+      <!-- Numeric -->
+      <div id="anum" style="display:flex;flex-direction:column;gap:8px">
+        <div class="az-label t3">Ваш ответ</div>
+        <div class="num-row">
+          <span class="pt-lbl t1">a⃗+b⃗=</span>
+          <span class="ax-lbl t3">x</span><input class="num-inp" id="nx" type="number" placeholder="?" oninput="clrRes()">
+          <span class="ax-lbl t3">y</span><input class="num-inp" id="ny" type="number" placeholder="?" oninput="clrRes()">
+          <span class="ax-lbl t3">z</span><input class="num-inp" id="nz" type="number" placeholder="?" oninput="clrRes()">
+        </div>
+      </div>
+      <!-- Choice -->
+      <div id="ach" style="display:none;flex-direction:column;gap:8px">
+        <div class="az-label t3">Выберите ответ</div>
+        <div class="choice-grid">
+          <button class="choice-btn" id="ca" onclick="pick('A')"><span class="choice-letter">A</span>(2, 3, 2)</button>
+          <button class="choice-btn" id="cb" onclick="pick('B')"><span class="choice-letter">B</span>(2, 3, −2)</button>
+          <button class="choice-btn" id="cc" onclick="pick('C')"><span class="choice-letter">C</span>(4, −5, 2)</button>
+          <button class="choice-btn" id="cd" onclick="pick('D')"><span class="choice-letter">D</span>(−4, 5, 2)</button>
+        </div>
+      </div>
+      <!-- Text -->
+      <div id="atxt" style="display:none;flex-direction:column;gap:8px">
+        <div class="txt-header"><div class="az-label t3">Развёрнутый ответ</div><div class="ai-badge">🤖 Проверка AI</div></div>
+        <div class="ref-block"><div class="ref-meta">Эталонный ответ (скрыт от студента):</div>a⃗+b⃗=(2,3,2). Покоординатное сложение.</div>
+        <textarea class="txt-ans" id="txtAns" rows="3" placeholder="Запишите ваш ответ..." oninput="clrRes();updateCharCount()"></textarea>
+        <div class="txt-footer"><span class="txt-count t3" id="charCount"></span><span class="txt-hint t3">Shift+Enter — строка</span></div>
+      </div>
+      <div class="ai-checking" id="aiChecking">
+        <span>🤖</span><span class="ai-checking-txt t2">AI проверяет...</span>
+        <div style="display:flex;gap:3px;margin-inline-start:4px"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      </div>
+      <div class="result" id="result"></div>
+      <div class="ai-feedback" id="aiFeedback">
+        <div class="ai-fb-head"><span>🤖</span><span class="ai-fb-title" id="aiFbTitle">Разбор AI</span><span class="ai-score-badge" id="aiScoreBadge"></span></div>
+        <div id="aiFbText"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-skip" id="btnSkip" onclick="skipQ()">Пропустить →</button>
+        <div class="btn-group">
+          <button class="btn-check" id="btnCheck" onclick="checkAnswer()">Проверить</button>
+          <button class="btn-next" id="btnNext" onclick="nextQ()">Далее →</button>
+        </div>
+      </div>
     </div>
   </div>
-
-  <!-- STATS — горизонтальная полоска, очень компактная -->
-  <div id="sb" style="display:flex;padding:5px 10px;border-top:1px solid;border-bottom:1px solid;gap:0;">
-    <div style="display:flex;align-items:center;gap:3px;flex:1;">
-      <div style="width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;background:#4ade8018;border:1px solid #4ade8044;color:#4ade80;flex-shrink:0;">✓</div>
-      <div><div id="sok" style="font-size:12px;font-weight:700;">2</div><div id="sokl" style="font-size:8px;line-height:1;">верно</div></div>
-    </div>
-    <div id="ss1" style="width:1px;margin:0 3px;"></div>
-    <div style="display:flex;align-items:center;gap:3px;flex:1;">
-      <div style="width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;background:#FBBF2418;border:1px solid #FBBF2444;color:#FBBF24;flex-shrink:0;">~</div>
-      <div><div id="spart" style="font-size:12px;font-weight:700;">1</div><div id="spartl" style="font-size:8px;line-height:1;">часть</div></div>
-    </div>
-    <div id="ss2" style="width:1px;margin:0 3px;"></div>
-    <div style="display:flex;align-items:center;gap:3px;flex:1;">
-      <div style="width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;background:#f8717118;border:1px solid #f8717144;color:#f87171;flex-shrink:0;">✗</div>
-      <div><div id="serr" style="font-size:12px;font-weight:700;">0</div><div id="serrl" style="font-size:8px;line-height:1;">ошибок</div></div>
-    </div>
-    <div id="ss3" style="width:1px;margin:0 3px;"></div>
-    <div style="display:flex;align-items:center;gap:3px;flex:1;">
-      <div style="width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;background:#33445518;border:1px solid #33445544;color:#556677;flex-shrink:0;">→</div>
-      <div><div id="ssk" style="font-size:12px;font-weight:700;">1</div><div id="sskl" style="font-size:8px;line-height:1;">пропущ.</div></div>
-    </div>
-    <div id="ss4" style="width:1px;margin:0 3px;"></div>
-    <div style="display:flex;align-items:center;gap:3px;flex:1;">
-      <div style="width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;background:#FBBF2418;border:1px solid #FBBF2444;color:#FBBF24;flex-shrink:0;">★</div>
-      <div><div id="sxp" style="font-size:12px;font-weight:700;color:#FBBF24;">20</div><div id="sxpl" style="font-size:8px;line-height:1;">очков</div></div>
-    </div>
+  <!-- FABs -->
+  <div class="fab-group">
+    <div class="fab bd" onclick="openFormulas()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M4 12h10"/><path d="M4 17h7"/><path d="M16 14l2 2 4-4"/></svg></div>
+    <div class="fab bd" onclick="toggleYosi()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a9 9 0 0 1 9 9c0 3.18-1.65 5.97-4.13 7.59L17 21H7l.13-2.41A9 9 0 0 1 3 11a9 9 0 0 1 9-9z"/><line x1="9" y1="12" x2="9.01" y2="12"/><line x1="12" y1="12" x2="12.01" y2="12"/><line x1="15" y1="12" x2="15.01" y2="12"/></svg></div>
   </div>
-
-  <!-- ZONE 1: на мобайле — одна колонка: текст вопроса, потом визуализация -->
-
-  <!-- 1А: текст вопроса -->
-  <div id="z-question" style="padding:11px 12px 8px;">
-    <div id="qlbl" style="font-size:9px;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px;"></div>
-    <div id="qtxt" style="font-size:12px;line-height:1.7;">
-      Даны <span class="mtag" id="mt1">a⃗=(3,−1,2)</span> и <span class="mtag" id="mt2">b⃗=(−1,4,0)</span>.<br>
-      Найдите <span class="mtag" id="mt3">a⃗+b⃗</span>.
-    </div>
+  <!-- Yosi sheet -->
+  <div class="yosi-sheet p1" id="yosiSheet">
+    <div class="sheet-handle"></div>
+    <div class="yosi-head"><div style="display:flex;align-items:center;gap:8px"><div class="yosi-av">🧑‍🏫</div><div><div style="font-size:13px;font-weight:600" class="t1">Профессор Йоси</div><div style="font-size:11px;margin-top:1px" class="t3">Подсказка к вопросу 3</div></div></div><button class="yosi-close" onclick="toggleYosi()">×</button></div>
+    <div class="yosi-body t2">Покоординатное сложение: x с x, y с y, z с z.</div>
   </div>
-
-  <!-- 1Б: визуализация — компактная, переключаемая -->
-  <div id="z-viz">
-    <div id="vzb" style="display:flex;align-items:center;justify-content:space-between;padding:4px 10px;">
-      <span id="vzlbl" style="font-size:9px;">Three.js · визуализация</span>
-      <div style="display:flex;gap:3px;">
-        <button id="vb1" style="font-size:9px;padding:2px 6px;border-radius:4px;cursor:pointer;background:transparent;font-family:sans-serif;">3D</button>
-        <button id="vb2" style="font-size:9px;padding:2px 6px;border-radius:4px;cursor:pointer;background:transparent;font-family:sans-serif;">2D</button>
-      </div>
-    </div>
-    <div style="display:flex;justify-content:center;padding:4px 0 3px;">
-      <svg width="200" height="150" viewBox="0 0 220 180">
-        <defs>
-          <marker id="ma" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto"><path id="map" d="M0,0 L5,2.5 L0,5 Z" fill="#22D3EE"/></marker>
-          <marker id="mb" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto"><path id="mbp" d="M0,0 L5,2.5 L0,5 Z" fill="#a78bfa"/></marker>
-          <marker id="mc" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto"><path id="mcp" d="M0,0 L5,2.5 L0,5 Z" fill="#4ade80"/></marker>
-        </defs>
-        <line id="gx" x1="20" y1="90" x2="200" y2="90" stroke="#334a5a" stroke-width="0.5"/>
-        <line id="gy" x1="110" y1="10" x2="110" y2="170" stroke="#334a5a" stroke-width="0.5"/>
-        <line id="va" x1="110" y1="90" x2="175" y2="70" stroke="#22D3EE" stroke-width="2" marker-end="url(#ma)"/>
-        <line id="vb" x1="110" y1="90" x2="90" y2="10" stroke="#a78bfa" stroke-width="2" marker-end="url(#mb)"/>
-        <line id="vc" x1="110" y1="90" x2="150" y2="50" stroke="#4ade80" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#mc)"/>
-        <text id="la" x="178" y="68" font-size="11" font-family="Arial" fill="#22D3EE">a⃗</text>
-        <text id="lb" x="74" y="14" font-size="11" font-family="Arial" fill="#a78bfa">b⃗</text>
-        <text id="lc" x="153" y="48" font-size="11" font-family="Arial" fill="#4ade80">a⃗+b⃗</text>
-        <circle cx="110" cy="90" r="3" id="orig" fill="#8899aa"/>
-        <text id="lo" x="113" y="103" font-size="9" font-family="Arial" fill="#8899aa">O</text>
-      </svg>
-    </div>
-    <div id="vzcp" style="font-size:9px;text-align:center;padding:2px 0 5px;">Перетащите · Three.js</div>
-  </div>
-
-  <div id="dv1" style="height:1px;margin:0 10px;"></div>
-
-  <!-- ZONE 2: ответ -->
-  <div id="az" style="padding:10px 12px;display:flex;flex-direction:column;gap:9px;">
-
-    <!-- NUMERIC: строго в одну строку -->
-    <div id="anum" style="flex-direction:column;gap:7px;">
-      <div id="albl" style="font-size:9px;text-transform:uppercase;letter-spacing:0.06em;">Ваш ответ</div>
-      <div style="display:flex;align-items:center;gap:5px;flex-wrap:nowrap;">
-        <span id="ptl" style="font-size:12px;font-weight:600;white-space:nowrap;min-width:40px;">a⃗+b⃗=</span>
-        <span id="ax1" style="font-size:10px;font-family:monospace;">x</span>
-        <input id="nx" type="number" placeholder="?" oninput="clrRes()" style="width:56px;height:32px;border-radius:6px;font-size:13px;text-align:center;font-family:monospace;outline:none;">
-        <span id="ax2" style="font-size:10px;font-family:monospace;">y</span>
-        <input id="ny" type="number" placeholder="?" oninput="clrRes()" style="width:56px;height:32px;border-radius:6px;font-size:13px;text-align:center;font-family:monospace;outline:none;">
-        <span id="ax3" style="font-size:10px;font-family:monospace;">z</span>
-        <input id="nz" type="number" placeholder="?" oninput="clrRes()" style="width:56px;height:32px;border-radius:6px;font-size:13px;text-align:center;font-family:monospace;outline:none;">
-      </div>
-    </div>
-
-    <!-- CHOICE: 2×2 -->
-    <div id="ach" style="display:none;flex-direction:column;gap:6px;">
-      <div id="chlbl" style="font-size:9px;text-transform:uppercase;letter-spacing:0.06em;">Выберите ответ</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-        <button id="ca" onclick="pick('A')" style="padding:9px 10px;border-radius:7px;font-size:12px;cursor:pointer;text-align:left;font-family:sans-serif;"><span style="font-weight:700;margin-right:6px;">A</span>(2,3,2)</button>
-        <button id="cb" onclick="pick('B')" style="padding:9px 10px;border-radius:7px;font-size:12px;cursor:pointer;text-align:left;font-family:sans-serif;"><span style="font-weight:700;margin-right:6px;">B</span>(2,3,−2)</button>
-        <button id="cc" onclick="pick('C')" style="padding:9px 10px;border-radius:7px;font-size:12px;cursor:pointer;text-align:left;font-family:sans-serif;"><span style="font-weight:700;margin-right:6px;">C</span>(4,−5,2)</button>
-        <button id="cd" onclick="pick('D')" style="padding:9px 10px;border-radius:7px;font-size:12px;cursor:pointer;text-align:left;font-family:sans-serif;"><span style="font-weight:700;margin-right:6px;">D</span>(−4,5,2)</button>
-      </div>
-    </div>
-
-    <!-- TEXT -->
-    <div id="atxt" style="display:none;flex-direction:column;gap:6px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div id="txtlbl" style="font-size:9px;text-transform:uppercase;letter-spacing:0.06em;">Развёрнутый ответ</div>
-        <div id="ai-badge" style="font-size:9px;padding:2px 6px;border-radius:10px;">🤖 AI</div>
-      </div>
-      <textarea id="txtans" rows="3" oninput="clrRes();updateTxtCount();"
-        placeholder="Запишите ваш ответ..."
-        style="width:100%;border-radius:7px;padding:8px 10px;font-size:12px;font-family:sans-serif;outline:none;resize:vertical;line-height:1.6;min-height:72px;"></textarea>
-      <div id="txtcount" style="font-size:9px;text-align:right;"></div>
-    </div>
-
-    <!-- AI checking -->
-    <div id="ai-checking" style="display:none;align-items:center;gap:6px;padding:7px 10px;border-radius:6px;">
-      <span>🤖</span><span id="ai-chk-txt" style="font-size:12px;">AI проверяет...</span>
-      <div style="display:flex;gap:3px;"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-    </div>
-
-    <!-- Result -->
-    <div id="res" style="font-size:12px;padding:7px 11px;border-radius:7px;display:none;line-height:1.6;"></div>
-
-    <!-- AI feedback -->
-    <div id="ai-feedback" style="display:none;border-radius:7px;padding:9px 11px;">
-      <div style="display:flex;align-items:center;gap:5px;margin-bottom:5px;">
-        <span style="font-size:13px;">🤖</span>
-        <span id="ai-fb-title" style="font-size:11px;font-weight:600;">Разбор AI</span>
-        <span id="ai-score-badge" style="font-size:10px;padding:2px 6px;border-radius:10px;margin-left:auto;font-weight:600;"></span>
-      </div>
-      <div id="ai-fb-text" style="font-size:12px;line-height:1.6;"></div>
-    </div>
-
-    <!-- Кнопки: Skip слева, Check+Next справа -->
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-      <button id="bskip" onclick="skip()" style="padding:7px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:sans-serif;background:transparent;">Пропустить →</button>
-      <div style="display:flex;gap:6px;">
-        <button id="bchk" onclick="chk()" style="padding:8px 18px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:sans-serif;">Проверить</button>
-        <button id="bnxt" onclick="nxtQ()" style="padding:8px 14px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:sans-serif;display:none;border:none;">След →</button>
+  <!-- Formulas sheet -->
+  <div class="fm-overlay" id="fmOverlay" onclick="handleFmBg(event)">
+    <div class="fm-sheet p1">
+      <div class="fm-head"><span class="fm-title t1">Формулы — 35572</span><button class="fm-close" onclick="closeFormulas()">×</button></div>
+      <div class="fm-body">
+        <div class="fm-section"><div class="fm-section-title t3">Векторы</div>
+          <div class="fm-row bd"><span class="fm-formula">|AB⃗|=√(Δx²+Δy²+Δz²)</span><span class="fm-desc t2">Длина</span></div>
+          <div class="fm-row bd"><span class="fm-formula">u·v=x₁x₂+y₁y₂+z₁z₂</span><span class="fm-desc t2">Скалярное произведение</span></div>
+          <div class="fm-row bd"><span class="fm-formula">cos α=u·v/(|u|·|v|)</span><span class="fm-desc t2">Угол</span></div>
+        </div>
+        <div class="fm-section"><div class="fm-section-title t3">Прямые и плоскости</div>
+          <div class="fm-row bd"><span class="fm-formula">d=|ax₀+by₀+cz₀+d|/√(a²+b²+c²)</span><span class="fm-desc t2">Расстояние</span></div>
+        </div>
+        <div class="fm-section"><div class="fm-section-title t3">Геометрия</div>
+          <div class="fm-row bd"><span class="fm-formula">M=((x₁+x₂)/2,...)</span><span class="fm-desc t2">Середина</span></div>
+        </div>
       </div>
     </div>
   </div>
 </div>
-
 <script>
-var th='dark',qt='numeric',tmrOn=false,iv=null,sec=300,pulse=false,chosen=null;
-var cq=3,tq=7,nOk=2,nPart=1,nErr=0,nSk=1,xp=20;
+var THEME='d',QTYPE='numeric',TIMER_ON=false,timerIv=null,SEC=300,timerPulse=false,chosen=null;
+var CQ=3,TQ=7,nOk=2,nPart=1,nErr=0,nSk=1,XP=20;
 var qStatus=[1,2,0,0,4,0,0];
-
 function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
-function renderTimer(){
-  var w=document.getElementById('twrap'),v=document.getElementById('tval'),p=document.getElementById('pfl');
-  v.textContent=fmt(sec);
-  if(sec>120){w.style.border='1.5px solid #4ade80';w.style.background='#4ade8022';v.style.color='#4ade80';if(tmrOn)p.style.background='#4ade80';}
-  else if(sec>30){w.style.border='1.5px solid #FBBF24';w.style.background='#FBBF2422';v.style.color='#FBBF24';if(tmrOn)p.style.background='#FBBF24';}
-  else{pulse=!pulse;w.style.border='1.5px solid #f87171';w.style.background=pulse?'#f8717133':'#f8717118';v.style.color='#f87171';if(tmrOn)p.style.background='#f87171';}
-  if(sec>0)sec--;else stopTmr();
-}
-function simT(s){if(!tmrOn)return;stopTmr();sec=s;renderTimer();iv=setInterval(renderTimer,1000);}
-function stopTmr(){if(iv){clearInterval(iv);iv=null;}}
-function togTimer(){
-  tmrOn=!tmrOn;var btn=document.getElementById('btmr'),w=document.getElementById('twrap'),d=th==='dark';
-  if(tmrOn){w.style.display='block';sec=300;renderTimer();iv=setInterval(renderTimer,1000);btn.style.cssText='background:#4ade8022;border:1px solid #4ade8055;color:#4ade80;padding:4px 10px;font-size:11px;font-weight:500;cursor:pointer;border-radius:6px;font-family:sans-serif;';}
-  else{w.style.display='none';stopTmr();btn.style.cssText='background:#1a3a4e;border:1px solid #2a5a70;color:#7a9ab0;padding:4px 10px;font-size:11px;font-weight:500;cursor:pointer;border-radius:6px;font-family:sans-serif;';document.getElementById('pfl').style.background=th==='dark'?'#22D3EE':'#0891b2';}
-}
-
-function qBtnStyle(st,isActive,d){
-  var base='width:24px;height:24px;border-radius:50%;font-size:10px;cursor:pointer;font-family:sans-serif;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;border:none;';
-  if(isActive)return base+'font-weight:700;background:'+(d?'#22D3EE22':'#e0f4fa')+';border:2px solid '+(d?'#22D3EE':'#0891b2')+';color:'+(d?'#22D3EE':'#0891b2')+';';
-  if(st===1)return base+'background:#4ade8022;border:1.5px solid #4ade8066;color:#4ade80;';
-  if(st===2)return base+'background:#FBBF2422;border:1.5px solid #FBBF2466;color:#FBBF24;';
-  if(st===3)return base+'background:#f8717122;border:1.5px solid #f8717166;color:#f87171;';
-  if(st===4)return base+'background:'+(d?'#1a3a4e22':'#eef2f6')+';border:1px solid '+(d?'#334a5a':'#c0ccd8')+';color:'+(d?'#556677':'#8899aa')+';';
-  return base+'background:transparent;border:1px solid '+(d?'#334a5a':'#c0ccd8')+';color:'+(d?'#556677':'#99aabb')+';';
-}
-function renderQNums(){
-  var d=th==='dark',cont=document.getElementById('qnums');cont.innerHTML='';
-  for(var i=0;i<tq;i++){
-    var btn=document.createElement('button');btn.textContent=String(i+1);btn.style.cssText=qBtnStyle(qStatus[i],i+1===cq,d);
-    (function(idx){btn.onclick=function(){goToQ(idx+1);};})(i);
-    cont.appendChild(btn);
-    if(i<tq-1){var sep=document.createElement('div');sep.style.cssText='width:4px;height:1px;background:'+(d?'#1e3040':'#d0dde8')+';flex-shrink:0;';cont.appendChild(sep);}
-  }
-}
-function goToQ(n){
-  cq=n;document.getElementById('qlbl').textContent='Вопрос '+n;clrRes();chosen=null;applyChoice();
-  ['nx','ny','nz'].forEach(function(id){document.getElementById(id).value='';});
-  document.getElementById('txtans').value='';updateTxtCount();renderQNums();
-  if(!tmrOn)document.getElementById('pfl').style.width=Math.round(cq/tq*100)+'%';
-}
-function applyChoice(){
-  var d=th==='dark';
-  ['A','B','C','D'].forEach(function(x){
-    var el=document.getElementById('c'+x.toLowerCase());
-    if(chosen===x){el.style.background=d?'#22D3EE22':'#e0f4fa';el.style.border='1.5px solid '+(d?'#22D3EE':'#0891b2');el.style.color=d?'#22D3EE':'#0891b2';}
-    else{el.style.background=d?'#0f1e2e':'#f5f7fa';el.style.border='1px solid '+(d?'#1e3040':'#d0dde8');el.style.color=d?'#d0dde8':'#1a2533';}
-  });
-}
+function renderTimer(){var w=document.getElementById('timerWrap'),v=document.getElementById('timerVal'),pf=document.getElementById('progFill');v.textContent=fmt(SEC);w.className='timer-wrap';if(SEC>120){w.classList.add('green');if(TIMER_ON)pf.className='prog-fill';}else if(SEC>30){w.classList.add('amber');if(TIMER_ON)pf.className='prog-fill amber';}else{timerPulse=!timerPulse;w.classList.add(timerPulse?'red-a':'red');if(TIMER_ON)pf.className='prog-fill red';}if(SEC>0)SEC--;else stopTimer();}
+function stopTimer(){if(timerIv){clearInterval(timerIv);timerIv=null;}}
+function toggleTimer(){TIMER_ON=!TIMER_ON;var w=document.getElementById('timerWrap'),btn=document.getElementById('ctTmr');if(TIMER_ON){w.style.display='block';SEC=300;renderTimer();timerIv=setInterval(renderTimer,1000);btn.classList.add('on');}else{w.style.display='none';stopTimer();btn.classList.remove('on');document.getElementById('progFill').className='prog-fill';}}
+function simTimer(s){if(!TIMER_ON)return;stopTimer();SEC=parseInt(s);renderTimer();timerIv=setInterval(renderTimer,1000);}
+function renderCircles(){var cont=document.getElementById('qCircles');cont.innerHTML='';var sc=['unanswered','correct','partial','wrong','skipped'];for(var i=0;i<TQ;i++){var btn=document.createElement('button');btn.className='q-circle '+(i+1===CQ?'active':sc[qStatus[i]]);btn.textContent=String(i+1);(function(idx){btn.onclick=function(){goToQ(idx+1);};})(i);cont.appendChild(btn);if(i<TQ-1){var sep=document.createElement('span');sep.className='q-sep';cont.appendChild(sep);}}}
+function goToQ(n){CQ=n;document.getElementById('qLabel').textContent='Вопрос '+n;clrRes();chosen=null;applyChoice();['nx','ny','nz'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('txtAns').value='';updateCharCount();renderCircles();if(!TIMER_ON)document.getElementById('progFill').style.width=Math.round(CQ/TQ*100)+'%';}
+function applyChoice(){['A','B','C','D'].forEach(function(x){document.getElementById('c'+x.toLowerCase()).classList.toggle('picked',chosen===x);});}
 function pick(x){chosen=x;applyChoice();clrRes();}
-function updateTxtCount(){
-  var v=document.getElementById('txtans').value.length,el=document.getElementById('txtcount'),d=th==='dark';
-  el.textContent=v>0?v+' симв.':'';el.style.color=d?'#445566':'#99aabb';
-}
-function clrRes(){
-  document.getElementById('res').style.display='none';document.getElementById('bnxt').style.display='none';
-  document.getElementById('ai-feedback').style.display='none';document.getElementById('ai-checking').style.display='none';
-}
-function chk(){
-  var d=th==='dark',el=document.getElementById('res');
-  if(qt==='text'){
-    var txt=document.getElementById('txtans').value.trim();
-    if(!txt){el.style.display='block';el.style.background=d?'#1a3040':'#f5f7fa';el.style.color=d?'#7a9ab0':'#556677';el.style.border='none';el.textContent='Введите ответ.';return;}
-    document.getElementById('ai-checking').style.display='flex';
-    document.getElementById('bchk').style.opacity='0.5';document.getElementById('bchk').style.pointerEvents='none';
-    setTimeout(function(){simulateAI(txt,d);},1800+Math.random()*700);return;
-  }
-  el.style.display='block';document.getElementById('bnxt').style.display='block';
-  var ok=false,partial=false;
-  if(qt==='numeric'){var x=parseFloat(document.getElementById('nx').value),y=parseFloat(document.getElementById('ny').value),z=parseFloat(document.getElementById('nz').value);ok=(x===2&&y===3&&z===2);partial=(!ok&&(x===2||y===3||z===2));}
-  else{ok=chosen==='A';}
-  if(ok){qStatus[cq-1]=1;nOk++;xp+=10;el.style.background=d?'#08251a':'#ecfdf5';el.style.color=d?'#4ade80':'#16a34a';el.style.border='1px solid '+(d?'#4ade8044':'#16a34a44');el.textContent='✓ Верно! +10 очков';}
-  else if(partial){qStatus[cq-1]=2;nPart++;el.style.background=d?'#2a1f00':'#fffbeb';el.style.color=d?'#FBBF24':'#92400e';el.style.border='1px solid '+(d?'#FBBF2444':'#FBBF2466');el.textContent='~ Частично верно.';}
-  else{qStatus[cq-1]=3;nErr++;el.style.background=d?'#250808':'#fef2f2';el.style.color=d?'#f87171':'#dc2626';el.style.border='1px solid '+(d?'#f8717133':'#dc262633');el.textContent='✗ Неверно. Ответ: A (2,3,2).';}
-  updateStats();renderQNums();
-}
-function simulateAI(txt,d){
-  document.getElementById('ai-checking').style.display='none';document.getElementById('bchk').style.opacity='1';document.getElementById('bchk').style.pointerEvents='auto';
-  var hasCoords=txt.indexOf('2')>=0&&txt.indexOf('3')>=0,hasExp=txt.length>30;
-  var score=hasCoords&&hasExp?10:hasCoords||hasExp?6:2,verdict=score===10?'correct':score===6?'partial':'wrong';
-  var res=document.getElementById('res'),fb=document.getElementById('ai-feedback');
-  res.style.display='block';document.getElementById('bnxt').style.display='block';
-  if(verdict==='correct'){qStatus[cq-1]=1;nOk++;xp+=10;res.style.background=d?'#08251a':'#ecfdf5';res.style.color=d?'#4ade80':'#16a34a';res.style.border='1px solid '+(d?'#4ade8044':'#16a34a44');res.textContent='✓ AI: верно.';fb.style.background=d?'#0a2010':'#f0fdf4';fb.style.border='1px solid '+(d?'#4ade8033':'#4ade8066');document.getElementById('ai-fb-title').style.color=d?'#4ade80':'#16a34a';document.getElementById('ai-score-badge').style.cssText='font-size:10px;padding:2px 6px;border-radius:10px;font-weight:600;background:#4ade8022;color:#4ade80;margin-left:auto;';document.getElementById('ai-score-badge').textContent='10/10';document.getElementById('ai-fb-text').style.color=d?'#86efac':'#166534';document.getElementById('ai-fb-text').textContent='Координаты верные, объяснение полное.';}
-  else if(verdict==='partial'){qStatus[cq-1]=2;nPart++;xp+=6;res.style.background=d?'#2a1f00':'#fffbeb';res.style.color=d?'#FBBF24':'#92400e';res.style.border='1px solid '+(d?'#FBBF2444':'#FBBF2466');res.textContent='~ AI: частично.';fb.style.background=d?'#1a1400':'#fffbeb';fb.style.border='1px solid '+(d?'#FBBF2433':'#FBBF2466');document.getElementById('ai-fb-title').style.color=d?'#FBBF24':'#92400e';document.getElementById('ai-score-badge').style.cssText='font-size:10px;padding:2px 6px;border-radius:10px;font-weight:600;background:#FBBF2422;color:#FBBF24;margin-left:auto;';document.getElementById('ai-score-badge').textContent='6/10';document.getElementById('ai-fb-text').style.color=d?'#fde68a':'#78350f';document.getElementById('ai-fb-text').textContent='Координаты есть, объяснение неполное.';}
-  else{qStatus[cq-1]=3;nErr++;res.style.background=d?'#250808':'#fef2f2';res.style.color=d?'#f87171':'#dc2626';res.style.border='1px solid '+(d?'#f8717133':'#dc262633');res.textContent='✗ AI: неверно.';fb.style.background=d?'#200808':'#fef2f2';fb.style.border='1px solid '+(d?'#f8717133':'#f8717166');document.getElementById('ai-fb-title').style.color=d?'#f87171':'#dc2626';document.getElementById('ai-score-badge').style.cssText='font-size:10px;padding:2px 6px;border-radius:10px;font-weight:600;background:#f8717122;color:#f87171;margin-left:auto;';document.getElementById('ai-score-badge').textContent='2/10';document.getElementById('ai-fb-text').style.color=d?'#fca5a5':'#991b1b';document.getElementById('ai-fb-text').textContent='x=2, y=3, z=2.';}
-  fb.style.display='block';updateStats();renderQNums();
-}
-function updateStats(){document.getElementById('sok').textContent=nOk;document.getElementById('spart').textContent=nPart;document.getElementById('serr').textContent=nErr;document.getElementById('ssk').textContent=nSk;document.getElementById('sxp').textContent=xp;}
-function skip(){qStatus[cq-1]=4;nSk++;clrRes();chosen=null;applyChoice();['nx','ny','nz'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('txtans').value='';updateTxtCount();updateStats();renderQNums();}
-function nxtQ(){if(cq<tq)goToQ(cq+1);}
-function applyQtBtns(){
-  var d=th==='dark';
-  [['bn','numeric'],['bc','choice'],['bt','text']].forEach(function(p){
-    var el=document.getElementById(p[0]);
-    if(qt===p[1])el.style.cssText='background:#22D3EE;border:1px solid #22D3EE;color:#0a3540;padding:4px 10px;font-size:11px;font-weight:500;cursor:pointer;border-radius:6px;font-family:sans-serif;';
-    else el.style.cssText='background:'+(d?'#1a3a4e':'#f0f4f8')+';border:1px solid '+(d?'#2a5a70':'#c0ccd8')+';color:'+(d?'#7a9ab0':'#445566')+';padding:4px 10px;font-size:11px;font-weight:500;cursor:pointer;border-radius:6px;font-family:sans-serif;';
-  });
-}
-function setQt(t){
-  qt=t;document.getElementById('anum').style.display=t==='numeric'?'flex':'none';document.getElementById('ach').style.display=t==='choice'?'flex':'none';document.getElementById('atxt').style.display=t==='text'?'flex':'none';clrRes();applyQtBtns();applyTxtTheme();
-}
-function applyTxtTheme(){
-  var d=th==='dark';var ta=document.getElementById('txtans');ta.style.background=d?'#0b1622':'#f5f7fa';ta.style.border='1.5px solid '+(d?'#334a5a':'#c0ccd8');ta.style.color=d?'#d0dde8':'#1a2533';
-  document.getElementById('txtlbl').style.color=d?'#334a5a':'#99aabb';
-  var ab=document.getElementById('ai-badge');ab.style.background=d?'#22D3EE18':'#e0f2f8';ab.style.border='1px solid '+(d?'#22D3EE44':'#0891b244');ab.style.color=d?'#22D3EE':'#0891b2';
-  var ac=document.getElementById('ai-checking');ac.style.background=d?'#0f1e2e':'#f0f8fb';ac.style.border='1px solid '+(d?'#1e3040':'#d0dde8');document.getElementById('ai-chk-txt').style.color=d?'#7a9ab0':'#556677';
-}
-function setTh(t){
-  th=t;var d=t==='dark';
-  document.getElementById('sh').style.background=d?'#0b1622':'#ffffff';document.getElementById('sh').style.border='1px solid '+(d?'#1e3040':'#d0dde8');
-  document.getElementById('tb').style.background=d?'#0f1e2e':'#f5f7fa';document.getElementById('tb').style.borderBottom='1px solid '+(d?'#1e3040':'#d0dde8');
-  var chip=document.getElementById('chip');chip.style.background=d?'#22D3EE18':'#e0f2f8';chip.style.border='1px solid '+(d?'#22D3EE44':'#0891b244');chip.style.color=d?'#22D3EE':'#0891b2';
-  var xb=document.getElementById('xbtn');xb.style.border='1px solid '+(d?'#334a5a':'#b0c8d8');xb.style.color=d?'#556677':'#445566';
-  document.getElementById('pr').style.background=d?'#0f1e2e':'#f5f7fa';document.getElementById('ptk').style.background=d?'#1e3040':'#e2e8f0';
-  if(!tmrOn)document.getElementById('pfl').style.background=d?'#22D3EE':'#0891b2';
-  var sb2=document.getElementById('sb');sb2.style.background=d?'#0c1926':'#f8fafc';sb2.style.borderColor=d?'#1e3040':'#d0dde8';
-  ['sokl','spartl','serrl','sskl','sxpl'].forEach(function(id){document.getElementById(id).style.color=d?'#445566':'#99aabb';});
-  ['sok','spart','serr','ssk'].forEach(function(id){document.getElementById(id).style.color=d?'#d0dde8':'#1a2533';});
-  ['ss1','ss2','ss3','ss4'].forEach(function(id){document.getElementById(id).style.background=d?'#1e3040':'#d0dde8';});
-  document.getElementById('z-question').style.background=d?'#0b1622':'#ffffff';document.getElementById('z-question').style.borderBottom='1px solid '+(d?'#1e3040':'#d0dde8');
-  document.getElementById('qlbl').style.color=d?'#334a5a':'#99aabb';document.getElementById('qtxt').style.color=d?'#d0dde8':'#1a2533';
-  document.querySelectorAll('.mtag').forEach(function(el){el.style.color=d?'#22D3EE':'#0891b2';el.style.background=d?'#22D3EE14':'#0891b212';});
-  document.getElementById('z-viz').style.background=d?'#060e18':'#e8f2f8';document.getElementById('z-viz').style.borderBottom='1px solid '+(d?'#1e3040':'#d0dde8');
-  document.getElementById('vzb').style.borderBottom='1px solid '+(d?'#ffffff14':'#c0d8e8');document.getElementById('vzlbl').style.color=d?'#334455':'#8aabbb';document.getElementById('vzcp').style.color=d?'#334455':'#99aabb';
-  document.getElementById('vb1').style.cssText='color:'+(d?'#22D3EE':'#0891b2')+';border:1px solid '+(d?'#22D3EE55':'#0891b266')+';font-size:9px;padding:2px 6px;border-radius:4px;cursor:pointer;background:transparent;font-family:sans-serif;';
-  document.getElementById('vb2').style.cssText='color:'+(d?'#7a8a99':'#6a8898')+';border:1px solid '+(d?'#ffffff22':'#c0d0d8')+';font-size:9px;padding:2px 6px;border-radius:4px;cursor:pointer;background:transparent;font-family:sans-serif;';
-  document.getElementById('va').setAttribute('stroke',d?'#22D3EE':'#0891b2');document.getElementById('la').setAttribute('fill',d?'#22D3EE':'#0891b2');document.getElementById('map').setAttribute('fill',d?'#22D3EE':'#0891b2');
-  document.getElementById('vb').setAttribute('stroke',d?'#a78bfa':'#7c3aed');document.getElementById('lb').setAttribute('fill',d?'#a78bfa':'#7c3aed');document.getElementById('mbp').setAttribute('fill',d?'#a78bfa':'#7c3aed');
-  document.getElementById('vc').setAttribute('stroke',d?'#4ade80':'#16a34a');document.getElementById('lc').setAttribute('fill',d?'#4ade80':'#16a34a');document.getElementById('mcp').setAttribute('fill',d?'#4ade80':'#16a34a');
-  document.getElementById('gx').setAttribute('stroke',d?'#334a5a':'#c0ccd8');document.getElementById('gy').setAttribute('stroke',d?'#334a5a':'#c0ccd8');document.getElementById('orig').setAttribute('fill',d?'#8899aa':'#99aabb');
-  document.getElementById('dv1').style.background=d?'#1e3040':'#d0dde8';
-  document.getElementById('az').style.background=d?'#0b1622':'#ffffff';document.getElementById('albl').style.color=d?'#334a5a':'#99aabb';document.getElementById('ptl').style.color=d?'#d0dde8':'#1a2533';
-  ['ax1','ax2','ax3'].forEach(function(id){document.getElementById(id).style.color=d?'#334a5a':'#99aabb';});
-  var af=d?{bg:'#c8e8f4',br:'1px solid #6ab8d4',cl:'#0b2233'}:{bg:'#e0f4fa',br:'1px solid #6ac8e0',cl:'#0b3a4a'};
-  ['nx','ny','nz'].forEach(function(id){var el=document.getElementById(id);el.style.background=af.bg;el.style.border=af.br;el.style.color=af.cl;});
-  document.getElementById('chlbl').style.color=d?'#334a5a':'#99aabb';
-  var cb=document.getElementById('bchk');if(d){cb.style.background='#22D3EE';cb.style.color='#0a3540';cb.style.border='none';}else{cb.style.background='transparent';cb.style.color='#1a2533';cb.style.border='1.5px solid #b0c8d8';}
-  var skb=document.getElementById('bskip');skb.style.border='1px solid '+(d?'#334a5a':'#b0c8d8');skb.style.color=d?'#556677':'#445566';
-  document.getElementById('bnxt').style.background=d?'#22D3EE':'#0891b2';document.getElementById('bnxt').style.color='#fff';
-  var bd2=document.getElementById('bd'),bl2=document.getElementById('bl');
-  if(d){bd2.style.cssText='background:#22D3EE;border:1px solid #22D3EE;color:#0a3540;box-shadow:0 0 0 2px #22D3EE33;padding:4px 10px;font-size:11px;font-weight:500;cursor:pointer;border-radius:6px;font-family:sans-serif;';bl2.style.cssText='background:#e8f4f8;border:1px solid #b0cdd8;color:#445566;padding:4px 10px;font-size:11px;font-weight:500;cursor:pointer;border-radius:6px;font-family:sans-serif;';}
-  else{bl2.style.cssText='background:#0891b2;border:1px solid #0891b2;color:#fff;box-shadow:0 0 0 2px #0891b244;padding:4px 10px;font-size:11px;font-weight:500;cursor:pointer;border-radius:6px;font-family:sans-serif;';bd2.style.cssText='background:#1a3a4e;border:1px solid #2a5a70;color:#7a9ab0;padding:4px 10px;font-size:11px;font-weight:500;cursor:pointer;border-radius:6px;font-family:sans-serif;';}
-  applyChoice();applyQtBtns();applyTxtTheme();renderQNums();
-}
-setTh('dark');setQt('numeric');
-document.getElementById('qlbl').textContent='Вопрос '+cq;
+function updateCharCount(){var v=document.getElementById('txtAns').value.length;document.getElementById('charCount').textContent=v>0?v+' симв.':'';}
+function clrRes(){var r=document.getElementById('result');r.className='result';r.textContent='';document.getElementById('btnNext').style.display='none';document.getElementById('aiFeedback').className='ai-feedback';document.getElementById('aiFeedback').style.display='none';document.getElementById('aiChecking').style.display='none';document.getElementById('btnSkip').style.display='';}
+function checkAnswer(){if(QTYPE==='text'){var txt=document.getElementById('txtAns').value.trim();if(!txt){showResult('err','Введите ответ.');return;}document.getElementById('aiChecking').style.display='flex';document.getElementById('btnCheck').disabled=true;setTimeout(function(){simulateAI(txt);},1800+Math.random()*800);return;}var ok=false,partial=false;if(QTYPE==='numeric'){var x=parseFloat(document.getElementById('nx').value),y=parseFloat(document.getElementById('ny').value),z=parseFloat(document.getElementById('nz').value);ok=(x===2&&y===3&&z===2);partial=!ok&&(x===2||y===3||z===2);}else{ok=chosen==='A';}if(ok){qStatus[CQ-1]=1;nOk++;XP+=10;showResult('ok','✓ Верно! +10 очков');}else if(partial){qStatus[CQ-1]=2;nPart++;XP+=5;showResult('part','~ Частично верно.');}else{qStatus[CQ-1]=3;nErr++;showResult('err','✗ Неверно.');}document.getElementById('btnNext').style.display='';document.getElementById('btnSkip').style.display='none';updateStats();renderCircles();}
+function showResult(type,msg){var el=document.getElementById('result');el.className='result '+(type==='ok'?'ok':type==='part'?'part':'err');el.textContent=msg;}
+function simulateAI(txt){document.getElementById('aiChecking').style.display='none';document.getElementById('btnCheck').disabled=false;var h=txt.indexOf('2')>=0&&txt.indexOf('3')>=0,e=txt.length>30,s=h&&e?10:h||e?6:2,v=s===10?'ok':s===6?'part':'err';if(v==='ok'){qStatus[CQ-1]=1;nOk++;XP+=10;}else if(v==='part'){qStatus[CQ-1]=2;nPart++;XP+=s;}else{qStatus[CQ-1]=3;nErr++;}showResult(v,v==='ok'?'✓ AI: верно.':v==='part'?'~ AI: частично.':'✗ AI: неверно.');var fb=document.getElementById('aiFeedback');fb.className='ai-feedback '+v;fb.style.display='block';document.getElementById('aiScoreBadge').textContent=s+'/10';document.getElementById('aiFbText').textContent=v==='ok'?'Верно.':v==='part'?'Координаты есть, объяснение неполное.':'x=2, y=3, z=2.';document.getElementById('btnNext').style.display='';document.getElementById('btnSkip').style.display='none';updateStats();renderCircles();}
+function updateStats(){document.getElementById('sOk').textContent=nOk;document.getElementById('sPart').textContent=nPart;document.getElementById('sErr').textContent=nErr;document.getElementById('sSk').textContent=nSk;document.getElementById('sXp').textContent=XP;}
+function skipQ(){qStatus[CQ-1]=4;nSk++;clrRes();chosen=null;applyChoice();['nx','ny','nz'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('txtAns').value='';updateCharCount();updateStats();renderCircles();}
+function nextQ(){if(CQ<TQ)goToQ(CQ+1);}
+function setQType(t){QTYPE=t;document.getElementById('anum').style.display=t==='numeric'?'flex':'none';document.getElementById('ach').style.display=t==='choice'?'flex':'none';document.getElementById('atxt').style.display=t==='text'?'flex':'none';clrRes();['ctNum','ctCh','ctTxt'].forEach(function(id){document.getElementById(id).classList.remove('on');});document.getElementById(t==='numeric'?'ctNum':t==='choice'?'ctCh':'ctTxt').classList.add('on');}
+function setTheme(t){THEME=t;document.getElementById('shell').className='shell '+(t==='d'?'d':'l');document.getElementById('ctDark').classList.toggle('on',t==='d');document.getElementById('ctLight').classList.toggle('on',t==='l');}
+function toggleYosi(){document.getElementById('yosiSheet').classList.toggle('open');}
+function openFormulas(){document.getElementById('fmOverlay').classList.add('open');}
+function closeFormulas(){document.getElementById('fmOverlay').classList.remove('open');}
+function handleFmBg(e){if(e.target===document.getElementById('fmOverlay'))closeFormulas();}
+function exitTest(){alert('← Вернуться к лабиринту');}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeFormulas();document.getElementById('yosiSheet').classList.remove('open');}});
+renderCircles();document.getElementById('progFill').style.width=Math.round(CQ/TQ*100)+'%';setQType('numeric');
 </script>
+</body>
+</html>
