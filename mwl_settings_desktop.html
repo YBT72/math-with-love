@@ -39,10 +39,21 @@ body{font-family:system-ui,sans-serif}
 .d .srch input{background:#334155;border-color:#475569;color:#f1f5f9}
 .l .srch input{background:#f1f5f9;border-color:#e2e8f0;color:#0f172a}
 .si2{position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none}
-.lang{display:flex;border-radius:6px;overflow:hidden;border:1px solid}
-.lb{padding:3px 7px;font-size:11px;cursor:pointer}
-.d .lb{color:#94a3b8}.l .lb{color:#64748b}
-.lb.on{background:#22D3EE;color:#0f172a;font-weight:500}
+/* Lang globe button + dropdown */
+.lg-wrap{position:relative;flex-shrink:0}
+.lg-dropdown{position:absolute;top:calc(100% + 8px);right:0;min-width:80px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.lg-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.d .lg-dropdown{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.l .lg-dropdown{background:#ffffff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+.lg-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s}
+.d .lg-item{color:#94a3b8}.l .lg-item{color:#64748b}
+.d .lg-item:hover{background:#334155}.l .lg-item:hover{background:#f1f5f9}
+.lg-item.on{color:#22D3EE}
+.lg-check{width:12px;height:12px;flex-shrink:0;opacity:0}
+.lg-item.on .lg-check{opacity:1}
+.lg-overlay{position:fixed;inset:0;z-index:99;display:none}
+.lg-overlay.open{display:block}
+[dir="rtl"] .lg-dropdown{right:auto;left:0}
 .hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid}
 
 /* ── Avatar button in header ── */
@@ -216,10 +227,6 @@ body{font-family:system-ui,sans-serif}
 .save-status.err{color:#f87171}
 
 /* ── Ctrl bar (theme switcher for mockup) ── */
-.ctrl{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid;align-items:center;flex-shrink:0}
-.tcb{padding:4px 12px;border-radius:8px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid}
-.tcb.on{background:#22D3EE!important;color:#0f172a!important;border-color:#22D3EE!important}
-
 /* ── Overlay for closing dropdown ── */
 .overlay{position:fixed;inset:0;z-index:100;display:none}
 .overlay.open{display:block}
@@ -244,10 +251,23 @@ body{font-family:system-ui,sans-serif}
       </div>
     </div>
     <div class="hdr-right">
-      <div class="lang bd">
-        <span class="lb on" id="lbRu" data-lang="ru">RU</span>
-        <span class="lb" id="lbHe" data-lang="he">HE</span>
+      <!-- Lang globe button + dropdown -->
+      <div class="lg-wrap">
+        <div class="hico bd t2" id="lgBtn" onclick="toggleLangDD()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div class="lg-dropdown p1 bd" id="lgDropdown">
+          <div class="lg-item on" id="lgItemRu" onclick="setLang('ru');closeLangDD()">
+            <span>RU</span>
+            <svg class="lg-check" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="lg-item" id="lgItemHe" onclick="setLang('he');closeLangDD()">
+            <span>HE</span>
+            <svg class="lg-check" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
       </div>
+      <div class="lg-overlay" id="lgOverlay" onclick="closeLangDD()"></div>
       <div class="hico bd t2">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg>
       </div>
@@ -276,11 +296,6 @@ body{font-family:system-ui,sans-serif}
   </div>
 
   <!-- MOCKUP CTRL BAR -->
-  <div class="ctrl p2 bd">
-    <button class="tcb on" id="bdBtn">🌙 Тёмная</button>
-    <button class="tcb" id="blBtn">☀ Светлая</button>
-  </div>
-
   <!-- BODY -->
   <div class="body">
 
@@ -551,8 +566,6 @@ function setMode(m) {
   CM = m;
   pendingTheme = m;
   document.getElementById('shell').className = 'shell ' + m;
-  document.getElementById('bdBtn').className = 'tcb' + (m === 'd' ? ' on' : '');
-  document.getElementById('blBtn').className = 'tcb' + (m === 'l' ? ' on' : '');
   // Sync theme option cards
   document.getElementById('themeOptD').classList.toggle('sel', m === 'd');
   document.getElementById('themeOptL').classList.toggle('sel', m === 'l');
@@ -562,9 +575,9 @@ function setMode(m) {
 function setLang(lang) {
   CL = lang;
   pendingLang = lang;
-  document.getElementById('lbRu').className = 'lb' + (lang === 'ru' ? ' on' : '');
-  document.getElementById('lbHe').className = 'lb' + (lang === 'he' ? ' on' : '');
   document.getElementById('shell').setAttribute('dir', lang === 'he' ? 'rtl' : 'ltr');
+  document.getElementById('lgItemRu').className = 'lg-item' + (lang === 'ru' ? ' on' : '');
+  document.getElementById('lgItemHe').className = 'lg-item' + (lang === 'he' ? ' on' : '');
   // Sync language option cards
   document.getElementById('langOptRu').classList.toggle('sel', lang === 'ru');
   document.getElementById('langOptHe').classList.toggle('sel', lang === 'he');
@@ -572,6 +585,18 @@ function setLang(lang) {
 }
 
 // ── Sidebar ──────────────────────────────────────────────────────────
+
+function toggleLangDD(){
+  var dd = document.getElementById('lgDropdown');
+  var isOpen = dd.classList.contains('open');
+  if(isOpen){ closeLangDD(); }
+  else { dd.classList.add('open'); document.getElementById('lgOverlay').classList.add('open'); }
+}
+function closeLangDD(){
+  document.getElementById('lgDropdown').classList.remove('open');
+  document.getElementById('lgOverlay').classList.remove('open');
+}
+
 function toggleSb() {
   sbOpen = !sbOpen;
   document.getElementById('sb').className = 'sb p1 bd' + (sbOpen ? ' open' : '');
@@ -729,10 +754,17 @@ function doLogout() {
 
 // ── callFn dispatcher (Safari sandbox safe) ───────────────────────────
 function callFn(expr) {
-  var m;
-  if ((m = expr.match(/^(\w+)\(\)$/)))                { window[m[1]](); }
-  else if ((m = expr.match(/^(\w+)\('([^']*)'\)$/)))  { window[m[1]](m[2]); }
-  else if ((m = expr.match(/^(\w+)\((\d+)\)$/)))      { window[m[1]](parseInt(m[2])); }
+  // Support compound expressions: "fn1('a');fn2()"
+  var parts = expr.split(';');
+  parts.forEach(function(e) {
+    e = e.trim();
+    if (!e) return;
+    var m;
+    if ((m = e.match(/^(\w+)\(\)$/)))                    { window[m[1]](); }
+    else if ((m = e.match(/^(\w+)\('([^']*)'\)$/)))       { window[m[1]](m[2]); }
+    else if ((m = e.match(/^(\w+)\((\d+)\)$/)))           { window[m[1]](parseInt(m[2])); }
+    else if ((m = e.match(/^(\w+)\('([^']*)',(\d+)\)$/))) { window[m[1]](m[2], parseInt(m[3])); }
+  });
 }
 
 // ── DOMContentLoaded ──────────────────────────────────────────────────
@@ -741,13 +773,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Sidebar toggle
   document.getElementById('sbtBtn').addEventListener('click', toggleSb);
 
-  // Mockup theme ctrl bar
-  document.getElementById('bdBtn').addEventListener('click', function() { setMode('d'); });
-  document.getElementById('blBtn').addEventListener('click', function() { setMode('l'); });
-
   // Header lang toggle
-  document.getElementById('lbRu').addEventListener('click', function() { setLang('ru'); });
-  document.getElementById('lbHe').addEventListener('click', function() { setLang('he'); });
 
   // Avatar dropdown
   document.getElementById('havBtn').addEventListener('click', function(e) {

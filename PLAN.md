@@ -97,15 +97,103 @@
 
 ## Фаза 4 — Страница теста
 
-- [ ] `app/test/[id]/page.tsx`
-- [ ] Topbar: chip + Q-circles + timer + exit
-- [ ] Adaptive timer (green → amber → red + pulse)
-- [ ] Stats block (5 иконок)
-- [ ] Zone 1: question text + 3D viz
-- [ ] Answer zone: numeric / choice A-D / text (3 типа)
-- [ ] Кнопки Skip / Check / Next
-- [ ] AI feedback block
-- [ ] RTL + responsive
+Fullscreen режим (без сайдбара, без bottom nav, без globe/bell/avatar).
+Спецификация: NAVIGATION.md §3c (обновлён 08/07/2026).
+Макеты: `mwl_test_desktop.html`, `mwl_test_tablet.html`, `mwl_test_mobile.html`.
+
+### Shell & topbar
+- [ ] `app/test/[atomId]/[step]/page.tsx` (step: check | exercises | atom-test)
+- [ ] Fullscreen shell: `height: 100vh`, no sidebar, no bottom nav
+- [ ] Topbar (3-column grid): topic chip left | Q-circles center | timer + exit right
+- [ ] Topic chip: cyan badge with theme name from atom metadata
+- [ ] Exit button: "✕ Выйти" → confirmation dialog before leaving (progress lost warning)
+
+### Question number circles
+- [ ] Render N circles (N = question count for this step)
+- [ ] Color states: active (cyan) / correct (green) / partial (amber) / wrong (red) / skipped (slate) / unanswered (transparent)
+- [ ] Clickable — navigates to that question (only visited questions, not future)
+- [ ] Separators (thin lines) between circles
+
+### Timer
+- [ ] Optional: hidden by default, student toggles on
+- [ ] Countdown from step-defined duration (e.g. 5:00 for check, longer for atom-test)
+- [ ] Adaptive color: green (>2:00) → amber (1:00–2:00) → red (<0:30) with pulse animation
+- [ ] Progress bar color follows timer color when timer active
+- [ ] When timer off: progress bar shows question index / total (cyan)
+
+### Progress bar
+- [ ] Thin bar (3px) below topbar
+- [ ] Width = current_question / total_questions × 100%
+- [ ] Animates on question change (CSS transition)
+- [ ] Color: cyan (no timer) or timer-state color
+
+### Stats block
+- [ ] 5 counters horizontal row: ✓ Верно | ~ Частично | ✗ Ошибок | → Пропущен | ★ Очков
+- [ ] Each counter: icon circle (color-coded) + number + label
+- [ ] Updates immediately after each answer evaluation or skip
+- [ ] XP counter: amber color (★), always visible
+
+### Zone 1 — question
+- [ ] Two-column layout (desktop/tablet): question left | visualization right
+- [ ] Mobile: stacked (question above, viz below, compact)
+- [ ] Question label: "Вопрос N" (uppercase, slate)
+- [ ] Question text: supports inline math tags (`<span class="mtag">`)
+- [ ] Hint line: "Смотрите визуализацию справа →" (slate, bottom of text column)
+- [ ] Visualization panel: Three.js placeholder + 3D/2D toggle buttons (right column)
+- [ ] Viz colors update on theme change
+
+### Answer zone — 3 types (mutually exclusive, set per question by author)
+
+#### Type 1: Numeric
+- [ ] Label: "Ваш ответ" (uppercase, slate)
+- [ ] Point label (e.g. "a⃗+b⃗ =") + axis labels (x/y/z or custom)
+- [ ] Input fields: 64×34px, monospace, centered, number type
+- [ ] Active fields: light cyan bg on dark, light blue on light
+- [ ] clrRes() on input: hide result, hide Next button
+
+#### Type 2: Choice A-D
+- [ ] Label: "Выберите ответ"
+- [ ] 2×2 grid of buttons: A / B / C / D
+- [ ] Each button: letter (bold) + answer text
+- [ ] Selected state: cyan ring + cyan text + light cyan bg
+- [ ] Unselected: slate border, normal text
+- [ ] Only one selection at a time; re-click changes selection
+
+#### Type 3: Text (AI review — обучающий тест только)
+- [ ] Label: "Развёрнутый ответ" + AI badge ("🤖 Проверка AI")
+- [ ] Reference answer block (эталонный ответ): shown for author/admin in mockup;
+      in production render: hidden from student (CSS `display:none` or server-side)
+- [ ] Textarea: min-height 90px, resize:vertical, line-height 1.6
+- [ ] Char counter: appears when text entered (e.g. "47 символов"), slate color
+- [ ] Shift+Enter hint: "Shift+Enter — новая строка"
+- [ ] On Check: show "AI проверяет ответ..." indicator (🤖 + animated dots)
+      Disable Check button during processing
+- [ ] After AI response: show result (correct/partial/wrong) + AI feedback card
+- [ ] AI feedback card: 🤖 icon + title + score badge (e.g. "6 / 10 баллов") + explanation text
+- [ ] AI backend: prompt format TBD (see Open Questions)
+
+### Action buttons
+- [ ] "Пропустить →": left-aligned, available before Check; disabled after Check pressed
+- [ ] "Проверить": right side, primary cyan button; disabled during AI processing
+- [ ] "Следующий →": appears after Check (replaces or sits next to Проверить)
+      On last question: "Завершить" → triggers results overlay
+
+### Results overlay (full-screen)
+- [ ] Appears after last question answered
+- [ ] Shows: final score / time elapsed / correct / partial / wrong / skipped / XP earned
+- [ ] "Продолжить" button → navigates per step (check→exercises→atom-test→maze)
+- [ ] "Разобрать ошибки" button (review wrong answers inline — TBD)
+
+### Floating action buttons (FABs — same as lesson page)
+- [ ] 📐 Формулы FAB → formula reference modal/sheet
+- [ ] 🧑‍🏫 Йоси FAB → Yosi hint popup (desktop: anchored card; mobile: bottom sheet)
+- [ ] Position: fixed bottom-right
+
+### RTL + responsive
+- [ ] `inset-inline-end` for FAB positioning
+- [ ] `border-inline-start` for left-border accents
+- [ ] Mobile: topbar chip truncated, Q-circles scroll horizontally if >7
+- [ ] Mobile: answer inputs full-width, choice grid 1×4 (single column)
 
 ---
 
@@ -231,3 +319,4 @@ Claude Code (VS Code) + claude.ai/chat тянут из **одного пула**
 *Обновлён: 2026-07-06 — Фаза 0.6 дополнена: /status страница завершена (desktop + tablet + mobile). Новые компоненты: глобус-dropdown (lang), аватар-dropdown (Профиль/Настройки/Выйти). Mobile bottom nav RTL: direction:ltr убран — зеркалируется при HE. Табы финализированы: Главная/Курсы/Статус/Лаборатория/Помощь(?).*
 *Обновлён: 2026-07-07 — Фаза 6: макеты AI Chat Drawer готовы (desktop + tablet + mobile). Список пунктов обновлён: [x] готово / [ ] реализация Next.js ещё нет. Voice recording и Claude API подключение — остаются открытыми.*
 *Обновлён: 2026-07-07 — Фаза 8b обновлена: все 5 макетов конструктора готовы. Author sidebar стандарт финализирован (flat, без подменю). Добавлен /constructor/dashboard. Auto-translate через FastAPI backend (не browser fetch). Retrofit globe-dropdown в старые мокапы — в backlog. Создан ARCHITECTURE.md — полная техническая архитектура для Claude Code (shell, routes, DB, auth, i18n, Phase 0).*
+*Обновлён: 2026-07-08 — Фаза 4 детализирована: полная спецификация страницы теста (shell, topbar, Q-circles, timer, stats block, zone 1, 3 типа ответов, AI-проверка текста, action buttons, FABs, dev toolbar). Спецификация также зафиксирована в DESIGN_SYSTEM.md §27 и NAVIGATION.md §3c.*

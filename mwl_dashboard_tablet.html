@@ -20,16 +20,29 @@ body{font-family:system-ui,sans-serif}
 .logo{width:26px;height:26px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo i{font-size:13px;color:#0f172a}
 .brand{font-size:13px;font-weight:500}.brand b{color:#22D3EE;font-weight:500}
-.srch{width:240px;position:relative}
-.srch input{width:100%;border-radius:8px;padding:6px 28px 6px 10px;font-size:12px;outline:none;font-family:inherit;border:1px solid}
-.d .srch input{background:#334155;border-color:#475569;color:#f1f5f9}
-.l .srch input{background:#f1f5f9;border-color:#e2e8f0;color:#0f172a}
-.si2{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none}
+.srch-overlay{display:none;position:absolute;top:0;left:0;right:0;height:52px;align-items:center;padding:0 14px;gap:8px;z-index:10}
+.d .srch-overlay{background:#1e293b}.l .srch-overlay{background:#ffffff}
+.srch-overlay.open{display:flex}
+.srch-overlay input{flex:1;border-radius:8px;padding:7px 10px;font-size:16px;outline:none;font-family:inherit;border:1px solid}
+.d .srch-overlay input{background:#334155;border-color:#475569;color:#f1f5f9}
+.l .srch-overlay input{background:#f1f5f9;border-color:#e2e8f0;color:#0f172a}
+.srch-close{font-size:20px;cursor:pointer;line-height:1;padding:4px;opacity:0.5;flex-shrink:0}
 /* hdr-r → hdr-right grid cell */
-.lang{display:flex;border-radius:6px;overflow:hidden;border:1px solid}
-.lb{padding:3px 7px;font-size:11px;cursor:pointer}
-.d .lb{color:#94a3b8}.l .lb{color:#64748b}
-.lb.on{background:#22D3EE;color:#0f172a;font-weight:500}
+/* Lang globe button + dropdown */
+.lg-wrap{position:relative;flex-shrink:0}
+.lg-dropdown{position:absolute;top:calc(100% + 8px);right:0;min-width:80px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.lg-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.d .lg-dropdown{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.l .lg-dropdown{background:#ffffff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+.lg-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s}
+.d .lg-item{color:#94a3b8}.l .lg-item{color:#64748b}
+.d .lg-item:hover{background:#334155}.l .lg-item:hover{background:#f1f5f9}
+.lg-item.on{color:#22D3EE}
+.lg-check{width:12px;height:12px;flex-shrink:0;opacity:0}
+.lg-item.on .lg-check{opacity:1}
+.lg-overlay{position:fixed;inset:0;z-index:99;display:none}
+.lg-overlay.open{display:block}
+[dir="rtl"] .lg-dropdown{right:auto;left:0}
 .hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid}
 .hico i{font-size:15px}
 
@@ -224,12 +237,38 @@ body{font-family:system-ui,sans-serif}
     <div class="brand t1">Math <b>With Love</b></div>
   </div>
   <div class="hdr-center">
-    <div class="srch"><input id="searchInput" placeholder="Поиск тем, формул..."><svg class="t3 si2" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg></div>
+    <!-- Search icon (collapsed) -->
+    <div class="hico bd t2" onclick="toggleSearch()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+    </div>
   </div>
   <div class="hdr-right">
-    <div class="lang bd"><span class="lb on" id="lbRu" onclick="setLang('ru')">RU</span><span class="lb" id="lbHe" onclick="setLang('he')">HE</span></div>
+      <!-- Lang globe button + dropdown -->
+      <div class="lg-wrap">
+        <div class="hico bd t2" id="lgBtn" onclick="toggleLangDD()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div class="lg-dropdown p1 bd" id="lgDropdown">
+          <div class="lg-item on" id="lgItemRu" onclick="setLang('ru');closeLangDD()">
+            <span>RU</span>
+            <svg class="lg-check" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="lg-item" id="lgItemHe" onclick="setLang('he');closeLangDD()">
+            <span>HE</span>
+            <svg class="lg-check" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="lg-overlay" id="lgOverlay" onclick="closeLangDD()"></div>
+    <!-- Bell -->
     <div class="hico bd t2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg></div>
+    <!-- Avatar -->
     <div class="hico bd t2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5a5 5 0 0 1 11 0"/></svg></div>
+  </div>
+  <!-- Expandable search overlay -->
+  <div class="srch-overlay p1 bd" id="srchOverlay">
+    <input type="text" id="searchInput" placeholder="Поиск тем, формул...">
+    <span class="srch-close t2" onclick="toggleSearch()">×</span>
   </div>
 </div>
 <div class="ctrl p2 bd">
@@ -289,9 +328,9 @@ body{font-family:system-ui,sans-serif}
     <div class="wl p1 bd">
       <div><div class="wi"><div class="av">ИГ</div><div class="wn t1">Добрый день, <b>Игаль</b> 👋</div></div><div class="ws t2">Что сегодня делаем?</div></div>
       <div class="ab">
-        <button class="abt pr" onclick="simLesson()"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M7 4l13 8l-13 8z"/></svg> Продолжить</button>
-        <button class="abt sc bd t2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.95 11a8 8 0 1 0 -.5 4"/><path d="M20 4v5h-5"/></svg> Повторить</button>
-        <button class="abt sc bd t2"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 3l1.5 4.5l4.5 1.5l-4.5 1.5l-1.5 4.5l-1.5 -4.5l-4.5 -1.5l4.5 -1.5z"/></svg> Новая тема</button>
+        <button class="abt pr abt-continue" onclick="simLesson()"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M7 4l13 8l-13 8z"/></svg> Продолжить</button>
+        <button class="abt sc bd t2 abt-repeat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.95 11a8 8 0 1 0 -.5 4"/><path d="M20 4v5h-5"/></svg> Повторить</button>
+        <button class="abt sc bd t2 abt-new"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 3l1.5 4.5l4.5 1.5l-4.5 1.5l-1.5 4.5l-1.5 -4.5l-4.5 -1.5l4.5 -1.5z"/></svg> Новая тема</button>
       </div>
     </div>
     <div class="yo p1 bd">
@@ -300,9 +339,9 @@ body{font-family:system-ui,sans-serif}
     </div>
   </div>
   <div class="sts">
-    <div class="sc p1 bd"><div class="sic" style="background:rgba(251,191,36,0.12);color:#FBBF24"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12c2 -2.5 0 -5 -1 -6c0 2 -1.5 3 -2.5 4.5c-1 1.5 -1 4 0 5.5a4.5 4.5 0 0 0 9 0c0 -2 -1 -3.5 -2.5 -4c.5 1.5 0 2.5 -1 2.5c-1 0 -1.5 -1 -2 -2.5z"/></svg></div><div><div class="sv t1">7</div><div class="sl t2">Серия дней</div></div></div>
-    <div class="sc p1 bd"><div class="sic" style="background:rgba(34,211,238,0.12);color:#22D3EE"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.5 5.5l6 .8l-4.3 4.2l1 6l-5.2 -2.9l-5.2 2.9l1 -6l-4.3 -4.2l6 -.8z"/></svg></div><div><div class="sv t1" id="sxp">0</div><div class="sl t2">Очки</div></div></div>
-    <div class="sc p1 bd"><div class="sic" style="background:rgba(74,222,128,0.12);color:#4ade80"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2l4 -4"/></svg></div><div><div class="sv t1" id="sdn">0</div><div class="sl t2">Пройдено</div></div></div>
+    <div class="sc p1 bd"><div class="sic" style="background:rgba(251,191,36,0.12);color:#FBBF24"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12c2 -2.5 0 -5 -1 -6c0 2 -1.5 3 -2.5 4.5c-1 1.5 -1 4 0 5.5a4.5 4.5 0 0 0 9 0c0 -2 -1 -3.5 -2.5 -4c.5 1.5 0 2.5 -1 2.5c-1 0 -1.5 -1 -2 -2.5z"/></svg></div><div><div class="sv t1">7</div><div class="sl t2 sl-days">Серия дней</div></div></div>
+    <div class="sc p1 bd"><div class="sic" style="background:rgba(34,211,238,0.12);color:#22D3EE"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.5 5.5l6 .8l-4.3 4.2l1 6l-5.2 -2.9l-5.2 2.9l1 -6l-4.3 -4.2l6 -.8z"/></svg></div><div><div class="sv t1" id="sxp">0</div><div class="sl t2 sl-pts">Очки</div></div></div>
+    <div class="sc p1 bd"><div class="sic" style="background:rgba(74,222,128,0.12);color:#4ade80"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2l4 -4"/></svg></div><div><div class="sv t1" id="sdn">0</div><div class="sl t2 sl-done">Пройдено</div></div></div>
   </div>
   <div class="cg">
     <div class="tc p1 bd">
@@ -428,35 +467,37 @@ function computeSt(cid){
 }
 
 function simLesson(){
-  if(AC===null){ml('← Сначала выберите тему');return;}
+  if(AC===null){ml(TR_DASH[dashLang].mSelectFirst);return;}
   var c=CR[AC],s=gs(AC);
   if(s.remedialActive!==null){
     var t=s.remedialActive;
     s.problems.delete(t);s.failCount[t]=0;s.remedialUsed.add(t);s.remedialActive=null;
     addSeg(AC,'rem'+t);s.cur=t;
-    ml('🔄 Доп. материал по тесту '+t+' пройден. Тест переоткрыт.','#a78bfa');
+    ml(TR_DASH[dashLang].mRemedialDone,'#a78bfa');
     yosi('lesson');ua();return;
   }
-  if(c.T[s.cur]!=='lesson'){ml('⚠ Текущий узел — не урок','#FBBF24');return;}
+  if(c.T[s.cur]!=='lesson'){ml(TR_DASH[dashLang].mNotLesson,'#FBBF24');return;}
   s.earned[s.cur]=(s.earned[s.cur]||0)+10;s.passed[s.cur]=true;
   if(s.cur+1<c.n){addSeg(AC,s.cur+':'+(s.cur+1));s.cur=s.cur+1;}
-  ml('📖 Урок пройден +10★','#22D3EE');
+  ml(TR_DASH[dashLang].mLessonDone,'#22D3EE');
   yosi('lesson');ua();
 }
 function simPass(){
-  if(AC===null){ml('← Сначала выберите тему');return;}
+  if(AC===null){ml(TR_DASH[dashLang].mSelectFirst);return;}
   var c=CR[AC],s=gs(AC);
-  if(c.T[s.cur]==='lesson'){ml('⚠ Это урок — нажмите «Урок»','#FBBF24');return;}
+  if(c.T[s.cur]==='lesson'){ml(TR_DASH[dashLang].mNotTest,'#FBBF24');return;}
   var pts=c.T[s.cur]==='exam'?83:25;
   var hadFails=s.historyFails.has(s.cur);
   s.earned[s.cur]=(s.earned[s.cur]||0)+pts;s.passed[s.cur]=true;s.problems.delete(s.cur);s.failCount[s.cur]=0;
-  ml('✓ Тест сдан +'+pts+'★'+(hadFails?' (после '+s.totalFails[s.cur]+' попыт.)':'')+' → кликни куда идти дальше','#4ade80');
+  var afterText=dashLang==='he'?' → לחץ לאן להמשיך':' → кликни куда идти дальше';
+  var triesText=hadFails?(dashLang==='he'?' (אחרי '+s.totalFails[s.cur]+' ניסיונות)':' (после '+s.totalFails[s.cur]+' попыт.)'):'';
+  ml('✓ '+(dashLang==='he'?'המבחן עבר':'Тест сдан')+' +'+pts+'★'+triesText+afterText,'#4ade80');
   yosi('pass');ua();
 }
 function simFail(){
-  if(AC===null){ml('← Сначала выберите тему');return;}
+  if(AC===null){ml(TR_DASH[dashLang].mSelectFirst);return;}
   var c=CR[AC],s=gs(AC);
-  if(c.T[s.cur]==='lesson'){ml('⚠ Это урок — нажмите «Урок»','#FBBF24');return;}
+  if(c.T[s.cur]==='lesson'){ml(TR_DASH[dashLang].mNotTest,'#FBBF24');return;}
   var t=s.cur;
   s.failCount[t]=(s.failCount[t]||0)+1;s.totalFails[t]=(s.totalFails[t]||0)+1;s.historyFails.add(t);
   var arrivedViaShortcut=false,viaKey=-1;
@@ -464,33 +505,36 @@ function simFail(){
   if(viaKey>=0) s.shortcutsUsed.add(viaKey);
   if(allPriorDone(AC,t)){
     s.problems.add(t);s.remedialActive=t;
-    ml('✗ Тест не сдан, материал пройден → 🔄 Доп.курс активен. Нажми «Урок».','#a78bfa');
+    ml(dashLang==='he'?'✗ המבחן נכשל, החומר עבר → 🔄 קורס נוסף פעיל. לחץ «שיעור».':'✗ Тест не сдан, материал пройден → 🔄 Доп.курс активен. Нажми «Урок».','#a78bfa');
   } else if(arrivedViaShortcut){
     s.problems.add(t);
     var ret=findReturnNode(AC,t);
     if(s.returnPaths[t]===undefined) s.returnPaths[t]=ret;
     addSeg(AC,'ret'+t+':'+ret);
-    ml('✗ Тест не сдан → ⚠ Возврат на узел '+(ret+1)+' для доучивания материала','#f87171');
+    ml(dashLang==='he'?'✗ המבחן נכשל → ⚠ חזרה לצומת '+(ret+1)+' ללימוד החומר':'✗ Тест не сдан → ⚠ Возврат на узел '+(ret+1)+' для доучивания материала','#f87171');
     s.cur=ret;
   } else {
-    ml('✗ Тест не сдан. Попробуй ещё раз','#f87171');
+    ml(dashLang==='he'?'✗ המבחן נכשל. נסה שוב':'✗ Тест не сдан. Попробуй ещё раз','#f87171');
   }
   yosi('fail');ua();
 }
 function simReset(){
   if(AC===null)return;
   CS2[AC]={cur:0,earned:{},passed:{},problems:new Set(),failCount:{},remedialActive:null,shortcutsUsed:new Set(),remedialUsed:new Set(),historyFails:new Set(),totalFails:{},returnPaths:{},segs:new Set()};
-  ml('↺ Сброс','#22D3EE');ua();
+  ml(TR_DASH[dashLang].mReset,'#22D3EE');ua();
 }
-var yM={lesson:['Ещё один урок позади 📖','Хорошая работа!'],pass:['Тест сдан! 🎉','Отличный результат! ⭐'],fail:['Пройди материал и попробуй снова 💪'],sel:['Отличный выбор! 🎯']};
-function yosi(t){var a=yM[t];document.getElementById('ymsg').textContent=a[Math.floor(Math.random()*a.length)];}
+var yM={
+  ru:{lesson:['Ещё один урок позади 📖','Хорошая работа!'],pass:['Тест сдан! 🎉','Отличный результат! ⭐'],fail:['Пройди материал и попробуй снова 💪'],sel:['Отличный выбор! 🎯']},
+  he:{lesson:['עוד שיעור מאחורינו 📖','עבודה טובה!'],pass:['המבחן עבר! 🎉','תוצאה מצוינת! ⭐'],fail:['עבור שוב על החומר ונסה שוב 💪'],sel:['בחירה מצוינת! 🎯']}
+};
+function yosi(t){var m=yM[dashLang]||yM.ru;var a=m[t];document.getElementById('ymsg').textContent=a[Math.floor(Math.random()*a.length)];}
 function ml(msg,col){document.getElementById('mlog').innerHTML='<span style="color:'+(col||'#64748b')+'">'+msg+'</span>';}
 
 function selTheme(id){
   AC=id;
   document.getElementById('msim').style.display='flex';
   document.getElementById('mtit').textContent=CRS.find(function(c){return c.id===id;}).name;
-  ml('← Используй кнопки симуляции','#475569');
+  ml(TR_DASH[dashLang].mSimButtons,'#475569');
   yosi('sel');ua();
 }
 
@@ -654,14 +698,14 @@ function drawMaze(cid){
     for(var i=0;i<n;i++){
       var p=pos[i];
       if(Math.sqrt((mx-p.x)**2+(my-p.y)**2)<R+6){
-        if(st2[i]==='locked'){ml('🔒 Узел недоступен');return;}
-        if(st2[i]==='problem'){ml('⚠ Узел требует доучивания материала');return;}
-        if(st2[i]==='remedial-needed'){ml('🔄 Сначала пройди доп.курс ниже теста');return;}
+        if(st2[i]==='locked'){ml(TR_DASH[dashLang].mLocked);return;}
+        if(st2[i]==='problem'){ml(TR_DASH[dashLang].mProblem);return;}
+        if(st2[i]==='remedial-needed'){ml(TR_DASH[dashLang].mRemedialFirst);return;}
         var from=s.cur;
         if(i===from+1) addSeg(cid,from+':'+i);
         else if(c.sc[from]===i) addSeg(cid,from+':'+i);
         s.cur=i;
-        ml('→ Переход на узел '+(i+1));
+        ml((dashLang==='he'?'→ מעבר לצומת ':'→ Переход на узел ')+(i+1));
         ua();return;
       }
     }
@@ -701,13 +745,29 @@ var TR_DASH = {
     navDashboard:'Дашборд', navModules:'Модули', navProgress:'Прогресс',
     navContent:'Редактор', navFormulas:'Формулы', navLab:'Лаборатория',
     navAchievements:'Достижения', navHelp:'Помощь', navSettings:'Настройки',
-    subGraph:'Граф', subAtomEditor:'Атом', subGroups:'Группы', subExam:'Экзамены'
+    subGraph:'Граф', subAtomEditor:'Атом', subGroups:'Группы', subExam:'Экзамены',
+    greeting:'Добрый день', greeting2:'Что сегодня делаем?',
+    profName:'Профессор Йоси', ymsg:'Выбери тему слева и начинай!',
+    statDays:'Серия дней', statPoints:'Очки', statDone:'Пройдено',
+    topics:'Темы курса', selectTopic:'Выберите тему',
+    clickLeft:'← Кликните на тему слева', lastResults:'Последние результаты',
+    mlog:'← Выберите тему чтобы увидеть лабиринт',
+    btnContinue:'Продолжить', btnRepeat:'Повторить', btnNew:'Новая тема',
+    searchPlaceholder:'Поиск тем, формул...'
   },
   he:{
     navDashboard:'לוח בקרה', navModules:'מודולים', navProgress:'התקדמות',
     navContent:'עורך', navFormulas:'נוסחאות', navLab:'מעבדה',
     navAchievements:'הישגים', navHelp:'עזרה', navSettings:'הגדרות',
-    subGraph:'גרף', subAtomEditor:'אטום', subGroups:'קבוצות', subExam:'מבחנים'
+    subGraph:'גרף', subAtomEditor:'אטום', subGroups:'קבוצות', subExam:'מבחנים',
+    greeting:'שלום', greeting2:'מה לומדים היום?',
+    profName:'פרופסור יוסי', ymsg:'בחר נושא משמאל והתחל!',
+    statDays:'ימי רצף', statPoints:'נקודות', statDone:'הושלם',
+    topics:'נושאי הקורס', selectTopic:'בחר נושא',
+    clickLeft:'לחץ על נושא ←', lastResults:'תוצאות אחרונות',
+    mlog:'← בחר נושא כדי לראות את המבוך',
+    btnContinue:'המשך', btnRepeat:'חזרה', btnNew:'נושא חדש',
+    searchPlaceholder:'חיפוש נושאים, נוסחאות...'
   }
 };
 var dashLang = 'ru';
@@ -718,18 +778,50 @@ function applyI18n(){
     var k = el.getAttribute('data-i18n');
     if(t[k]) el.textContent = t[k];
   });
-  var si = document.getElementById('searchInput');
-  if(si) si.placeholder = dashLang==='he' ? 'חיפוש נושאים, נוסחאות...' : 'Поиск тем, формул...';
+  var el;
+  el = document.querySelector('.yn'); if(el) el.textContent = t.profName;
+  el = document.getElementById('ymsg'); if(el) el.textContent = t.ymsg;
+  el = document.querySelector('.sl-days'); if(el) el.textContent = t.statDays;
+  el = document.querySelector('.sl-pts'); if(el) el.textContent = t.statPoints;
+  el = document.querySelector('.sl-done'); if(el) el.textContent = t.statDone;
+  el = document.querySelector('.th'); if(el) el.textContent = t.topics;
+  el = document.getElementById('mtit'); if(el) el.textContent = t.selectTopic;
+  el = document.getElementById('mprog'); if(el) el.textContent = t.clickLeft;
+  el = document.getElementById('mlog'); if(el && (typeof AC === 'undefined' || AC === null)) el.textContent = t.mlog;
+  el = document.querySelector('.rh'); if(el) el.textContent = t.lastResults;
+  el = document.querySelector('.abt-continue'); if(el){ el.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M7 4l13 8l-13 8z"/></svg> '+t.btnContinue; }
+  el = document.querySelector('.abt-repeat'); if(el){ el.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.95 11a8 8 0 1 0 -.5 4"/><path d="M20 4v5h-5"/></svg> '+t.btnRepeat; }
+  el = document.querySelector('.abt-new'); if(el){ el.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 3l1.5 4.5l4.5 1.5l-4.5 1.5l-1.5 4.5l-1.5 -4.5l-4.5 -1.5l4.5 -1.5z"/></svg> '+t.btnNew; }
+  el = document.getElementById('searchInput'); if(el) el.placeholder = t.searchPlaceholder;
 }
 
 function setLang(lang){
   dashLang = lang;
-  var ru = document.getElementById('lbRu');
-  var he = document.getElementById('lbHe');
-  if(ru) ru.className = 'lb'+(lang==='ru'?' on':'');
-  if(he) he.className = 'lb'+(lang==='he'?' on':'');
   document.getElementById('shell').setAttribute('dir', lang==='he'?'rtl':'ltr');
+  document.getElementById('lgItemRu').className = 'lg-item'+(lang==='ru'?' on':'');
+  document.getElementById('lgItemHe').className = 'lg-item'+(lang==='he'?' on':'');
   applyI18n();
+}
+
+function toggleSearch(){
+  var o = document.getElementById('srchOverlay');
+  var open = o.classList.toggle('open');
+  if(open) document.getElementById('searchInput').focus();
+}
+
+function toggleLangDD(){
+  var dd = document.getElementById('lgDropdown');
+  var isOpen = dd.classList.contains('open');
+  if(isOpen){ closeLangDD(); }
+  else {
+    dd.classList.add('open');
+    document.getElementById('lgOverlay').classList.add('open');
+  }
+}
+
+function closeLangDD(){
+  document.getElementById('lgDropdown').classList.remove('open');
+  document.getElementById('lgOverlay').classList.remove('open');
 }
 
 // ── Active nav state ──────────────────────────────────────────────────
@@ -752,10 +844,17 @@ function setActiveNav(id){
 
 // ── Sandbox-safe callFn (no eval) ─────────────────────────────────────
 function callFn(expr){
-  var m;
-  if((m=expr.match(/^(\w+)\(\)$/)))                { window[m[1]](); }
-  else if((m=expr.match(/^(\w+)\('([^']*)'\)$/)))  { window[m[1]](m[2]); }
-  else if((m=expr.match(/^(\w+)\((\d+)\)$/)))      { window[m[1]](parseInt(m[2])); }
+  // Support compound expressions: "fn1('a');fn2()"
+  var parts = expr.split(';');
+  parts.forEach(function(e){
+    e = e.trim();
+    if(!e) return;
+    var m;
+    if((m=e.match(/^(\w+)\(\)$/)))                    { window[m[1]](); }
+    else if((m=e.match(/^(\w+)\('([^']*)'\)$/)))       { window[m[1]](m[2]); }
+    else if((m=e.match(/^(\w+)\((\d+)\)$/)))           { window[m[1]](parseInt(m[2])); }
+    else if((m=e.match(/^(\w+)\('([^']*)',(\d+)\)$/))) { window[m[1]](m[2],parseInt(m[3])); }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', function(){

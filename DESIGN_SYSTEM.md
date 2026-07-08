@@ -2157,9 +2157,195 @@ Static label above field (current standard in all mockups). Floating label (anim
 
 ---
 
+## 27. Test Page — /test/[atomId]/[step]
+
+Fullscreen режим. Никакого стандартного shell (без сайдбара, bottom nav, globe, bell, avatar).
+Макеты: `mwl_test_desktop.html`, `mwl_test_tablet.html`, `mwl_test_mobile.html`.
+
+### Topbar
+
+```
+Height: 46px (desktop/tablet) / 44px (mobile)
+Layout: 3-column grid (1fr auto 1fr)
+  Left:   topic chip
+  Center: question number circles
+  Right:  timer widget (optional) + exit button
+Border-bottom: 1px solid bd
+Background: p1
+```
+
+**Topic chip** — cyan badge, same as lesson topbar:
+```css
+.topic-chip { background: rgba(34,211,238,0.12); color: #22D3EE;
+              border: 1px solid rgba(34,211,238,0.25);
+              border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
+```
+
+**Question number circles** — N circles with separators:
+```css
+/* Circle base */
+.q-circle { width: 28px; height: 28px; border-radius: 50%; font-size: 11px; font-weight: 600;
+            border: 1.5px solid; display: flex; align-items: center; justify-content: center; }
+/* Status variants */
+.q-circle.active   { color: #22D3EE; border-color: #22D3EE; background: rgba(34,211,238,0.1); }
+.q-circle.correct  { background: rgba(74,222,128,0.13); border-color: rgba(74,222,128,0.4); color: #4ade80; }
+.q-circle.partial  { background: rgba(251,191,36,0.13); border-color: rgba(251,191,36,0.4); color: #FBBF24; }
+.q-circle.wrong    { background: rgba(248,113,113,0.13); border-color: rgba(248,113,113,0.4); color: #f87171; }
+.q-circle.skipped  { background: rgba(51,74,90,0.13); border-color: rgba(51,74,90,0.4); color: #556677; }
+.d .q-circle.unanswered { background: transparent; border-color: #334a5a; color: #556677; }
+.l .q-circle.unanswered { background: transparent; border-color: #c0ccd8; color: #99aabb; }
+/* Separator between circles */
+.q-sep { width: 8px; height: 1px; flex-shrink: 0; }
+.d .q-sep { background: #1e3040; } .l .q-sep { background: #d0dde8; }
+```
+
+Mobile: circles scroll horizontally if count > 7.
+
+**Timer widget** (optional, student-toggleable):
+```
+Hidden by default.
+Toggle button in topbar: "⏱ Таймер выкл" / "⏱ Таймер вкл"
+Pill shape: border-radius 20px, padding 4px 12px
+Displays: MM:SS in monospace font-weight:700
+
+Color states (border + bg tint + text):
+  > 2:00  green  #4ade80  — calm
+  1:00–2:00 amber #FBBF24 — warning
+  < 0:30  red    #f87171  — pulse animation (bg alternates between 20% and 10% opacity, 0.5s)
+```
+
+**Exit button:** same style as lesson page `.exit-btn` (border:1px solid bd, slate text).
+Shows confirmation dialog before navigating away.
+
+### Progress bar
+
+```css
+.progress-track { height: 3px; border-radius: 2px; background: var(--bd-color); }
+.progress-fill  { height: 100%; border-radius: 2px; transition: width 0.3s, background 0.4s; }
+/* Color: cyan when no timer; follows timer state color when timer active */
+```
+
+Width = (current_question_index / total_questions) × 100%.
+
+### Stats block
+
+Horizontal row below progress bar:
+
+```
+5 cells (flex, equal width):
+  ✓ Верно    — green  icon circle (#4ade80)
+  ~ Частично — amber  icon circle (#FBBF24)
+  ✗ Ошибок   — red    icon circle (#f87171)
+  → Пропущен — slate  icon circle (#556677)
+  ★ Очков    — amber  star (#FBBF24), number in amber
+
+Each cell: icon-circle (24px, colored bg tint + border) + counter (14px bold) + label (10px slate)
+Separators: 1px vertical lines between cells
+```
+
+### Zone 1 — question area
+
+Desktop/tablet: 2-column grid (1fr 1fr), min-height 200px.
+Mobile: single column (question → viz stacked).
+
+**Left column (question):**
+- Zone label: "Вопрос N" — 10px uppercase slate
+- Question text: 13px, line-height 1.75, t1 color
+- Inline math tags: `.mtag` — monospace, cyan on dark / teal on light, bg tint
+- Hint line: "Смотрите визуализацию справа →" — 11px slate, margin-top auto
+
+**Right column (visualization):**
+- Viz bar: label (slate) + 3D/2D toggle buttons
+- Viz area: dark bg (#060e18 dark / #e8f2f8 light), Three.js canvas centered
+- Viz caption: 10px slate, centered
+
+### Answer zone — 3 types
+
+#### Type 1: Numeric
+```
+Label: "Ваш ответ" — 10px uppercase slate
+Point label (e.g. "a⃗+b⃗ =") — 13px bold t1
+Axis labels (x/y/z or custom) — 11px monospace slate
+Input fields: width 64px, height 34px, border-radius 6px, font-size 14px,
+              text-align center, font-family monospace
+Active field bg: #c8e8f4 dark / #e0f4fa light
+Active field border: #6ab8d4 dark / #6ac8e0 light
+Active field color: #0b2233 dark / #0b3a4a light
+```
+
+#### Type 2: Choice A-D
+```
+Label: "Выберите ответ" — 10px uppercase slate
+Grid: 2×2 (desktop/tablet) | 1×4 (mobile)
+Button: padding 10px 14px, border-radius 7px, text-align left
+  Letter prefix: bold, margin-right 8px
+  Unselected: bg p1, border bd, text t1
+  Selected:   bg rgba(34,211,238,0.13), border #22D3EE, text #22D3EE (dark) / #0e7490 (light)
+```
+
+#### Type 3: Text (AI review)
+```
+Label row: "Развёрнутый ответ" (slate) + AI badge "🤖 Проверка AI" (cyan pill)
+Reference answer block (эталонный ответ):
+  — Visible in mockup for author reference only
+  — In production: hidden from student (server-side render, not CSS hide)
+  — Shows: "Эталонный ответ (скрыт от студента):" + answer text
+  — Style: bg p1, border-inline-start 3px solid slate, 11px slate text
+Textarea: border-radius 8px, padding 10px 12px, 13px, min-height 90px, resize:vertical
+  bg/border/color match active field (dark: #0b1622 bg, #334a5a border, #d0dde8 text)
+Char counter: 10px slate, appears when text.length > 0
+Shift+Enter hint: 11px slate, right-aligned
+
+AI checking indicator (shown during processing):
+  🤖 icon + "AI проверяет ответ..." text + 3-dot animated bounce
+  Amber dots animation: translateY -5px at peak, 1.2s loop, staggered 0.2s delays
+  Container: bg p1, border bd, 8px 12px padding, border-radius 7px
+
+AI feedback card (shown after response):
+  🤖 icon + title ("Разбор AI") + score badge (e.g. "6 / 10 баллов", colored pill)
+  Explanation text below
+  Container bg/border color matches verdict (green/amber/red tint)
+  Score badge: bg rgba(color, 0.13), border rgba(color, 0.3), color matching
+```
+
+### Result display
+
+After Check:
+```
+.result { border-radius: 7px; padding: 9px 13px; font-size: 13px; line-height 1.6; }
+Correct:  bg rgba(8,37,26,0.x)/ecfdf5  · text #4ade80/#16a34a · border rgba(74,222,128,0.27)
+Partial:  bg rgba(42,31,0,0.x)/fffbeb  · text #FBBF24/#92400e · border rgba(251,191,36,0.27)
+Wrong:    bg rgba(37,8,8,0.x)/fef2f2   · text #f87171/#dc2626 · border rgba(248,113,113,0.2)
+```
+
+### Action buttons row
+
+```
+Left:  "Пропустить →" — transparent bg, border bd, slate text; hidden after Check
+Right: "Проверить"    — primary cyan (#22D3EE bg, #0f172a text); disabled + opacity:0.5 during AI
+       "Следующий →"  — cyan bg (dark) / teal (light), white text; display:none until Check done
+```
+
+### Floating action buttons
+
+Same spec as lesson page (§ Lesson): Формулы + Йоси FABs, fixed bottom-right, `inset-inline-end: 24px`.
+
+### Dev toolbar (mockup only, не реализовывать в Next.js)
+
+```
+Buttons outside shell (not part of production UI):
+  — Theme toggle (🌙 Тёмная / ☀️ Светлая)
+  — Question type toggle (🔢 Числовой / ☑ A/B/C/D / ✍ Текстовый)
+  — Timer toggle + quick-sim buttons (⚡ amber, 🔴 красный)
+Listed in §12 ARCHITECTURE.md mockup-only elements.
+```
+
+---
+
 *Last updated: July 2026 (05/07/2026 — §22 student shell nav revised: Дашборд восстановлен как позиция 1 (home icon); Курсы → позиция 2; «Статус» (бывш. «Мой статус») → позиция 3, маршрут /status, map-pin icon; Достижения → позиция 4; mobile bottom nav обновлён: Дашборд/Курсы/Статус/Йоси/Профиль).*
 *Last updated: 2026-07-06 — §13 Yosi component fully specified: floating card (desktop/tablet landscape) vs bottom sheet (tablet portrait/mobile), context strip (compass + route icons), opening greeting, input area with char counter, RTL full mirror, voice input deferred to post-pilot. §26 Input Fields added.*
 *Last updated: 2026-07-06 — §22 updated: globe-dropdown, avatar-dropdown, bottom nav RTL mirroring, search inset-inline-end.*
+*Last updated: 2026-07-08 — §27 Test page spec added: fullscreen shell, topbar (topic chip + Q-circles + timer), progress bar, stats block, zone 1 (question + viz), 3 answer types (numeric / choice A-D / text+AI), result states, action buttons, FABs, dev toolbar (mockup-only).*
 *(05/07/2026 — §22: «Дашборд» переименован в «Главная» / «דף הבית»; иконка «Формулы» — Σ (Tabler: ti-sum). Retrofit: применить при следующем касании каждого файла.)*
 *(05/07/2026 — §15: desktop-only rule добавлено для всего конструктора контента (§15–§18). Tablet и mobile версии редакторов не предусмотрены.)*
 *(05/07/2026 — §19 Shalon Manager добавлен: пятый экран конструктора, спецификация утверждена, мокап pending.)*

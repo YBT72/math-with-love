@@ -1,353 +1,421 @@
-
+<!DOCTYPE html>
+<html lang="ru" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MWL — Урок (Mobile)</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: sans-serif; background: #1a1a2e; padding: 8px; display: flex; flex-direction: column; align-items: center; }
-.theme-bar { display: flex; justify-content: center; margin-bottom: 10px; }
-.tog { padding: 6px 16px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: sans-serif; }
-.tog:first-child { border-radius: 6px 0 0 6px; }
-.tog:last-child  { border-radius: 0 6px 6px 0; }
-.phone { width: 375px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 32px #00000066; }
-.math-tag { font-family: monospace; font-size: 11px; padding: 1px 4px; border-radius: 3px; }
-.sstep { font-size: 12px; line-height: 1.65; padding-left: 10px; margin-bottom: 4px; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif}
+
+/* ── Tokens ── */
+.shell{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+.d{background:#0f172a}.l{background:#f8fafc}
+.d .t1{color:#f1f5f9}.l .t1{color:#0f172a}
+.d .t2{color:#94a3b8}.l .t2{color:#64748b}
+.d .t3{color:#475569}.l .t3{color:#94a3b8}
+.d .p1{background:#1e293b;border-color:#334155}.l .p1{background:#ffffff;border-color:#e2e8f0}
+.d .bd{border-color:#334155!important}.l .bd{border-color:#e2e8f0!important}
+
+/* ── Topbar ── */
+.topbar{
+  height:44px;display:flex;align-items:center;
+  justify-content:space-between;padding:0 12px;
+  border-bottom:1px solid;flex-shrink:0;gap:8px
+}
+.tb-left{display:flex;align-items:center;gap:7px;min-width:0;flex:1}
+.topic-chip{
+  display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;
+  font-size:10px;font-weight:600;background:rgba(34,211,238,0.12);color:#22D3EE;
+  border:1px solid rgba(34,211,238,0.25);white-space:nowrap;flex-shrink:0
+}
+.lesson-name{font-size:11.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.exit-btn{
+  display:flex;align-items:center;justify-content:center;
+  width:32px;height:32px;border-radius:8px;
+  border:1px solid;background:transparent;cursor:pointer;flex-shrink:0;transition:background .15s
+}
+.d .exit-btn{border-color:#334155;color:#64748b}.l .exit-btn{border-color:#e2e8f0;color:#94a3b8}
+.d .exit-btn:hover{background:#1e293b}.l .exit-btn:hover{background:#f1f5f9}
+
+/* Steps bar */
+.steps-bar{
+  display:flex;align-items:center;justify-content:center;
+  padding:8px 12px;border-bottom:1px solid;flex-shrink:0;gap:0
+}
+.d .steps-bar{border-color:#334155}.l .steps-bar{border-color:#e2e8f0}
+.step{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:600;border:1.5px solid;flex-shrink:0
+}
+.d .step{border-color:#334155;color:#475569;background:transparent}
+.l .step{border-color:#e2e8f0;color:#94a3b8;background:transparent}
+.d .step.done{background:#22D3EE;color:#0f172a;border-color:#22D3EE}
+.l .step.done{background:#22D3EE;color:#0f172a;border-color:#22D3EE}
+.d .step.active{color:#22D3EE;border-color:#22D3EE;background:rgba(34,211,238,0.1)}
+.l .step.active{color:#0e7490;border-color:#22D3EE;background:rgba(34,211,238,0.1)}
+.step-line{width:16px;height:1px;flex-shrink:0}
+.d .step-line{background:#334155}.l .step-line{background:#e2e8f0}
+
+/* ── Main ── */
+.main{flex:1;overflow-y:auto;min-height:0}
+
+/* ── Zone 1: vertical stack ── */
+.zone1-task{padding:14px 14px 12px;border-bottom:1px solid;display:flex;flex-direction:column;gap:10px}
+.d .zone1-task{border-color:#334155}.l .zone1-task{border-color:#e2e8f0}
+.zone-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em}
+.task-text{font-size:12.5px;line-height:1.7}
+.given-block{display:flex;flex-direction:column;gap:4px}
+.given-row{display:flex;gap:6px;font-size:12px;align-items:baseline;flex-wrap:wrap}
+.given-k{font-size:11px;min-width:50px;flex-shrink:0}
+.math{font-family:monospace;font-size:11px;padding:1px 5px;border-radius:4px}
+.d .math{color:#22D3EE;background:rgba(34,211,238,0.08)}.l .math{color:#0e7490;background:rgba(14,116,144,0.08)}
+.subq-block{border-radius:7px;padding:8px 11px;border-inline-start:3px solid #22D3EE}
+.d .subq-block{background:#060d18}.l .subq-block{background:#f0f9ff}
+.subq-tag{font-size:10px;font-weight:600;color:#22D3EE;margin-bottom:2px;text-transform:uppercase;letter-spacing:0.05em}
+.subq-text{font-size:12px;line-height:1.55}
+
+/* Viz — compact height on mobile */
+.viz-panel{display:flex;flex-direction:column;border-bottom:1px solid}
+.d .viz-panel{border-color:#334155}.l .viz-panel{border-color:#e2e8f0}
+.viz-bar{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid}
+.d .viz-bar{border-color:#334155}.l .viz-bar{border-color:#e2e8f0}
+.viz-label{font-size:10px}
+.viz-btns{display:flex;gap:4px}
+.viz-btn{font-size:10px;padding:2px 7px;border-radius:4px;cursor:pointer;border:1px solid;background:transparent;font-family:inherit}
+.d .viz-btn{border-color:#334155;color:#64748b}.l .viz-btn{border-color:#e2e8f0;color:#94a3b8}
+.viz-btn.on{border-color:#22D3EE!important;color:#22D3EE!important}
+.viz-area{display:flex;align-items:center;justify-content:center;padding:12px}
+.d .viz-area{background:#060d18}.l .viz-area{background:#f0f6fa}
+.viz-cap{font-size:10px;text-align:center;padding:5px;border-top:1px solid}
+.d .viz-cap{border-color:#334155}.l .viz-cap{border-color:#e2e8f0}
+
+/* Zone 2 */
+.zone2{border-bottom:1px solid}
+.d .zone2{border-color:#334155}.l .zone2{border-color:#e2e8f0}
+.sol-trigger{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;user-select:none}
+.d .sol-trigger:hover{background:#1e293b}.l .sol-trigger:hover{background:#f8fafc}
+.sol-left{display:flex;align-items:center;gap:7px;font-size:12px}
+.sol-body{max-height:0;overflow:hidden;transition:max-height .25s ease}
+.sol-body.open{max-height:400px}
+.sol-inner{padding:4px 14px 14px;display:flex;flex-direction:column;gap:7px}
+.sol-step{font-size:12px;line-height:1.65;padding-inline-start:10px;border-inline-start:2px solid rgba(251,191,36,0.35)}
+
+/* Zone 3 */
+.zone3{padding:14px;display:flex;flex-direction:column;gap:12px;padding-bottom:80px}
+.zone3-title{font-size:12.5px;font-weight:600;margin-bottom:1px}
+.zone3-sub{font-size:10.5px}
+.coords-grid{display:flex;flex-direction:column;gap:10px}
+.coords-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pt-lbl{font-size:12.5px;font-weight:600;min-width:28px;flex-shrink:0}
+.coord-pair{display:flex;align-items:center;gap:4px}
+.ax{font-size:10px;font-family:monospace;font-weight:600}
+.cf{
+  width:62px;height:36px;border-radius:7px;font-size:14px;
+  text-align:center;font-family:monospace;outline:none;border:1px solid
+}
+.d .cf{background:#0f172a;border-color:#334155;color:#f1f5f9}
+.l .cf{background:#f8fafc;border-color:#e2e8f0;color:#0f172a}
+.d .cf:focus{border-color:#22D3EE;background:#0a1628}
+.l .cf:focus{border-color:#22D3EE;background:#ffffff}
+.d .cf[readonly]{background:#1e293b;border-color:#1e293b;color:#475569}
+.l .cf[readonly]{background:#f1f5f9;border-color:#e2e8f0;color:#94a3b8}
+.bottom-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.result{font-size:12px;padding:8px 12px;border-radius:7px;display:none;line-height:1.55;flex:1}
+.result.ok{display:block;border:1px solid rgba(74,222,128,0.3)}
+.result.err{display:block;border:1px solid rgba(239,68,68,0.3)}
+.d .result.ok{background:rgba(20,83,45,0.3);color:#86efac}.l .result.ok{background:#f0fdf4;color:#166534}
+.d .result.err{background:rgba(127,29,29,0.3);color:#fca5a5}.l .result.err{background:#fef2f2;color:#991b1b}
+.btn-check{
+  padding:10px 22px;border-radius:8px;font-size:13px;font-weight:500;
+  cursor:pointer;font-family:inherit;border:none;min-height:44px;
+  background:#22D3EE;color:#0f172a;transition:filter .15s;white-space:nowrap
+}
+.btn-check:hover{filter:brightness(1.08)}
+
+/* FABs */
+.fab-group{
+  position:fixed;bottom:16px;inset-inline-end:14px;
+  display:flex;flex-direction:column;gap:8px;align-items:flex-end;z-index:50
+}
+.fab{
+  width:44px;height:44px;border-radius:12px;border:1px solid;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:background .15s
+}
+.d .fab{background:#1e293b;border-color:#334155;box-shadow:0 4px 16px rgba(0,0,0,0.4)}
+.l .fab{background:#ffffff;border-color:#e2e8f0;box-shadow:0 4px 16px rgba(0,0,0,0.1)}
+.d .fab svg{stroke:#64748b}.l .fab svg{stroke:#64748b}
+
+/* Yosi popup — full-width bottom sheet on mobile */
+.yosi-sheet{
+  position:fixed;bottom:0;left:0;right:0;
+  border-radius:16px 16px 0 0;border:1px solid;border-bottom:none;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 -8px 40px rgba(0,0,0,0.4);
+  transform:translateY(100%);transition:transform .25s ease;z-index:300
+}
+.yosi-sheet.open{transform:translateY(0)}
+.d .yosi-sheet{background:#1e293b;border-color:#334155}.l .yosi-sheet{background:#ffffff;border-color:#e2e8f0}
+.sheet-handle{width:36px;height:4px;border-radius:2px;margin:10px auto 0;flex-shrink:0}
+.d .sheet-handle{background:#334155}.l .sheet-handle{background:#e2e8f0}
+.yosi-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 10px;flex-shrink:0}
+.yosi-head-left{display:flex;align-items:center;gap:9px}
+.yosi-av{width:30px;height:30px;border-radius:50%;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.yosi-head-name{font-size:13px;font-weight:600}
+.yosi-head-sub{font-size:11px;margin-top:1px}
+.yosi-close{width:28px;height:28px;border-radius:7px;border:1px solid;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;font-size:16px;line-height:1}
+.d .yosi-close{border-color:#334155;color:#64748b}.l .yosi-close{border-color:#e2e8f0;color:#94a3b8}
+.yosi-body{padding:0 16px 24px;font-size:13px;line-height:1.65}
+
+/* Formulas sheet */
+.formulas-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;opacity:0;pointer-events:none;transition:opacity .2s}
+.formulas-overlay.open{opacity:1;pointer-events:all}
+.formulas-sheet{
+  position:fixed;bottom:0;left:0;right:0;max-height:75dvh;
+  border-radius:16px 16px 0 0;border:1px solid;border-bottom:none;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 -8px 40px rgba(0,0,0,0.4);
+  transform:translateY(100%);transition:transform .25s ease;z-index:300
+}
+.formulas-overlay.open .formulas-sheet{transform:translateY(0)}
+.d .formulas-sheet{background:#1e293b;border-color:#334155}.l .formulas-sheet{background:#ffffff;border-color:#e2e8f0}
+.fm-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid;flex-shrink:0}
+.d .fm-head{border-color:#334155}.l .fm-head{border-color:#e2e8f0}
+.fm-title{font-size:13px;font-weight:600}
+.fm-close{width:26px;height:26px;border-radius:6px;border:1px solid;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;font-size:15px;line-height:1}
+.d .fm-close{border-color:#334155;color:#64748b}.l .fm-close{border-color:#e2e8f0;color:#94a3b8}
+.fm-body{overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:12px}
+.fm-section{display:flex;flex-direction:column;gap:6px}
+.fm-section-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:1px}
+.fm-row{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:7px;border:1px solid;flex-wrap:wrap}
+.d .fm-row{border-color:#334155;background:#0f172a}.l .fm-row{border-color:#e2e8f0;background:#f8fafc}
+.fm-formula{font-family:monospace;font-size:12px;color:#22D3EE;min-width:0}
+.fm-desc{font-size:11px}
 </style>
+</head>
+<body>
+<div class="shell d" id="shell">
 
-<div class="theme-bar">
-  <button class="tog" id="btn-dark" onclick="setTheme('dark')"
-    style="background:#22D3EE;border:1px solid #22D3EE;color:#0a3540;box-shadow:0 0 0 2px #22D3EE33;">
-    🌙 Тёмная
-  </button>
-  <button class="tog" id="btn-light" onclick="setTheme('light')"
-    style="background:#e8f4f8;border:1px solid #b0cdd8;border-left:none;color:#445566;">
-    ☀️ Светлая
-  </button>
-</div>
-
-<div class="phone" id="shell">
-
-  <!-- TOPBAR: только иконка темы + шаги + выйти -->
-  <div id="topbar" style="display:flex;align-items:center;justify-content:space-between;padding:0 12px;height:40px;">
-    <span id="chip" style="font-size:10px;border-radius:20px;padding:2px 8px;">Векторы</span>
-    <div style="display:flex;align-items:center;gap:3px;">
-      <div id="s1" style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;">А</div>
-      <div style="width:8px;height:1px;" id="sl1"></div>
-      <div id="s2" style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;">Б</div>
-      <div style="width:8px;height:1px;" id="sl2"></div>
-      <div id="s3" style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;">В</div>
-      <div style="width:8px;height:1px;" id="sl3"></div>
-      <div id="s4" style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;">Г</div>
+  <!-- Topbar -->
+  <div class="topbar p1 bd">
+    <div class="tb-left">
+      <span class="topic-chip">Векторы</span>
+      <span class="lesson-name t1">Пирамида SABC — координаты вершин</span>
     </div>
-    <div id="exit-btn" style="font-size:10px;cursor:pointer;padding:3px 7px;border-radius:5px;font-family:sans-serif;">✕ Выйти</div>
+    <button class="exit-btn" onclick="exitLesson()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
   </div>
 
-  <!-- ZONE 1: одна колонка — сначала условие, потом визуализация -->
-
-  <!-- 1А: условие задачи -->
-  <div id="z-condition" style="padding:12px 14px 10px;">
-    <div id="zlabel" style="font-size:10px;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Условие задачи</div>
-    <div id="ztask" style="font-size:12px;line-height:1.7;margin-bottom:8px;">
-      Перед вами треугольная пирамида <strong>SABC</strong>. Точка <strong>E</strong> — середина BC.
-    </div>
-    <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:8px;">
-      <div style="display:flex;gap:5px;font-size:12px;align-items:baseline;">
-        <span id="gk1" style="font-size:10px;min-width:52px;">Обозначим:</span>
-        <span id="gv1"><span class="math-tag">EC⃗=v</span> , <span class="math-tag">AE⃗=u</span></span>
-      </div>
-      <div style="display:flex;gap:5px;font-size:12px;align-items:baseline;">
-        <span id="gk2" style="font-size:10px;min-width:52px;">Дано:</span>
-        <span id="gv2"><span class="math-tag">|u+v|=|u−v|</span></span>
-      </div>
-      <div style="display:flex;gap:5px;font-size:12px;">
-        <span style="min-width:52px;"></span>
-        <span id="gv3"><span class="math-tag">A(0,0,0)</span> , <span class="math-tag">B(6,8,0)</span></span>
-      </div>
-      <div style="display:flex;gap:5px;font-size:11px;">
-        <span style="min-width:52px;"></span>
-        <span id="gv4">C на полуоси x, SE — высота, |SE|=16</span>
-      </div>
-    </div>
-    <div id="subq" style="border-radius:6px;padding:8px 10px;">
-      <div id="subq-tag" style="font-size:10px;margin-bottom:2px;">Пункт Б</div>
-      <div id="subq-text" style="font-size:12px;line-height:1.5;">Найдите координаты точек C и S.</div>
-    </div>
+  <!-- Steps bar -->
+  <div class="steps-bar p1 bd">
+    <div class="step done">А</div><div class="step-line"></div>
+    <div class="step active">Б</div><div class="step-line"></div>
+    <div class="step">В</div><div class="step-line"></div>
+    <div class="step">Г</div>
   </div>
 
-  <!-- 1Б: визуализация — компактная, переключаемая -->
-  <div id="z-viz">
-    <div id="vizbar" style="display:flex;align-items:center;justify-content:space-between;padding:5px 12px;">
-      <span id="vizlbl" style="font-size:10px;">Three.js · визуализация</span>
-      <div style="display:flex;gap:4px;">
-        <button id="vb1" style="font-size:10px;padding:2px 7px;border-radius:4px;cursor:pointer;background:transparent;font-family:sans-serif;">3D</button>
-        <button id="vb2" style="font-size:10px;padding:2px 7px;border-radius:4px;cursor:pointer;background:transparent;font-family:sans-serif;">Векторы</button>
-      </div>
-    </div>
-    <div style="display:flex;justify-content:center;padding:6px 0 4px;">
-      <svg width="200" height="170" viewBox="0 0 200 185" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <marker id="arv6" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto"><path id="arv6p" d="M0,0 L5,2.5 L0,5 Z" fill="#22D3EE"/></marker>
-          <marker id="aru6" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto"><path id="aru6p" d="M0,0 L5,2.5 L0,5 Z" fill="#a78bfa"/></marker>
-        </defs>
-        <line id="vsa" x1="100" y1="15" x2="34" y2="148" stroke="#22D3EE" stroke-width="1.5"/>
-        <line id="vsb" x1="100" y1="15" x2="166" y2="135" stroke="#22D3EE" stroke-width="1.5"/>
-        <line id="vsc" x1="100" y1="15" x2="116" y2="168" stroke="#22D3EE" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.6"/>
-        <line id="vab" x1="34" y1="148" x2="166" y2="135" stroke="#334a5a" stroke-width="1" stroke-dasharray="4,3"/>
-        <line id="vac" x1="34" y1="148" x2="116" y2="168" stroke="#445566" stroke-width="1"/>
-        <line id="vbc" x1="166" y1="135" x2="116" y2="168" stroke="#445566" stroke-width="1"/>
-        <line id="vvu" x1="34" y1="148" x2="86" y2="150" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#aru6)"/>
-        <line id="vvv" x1="86" y1="150" x2="107" y2="164" stroke="#22D3EE" stroke-width="1.5" marker-end="url(#arv6)"/>
-        <circle id="ps" cx="100" cy="15" r="3.5" fill="#22D3EE"/>
-        <circle id="pa" cx="34" cy="148" r="3" fill="#8899aa"/>
-        <circle id="pb" cx="166" cy="135" r="3" fill="#8899aa"/>
-        <circle id="pcm" cx="116" cy="168" r="3" fill="#8899aa"/>
-        <circle id="pe" cx="89" cy="149" r="2.5" fill="#6ee7b7"/>
-        <text id="ts" x="100" y="9" font-size="11" text-anchor="middle" font-family="Arial" fill="#22D3EE">S</text>
-        <text id="ta" x="20" y="151" font-size="10" font-family="Arial" fill="#aabbcc">A</text>
-        <text id="tb" x="170" y="138" font-size="10" font-family="Arial" fill="#aabbcc">B</text>
-        <text id="tcm" x="119" y="180" font-size="10" font-family="Arial" fill="#aabbcc">C</text>
-        <text id="te" x="74" y="147" font-size="9" font-family="Arial" fill="#6ee7b7">E</text>
-        <text id="tu" x="50" y="143" font-size="9" font-family="Arial" fill="#a78bfa">u⃗</text>
-        <text id="tv" x="95" y="168" font-size="9" font-family="Arial" fill="#22D3EE">v⃗</text>
-      </svg>
-    </div>
-    <div id="vizcap" style="font-size:9px;text-align:center;padding:3px 0 6px;">Перетащите для вращения · Three.js</div>
-  </div>
+  <!-- Main -->
+  <div class="main">
 
-  <!-- ZONE 2: готовое решение -->
-  <div id="zone2">
-    <div id="sol-trigger" onclick="toggleSol()" style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;cursor:pointer;user-select:none;">
-      <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
-        <span>💡</span><span id="sollbl">Показать готовое решение</span>
+    <!-- Task -->
+    <div class="zone1-task">
+      <div class="zone-label t3">Условие задачи</div>
+      <div class="task-text t1">Перед вами треугольная пирамида <strong>SABC</strong>. Точка <strong>E</strong> — середина отрезка BC.</div>
+      <div class="given-block">
+        <div class="given-row"><span class="given-k t3">Обозначим:</span><span class="t1"><span class="math">EC⃗ = v</span> , <span class="math">AE⃗ = u</span></span></div>
+        <div class="given-row"><span class="given-k t3">Дано:</span><span class="t1"><span class="math">|u + v| = |u − v|</span></span></div>
+        <div class="given-row"><span class="given-k t3"></span><span class="t1"><span class="math">A(0,0,0)</span> , <span class="math">B(6,8,0)</span></span></div>
+        <div class="given-row"><span class="given-k t3"></span><span class="t1">C на положительной полуоси x, SE — высота, |SE|=16</span></div>
       </div>
-      <span id="sol-arrow" style="font-size:11px;transition:transform 0.2s;display:inline-block;">▾</span>
-    </div>
-    <div id="sol-body" style="max-height:0;overflow:hidden;transition:max-height 0.25s;">
-      <div style="padding:8px 14px 12px;display:flex;flex-direction:column;gap:4px;">
-        <div class="sstep"><b>Шаг 1.</b> |u+v|=|u−v| → <span class="math-tag">u·v=0</span>, u⊥v.</div>
-        <div class="sstep"><b>Шаг 2.</b> C=(c,0,0), E=((6+c)/2, 4, 0).</div>
-        <div class="sstep"><b>Шаг 3.</b> u·v=0 → <span class="math-tag">C(10,0,0)</span>.</div>
-        <div class="sstep"><b>Шаг 4.</b> SE⊥основанию → <span class="math-tag">S(8,4,16)</span>.</div>
+      <div class="subq-block">
+        <div class="subq-tag">Пункт Б</div>
+        <div class="subq-text t1">Найдите координаты точек C и S.</div>
       </div>
     </div>
-  </div>
 
-  <!-- ZONE 3: самостоятельное решение -->
-  <div id="zone3" style="padding:12px 14px;display:flex;flex-direction:column;gap:10px;">
-    <div style="display:flex;align-items:center;justify-content:space-between;">
+    <!-- Viz -->
+    <div class="viz-panel">
+      <div class="viz-bar">
+        <span class="viz-label t3">Three.js</span>
+        <div class="viz-btns">
+          <button class="viz-btn on">3D</button>
+          <button class="viz-btn t2">Векторы</button>
+          <button class="viz-btn t2">Вращение</button>
+        </div>
+      </div>
+      <div class="viz-area">
+        <svg width="160" height="160" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arv" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#22D3EE"/></marker>
+            <marker id="aru" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#a78bfa"/></marker>
+          </defs>
+          <line x1="100" y1="18" x2="34" y2="158" stroke="#22D3EE" stroke-width="1.5"/>
+          <line x1="100" y1="18" x2="166" y2="144" stroke="#22D3EE" stroke-width="1.5"/>
+          <line x1="100" y1="18" x2="116" y2="178" stroke="#22D3EE" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.6"/>
+          <line x1="34" y1="158" x2="166" y2="144" stroke="#334a5a" stroke-width="1" stroke-dasharray="4,3"/>
+          <line x1="34" y1="158" x2="116" y2="178" stroke="#445566" stroke-width="1"/>
+          <line x1="166" y1="144" x2="116" y2="178" stroke="#445566" stroke-width="1"/>
+          <line x1="34" y1="158" x2="88" y2="160" stroke="#a78bfa" stroke-width="2" marker-end="url(#aru)"/>
+          <line x1="88" y1="160" x2="110" y2="175" stroke="#22D3EE" stroke-width="2" marker-end="url(#arv)"/>
+          <circle cx="100" cy="18" r="4" fill="#22D3EE"/>
+          <circle cx="34" cy="158" r="3.5" fill="#8899aa"/>
+          <circle cx="166" cy="144" r="3.5" fill="#8899aa"/>
+          <circle cx="116" cy="178" r="3.5" fill="#8899aa"/>
+          <circle cx="91" cy="159" r="2.5" fill="#6ee7b7"/>
+          <text x="100" y="11" font-size="12" text-anchor="middle" font-family="system-ui" fill="#22D3EE">S</text>
+          <text x="20" y="161" font-size="11" font-family="system-ui" fill="#aabbcc">A</text>
+          <text x="171" y="147" font-size="11" font-family="system-ui" fill="#aabbcc">B</text>
+          <text x="119" y="191" font-size="11" font-family="system-ui" fill="#aabbcc">C</text>
+          <text x="77" y="156" font-size="10" font-family="system-ui" fill="#6ee7b7">E</text>
+          <text x="52" y="153" font-size="10" font-family="system-ui" fill="#a78bfa">u⃗</text>
+          <text x="98" y="178" font-size="10" font-family="system-ui" fill="#22D3EE">v⃗</text>
+        </svg>
+      </div>
+      <div class="viz-cap t3">Перетащите для вращения · Three.js</div>
+    </div>
+
+    <!-- Zone 2 -->
+    <div class="zone2">
+      <div class="sol-trigger" onclick="toggleSol()">
+        <div class="sol-left">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="t2" style="font-size:12px">Показать готовое решение</span>
+        </div>
+        <svg id="sol-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s;flex-shrink:0" class="t3"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="sol-body" id="sol-body">
+        <div class="sol-inner">
+          <div class="sol-step t2"><strong class="t1">Шаг 1.</strong> u ⊥ v → <span class="math">u · v = 0</span>.</div>
+          <div class="sol-step t2"><strong class="t1">Шаг 2.</strong> C на оси x → <span class="math">E = ((6+c)/2, 4, 0)</span>.</div>
+          <div class="sol-step t2"><strong class="t1">Шаг 3.</strong> c = 10 → <span class="math">C(10, 0, 0)</span>.</div>
+          <div class="sol-step t2"><strong class="t1">Шаг 4.</strong> S над E: <span class="math">S(8, 4, 16)</span>.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zone 3 -->
+    <div class="zone3">
       <div>
-        <div id="z3title" style="font-size:12px;font-weight:600;">Самостоятельное решение</div>
-        <div id="z3sub" style="font-size:10px;margin-top:1px;">При вводе готовое решение закроется</div>
+        <div class="zone3-title t1">Самостоятельное решение</div>
+        <div class="zone3-sub t3">При вводе ответа решение закроется</div>
       </div>
-      <span id="hintlink" onclick="toggleYosi()" style="font-size:11px;cursor:pointer;text-decoration:underline;">Подсказка Йоси</span>
+      <div class="coords-grid">
+        <div class="coords-row">
+          <span class="pt-lbl t1">C =</span>
+          <div class="coord-pair"><span class="ax t3">x</span><input class="cf" id="cx" type="number" placeholder="?" oninput="onInput()"></div>
+          <div class="coord-pair"><span class="ax t3">y</span><input class="cf" id="cy0" type="number" value="0" readonly></div>
+          <div class="coord-pair"><span class="ax t3">z</span><input class="cf" id="cz0" type="number" value="0" readonly></div>
+        </div>
+        <div class="coords-row">
+          <span class="pt-lbl t1">S =</span>
+          <div class="coord-pair"><span class="ax t3">x</span><input class="cf" id="sx" type="number" placeholder="?" oninput="onInput()"></div>
+          <div class="coord-pair"><span class="ax t3">y</span><input class="cf" id="sy" type="number" placeholder="?" oninput="onInput()"></div>
+          <div class="coord-pair"><span class="ax t3">z</span><input class="cf" id="sz" type="number" placeholder="?" oninput="onInput()"></div>
+        </div>
+      </div>
+      <div class="bottom-row">
+        <div class="result" id="result"></div>
+        <button class="btn-check" onclick="checkAnswer()">Проверить</button>
+      </div>
     </div>
 
-    <!-- C: подпись + 3 поля в ряд -->
-    <div style="display:flex;align-items:center;gap:6px;">
-      <span id="ptC" style="font-size:12px;font-weight:600;min-width:26px;">C =</span>
-      <span id="axcx" style="font-size:10px;font-family:monospace;">x</span>
-      <input id="cx" type="number" placeholder="?" oninput="onInput()"
-        style="width:62px;height:34px;border-radius:6px;font-size:13px;text-align:center;font-family:monospace;outline:none;">
-      <span id="axcy" style="font-size:10px;font-family:monospace;">y</span>
-      <input id="cy0" type="number" value="0" readonly
-        style="width:62px;height:34px;border-radius:6px;font-size:13px;text-align:center;font-family:monospace;outline:none;">
-      <span id="axcz" style="font-size:10px;font-family:monospace;">z</span>
-      <input id="cz0" type="number" value="0" readonly
-        style="width:62px;height:34px;border-radius:6px;font-size:13px;text-align:center;font-family:monospace;outline:none;">
-    </div>
+  </div><!-- /main -->
 
-    <!-- S: подпись + 3 поля в ряд -->
-    <div style="display:flex;align-items:center;gap:6px;">
-      <span id="ptS" style="font-size:12px;font-weight:600;min-width:26px;">S =</span>
-      <span id="axsx" style="font-size:10px;font-family:monospace;">x</span>
-      <input id="sx" type="number" placeholder="?" oninput="onInput()"
-        style="width:62px;height:34px;border-radius:6px;font-size:13px;text-align:center;font-family:monospace;outline:none;">
-      <span id="axsy" style="font-size:10px;font-family:monospace;">y</span>
-      <input id="sy" type="number" placeholder="?" oninput="onInput()"
-        style="width:62px;height:34px;border-radius:6px;font-size:13px;text-align:center;font-family:monospace;outline:none;">
-      <span id="axsz" style="font-size:10px;font-family:monospace;">z</span>
-      <input id="sz" type="number" placeholder="?" oninput="onInput()"
-        style="width:62px;height:34px;border-radius:6px;font-size:13px;text-align:center;font-family:monospace;outline:none;">
+  <!-- FABs -->
+  <div class="fab-group">
+    <div class="fab bd" onclick="openFormulas()" title="Формулы">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M4 12h10"/><path d="M4 17h7"/><path d="M16 14l2 2 4-4"/></svg>
     </div>
-
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-      <div id="result" style="font-size:11px;padding:7px 10px;border-radius:6px;display:none;flex:1;line-height:1.5;"></div>
-      <button id="btn-check" onclick="checkAnswer()"
-        style="padding:8px 20px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:sans-serif;">
-        Проверить
-      </button>
+    <div class="fab bd" onclick="toggleYosi()" title="Профессор Йоси">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a9 9 0 0 1 9 9c0 3.18-1.65 5.97-4.13 7.59L17 21H7l.13-2.41A9 9 0 0 1 3 11a9 9 0 0 1 9-9z"/><line x1="9" y1="12" x2="9.01" y2="12"/><line x1="12" y1="12" x2="12.01" y2="12"/><line x1="15" y1="12" x2="15.01" y2="12"/></svg>
     </div>
+  </div>
 
-    <div id="yosi" style="display:none;align-items:flex-start;gap:7px;border-radius:6px;padding:9px 10px;">
-      <div style="font-size:16px;flex-shrink:0;">🧑‍🏫</div>
-      <div id="yositxt" style="font-size:11px;line-height:1.6;">C на оси x → y=0, z=0. Найдите E как середину BC, используйте u⊥v. S прямо над E на высоте 16.</div>
+  <!-- Yosi bottom sheet -->
+  <div class="yosi-sheet p1" id="yosiSheet">
+    <div class="sheet-handle"></div>
+    <div class="yosi-head">
+      <div class="yosi-head-left">
+        <div class="yosi-av">🧑‍🏫</div>
+        <div>
+          <div class="yosi-head-name t1">Профессор Йоси</div>
+          <div class="yosi-head-sub t3">Подсказка к пункту Б</div>
+        </div>
+      </div>
+      <button class="yosi-close" onclick="toggleYosi()">×</button>
+    </div>
+    <div class="yosi-body t2">C лежит на оси x → y = 0, z = 0. Найдите E как середину BC, используйте u ⊥ v. S находится прямо над E на высоте 16.</div>
+  </div>
+
+  <!-- Formulas bottom sheet -->
+  <div class="formulas-overlay" id="formulasOverlay" onclick="handleFormulasBg(event)">
+    <div class="formulas-sheet p1">
+      <div class="fm-head">
+        <span class="fm-title t1">Допустимые формулы — Шейлон 35572</span>
+        <button class="fm-close" onclick="closeFormulas()">×</button>
+      </div>
+      <div class="fm-body">
+        <div class="fm-section">
+          <div class="fm-section-title t3">Векторы</div>
+          <div class="fm-row bd"><span class="fm-formula">|AB⃗| = √(Δx²+Δy²+Δz²)</span><span class="fm-desc t2">Длина вектора</span></div>
+          <div class="fm-row bd"><span class="fm-formula">u·v = x₁x₂+y₁y₂+z₁z₂</span><span class="fm-desc t2">Скалярное произведение</span></div>
+          <div class="fm-row bd"><span class="fm-formula">cos α = u·v / (|u|·|v|)</span><span class="fm-desc t2">Угол между векторами</span></div>
+        </div>
+        <div class="fm-section">
+          <div class="fm-section-title t3">Прямые и плоскости</div>
+          <div class="fm-row bd"><span class="fm-formula">n = (A,B,C) ⊥ плоскость</span><span class="fm-desc t2">Нормаль к плоскости</span></div>
+          <div class="fm-row bd"><span class="fm-formula">d = |ax₀+by₀+cz₀+d| / √(a²+b²+c²)</span><span class="fm-desc t2">Расстояние от точки</span></div>
+        </div>
+        <div class="fm-section">
+          <div class="fm-section-title t3">Геометрия</div>
+          <div class="fm-row bd"><span class="fm-formula">M = ((x₁+x₂)/2, ...)</span><span class="fm-desc t2">Середина отрезка</span></div>
+        </div>
+      </div>
     </div>
   </div>
 
 </div>
-
 <script>
-const DV={line:'#22D3EE',base:'#334a5a',edge:'#445566',arv:'#22D3EE',aru:'#a78bfa',pts:'#22D3EE',ptabc:'#8899aa',pte:'#6ee7b7',lbls:'#22D3EE',lblabc:'#aabbcc',lble:'#6ee7b7',lblu:'#a78bfa',lblv:'#22D3EE'};
-const LV={line:'#0891b2',base:'#8aabbb',edge:'#aabbcc',arv:'#0891b2',aru:'#7c3aed',pts:'#0891b2',ptabc:'#557788',pte:'#059669',lbls:'#0891b2',lblabc:'#334455',lble:'#059669',lblu:'#7c3aed',lblv:'#0891b2'};
-
-function applyViz(c){
-  ['vsa','vsb','vsc'].forEach(id=>document.getElementById(id).setAttribute('stroke',c.line));
-  document.getElementById('vab').setAttribute('stroke',c.base);
-  ['vac','vbc'].forEach(id=>document.getElementById(id).setAttribute('stroke',c.edge));
-  document.getElementById('vvu').setAttribute('stroke',c.aru);
-  document.getElementById('vvv').setAttribute('stroke',c.arv);
-  document.getElementById('arv6p').setAttribute('fill',c.arv);
-  document.getElementById('aru6p').setAttribute('fill',c.aru);
-  document.getElementById('ps').setAttribute('fill',c.pts);
-  ['pa','pb','pcm'].forEach(id=>document.getElementById(id).setAttribute('fill',c.ptabc));
-  document.getElementById('pe').setAttribute('fill',c.pte);
-  document.getElementById('ts').setAttribute('fill',c.lbls);
-  ['ta','tb','tcm'].forEach(id=>document.getElementById(id).setAttribute('fill',c.lblabc));
-  document.getElementById('te').setAttribute('fill',c.lble);
-  document.getElementById('tu').setAttribute('fill',c.lblu);
-  document.getElementById('tv').setAttribute('fill',c.lblv);
-}
-
-function setTheme(t){
-  const d=t==='dark';
-  const s=document.getElementById('shell');
-  s.style.background=d?'#0b1622':'#ffffff';
-  s.style.border=d?'1px solid #1e3040':'1px solid #d0dde8';
-
-  document.getElementById('topbar').style.background=d?'#0f1e2e':'#f5f7fa';
-  document.getElementById('topbar').style.borderBottom=d?'1px solid #1e3040':'1px solid #d0dde8';
-
-  const chip=document.getElementById('chip');
-  chip.style.background=d?'#22D3EE18':'#e0f2f8';
-  chip.style.border=d?'1px solid #22D3EE44':'1px solid #0891b244';
-  chip.style.color=d?'#22D3EE':'#0891b2';
-
-  const ss=[{id:'s1',state:'done'},{id:'s2',state:'active'},{id:'s3',state:''},{id:'s4',state:''}];
-  ss.forEach(({id,state})=>{
-    const el=document.getElementById(id);
-    if(state==='done'){el.style.background=d?'#22D3EE':'#0891b2';el.style.color='#fff';el.style.border='none';}
-    else if(state==='active'){el.style.background='transparent';el.style.color=d?'#22D3EE':'#0891b2';el.style.border=`1.5px solid ${d?'#22D3EE':'#0891b2'}`;}
-    else{el.style.background='transparent';el.style.color=d?'#445566':'#99aabb';el.style.border=`1px solid ${d?'#1e3040':'#d0dde8'}`;}
-  });
-  ['sl1','sl2','sl3'].forEach(id=>document.getElementById(id).style.background=d?'#1e3040':'#d0dde8');
-
-  const eb=document.getElementById('exit-btn');
-  eb.style.border=d?'1px solid #334a5a':'1px solid #b0c8d8';
-  eb.style.color=d?'#556677':'#445566';
-  eb.style.background='transparent';
-
-  const zc=document.getElementById('z-condition');
-  zc.style.background=d?'#0b1622':'#ffffff';
-  zc.style.borderBottom=d?'1px solid #1e3040':'1px solid #d0dde8';
-  document.getElementById('zlabel').style.color=d?'#334a5a':'#99aabb';
-  document.getElementById('ztask').style.color=d?'#d0dde8':'#1a2533';
-  ['gk1','gk2'].forEach(id=>document.getElementById(id).style.color=d?'#445566':'#99aabb');
-  ['gv1','gv2','gv3','gv4'].forEach(id=>document.getElementById(id).style.color=d?'#d0dde8':'#1a2533');
-  document.querySelectorAll('.math-tag').forEach(el=>{
-    el.style.color=d?'#22D3EE':'#0891b2';
-    el.style.background=d?'#22D3EE14':'#0891b212';
-  });
-  const sq=document.getElementById('subq');
-  sq.style.background=d?'#0f1e2e':'#f0f8fb';
-  sq.style.borderLeft=`3px solid ${d?'#22D3EE':'#0891b2'}`;
-  document.getElementById('subq-tag').style.color=d?'#22D3EE':'#0891b2';
-  document.getElementById('subq-text').style.color=d?'#d0dde8':'#1a2533';
-
-  const zv=document.getElementById('z-viz');
-  zv.style.background=d?'#060e18':'#e8f2f8';
-  zv.style.borderBottom=d?'1px solid #1e3040':'1px solid #d0dde8';
-  document.getElementById('vizbar').style.borderBottom=d?'1px solid #ffffff14':'1px solid #c0d8e8';
-  document.getElementById('vizlbl').style.color=d?'#334455':'#8aabbb';
-  document.getElementById('vizcap').style.color=d?'#334455':'#99aabb';
-  const vb1=document.getElementById('vb1');
-  vb1.style.color=d?'#22D3EE':'#0891b2';
-  vb1.style.border=d?'1px solid #22D3EE55':'1px solid #0891b266';
-  const vb2=document.getElementById('vb2');
-  vb2.style.color=d?'#7a8a99':'#6a8898';
-  vb2.style.border=d?'1px solid #ffffff22':'1px solid #c0d0d8';
-
-  const z2=document.getElementById('zone2');
-  z2.style.borderBottom=d?'1px solid #1e3040':'1px solid #d0dde8';
-  document.getElementById('sol-trigger').style.background=d?'#0e1c2a':'#fffbf0';
-  document.getElementById('sollbl').style.color=d?'#7a9ab0':'#556677';
-  document.getElementById('sol-arrow').style.color=d?'#445566':'#99aabb';
-  document.getElementById('sol-body').style.background=d?'#0b1622':'#ffffff';
-  document.querySelectorAll('.sstep').forEach(el=>{
-    el.style.color=d?'#7a9ab0':'#556677';
-    el.style.borderLeft=d?'2px solid #f59e0b44':'2px solid #f59e0b55';
-  });
-
-  const z3=document.getElementById('zone3');
-  z3.style.background=d?'#0b1622':'#ffffff';
-  document.getElementById('z3title').style.color=d?'#d0dde8':'#1a2533';
-  document.getElementById('z3sub').style.color=d?'#334a5a':'#99aabb';
-  document.getElementById('hintlink').style.color=d?'#22D3EE':'#0891b2';
-  ['ptC','ptS'].forEach(id=>document.getElementById(id).style.color=d?'#d0dde8':'#1a2533');
-  ['axcx','axcy','axcz','axsx','axsy','axsz'].forEach(id=>document.getElementById(id).style.color=d?'#334a5a':'#99aabb');
-
-  const af=d?{bg:'#c8e8f4',border:'1px solid #6ab8d4',color:'#0b2233'}:{bg:'#e0f4fa',border:'1px solid #6ac8e0',color:'#0b3a4a'};
-  const rf=d?{bg:'#1a3a4e',border:'1px solid #1e3040',color:'#334a5a'}:{bg:'#f0f8fb',border:'1px solid #c0dde8',color:'#99aabb'};
-  ['cx','sx','sy','sz'].forEach(id=>{const el=document.getElementById(id);el.style.background=af.bg;el.style.border=af.border;el.style.color=af.color;});
-  ['cy0','cz0'].forEach(id=>{const el=document.getElementById(id);el.style.background=rf.bg;el.style.border=rf.border;el.style.color=rf.color;});
-
-  const cb=document.getElementById('btn-check');
-  if(d){cb.style.background='#22D3EE';cb.style.color='#0a3540';cb.style.border='none';}
-  else{cb.style.background='transparent';cb.style.color='#1a2533';cb.style.border='1.5px solid #b0c8d8';}
-
-  const yosi=document.getElementById('yosi');
-  yosi.style.background=d?'#0f1e2e':'#f0f8fb';
-  yosi.style.border=d?'1px dashed #22D3EE44':'1px dashed #0891b244';
-  document.getElementById('yositxt').style.color=d?'#7a9ab0':'#556677';
-
-  const bd=document.getElementById('btn-dark');
-  const bl=document.getElementById('btn-light');
-  if(d){
-    bd.style.cssText='background:#22D3EE;border:1px solid #22D3EE;color:#0a3540;box-shadow:0 0 0 2px #22D3EE33;padding:6px 16px;font-size:12px;font-weight:500;cursor:pointer;border-radius:6px 0 0 6px;font-family:sans-serif;';
-    bl.style.cssText='background:#e8f4f8;border:1px solid #b0cdd8;border-left:none;color:#445566;padding:6px 16px;font-size:12px;font-weight:500;cursor:pointer;border-radius:0 6px 6px 0;font-family:sans-serif;';
-  } else {
-    bl.style.cssText='background:#0891b2;border:1px solid #0891b2;color:#fff;box-shadow:0 0 0 2px #0891b244;padding:6px 16px;font-size:12px;font-weight:500;cursor:pointer;border-radius:0 6px 6px 0;font-family:sans-serif;';
-    bd.style.cssText='background:#1a3a4e;border:1px solid #2a5a70;color:#7a9ab0;padding:6px 16px;font-size:12px;font-weight:500;cursor:pointer;border-radius:6px 0 0 6px;font-family:sans-serif;';
-  }
-  applyViz(d?DV:LV);
-}
-
-setTheme('dark');
-
 function toggleSol(){
-  const b=document.getElementById('sol-body');
-  const a=document.getElementById('sol-arrow');
-  const open=b.style.maxHeight&&b.style.maxHeight!=='0px';
-  b.style.maxHeight=open?'0':'300px';
-  a.style.transform=open?'':'rotate(180deg)';
+  var body=document.getElementById('sol-body');
+  var arrow=document.getElementById('sol-arrow');
+  body.classList.toggle('open');
+  arrow.style.transform=body.classList.contains('open')?'rotate(180deg)':'';
 }
 function onInput(){
-  document.getElementById('sol-body').style.maxHeight='0';
+  document.getElementById('sol-body').classList.remove('open');
   document.getElementById('sol-arrow').style.transform='';
-  document.getElementById('result').style.display='none';
-}
-function toggleYosi(){
-  const y=document.getElementById('yosi');
-  y.style.display=y.style.display==='flex'?'none':'flex';
+  var r=document.getElementById('result');
+  r.className='result';r.textContent='';
 }
 function checkAnswer(){
-  const cx=parseFloat(document.getElementById('cx').value);
-  const sx=parseFloat(document.getElementById('sx').value);
-  const sy=parseFloat(document.getElementById('sy').value);
-  const sz=parseFloat(document.getElementById('sz').value);
-  const el=document.getElementById('result');
-  el.style.display='block';
-  const d=document.getElementById('shell').style.background==='rgb(11, 22, 34)';
+  var cx=parseFloat(document.getElementById('cx').value);
+  var sx=parseFloat(document.getElementById('sx').value);
+  var sy=parseFloat(document.getElementById('sy').value);
+  var sz=parseFloat(document.getElementById('sz').value);
+  var el=document.getElementById('result');
   if(cx===10&&sx===8&&sy===4&&sz===16){
-    el.style.background=d?'#08251a':'#ecfdf5';
-    el.style.color=d?'#6ee7b7':'#065f46';
-    el.style.border=d?'1px solid #22D3EE44':'1px solid #6ee7b7';
-    el.textContent='✓ Верно! C(10,0,0) и S(8,4,16).';
+    el.className='result ok';el.textContent='✓ Верно! C(10,0,0) и S(8,4,16).';
   } else {
-    el.style.background=d?'#250808':'#fef2f2';
-    el.style.color=d?'#fca5a5':'#991b1b';
-    el.style.border=d?'1px solid #ef444433':'1px solid #fca5a5';
-    let txt='Не точно. ';
-    if(isNaN(cx)||cx!==10) txt+='Проверьте x(C). ';
-    if(isNaN(sx)||isNaN(sy)||isNaN(sz)) txt+='Заполните S.';
-    else if(sx!==8||sy!==4||sz!==16) txt+='S прямо над E.';
-    el.textContent=txt;
+    el.className='result err';
+    var msg='Не точно. ';
+    if(isNaN(cx)||cx!==10) msg+='Проверьте x точки C. ';
+    if(isNaN(sx)||isNaN(sy)||isNaN(sz)) msg+='Заполните все координаты S.';
+    else if(sx!==8||sy!==4||sz!==16) msg+='S находится прямо над E.';
+    el.textContent=msg;
   }
 }
+function toggleYosi(){ document.getElementById('yosiSheet').classList.toggle('open'); }
+function openFormulas(){ document.getElementById('formulasOverlay').classList.add('open'); }
+function closeFormulas(){ document.getElementById('formulasOverlay').classList.remove('open'); }
+function handleFormulasBg(e){ if(e.target===document.getElementById('formulasOverlay')) closeFormulas(); }
+function exitLesson(){ alert('← Вернуться к лабиринту'); }
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){ closeFormulas(); document.getElementById('yosiSheet').classList.remove('open'); }
+});
 </script>
+</body>
+</html>

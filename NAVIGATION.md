@@ -270,13 +270,11 @@ At any point:
 
 Question displayed
   ↓
-Student inputs answer (numeric / choice A-D / formula)
+Student inputs answer (see answer types below)
   ↓
 "Проверить" button
   ↓
-Answer evaluated:
-  Correct → green highlight + AI feedback + "Следующий вопрос" button
-  Wrong   → red highlight + AI feedback + "Следующий вопрос" button
+Answer evaluated (see evaluation logic below)
   ↓
 "Следующий вопрос" → next question
   (timer continues, stats block updates)
@@ -296,6 +294,99 @@ Skip button (only available before Check):
 
 ⚠️ Atom-test failure behavior: TBD after first atoms are built.
    Recorded in PLAN.md Open Questions.
+```
+
+#### Test page layout
+
+```
+Topbar (fullscreen, no sidebar):
+  Left:   topic chip (e.g. "Векторы") — cyan badge
+  Center: question number buttons (1…N circles, color-coded by status)
+  Right:  timer (optional, toggleable) + "✕ Выйти" button
+
+Progress bar (thin, below topbar):
+  Shows current question index / total
+  Color matches timer state when timer is active (green/amber/red)
+
+Stats block (horizontal row, below progress bar):
+  5 counters: ✓ Верно | ~ Частично | ✗ Ошибок | → Пропущен | ★ Очков
+
+Zone 1 (two-column, desktop/tablet):
+  Left:  question label + question text + inline math tags
+  Right: Three.js visualization panel (3D/2D toggle buttons)
+
+Answer zone (below Zone 1):
+  One of three answer types (per question, set by author):
+    1. Numeric   — coordinate inputs (x/y/z or custom labels)
+    2. Choice    — A/B/C/D buttons (2×2 grid)
+    3. Text      — textarea with AI review badge + char counter
+                   + reference answer block (visible to system/author, hidden from student)
+
+  Action buttons row:
+    Left:  "Пропустить →" (skip, disabled after Check)
+    Right: "Проверить" + "Следующий →" (Next appears after Check)
+```
+
+#### Question number circle colors
+
+```
+Active (current):  cyan ring + cyan text, light cyan bg
+Done — correct:    green bg tint + green ring
+Done — partial:    amber bg tint + amber ring
+Done — wrong:      red bg tint + red ring
+Skipped:           slate bg tint + slate ring
+Unanswered:        transparent bg + slate border
+```
+
+#### Timer states (adaptive color)
+
+```
+> 2:00 remaining:  green  (#4ade80)  — calm
+1:00–2:00:         amber  (#FBBF24)  — warning
+< 0:30:            red    (#f87171)  — pulse animation (alternating bg opacity)
+Timer optional:    hidden by default; student can toggle on/off
+Progress bar color follows timer color when timer is active
+```
+
+#### Answer evaluation logic
+
+```
+Numeric answer:
+  All coordinates exact match  → Correct   (+10 XP, qStatus = done-correct)
+  Some coordinates match       → Partial   (+5 XP,  qStatus = done-partial)
+  No match                     → Wrong     (+0 XP,  qStatus = done-wrong)
+
+Choice A-D answer:
+  Correct option selected      → Correct   (+10 XP)
+  Wrong option selected        → Wrong     (+0 XP)
+  (no partial state for choice)
+
+Text answer (AI review — обучающий тест только):
+  Sent to AI backend for semantic evaluation
+  AI returns: verdict (correct/partial/wrong) + score (0–10) + feedback text
+  UI shows "AI проверяет ответ..." with animated dots during processing (~2–3s)
+  After AI response:
+    Correct  → green result + AI feedback card (+10 XP)
+    Partial  → amber result + AI feedback card (+score XP, e.g. 6/10)
+    Wrong    → red result + AI feedback card   (+0 XP)
+  AI feedback card shows: title + score badge + explanation text
+  Reference answer block (эталонный ответ) — shown in mockup for author reference;
+    in production: visible to author/admin only, hidden from student in rendered UI
+
+  Note: text answer type used only in check/exercises steps, not in atom-test.
+```
+
+#### Stats block update rules
+
+```
+After each Check:
+  nOk    increments if correct
+  nPart  increments if partial
+  nErr   increments if wrong
+  nSk    increments on Skip (before Check)
+  xp     increments by points awarded
+All counters update immediately after answer evaluation.
+Question number circles re-render to reflect new status.
 ```
 
 ### 3d — Points & progress on atom completion
@@ -651,3 +742,4 @@ Checkpoint unlock toast also triggers labyrinth node animation (separate from to
 *Updated: 2026-07-06 — Bottom nav tabs finalised: Главная/Курсы/Статус/Лаборатория/Помощь(?). Помощь(?) opens Yosi AI Chat (stub until Phase 6). RTL rule changed: direction:ltr removed from .bnav — tabs now mirror on dir=rtl. Lang switcher updated: lang-btn replaced by globe-dropdown (new standard). Avatar in header now opens dropdown (Profile/Settings/Logout).*
 *Cross-references: PLAN.md (phases), DESIGN_SYSTEM.md (components), MWL_CONTENT_ARCHITECTURE.md (content model)*
 *(07/07/2026 — Author shell sidebar финализирован: flat структура без подменю (Главная/Шейлоны/Группы/Атом/Экзамен/Граф // Лаборатория // Помощь/Настройки). Globe-dropdown вместо RU/HE toggle. Desktop only для конструктора — tablet/mobile не предусмотрены. Editor dashboard = /constructor/dashboard (отдельно от /dashboard студента).)*
+*Обновлён: 2026-07-08 — §3c расширен: детальная спецификация test page flow — типы ответов (numeric/choice/text+AI), цвета Q-circles, логика таймера, правила оценки ответов, правила обновления stats block.*
