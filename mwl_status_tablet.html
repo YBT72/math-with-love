@@ -62,9 +62,7 @@ body{font-family:system-ui,sans-serif}
 .lg-item.on .lg-check{opacity:1}
 .lg-overlay{position:fixed;inset:0;z-index:99;display:none}
 .lg-overlay.open{display:block}
-/* RTL: both dropdowns flip to left-aligned */
-[dir="rtl"] .av-dropdown{right:auto;left:0}
-[dir="rtl"] .lg-dropdown{right:auto;left:0}
+/* RTL handled via logical CSS (inset-inline-end) */
 
 /* Icon button */
 .hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid;flex-shrink:0}
@@ -76,29 +74,32 @@ body{font-family:system-ui,sans-serif}
 /* ============================================================
    Avatar dropdown — new component
    ============================================================ */
-.av-wrap{position:relative;flex-shrink:0}
-.av-dropdown{
-  position:absolute;top:calc(100% + 8px);right:0;
-  width:140px;border-radius:10px;border:1px solid;
-  overflow:hidden;z-index:100;
-  opacity:0;transform:translateY(-6px);pointer-events:none;
-  transition:opacity .15s ease,transform .15s ease;
-}
-.av-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
-.d .av-dropdown{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
-.l .av-dropdown{background:#ffffff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
-.av-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s}
-.d .av-item{color:#e2e8f0}.l .av-item{color:#0f172a}
-.d .av-item:hover{background:#334155}.l .av-item:hover{background:#f1f5f9}
-.av-item svg{flex-shrink:0;opacity:0.7}
-.d .av-item svg{stroke:#94a3b8}.l .av-item svg{stroke:#64748b}
-.av-divider{height:1px;margin:2px 0}
-.d .av-divider{background:#334155}.l .av-divider{background:#e2e8f0}
-.av-item.danger{color:#f87171}
-.av-item.danger svg{stroke:#f87171;opacity:1}
-/* Backdrop — closes dropdown on outside click */
-.av-overlay{position:fixed;inset:0;z-index:99;display:none}
-.av-overlay.open{display:block}
+/* Avatar dropdown */
+.hav-wrap{position:relative;flex-shrink:0}
+.av-drop{position:absolute;top:calc(100% + 8px);inset-inline-end:0;width:140px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.av-drop.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.d .av-drop{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.l .av-drop{background:#ffffff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+/* User info block */
+.av-drop-user{padding:10px 14px 8px}
+.av-drop-name{font-size:12px;font-weight:600}
+.d .av-drop-name{color:#f1f5f9}.l .av-drop-name{color:#0f172a}
+.av-drop-email{font-size:11px;margin-top:1px}
+.d .av-drop-email{color:#64748b}.l .av-drop-email{color:#94a3b8}
+/* Divider */
+.av-drop-divider{height:1px;margin:2px 0}
+.d .av-drop-divider{background:#334155}.l .av-drop-divider{background:#e2e8f0}
+/* Menu items */
+.av-drop-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s;width:100%;border:0;background:transparent;font-family:inherit;text-align:start}
+.d .av-drop-item{color:#e2e8f0}.l .av-drop-item{color:#0f172a}
+.d .av-drop-item:hover{background:#334155}.l .av-drop-item:hover{background:#f1f5f9}
+.av-drop-item svg{flex-shrink:0;opacity:0.7}
+.d .av-drop-item svg{stroke:#94a3b8}.l .av-drop-item svg{stroke:#64748b}
+.av-drop-item.danger{color:#f87171}
+.av-drop-item.danger svg{stroke:#f87171;opacity:1}
+/* Overlay */
+.overlay{position:fixed;inset:0;z-index:99;display:none}
+.overlay.open{display:block}
 
 /* -- Ctrl-bar (mockup only) -- */
 .ctrl{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid;align-items:center;flex-shrink:0}
@@ -263,11 +264,11 @@ body{font-family:system-ui,sans-serif}
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
         </div>
         <div class="lg-dropdown p1 bd" id="lgDropdown">
-          <div class="lg-item on" id="lgItemRu" onclick="setLang('ru');closeLangDD()">
+          <div class="lg-item on" id="lgItemRu" onclick="callFn('setLang(\'ru\');closeLangDD()')" >
             <span>RU</span>
             <svg class="lg-check" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
-          <div class="lg-item" id="lgItemHe" onclick="setLang('he');closeLangDD()">
+          <div class="lg-item" id="lgItemHe" onclick="callFn('setLang(\'he\');closeLangDD()')" >
             <span>HE</span>
             <svg class="lg-check" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
@@ -279,29 +280,34 @@ body{font-family:system-ui,sans-serif}
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg>
       </div>
       <!-- Avatar with dropdown -->
-      <div class="av-wrap">
-        <div class="hav" id="havBtn" onclick="toggleDropdown()">ИА</div>
-        <div class="av-dropdown p1 bd" id="avDropdown">
+      <div class="hav-wrap">
+        <div class="hav" id="havBtn" onclick="callFn('toggleDrop()')">ИГ</div>
+        <div class="av-drop p1 bd" id="avDrop">
+          <!-- User info -->
+          <div class="av-drop-user">
+            <div class="av-drop-name" id="avName">Игаль</div>
+            <div class="av-drop-email" id="avEmail">user@example.com</div>
+          </div>
+          <div class="av-drop-divider"></div>
           <!-- Profile -->
-          <div class="av-item" onclick="closeDropdown()">
+          <button class="av-drop-item" onclick="callFn('closeDrop()')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
             <span data-i18n="dropProfile">Профиль</span>
-          </div>
+          </button>
           <!-- Settings -->
-          <div class="av-item" onclick="closeDropdown()">
+          <button class="av-drop-item" onclick="callFn('closeDrop()')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span data-i18n="dropSettings">Настройки</span>
-          </div>
-          <div class="av-divider"></div>
+          </button>
+          <div class="av-drop-divider"></div>
           <!-- Logout -->
-          <div class="av-item danger" onclick="closeDropdown()">
+          <button class="av-drop-item danger" onclick="callFn('closeDrop()')">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             <span data-i18n="dropLogout">Выйти</span>
-          </div>
+          </button>
         </div>
       </div>
-      <!-- Backdrop -->
-      <div class="av-overlay" id="avOverlay" onclick="closeDropdown()"></div>
+      <div class="overlay" id="overlay" onclick="callFn('closeDrop()')"></div>
     </div>
   </div>
 
@@ -661,23 +667,43 @@ function toggleSb(){
 }
 
 // ============================================================
-// Avatar dropdown — closes lang DD if open
+// callFn dispatcher — Safari/sandbox safe alternative to eval()
 // ============================================================
-function toggleDropdown(){
-  var dd = document.getElementById('avDropdown');
-  var isOpen = dd.classList.contains('open');
-  closeLangDD(); // always close lang dropdown first
-  if(isOpen){
-    closeDropdown();
-  } else {
-    dd.classList.add('open');
-    document.getElementById('avOverlay').classList.add('open');
+function callFn(expr){
+  var parts = expr.split(';');
+  for(var i=0;i<parts.length;i++){
+    var s = parts[i].trim();
+    if(!s) continue;
+    var m = s.match(/^(\w+)\((.*)\)$/);
+    if(!m) continue;
+    var fn = window[m[1]];
+    if(typeof fn !== 'function') continue;
+    var arg = m[2].trim();
+    if(arg === ''){ fn(); }
+    else {
+      try{ fn(JSON.parse(arg)); }
+      catch(e){ fn(arg.replace(/^['"]|['"]$/g,'')); }
+    }
   }
 }
 
-function closeDropdown(){
-  document.getElementById('avDropdown').classList.remove('open');
-  document.getElementById('avOverlay').classList.remove('open');
+// ============================================================
+// Avatar dropdown — closes lang DD if open
+// ============================================================
+function openDrop(){
+  document.getElementById('avDrop').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeDrop(){
+  document.getElementById('avDrop').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+
+function toggleDrop(){
+  var d = document.getElementById('avDrop');
+  closeLangDD();
+  d.classList.contains('open') ? closeDrop() : openDrop();
 }
 
 // ============================================================
@@ -686,7 +712,7 @@ function closeDropdown(){
 function toggleLangDD(){
   var dd = document.getElementById('lgDropdown');
   var isOpen = dd.classList.contains('open');
-  closeDropdown(); // always close avatar dropdown first
+  closeDrop(); // always close avatar dropdown first
   if(isOpen){
     closeLangDD();
   } else {

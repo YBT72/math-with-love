@@ -1256,87 +1256,114 @@ Full RU/HE translation via `TR{ru, he}` dictionary. RTL set on shell root. Group
 
 ---
 
-## 18. Exam Schema Editor — «Примеры вопросников» (Content Constructor)
+## 18. Exam Schema Editor — «Экзамены» (Content Constructor)
 
-**Status: approved mockup (mwl_exam_schema_v2.html).** Author-facing. Scope: desktop only.
+**Status: approved mockup (mwl_exam_schema_editor.html).** Author-facing. Scope: desktop only.
+**Updated: 2026-07-11** — major UX revision.
 
 ### Concept
 
 Screen for authoring Bagrut exam instances (שאלונים). Two-level structure:
-- **Shalon type** (вопросник): number only (572, 571, 471…) — no title shown in list
-- **Session** (экземпляр вопросника): free-form label authored by teacher, no date fields, not bound to any calendar date — purely content-based
-
-Multiple sessions per shalon type — the more the better (archive of past exams for practice).
+- **Shalon type** (שאלון): number only (572, 571…)
+- **Session** (מועד): free-form label, no date fields — purely content-based
 
 ### Layout
 
 ```
-[Sidebar §10a] | [Ctrl-bar: theme · RU→HE translate · Preview · + New срок (contextual)]
+[Sidebar §10a] | [Ctrl-bar: theme toggles only (temporary, no production)]
                | [Shalon list panel, collapsible] | [Editor / Preview panel]
 ```
 
 ### Shalon list panel (left, collapsible)
 
-Collapsible like sidebar: open (220px) / closed (46px strip).
-
 ```
-Toggle button: ☰ hamburger (NOT the sidebar icon — different to avoid confusion)
-Title "Примеры вопросников" / "דוגמאות שאלונים": visible only when open (opacity fade)
-Toggle button stays fixed at same position regardless of open/closed state.
+Open state (260px):
+  [≡] ЭКЗАМЕНЫ / מבחנים          [👁 Предпросмотр]  ← button with border, rightmost
+  [56px spacer + 572 badge] [name · label]  [count] [›] | hover: [+][✎][🗑]
+    ↳ sessions (indented, expanded when type active):
+       [doc icon] [label]                             | hover: [✎][🗑]
+  [+ Шейлон] button — gr-add-row style
 
-Open state:
-  Type row: [number badge: 572] [▾/▸ chevron]  ← no title text, no session count
-  Session rows (visible when type selected):
-    [exam document icon 14px] [free label or "Без названия"]
-  [+ Вопросник] button at bottom — always visible, adds new shalon type
-
-Closed state (46px):
-  [☰ toggle]
-  [572 badge]  ← clickable, expands panel + selects type
-  [571 badge]
+Closed state (56px):
+  [≡] toggle (width:56px, justify-content:center — NEVER moves)
+  [572] badge (width:56px, justify-content:center)
+  [571] badge
+  ← es-nums-strip lives OUTSIDE es-body so it stays visible when body collapses
 ```
 
-Auto-close: panel closes automatically when a session is selected, giving more editor space.
+**es-body collapse:** `width:0; opacity:0; overflow:hidden; padding:0` (NOT display:none — smooth transition)
 
-**+ button (ctrl-bar) is context-aware:**
-- Type selected → «+ Новый срок» (adds session inside selected type)
-- Nothing selected → «+ Вопросник» (adds new shalon type)
+**Hover icons (sn-acts):**
+- Type row: `[+]` addSession · `[✎]` openRenameShalonModal · `[🗑]` deleteShalonType
+- Session row: `[✎]` openRenameSessionModal · `[🗑]` deleteSessionItem
+- Chevron `[›]` always visible as last element in sn-acts — never moves on hover
+- sa/sa-add buttons: `display:none` → `display:flex` on hover only
 
-### Session editor
+**CRUD modals:** single `shalonModal` with `_editingSession / _editingType / _addingSession` flags
 
-```
-Session header: [type number · session label] in cyan
-Metadata grid (4 cols): duration (min) | total questions (read-only) | answer K | pts/question
-Instructions field: free-form textarea (3 rows) — author writes any text; shown in preview as-is
-פרקים list: collapsible cards (same structure as Groups Constructor)
-+ Add פרק button
-Selection rules constructor (below פרקים)
-```
+**Drag-and-drop:** `esAttachDrag(row, st)` — reorders `shalonTypes[]` array
 
-### פרק card
+**esExpanded[id]:** independent open/close state per shalon type (NOT tied to selectedTypeId)
+
+### Session editor block order
 
 ```
-Header: [chevron] [badge Р1/פ1] [editable name input] [question count] [✕ delete]
-Body (when open):
-  Topics textarea (2 rows, italic placeholder)
-  Question rows
-  + Add question button
+1. meta-card: [572 · label]  [👁 Предпросмотр ←button with border]
+   Metadata grid (2 fields only):
+     Длительность (мин) | Доп. время (%)
+   Σ indicator: ✓ Σ = 100.0 = 100 ✓  (cyan) or  ⚠ Σ ≠ 100 (red)
+
+2. Instructions textarea (3 rows)
+
+3. Selection rules card
+
+4. פרקים (sections)
 ```
+
+### פרק model (UPDATED 2026-07-11)
+
+Each פרק has three fields (NOT session-level pointsPerQ):
+
+```
+pk.requiredQ   — how many questions student must solve (editable inline)
+pk.pointsPerQ  — points per solved question (editable inline)
+pk.totalQ      — auto = pk.questions.length (display only)
+
+Validation: Σ(pk.requiredQ × pk.pointsPerQ) = 100
+```
+
+פרק header:
+```
+[›] [Р1 badge] [editable name] [N שאלות, решить [__] × [__]б = Xб] [✕]
+```
+
+Inline inputs styled with `border-bottom:1px solid #475569` only — no box.
 
 ### Question row
 
 ```
 Header: [q-num circle] [pts badge amber] [✓ save indicator] [toolbar]
-  Toolbar: [∑ smart button] [📎 image] [✕ delete]
-Body: contenteditable field (min-height 60px, dark bg #0f172a / light #f8fafc)
-  — with image: text 66.7% | image 33.3%, vertical divider
-  — no image: full width
+  Toolbar: [∑] [📎] [💾] [✕]  ← all same style: 22×22px, no border, #cbd5e1 dark
+Body: contenteditable field
+```
 
-∑ button behavior (single smart button, replaces two-button approach):
-  — no focused math-field in this question → inserts new <math-field> at cursor + opens symbol panel
-  — math-field already focused → opens symbol panel only
-  — panel open → closes panel
-  onmousedown="event.preventDefault()" on all formula buttons — never steals focus
+**Save button (💾):** shows `✓` indicator for 1.4s — saves to data model (in-memory mockup).
+
+### Extra time in preview
+
+```
+⏱ 2 ч 30 мин
+с доп. временем: +25% = 3 ч 7 мин   ← separate line, #94a3b8
+```
+
+togglePreview() flushes all `.meta-input` values to model before switching mode.
+
+### Sub-questions (PENDING — next session)
+
+```
+Each q can have sub-questions:
+q.subQuestions = [{ id, label ('а'/'א'), content, images }]
+UI: [+ Подпункт] button, label badge, contenteditable + ∑ + 📎 + ✕
 ```
 
 ### Save indicator

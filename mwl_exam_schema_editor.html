@@ -7,6 +7,9 @@
 <script defer src="https://cdn.jsdelivr.net/npm/mathlive"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
 body{font-family:system-ui,sans-serif}
 .shell{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 .d{background:#0f172a}.l{background:#f8fafc}
@@ -18,51 +21,119 @@ body{font-family:system-ui,sans-serif}
 .d .bd{border-color:#334155!important}.l .bd{border-color:#e2e8f0!important}
 
 /* Header */
-.hdr{height:48px;display:flex;align-items:center;padding:0 14px;gap:10px;border-bottom:1px solid;flex-shrink:0}
+.hdr{height:48px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 14px;border-bottom:1px solid;flex-shrink:0}
+.hdr-left{display:flex;align-items:center;gap:10px}
+.hdr-center{display:flex;align-items:center;justify-content:center}
+.hdr-right{display:flex;align-items:center;justify-content:flex-end;gap:6px}
 .logo{width:26px;height:26px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo svg{stroke:#0f172a}
 .brand{font-size:13px;font-weight:500}.brand b{color:#22D3EE;font-weight:500}
-.srch{flex:1;max-width:280px;margin:0 10px;position:relative}
+.srch{width:100%;max-width:320px;position:relative}
 .srch input{width:100%;border-radius:8px;padding:6px 28px 6px 10px;font-size:12px;outline:none;font-family:inherit;border:1px solid}
 .d .srch input{background:#334155;border-color:#475569;color:#f1f5f9}
 .l .srch input{background:#f1f5f9;border-color:#e2e8f0;color:#0f172a}
-.si2{position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none}
-.hdr-r{display:flex;align-items:center;gap:6px;margin-inline-start:auto}
-.lang{display:flex;border-radius:6px;overflow:hidden;border:1px solid}
-.lb{padding:3px 7px;font-size:11px;cursor:pointer}
-.d .lb{color:#94a3b8}.l .lb{color:#64748b}
+.srch-ic{position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%);pointer-events:none}
 .lb.on{background:#22D3EE;color:#0f172a;font-weight:500}
 .hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid}
+.lg-wrap{position:relative;flex-shrink:0}
+.lg-dropdown{position:absolute;top:calc(100% + 8px);right:0;min-width:80px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s,transform .15s}
+.lg-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.d .lg-dropdown{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.l .lg-dropdown{background:#fff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.lg-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s}
+.d .lg-item{color:#94a3b8}.l .lg-item{color:#64748b}
+.d .lg-item:hover{background:#334155}.l .lg-item:hover{background:#f1f5f9}
+.lg-item.on{color:#22D3EE}
+.lg-check{width:12px;height:12px;flex-shrink:0;opacity:0}
+.lg-item.on .lg-check{opacity:1}
+.lg-overlay{position:fixed;inset:0;z-index:99;display:none}
+.lg-overlay.open{display:block}
+.av-wrap{position:relative;flex-shrink:0}
+.hav{width:28px;height:28px;min-width:28px;min-height:28px;border-radius:50%;background:#22D3EE;color:#0f172a;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;border:2px solid #22D3EE;flex-shrink:0}
+.av-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:200px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s,transform .15s}
+.av-drop-user{padding:10px 14px 8px;display:flex;flex-direction:column;gap:2px}
+.av-drop-name{font-size:12px;font-weight:600}
+.d .av-drop-name{color:#f1f5f9}.l .av-drop-name{color:#0f172a}
+.av-drop-email{font-size:11px;word-break:break-all}
+.d .av-drop-email{color:#94a3b8}.l .av-drop-email{color:#64748b}
+.av-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.d .av-dropdown{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.l .av-dropdown{background:#fff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.av-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s}
+.d .av-item{color:#e2e8f0}.l .av-item{color:#0f172a}
+.d .av-item:hover{background:#334155}.l .av-item:hover{background:#f1f5f9}
+.av-item svg{flex-shrink:0;opacity:.7}
+.d .av-item svg{stroke:#94a3b8}.l .av-item svg{stroke:#64748b}
+.av-item.danger{color:#f87171}
+.av-item.danger svg{stroke:#f87171;opacity:1}
+.av-divider{height:1px;margin:2px 0}
+.d .av-divider{background:#334155}.l .av-divider{background:#e2e8f0}
+.av-overlay{position:fixed;inset:0;z-index:99;display:none}
+.av-overlay.open{display:block}
+[dir="rtl"] .lg-dropdown{right:auto;left:0}
+[dir="rtl"] .av-dropdown{right:auto;left:0}
+.lg-wrap{position:relative;flex-shrink:0}
+.lg-dropdown{position:absolute;top:calc(100% + 8px);right:0;min-width:80px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s,transform .15s}
+.lg-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.d .lg-dropdown{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.l .lg-dropdown{background:#fff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.lg-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s}
+.d .lg-item{color:#94a3b8}.l .lg-item{color:#64748b}
+.d .lg-item:hover{background:#334155}.l .lg-item:hover{background:#f1f5f9}
+.lg-item.on{color:#22D3EE}
+.lg-check{width:12px;height:12px;flex-shrink:0;opacity:0}
+.lg-item.on .lg-check{opacity:1}
+.lg-overlay{position:fixed;inset:0;z-index:99;display:none}
+.lg-overlay.open{display:block}
+.av-wrap{position:relative;flex-shrink:0}
+.hav{width:28px;height:28px;min-width:28px;min-height:28px;border-radius:50%;background:#22D3EE;color:#0f172a;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;border:2px solid #22D3EE;flex-shrink:0}
+.av-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:200px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s,transform .15s}
+.av-drop-user{padding:10px 14px 8px;display:flex;flex-direction:column;gap:2px}
+.av-drop-name{font-size:12px;font-weight:600}
+.d .av-drop-name{color:#f1f5f9}.l .av-drop-name{color:#0f172a}
+.av-drop-email{font-size:11px;word-break:break-all}
+.d .av-drop-email{color:#94a3b8}.l .av-drop-email{color:#64748b}
+.av-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.d .av-dropdown{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.l .av-dropdown{background:#fff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.av-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s}
+.d .av-item{color:#e2e8f0}.l .av-item{color:#0f172a}
+.d .av-item:hover{background:#334155}.l .av-item:hover{background:#f1f5f9}
+.av-item svg{flex-shrink:0;opacity:.7}
+.d .av-item svg{stroke:#94a3b8}.l .av-item svg{stroke:#64748b}
+.av-item.danger{color:#f87171}
+.av-item.danger svg{stroke:#f87171;opacity:1}
+.av-divider{height:1px;margin:2px 0}
+.d .av-divider{background:#334155}.l .av-divider{background:#e2e8f0}
+.av-overlay{position:fixed;inset:0;z-index:99;display:none}
+.av-overlay.open{display:block}
+[dir="rtl"] .lg-dropdown{right:auto;left:0}
+[dir="rtl"] .av-dropdown{right:auto;left:0}
 
 /* Body / sidebar */
 .body{display:flex;flex:1;min-height:0}
-.sb{width:46px;display:flex;flex-direction:column;padding:8px 0;border-inline-end:1px solid;transition:width .2s;overflow:hidden;flex-shrink:0}
-.sb.open{width:164px;padding:8px 6px}
-.sbt{display:flex;align-items:center;justify-content:center;width:38px;height:38px;margin:0 auto 8px;border-radius:8px;cursor:pointer;border:0;background:transparent;flex-shrink:0}
+.sb{width:46px;display:flex;flex-direction:column;padding:8px 0;border-inline-end:1px solid;overflow:hidden;flex-shrink:0;transition:width .2s ease}
+.sb.open{width:164px}
+.sbt{display:flex;align-items:center;justify-content:center;width:46px;height:38px;margin:0 0 8px 0;border-radius:8px;cursor:pointer;border:0;background:transparent;flex-shrink:0}
 .sbt svg{flex-shrink:0}
 .d .sbt svg{stroke:#475569}.l .sbt svg{stroke:#94a3b8}
 .sbt:hover svg{stroke:#94a3b8!important}
-.sg,.sbm,.sbb{display:flex;flex-direction:column;gap:2px}.sbm{margin:auto 0}
-.ni{display:flex;align-items:center;width:38px;height:38px;margin:0 auto;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden;border:0;background:transparent;flex-shrink:0}
-.sb.open .ni{width:100%;margin:0;padding:0 8px}
-.ni .icon-wrap{width:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.sb.open .ni .icon-wrap{width:18px}
+.sb-g{display:flex;flex-direction:column;gap:2px}
+.sb-mid{margin:auto 0;display:flex;flex-direction:column;gap:2px}
+.sb-bot{display:flex;flex-direction:column;gap:2px}
+.sb-sep{height:1px;margin:6px 4px}
+.d .sb-sep{background:#1e293b}.l .sb-sep{background:#e2e8f0}
+.ni{display:flex;align-items:center;width:46px;height:38px;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden;border:0;background:transparent;flex-shrink:0;transition:background .15s}
+.sb.open .ni{width:100%;border-radius:6px}
+.d .ni:hover{background:#1e293b}.l .ni:hover{background:#f1f5f9}
+.ni .icon-wrap{width:46px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .ni svg{flex-shrink:0;transition:stroke .15s;display:block}
 .d .ni svg{stroke:#475569}.l .ni svg{stroke:#64748b}
 .ni.on svg{stroke:#22D3EE!important}
-.nl{font-size:12px;font-weight:500;opacity:0;transition:opacity .15s,color .15s;white-space:nowrap;margin-inline-start:8px}
+.nl{font-size:12px;font-weight:500;opacity:0;transition:opacity .15s,color .15s;white-space:nowrap;margin-inline-start:0}
 .d .nl{color:#475569}.l .nl{color:#64748b}
 .ni.on .nl{color:#22D3EE!important}
 .sb.open .nl{opacity:1}
-.nav-sub{display:none;flex-direction:column;gap:1px;padding-inline-start:14px;margin-top:2px;margin-bottom:4px}
-.sb.open .nav-sub{display:flex}
-.ni-sub{display:flex;align-items:center;gap:8px;font-size:11.5px;padding:6px 8px;border-radius:6px;cursor:pointer;white-space:nowrap}
-.ni-sub svg{flex-shrink:0}
-.d .ni-sub{color:#64748b}.l .ni-sub{color:#94a3b8}
-.d .ni-sub svg{stroke:#475569}.l .ni-sub svg{stroke:#94a3b8}
-.d .ni-sub:hover{background:#334155;color:#cbd5e1}.l .ni-sub:hover{background:#f1f5f9;color:#475569}
-.ni-sub.on{color:#22D3EE!important;font-weight:600}
-.ni-sub.on svg{stroke:#22D3EE!important}
 
 /* Ctrl bar */
 .ctrl{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid;align-items:center;flex-wrap:wrap;flex-shrink:0}
@@ -79,57 +150,102 @@ body{font-family:system-ui,sans-serif}
 .es-main{flex:1;display:flex;min-height:0}
 
 /* Shalonot list (left panel) */
-.es-list{
-  width:220px;flex-shrink:0;border-inline-end:1px solid;overflow-y:auto;padding:12px;
-  transition:width .2s ease, padding .2s ease;
-  position:relative;
-}
-.es-list.closed{width:46px;padding:8px 4px;overflow:hidden}
-.es-list.closed .es-list-body{display:none}
-.es-type-icon{
-  width:38px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:700;cursor:pointer;margin-bottom:4px;
-}
-.d .es-type-icon{background:#334155;color:#94a3b8}
-.l .es-type-icon{background:#e2e8f0;color:#475569}
-.es-type-icon.active{background:rgba(34,211,238,.15);color:#22D3EE}
-.es-type-icons{display:none;flex-direction:column;gap:4px;align-items:center;margin-top:8px}
-.es-list.closed .es-type-icons{display:flex}
-.es-list-header{
-  display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-shrink:0;
-  /* Always at the same position — hamburger is always at inline-start,
-     title slides in/out via opacity, not layout shift */
-}
-.es-list-toggle{
-  display:flex;align-items:center;justify-content:center;
-  width:30px;height:30px;border-radius:7px;cursor:pointer;
-  border:0;background:transparent;flex-shrink:0;
-}
-.d .es-list-toggle svg{stroke:#475569}.l .es-list-toggle svg{stroke:#94a3b8}
-.es-list-toggle:hover svg{stroke:#94a3b8!important}
-.es-list-header-title{
-  font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;
-  white-space:nowrap;overflow:hidden;
-  opacity:1;transition:opacity .15s;
-}
-.d .es-list-header-title{color:#475569}.l .es-list-header-title{color:#94a3b8}
-.es-list.closed .es-list-header-title{opacity:0;pointer-events:none}
+/* ES-LIST — sidebar style: overflow hidden + width transition */
+.es-list{width:260px;flex-shrink:0;display:flex;flex-direction:column;border-inline-end:1px solid;overflow:hidden;transition:width .2s ease}
 .d .es-list{background:#13233a}.l .es-list{background:#f3fbfc}
-.es-list-title{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
-.d .es-list-title{color:#475569}.l .es-list-title{color:#94a3b8}
-.shalon-item{display:flex;align-items:center;gap:8px;padding:9px 8px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:500;margin-bottom:4px}
-.d .shalon-item{color:#cbd5e1}.l .shalon-item{color:#334155}
-.d .shalon-item:hover{background:#273449}.l .shalon-item:hover{background:#e2ecf0}
-.shalon-item.active{background:rgba(34,211,238,0.12);color:#22D3EE!important}
-.shalon-num{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
-.d .shalon-num{background:#334155}.l .shalon-num{background:#e2e8f0}
-.shalon-item.active .shalon-num{background:rgba(34,211,238,0.15);color:#22D3EE}
-.shalon-body{flex:1;min-width:0}
-.shalon-label{font-size:11px;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.d .shalon-label{color:#64748b}.l .shalon-label{color:#94a3b8}
-.es-add-btn{display:flex;align-items:center;gap:6px;padding:8px;border-radius:8px;font-size:12px;cursor:pointer;margin-top:8px;border:1.5px dashed}
-.d .es-add-btn{color:#64748b;border-color:#475569}.l .es-add-btn{color:#94a3b8;border-color:#cbd5e1}
-.d .es-add-btn:hover{background:#1e293b;color:#cbd5e1}.l .es-add-btn:hover{background:#f8fafc;color:#475569}
+.es-list.closed{width:56px}
+.es-list.closed .es-title-label{display:none}
+.es-list.closed .es-lbl{opacity:0;width:0;overflow:hidden}
+.es-list.closed .es-cnt{display:none}
+.es-list.closed .es-chev{display:none}
+.es-list.closed .sn-acts{display:none!important}
+.es-list.closed .es-children{display:none!important}
+.es-list.closed .gr-add-row{display:none}
+
+/* Header row: toggle + title */
+.es-list-hdr{display:flex;align-items:center;height:38px;margin-bottom:2px;white-space:nowrap}
+.es-toggle{display:flex;align-items:center;justify-content:center;width:56px;height:38px;flex-shrink:0;border-radius:8px;cursor:pointer;border:0;background:transparent}
+.d .es-toggle svg{stroke:#94a3b8}.l .es-toggle svg{stroke:#475569}
+.es-toggle:hover svg{stroke:#94a3b8!important}
+.es-title-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+.d .es-title-label{color:#94a3b8}.l .es-title-label{color:#475569}
+/* Scrollable content */
+.es-body{width:204px;flex-shrink:0;overflow-y:auto;padding:0 8px 8px 8px;transition:width .2s ease,opacity .15s ease,padding .2s ease}
+.es-list.closed .es-body{width:0;opacity:0;overflow:hidden;padding:0}
+/* es-node: shalon row — num badge fixed at 46px like sidebar icon-wrap */
+.es-nums-strip{width:56px;flex-shrink:0;display:flex;flex-direction:column;gap:4px;padding-top:4px}
+.es-list:not(.closed) .es-nums-strip{display:none}
+.es-node-num{width:56px;height:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.es-num-badge{height:22px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;padding:0 6px}
+.d .es-num-badge{background:transparent;color:#64748b}.l .es-num-badge{background:transparent;color:#0891b2}
+.es-node.active .es-num-badge{background:transparent;color:#22D3EE}
+
+.es-list.closed .es-num-badge{display:flex}
+.d .es-list{background:#13233a}.l .es-list{background:#f3fbfc}
+.es-title-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;white-space:nowrap}
+.es-title-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px}
+.d .es-title-label{color:#94a3b8}.l .es-title-label{color:#475569}
+
+.d .es-toggle svg{stroke:#94a3b8}.l .es-toggle svg{stroke:#475569}
+.es-toggle:hover svg{stroke:#94a3b8!important}
+.es-tree-title{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;margin:4px 4px 10px}
+.d .es-title-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;white-space:nowrap}
+.es-title-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px}
+.d .es-title-label{color:#94a3b8}.l .es-title-label{color:#475569}
+
+.d .es-toggle svg{stroke:#94a3b8}.l .es-toggle svg{stroke:#475569}
+.es-toggle:hover svg{stroke:#94a3b8!important}
+.es-tree-title{color:#475569}.l .es-title-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;white-space:nowrap}
+.es-title-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px}
+.d .es-title-label{color:#94a3b8}.l .es-title-label{color:#475569}
+
+.d .es-toggle svg{stroke:#94a3b8}.l .es-toggle svg{stroke:#475569}
+.es-toggle:hover svg{stroke:#94a3b8!important}
+.es-tree-title{color:#94a3b8}
+/* Drag-and-drop for shalon rows */
+.es-node.drag-source{opacity:.4}
+.es-node.drag-over{outline:2px solid #22D3EE;border-radius:7px;background:rgba(34,211,238,0.08)!important}
+.es-node[draggable]{cursor:grab}
+.es-node[draggable]:active{cursor:grabbing}
+.es-node{display:flex;align-items:center;gap:0;padding:4px 0;border-radius:7px;cursor:pointer;font-size:12.5px;position:relative;transition:background .1s}
+.es-node-spacer{width:56px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.d .es-node{color:#cbd5e1}.l .es-node{color:#334155}
+.d .es-node:hover{background:#1e3040}.l .es-node:hover{background:#ddf0f7}
+.es-node.active .es-lbl{color:#22D3EE!important;font-weight:500}
+.es-node.active .es-chev svg{stroke:#22D3EE}
+.es-node .es-chev{width:14px;height:14px;flex-shrink:0;transition:transform .15s}
+.es-node .es-chev.open{transform:rotate(90deg)}
+.es-node .es-chev.empty{visibility:hidden}
+.es-node .es-lbl{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-inline-end:6px}
+.es-node .es-cnt{font-size:10px;flex-shrink:0}
+.d .es-node .es-cnt{color:#475569}.l .es-node .es-cnt{color:#94a3b8}
+.es-node .sn-acts{display:flex;align-items:center;gap:2px;flex-shrink:0;margin-inline-start:auto;padding:0 6px}
+.es-node .sn-acts .sa,.es-node .sn-acts .sa-add{display:none}
+.es-node:hover .sn-acts .sa,.es-node:hover .sn-acts .sa-add{display:flex}
+.es-node .sn-acts .es-chev{display:flex;flex-shrink:0}
+.es-children{padding-inline-start:20px;display:none}
+.es-children.open{display:block}
+.es-sess{display:flex;align-items:center;gap:6px;padding:4px 0 4px 56px;border-radius:7px;cursor:pointer;font-size:12px;position:relative;transition:background .1s}
+.d .es-sess{color:#94a3b8}.l .es-sess{color:#64748b}
+.d .es-sess:hover{background:#1e3040}.l .es-sess:hover{background:#ddf0f7}
+.es-sess.active .es-lbl{color:#22D3EE!important;font-weight:500}
+.es-sess .es-lbl{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.es-sess .sn-acts{display:flex;align-items:center;gap:2px;flex-shrink:0;margin-inline-start:auto;padding-inline-end:6px}
+.es-sess .sn-acts .sa{display:none}
+.es-sess:hover .sn-acts .sa{display:flex}
+.sa{width:18px;height:18px;border-radius:4px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.d .sa{color:#94a3b8}.l .sa{color:#94a3b8}
+.d .sa:hover{background:#334155;color:#22D3EE}.l .sa:hover{background:#c8e8f0;color:#0891b2}
+.sa-add{width:18px;height:18px;border-radius:4px;border:1px solid;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;font-size:14px;line-height:1}
+.d .sa-add{color:#94a3b8;border-color:#64748b}.l .sa-add{color:#94a3b8;border-color:#94a3b8}
+.d .sa-add:hover{border-color:#22D3EE;color:#22D3EE}.l .sa-add:hover{border-color:#0891b2;color:#0891b2}
+.gr-add-row{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;cursor:pointer;font-size:12px;margin-top:2px}
+.d .gr-add-row{color:#64748b}.l .gr-add-row{color:#94a3b8}
+.d .gr-add-row:hover{background:#1e3040;color:#cbd5e1}.l .gr-add-row:hover{background:#ddf0f7;color:#475569}
+#tip{position:fixed;z-index:600;padding:4px 8px;border-radius:5px;font-size:11px;font-weight:500;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .1s;transform:translateX(-50%)}
+#tip.show{opacity:1}
+.d #tip{background:#1e293b;color:#e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.l #tip{background:#334155;color:#f1f5f9;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 
 /* Editor / Preview panel */
 .es-editor{flex:1;overflow-y:auto;padding:20px 24px}
@@ -152,6 +268,7 @@ body{font-family:system-ui,sans-serif}
 .prek-header{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
 .d .prek-header:hover{background:#273449}.l .prek-header:hover{background:#f8fafc}
 .prek-chevron{transition:transform .15s;flex-shrink:0}
+.d .prek-chevron svg{stroke:#94a3b8}.l .prek-chevron svg{stroke:#475569}
 .prek-chevron.open{transform:rotate(90deg)}
 .prek-badge{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;color:#22D3EE;background:rgba(34,211,238,0.12)}
 .prek-name{flex:1}
@@ -176,13 +293,13 @@ body{font-family:system-ui,sans-serif}
 .q-toolbar{display:flex;align-items:center;gap:2px;margin-inline-start:auto}
 /* Atom editor exact: rtbtn = insert button, rmbtn = ⋮ menu button */
 .rtbtn{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:6px;font-size:10.5px;font-weight:500;cursor:pointer;border:none;background:transparent}
-.d .rtbtn{color:#94a3b8}.l .rtbtn{color:#64748b}
+.d .rtbtn{color:#cbd5e1}.l .rtbtn{color:#64748b}
 .rtbtn:hover{background:rgba(34,211,238,0.12);color:#22D3EE}
 .rmbtn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;cursor:pointer;border:none;background:transparent;font-size:13px}
-.d .rmbtn{color:#94a3b8}.l .rmbtn{color:#64748b}
+.d .rmbtn{color:#cbd5e1}.l .rmbtn{color:#64748b}
 .rmbtn:hover{background:rgba(34,211,238,0.12);color:#22D3EE}
 .q-tb-btn.danger{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;cursor:pointer;border:none;background:transparent;font-size:12px}
-.d .q-tb-btn.danger{color:#64748b}.l .q-tb-btn.danger{color:#94a3b8}
+.d .q-tb-btn.danger{color:#94a3b8}.l .q-tb-btn.danger{color:#94a3b8}
 .q-tb-btn.danger:hover{color:#f87171;background:rgba(248,113,113,.12)}
 .q-content{
   min-height:60px;padding:8px 10px;font-size:12.5px;line-height:1.7;outline:none;
@@ -204,6 +321,9 @@ body{font-family:system-ui,sans-serif}
 .d .q-image-thumb img{border-color:#475569}.l .q-image-thumb img{border-color:#e2e8f0}
 .q-img-del{position:absolute;top:-6px;inset-inline-end:-6px;width:18px;height:18px;border-radius:50%;background:#f87171;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;font-family:inherit}
 .q-save-indicator{font-size:10px;padding:2px 7px;border-radius:12px;opacity:0;transition:opacity .3s;pointer-events:none;flex-shrink:0}
+.q-save-btn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;cursor:pointer;border:none;background:transparent;padding:0}
+.d .q-save-btn{color:#cbd5e1}.l .q-save-btn{color:#64748b}
+.d .q-save-btn:hover{background:rgba(34,211,238,0.12);color:#22D3EE}.l .q-save-btn:hover{background:rgba(34,211,238,0.12);color:#0891b2}
 .d .q-save-indicator{color:#4ade80}.l .q-save-indicator{color:#16a34a}
 .q-save-indicator.show{opacity:1}
 
@@ -323,71 +443,96 @@ math-field.imf .ML__virtual-keyboard-toggle{display:none!important}
 .fmenu-item{display:flex;align-items:center;justify-content:center;padding:7px 2px;border-radius:6px;border:none;background:transparent;cursor:pointer;font-size:14px;font-family:'Cambria Math',Georgia,serif;direction:ltr}
 .d .fmenu-item{color:#f1f5f9}.l .fmenu-item{color:#0f172a}
 .fmenu-item:hover{background:rgba(34,211,238,0.14);color:#22D3EE}
+
+/* RTL: in closed state, toggle stays visually consistent */
+[dir="rtl"] .es-list{border-inline-end:1px solid}
 </style>
 </head>
 <body>
 <div class="shell d" id="shell">
 
   <div class="hdr p1 bd">
-    <div class="logo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 4h-10l6 8l-6 8h10"/></svg></div>
-    <div class="brand t1">Math <b>With Love</b></div>
-    <div class="srch"><input id="searchInput" placeholder="Поиск тем, формул..."><svg class="t3 si2" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg></div>
-    <div class="hdr-r">
-      <div class="lang bd"><span class="lb on" id="lbRu" onclick="setLang('ru')">RU</span><span class="lb" id="lbHe" onclick="setLang('he')">HE</span></div>
-      <div class="hico bd t2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg></div>
-      <div class="hico bd t2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5a5 5 0 0 1 11 0"/></svg></div>
+    <div class="hdr-left">
+      <div class="logo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 4h-10l6 8l-6 8h10"/></svg></div>
+      <div class="brand t1">Math <b>With Love</b></div>
+    </div>
+    <div class="hdr-center">
+      <div class="srch">
+        <input id="searchInput" placeholder="Поиск...">
+        <span class="srch-ic t3"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg></span>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="lg-wrap">
+        <div class="hico bd t2" id="lgBtn" onclick="toggleLangDD()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div class="lg-dropdown p1 bd" id="lgDropdown">
+          <div class="lg-item on" id="lgItemRu" onclick="setLang('ru');closeLangDD()"><span>RU</span><svg class="lg-check" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="lg-item" id="lgItemHe" onclick="setLang('he');closeLangDD()"><span>HE</span><svg class="lg-check" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+        </div>
+      </div>
+      <div class="lg-overlay" id="lgOverlay" onclick="closeLangDD()"></div>
+      <div class="hico bd t2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg></div>
+      <div class="av-wrap">
+        <div class="hav" id="havBtn" onclick="toggleDropdown()">ИА</div>
+        <div class="av-dropdown p1 bd" id="avDropdown">
+          <div class="av-drop-user"><div class="av-drop-name">Игаль</div><div class="av-drop-email">user@example.com</div></div>
+          <div class="av-divider"></div>
+          <div class="av-item" onclick="closeDropdown()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg><span data-i18n="dropProfile">Профиль</span></div>
+          <div class="av-item" onclick="closeDropdown()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span data-i18n="dropSettings">Настройки</span></div>
+          <div class="av-divider"></div>
+          <div class="av-item danger" onclick="closeDropdown()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span data-i18n="dropLogout">Выйти</span></div>
+        </div>
+      </div>
+      <div class="av-overlay" id="avOverlay" onclick="closeDropdown()"></div>
     </div>
   </div>
 
   <div class="body">
     <div class="sb p1 bd" id="sb">
-      <div class="sbt" onclick="toggleSb()">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+      <button class="sbt" onclick="toggleSb()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+      </button>
+      <div class="sb-g">
+        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></svg></span><span class="nl" data-i18n="navHome">Главная</span></div>
+        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span><span class="nl" data-i18n="navShalon">Шейлоны</span></div>
+        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="13" width="7" height="7" rx="1.5"/><rect x="14" y="13" width="7" height="7" rx="1.5"/></svg></span><span class="nl" data-i18n="navGroups">Группы</span></div>
+        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg></span><span class="nl" data-i18n="navAtom">Атом</span></div>
+        <div class="ni on"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6a1 1 0 0 1 1 1v3.5a1 1 0 0 1-.4.8l-3.6 2.7l3.6 2.7a1 1 0 0 1 .4.8v3.5a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-3.5a1 1 0 0 1 .4-.8l3.6-2.7l-3.6-2.7a1 1 0 0 1-.4-.8v-3.5a1 1 0 0 1 1-1z"/></svg></span><span class="nl" data-i18n="navExam">Экзамен</span></div>
+        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="6" cy="20" r="2"/><circle cx="18" cy="20" r="2"/><path d="M7.8 7.2l2.5 4.1M16.2 7.2l-2.5 4.1M10.5 14.7l-2.7 3.8M13.5 14.7l2.7 3.8"/></svg></span><span class="nl" data-i18n="navGraph">Граф</span></div>
       </div>
-      <div class="sg">
-        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span><span class="nl" data-i18n="navDashboard">Дашборд</span></div>
-        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><line x1="3" y1="6" x2="3" y2="19"/><line x1="12" y1="6" x2="12" y2="19"/><line x1="21" y1="6" x2="21" y2="19"/></svg></span><span class="nl" data-i18n="navModules">Модули</span></div>
-        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="3" y2="21"/><line x1="21" y1="21" x2="3" y2="21"/><path d="M7 17v-3"/><path d="M11 17v-6"/><path d="M15 17v-9"/></svg></span><span class="nl" data-i18n="navProgress">Прогресс</span></div>
-        <div class="ni on" onclick="onContentClick()"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span><span class="nl" data-i18n="navContent">Контент</span></div>
-        <div class="nav-sub">
-          <div class="ni-sub"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="13" r="2.5"/><circle cx="6" cy="20" r="2.5"/><circle cx="18" cy="20" r="2.5"/><path d="M8.2 7.2L10.5 11.3M15.8 7.2L13.5 11.3M10.5 14.7L7.8 18M13.5 14.7L16.2 18"/></svg><span data-i18n="subGraph">Карта графа</span></div>
-          <div class="ni-sub"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg><span data-i18n="subAtomEditor">Редактор атома</span></div>
-          <div class="ni-sub"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="13" width="7" height="7" rx="1.5"/><rect x="14" y="13" width="7" height="7" rx="1.5"/></svg><span data-i18n="subGroups">Группы</span></div>
-          <div class="ni-sub on"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6a1 1 0 0 1 1 1v3.5a1 1 0 0 1-.4.8l-3.6 2.7 3.6 2.7a1 1 0 0 1 .4.8v3.5a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-3.5a1 1 0 0 1 .4-.8l3.6-2.7-3.6-2.7a1 1 0 0 1-.4-.8v-3.5a1 1 0 0 1 1-1z"/></svg><span data-i18n="subExam">Примеры вопросников</span></div>
-        </div>
+      <div class="sb-sep"></div>
+      <div class="sb-mid">
+        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="9" ry="4"/><ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(120 12 12)"/></svg></span><span class="nl" data-i18n="navLab">Лаборатория</span></div>
       </div>
-      <div class="sbm">
-        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="9" y2="4"/><line x1="6" y1="13" x2="13" y2="13"/><path d="M15 20l5-16"/><path d="M14 8h7"/></svg></span><span class="nl" data-i18n="navFormulas">Формулы</span></div>
-        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9l-8 4.5l-8-4.5v-9z"/></svg></span><span class="nl" data-i18n="navLab">Лаборатория</span></div>
-      </div>
-      <div class="sbb">
-        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51v.17a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1h-.17a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span class="nl" data-i18n="navSettings">Настройки</span></div>
+      <div class="sb-sep"></div>
+      <div class="sb-bot">
+        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="17" x2="12.01" y2="17"/><path d="M12 13.5a1.5 1.5 0 0 1 1-1.5a2.6 2.6 0 1 0-3-4"/></svg></span><span class="nl" data-i18n="navHelp">Помощь</span></div>
+        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span class="nl" data-i18n="navSettings">Настройки</span></div>
       </div>
     </div>
-
     <div class="es-col">
       <div class="ctrl p1 bd">
         <button class="tcb on" id="btnDark" onclick="setMode('d')">🌙 <span data-i18n="themeDark">Тёмная</span></button>
         <button class="tcb" id="btnLight" onclick="setMode('l')">☀ <span data-i18n="themeLight">Светлая</span></button>
-        <div class="div1"></div>
-        <span class="t2" style="font-size:12px;" id="ctxLabel">Примеры вопросников · Багрут 572</span>
-        <div style="flex:1"></div>
-        <button class="tcb tcb-act" id="translateBtn" onclick="openTranslateModal()">RU → HE</button>
-        <button class="tcb tcb-act" id="btnPreview" onclick="togglePreview()">👁 <span data-i18n="previewBtn">Превью</span></button>
-        <button class="tcb tcb-act" id="btnAddCtx" onclick="addContextual()">+ <span id="addCtxLabel">Вопросник</span></button>
       </div>
 
       <div class="es-main">
 
-        <div class="es-list bd" id="esList">
-          <div class="es-list-header">
-            <button class="es-list-toggle" id="esListToggle" onclick="toggleList()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+        <div class="es-list p1 bd" id="esList">
+          <div class="es-list-hdr">
+            <button class="es-toggle" onclick="toggleEsList()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
             </button>
-            <span class="es-list-header-title" id="esListTitle">Примеры вопросников</span>
+            <span class="es-title-label" data-i18n="esListTitle">Экзамены</span>
           </div>
-          <div class="es-type-icons" id="typeIcons"></div>
-          <div class="es-list-body" id="shalonList" style="overflow-y:auto;flex:1"></div>
+          <!-- Number badges — visible only in closed state -->
+          <div class="es-nums-strip" id="esNumsStrip"></div>
+          <div class="es-body" id="esBody">
+            <div id="shalonList"></div>
+          </div>
+          <div id="tip"></div>
         </div>
 
         <div class="es-editor" id="editorPanel"></div>
@@ -453,16 +598,19 @@ math-field.imf .ML__virtual-keyboard-toggle{display:none!important}
 // ===================== i18n =====================
 var TR = {
   ru:{
+    navHome:'Главная', navShalon:'Шейлоны', navGroups:'Группы', navAtom:'Атом', navExam:'Экзамен', navGraph:'Граф', navHelp:'Помощь',
+    dropProfile:'Профиль', dropSettings:'Настройки', dropLogout:'Выйти',
+    esListTitle:'Экзамены',
     navDashboard:'Дашборд', navModules:'Модули', navProgress:'Прогресс',
     navContent:'Контент', navFormulas:'Формулы', navLab:'Лаборатория', navSettings:'Настройки',
     subGraph:'Карта графа', subAtomEditor:'Редактор атома', subGroups:'Группы', subExam:'Примеры вопросников',
     themeDark:'Тёмная', themeLight:'Светлая',
-    previewBtn:'Превью', addShalon:'Новый вопросник',
+    previewBtn:'Предпросмотр', addShalon:'Шейлон',
     addSession:'Новый срок',
     instructionsLabel:'Инструкции',
     instructionsPlh:'Текст инструкций для студента...',
     ctxLabel:'Примеры вопросников · Багрут',
-    examNum:'Номер вопросника', examDuration:'Длительность', examTotalQ:'Всего вопросов',
+    examNum:'Номер вопросника', examDuration:'Длительность (мин)', examExtraTime:'Доп. время (%)',examTotalQ:'Всего вопросов',
     examAnswerK:'Ответить на', examPtsPerQ:'Баллов за вопрос',
     prakim:'Разделы (פרקים)',
     topicsPlaceholder:'Темы раздела (текст или формулы)...',
@@ -471,7 +619,7 @@ var TR = {
     selectionRules:'Правила выбора',
     ruleTotal1:'Ответить на', ruleTotal2:'вопросов из',
     ruleTotal3:'всего', ruleMinFrom:'Минимум',
-    ruleFrom:'из раздела', addConstraint:'+ Добавить ограничение', addOr:'или',
+    ruleFrom:'из раздела', addConstraint:'Добавить ограничение', addOr:'или',
     insertFormula:'∑ Формула', insertImage:'📎 Рисунок',
     preview571:'Математика · 5 יחידות · שאלון ראשון',
     preview572:'Математика · 5 יחידות · שאלון שני',
@@ -486,16 +634,19 @@ var TR = {
     minutesLabel:'мин'
   },
   he:{
+    navHome:'ראשי', navShalon:'שאלונים', navGroups:'קבוצות', navAtom:'יחידה', navExam:'מבחן', navGraph:'גרף', navHelp:'עזרה',
+    dropProfile:'פרופיל', dropSettings:'הגדרות', dropLogout:'יציאה',
+    esListTitle:'מבחנים',
     navDashboard:'לוח בקרה', navModules:'מודולים', navProgress:'התקדמות',
     navContent:'תוכן', navFormulas:'נוסחאות', navLab:'מעבדה', navSettings:'הגדרות',
     subGraph:'מפת הגרף', subAtomEditor:'עורך אטום', subGroups:'קבוצות', subExam:'דוגמאות שאלונים',
     themeDark:'כהה', themeLight:'בהיר',
-    previewBtn:'תצוגה מקדימה', addShalon:'שאלון חדש',
+    previewBtn:'תצוגה מקדימה', addShalon:'שאלון',
     addSession:'מועד חדש',
     instructionsLabel:'הוראות',
     instructionsPlh:'טקסט ההוראות לתלמיד...',
     ctxLabel:'דוגמאות שאלונים',
-    examNum:'מספר השאלון', examDuration:'משך הבחינה', examTotalQ:'סה"כ שאלות',
+    examNum:'מספר השאלון', examDuration:'משך (דקות)', examExtraTime:'זמן נוסף (%)',examTotalQ:'סה"כ שאלות',
     examAnswerK:'לענות על', examPtsPerQ:'נקודות לשאלה',
     prakim:'פרקים',
     topicsPlaceholder:'נושאי הפרק (טקסט או נוסחאות)...',
@@ -504,7 +655,7 @@ var TR = {
     selectionRules:'כללי הבחירה',
     ruleTotal1:'לענות על', ruleTotal2:'שאלות מתוך',
     ruleTotal3:'סה"כ', ruleMinFrom:'לפחות',
-    ruleFrom:'מהפרק', addConstraint:'+ הוספת הגבלה', addOr:'או',
+    ruleFrom:'מהפרק', addConstraint:'הוספת הגבלה', addOr:'או',
     insertFormula:'∑ נוסחה', insertImage:'📎 ציור',
     preview571:'מתמטיקה · 5 יחידות לימוד – שאלון ראשון',
     preview572:'מתמטיקה · 5 יחידות לימוד – שאלון שני',
@@ -533,8 +684,8 @@ function applyI18n(){
 }
 function setLang(lang){
   currentLang = lang;
-  document.getElementById('lbRu').className = 'lb'+(lang==='ru'?' on':'');
-  document.getElementById('lbHe').className = 'lb'+(lang==='he'?' on':'');
+  document.getElementById('lgItemRu').classList.toggle('on', lang==='ru');
+  document.getElementById('lgItemHe').classList.toggle('on', lang==='he');
   document.getElementById('shell').setAttribute('dir', lang==='he'?'rtl':'ltr');
   applyI18n();
   updateTranslateBtn();
@@ -596,7 +747,7 @@ var shalonTypes = [
         instructions:'',
         durationMin:150, pointsPerQ:33.33,
         prakim:[
-          {id:'pk1', nameHE:'פרק ראשון', nameRU:'Раздел первый',
+          {id:'pk1', requiredQ:2, pointsPerQ:25, nameHE:'פרק ראשון', nameRU:'Раздел первый',
            topicsHE:'גאומטרייה אנליטית, וקטורים, טריגונומטרייה במרחב, מספרים מרוכבים',
            topicsRU:'Аналитическая геометрия, векторы, тригонометрия в пространстве, комплексные числа',
            open:true,
@@ -605,7 +756,7 @@ var shalonTypes = [
              {id:'q2',num:2,content:'',images:[]},
              {id:'q3',num:3,content:'',images:[]}
            ]},
-          {id:'pk2', nameHE:'פרק שני', nameRU:'Раздел второй',
+          {id:'pk2', requiredQ:2, pointsPerQ:25, nameHE:'פרק שני', nameRU:'Раздел второй',
            topicsHE:'גדילה ודעיכה, פונקציות מעריכיות ולוגריתמיות',
            topicsRU:'Рост и убывание, показательные и логарифмические функции',
            open:true,
@@ -628,7 +779,7 @@ var shalonTypes = [
         instructions:'',
         durationMin:150, pointsPerQ:33.33,
         prakim:[
-          {id:'pk1b', nameHE:'פרק ראשון', nameRU:'Раздел первый',
+          {id:'pk1b', requiredQ:2, pointsPerQ:25, nameHE:'פרק ראשון', nameRU:'Раздел первый',
            topicsHE:'גאומטרייה אנליטית, וקטורים, טריגונומטרייה במרחב, מספרים מרוכבים',
            topicsRU:'Аналитическая геометрия, векторы, тригонометрия в пространстве, комплексные числа',
            open:false,
@@ -637,7 +788,7 @@ var shalonTypes = [
              {id:'q2b',num:2,content:'',images:[]},
              {id:'q3b',num:3,content:'',images:[]}
            ]},
-          {id:'pk2b', nameHE:'פרק שני', nameRU:'Раздел второй',
+          {id:'pk2b', requiredQ:2, pointsPerQ:25, nameHE:'פרק שני', nameRU:'Раздел второй',
            topicsHE:'גדילה ודעיכה, פונקציות מעריכיות ולוגריתמיות',
            topicsRU:'Рост и убывание, показательные и логарифмические функции',
            open:false,
@@ -660,7 +811,7 @@ var shalonTypes = [
         instructions:'',
         durationMin:150, pointsPerQ:33.33,
         prakim:[
-          {id:'pk1c', nameHE:'פרק ראשון', nameRU:'Раздел первый',
+          {id:'pk1c', requiredQ:2, pointsPerQ:25, nameHE:'פרק ראשון', nameRU:'Раздел первый',
            topicsHE:'גאומטרייה אנליטית, וקטורים, טריגונומטרייה במרחב, מספרים מרוכבים',
            topicsRU:'Аналитическая геометрия, векторы, тригонометрия в пространстве, комплексные числа',
            open:false,
@@ -669,7 +820,7 @@ var shalonTypes = [
              {id:'q2c',num:2,content:'',images:[]},
              {id:'q3c',num:3,content:'',images:[]}
            ]},
-          {id:'pk2c', nameHE:'פרק שני', nameRU:'Раздел второй',
+          {id:'pk2c', requiredQ:2, pointsPerQ:25, nameHE:'פרק שני', nameRU:'Раздел второй',
            topicsHE:'גדילה ודעיכה, פונקציות מעריכיות ולוגריתמיות',
            topicsRU:'Рост и убывание, показательные и логарифмические функции',
            open:false,
@@ -698,19 +849,19 @@ var shalonTypes = [
         instructions:'',
         durationMin:225, pointsPerQ:20,
         prakim:[
-          {id:'pk1_571', nameHE:'פרק ראשון', nameRU:'Раздел первый',
+          {id:'pk1_571', requiredQ:2, pointsPerQ:25, nameHE:'פרק ראשון', nameRU:'Раздел первый',
            topicsHE:'שאלות קצרות', topicsRU:'Короткие вопросы',
            open:false,
            questions:[{id:'q1_571',num:1,content:'',images:[]}]},
-          {id:'pk2_571', nameHE:'פרק שני', nameRU:'Раздел второй',
+          {id:'pk2_571', requiredQ:2, pointsPerQ:25, nameHE:'פרק שני', nameRU:'Раздел второй',
            topicsHE:'אינדוקציה, סדרות והסתברות', topicsRU:'Индукция, ряды и вероятность',
            open:false,
            questions:[{id:'q2_571',num:2,content:'',images:[]},{id:'q3_571',num:3,content:'',images:[]}]},
-          {id:'pk3_571', nameHE:'פרק שלישי', nameRU:'Раздел третий',
+          {id:'pk3_571', requiredQ:2, pointsPerQ:25, nameHE:'פרק שלישי', nameRU:'Раздел третий',
            topicsHE:'גאומטרייה וטריגונומטרייה במישור', topicsRU:'Геометрия и тригонометрия на плоскости',
            open:false,
            questions:[{id:'q4_571',num:4,content:'',images:[]},{id:'q5_571',num:5,content:'',images:[]}]},
-          {id:'pk4_571', nameHE:'פרק רביעי', nameRU:'Раздел четвёртый',
+          {id:'pk4_571', requiredQ:2, pointsPerQ:25, nameHE:'פרק רביעי', nameRU:'Раздел четвёртый',
            topicsHE:'חשבון דיפרנציאלי ואינטגרלי', topicsRU:'Дифференциальное и интегральное исчисление',
            open:false,
            questions:[{id:'q6_571',num:6,content:'',images:[]},{id:'q7_571',num:7,content:'',images:[]},{id:'q8_571',num:8,content:'',images:[]}]}
@@ -730,19 +881,19 @@ var shalonTypes = [
         instructions:'',
         durationMin:225, pointsPerQ:20,
         prakim:[
-          {id:'pk1_571b', nameHE:'פרק ראשון', nameRU:'Раздел первый',
+          {id:'pk1_571b', requiredQ:2, pointsPerQ:25, nameHE:'פרק ראשון', nameRU:'Раздел первый',
            topicsHE:'שאלות קצרות', topicsRU:'Короткие вопросы',
            open:false,
            questions:[{id:'q1_571b',num:1,content:'',images:[]}]},
-          {id:'pk2_571b', nameHE:'פרק שני', nameRU:'Раздел второй',
+          {id:'pk2_571b', requiredQ:2, pointsPerQ:25, nameHE:'פרק שני', nameRU:'Раздел второй',
            topicsHE:'אינדוקציה, סדרות והסתברות', topicsRU:'Индукция, ряды и вероятность',
            open:false,
            questions:[{id:'q2_571b',num:2,content:'',images:[]},{id:'q3_571b',num:3,content:'',images:[]}]},
-          {id:'pk3_571b', nameHE:'פרק שלישי', nameRU:'Раздел третий',
+          {id:'pk3_571b', requiredQ:2, pointsPerQ:25, nameHE:'פרק שלישי', nameRU:'Раздел третий',
            topicsHE:'גאומטרייה וטריגונומטרייה במישור', topicsRU:'Геометрия и тригонометрия на плоскости',
            open:false,
            questions:[{id:'q4_571b',num:4,content:'',images:[]},{id:'q5_571b',num:5,content:'',images:[]}]},
-          {id:'pk4_571b', nameHE:'פרק רביעי', nameRU:'Раздел четвёртый',
+          {id:'pk4_571b', requiredQ:2, pointsPerQ:25, nameHE:'פרק רביעי', nameRU:'Раздел четвёртый',
            topicsHE:'חשבון דיפרנציאלי ואינטגרלי', topicsRU:'Дифференциальное и интегральное исчисление',
            open:false,
            questions:[{id:'q6_571b',num:6,content:'',images:[]},{id:'q7_571b',num:7,content:'',images:[]},{id:'q8_571b',num:8,content:'',images:[]}]}
@@ -762,8 +913,26 @@ var shalonTypes = [
 
 // Helper lookups
 var selectedTypeId = 'st572';
+var esExpanded = {}; // tracks expanded state per shalon type, independent of selection
 var selectedSessionId = 's572_2026a';
 var previewMode = false;
+function togglePreview(){
+  // Flush all meta inputs to model before preview
+  var sess = sessionById(selectedSessionId);
+  if(sess){
+    document.querySelectorAll('.meta-input').forEach(function(el){
+      var k = el.getAttribute('data-key');
+      var v = parseFloat(el.value);
+      if(isNaN(v)) return;
+      if(k==='durationMin') sess.durationMin = v;
+      else if(k==='extraTime') sess.extraTime = v;
+      else if(k==='totalQ') sess.totalQOverride = v;
+      else if(k==='answerK') sess.rules.totalAnswer = v;
+    });
+  }
+  previewMode = !previewMode;
+  renderEditor();
+}
 var listOpen = true;
 var _translateResult = null;  // starts open, closes after selecting a session
 
@@ -779,8 +948,7 @@ function updateAddBtn(){
   // type selected and session selected  → "Новый срок" (add to current type)
   // nothing/ambiguous → "Вопросник"
   var t = TR[currentLang];
-  var label = document.getElementById('addCtxLabel');
-  if(!label) return;
+  var label = document.getElementById('addCtxLabel'); if(!label) return;
   if(selectedTypeId){
     label.textContent = t.addSession || (currentLang==='he'?'מועד חדש':'Новый срок');
   } else {
@@ -831,118 +999,174 @@ function renderShalonList(){
   var t = TR[currentLang];
   var wrap = document.getElementById('shalonList');
   wrap.innerHTML = '';
-
-  shalonTypes.forEach(function(st){
-    // Type header
-    var typeDiv = document.createElement('div');
-    typeDiv.className = 'shalon-item'+(selectedTypeId===st.id?' active':'');
-    typeDiv.style.marginBottom='4px';
-    var isActive = selectedTypeId===st.id;
-    typeDiv.innerHTML =
-      '<div class="shalon-num" style="font-size:15px;font-weight:700;'+(isActive?'background:rgba(34,211,238,.15);color:#22D3EE':'')+'">'+st.number+'</div>'+
-      '<span style="flex:1"></span>'+
-      '<span style="font-size:12px;color:#475569;cursor:pointer;margin-inline-end:2px" onclick="event.stopPropagation();toggleType(\''+st.id+'\')">'+(isActive?'&#9662;':'&#9656;')+'</span>';
-    typeDiv.onclick = function(){ selectedTypeId=st.id; if(st.sessions.length>0){ selectedSessionId=st.sessions[0].id; } renderShalonList(); renderEditor(); updateAddBtn(); };
-    wrap.appendChild(typeDiv);
-
-    // Sessions list (visible when type is selected)
-    if(selectedTypeId===st.id){
-      st.sessions.forEach(function(sess){
-        var sessDiv = document.createElement('div');
-        sessDiv.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 8px 6px 18px;border-radius:8px;cursor:pointer;font-size:12px;margin-bottom:2px';
-        var isSel = selectedSessionId===sess.id;
-        sessDiv.style.background = isSel ? 'rgba(34,211,238,0.1)' : '';
-        sessDiv.style.color = isSel ? '#22D3EE' : '';
-        var label = sessionLabel(sess, currentLang);
-        sessDiv.innerHTML =
-          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="'+(isSel?'#22D3EE':'#64748b')+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg>'+
-          '<span style="flex:1;font-weight:'+(isSel?'600':'400')+'">' +label+'</span>';
-        sessDiv.onclick = function(e){
-    e.stopPropagation();
-    selectedSessionId=sess.id; previewMode=false;
-    // auto-close the list panel to give more space to the editor
-    listOpen=false;
-    document.getElementById('esList').classList.add('closed');
-    renderShalonList(); renderEditor(); updateAddBtn();
-  };
-        wrap.appendChild(sessDiv);
-      });
-      // session add button removed — handled by context-aware ctrl-bar button
-    }
-  });
-
-  // Add new shalon type button — always at bottom of the list
-  var addTypeBtn = document.createElement('div');
-  addTypeBtn.className = 'es-add-btn';
-  addTypeBtn.style.cssText = 'margin-top:10px;';
-  addTypeBtn.innerHTML =
-    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> '+
-    (currentLang==='he' ? 'שאלון חדש' : 'Вопросник');
-  addTypeBtn.onclick = addShalon;
-  wrap.appendChild(addTypeBtn);
-
-  // Render collapsed icon strip (only numbers, no sessions)
-  var iconsWrap = document.getElementById('typeIcons');
-  if(iconsWrap){
-    iconsWrap.innerHTML = '';
+  // Update number badges strip (shown in closed state)
+  var numsStrip = document.getElementById('esNumsStrip');
+  if(numsStrip){
+    numsStrip.innerHTML = '';
     shalonTypes.forEach(function(st){
-      var ic = document.createElement('div');
-      ic.className = 'es-type-icon'+(st.id===selectedTypeId?' active':'');
-      ic.textContent = st.number;
-      ic.title = st.number;
-      ic.onclick = function(){
-        selectedTypeId = st.id;
-        if(st.sessions.length>0) selectedSessionId = st.sessions[0].id;
-        listOpen = true;
-        document.getElementById('esList').classList.remove('closed');
-        renderShalonList(); renderEditor(); updateAddBtn();
-      };
-      iconsWrap.appendChild(ic);
+      var b = document.createElement('div');
+      b.className = 'es-node-num';
+      var badge = document.createElement('span');
+      badge.className = 'es-num-badge'+(selectedTypeId===st.id?' active':'');
+      badge.textContent = st.number;
+      b.appendChild(badge);
+      b.onclick = function(){ selectedTypeId=st.id; esExpanded[st.id]=true; if(st.sessions&&st.sessions.length>0) selectedSessionId=st.sessions[0].id; renderShalonList(); renderEditor(); updateAddBtn(); };
+      numsStrip.appendChild(b);
     });
   }
 
-  // Update ctx label
-  var sess = sessionById(selectedSessionId);
-  var ctxEl = document.getElementById('ctxLabel');
-  if(ctxEl && sess){
-    var st2 = shalonTypes.find(function(s){ return s.id===selectedTypeId; });
-    ctxEl.textContent = t.ctxLabel.split('·')[0].trim() + ' · ' + (st2?st2.number:'') + ' · ' + sessionLabel(sess,currentLang);
-  }
+  shalonTypes.forEach(function(st){
+    var isActive = selectedTypeId===st.id;
+    var hasKids  = st.sessions && st.sessions.length>0;
+    var container = document.createElement('div');
+
+    // Type row
+    var row = document.createElement('div');
+    row.className = 'es-node'+(isActive?' active':'');
+
+    // Fixed-width spacer aligns text with burger above
+    var spacer = document.createElement('span');
+    spacer.className = 'es-node-spacer';
+    // Show number badge inside spacer
+    var badge2 = document.createElement('span');
+    badge2.className = 'es-num-badge';
+    badge2.textContent = st.number;
+    spacer.appendChild(badge2);
+    row.appendChild(spacer);
+
+    var lbl = document.createElement('span');
+    lbl.className = 'es-lbl';
+    lbl.textContent = st.name || '';
+    row.appendChild(lbl);
+
+    var cnt = document.createElement('span');
+    cnt.className = 'es-cnt';
+    cnt.textContent = hasKids?st.sessions.length:'';
+    row.appendChild(cnt);
+
+    var isExpanded = esExpanded[st.id] !== false && isActive || esExpanded[st.id] === true;
+
+    // Chevron + actions — all pinned to right edge
+    var acts = document.createElement('span');
+    acts.className = 'sn-acts';
+
+    // Chevron as first item in acts
+    var chev = document.createElement('span');
+    chev.className = 'es-chev'+(hasKids?'':' empty')+(isExpanded?' open':'');
+    chev.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6l-6 6"/></svg>';
+    chev.onclick = function(ev){
+      ev.stopPropagation();
+      esExpanded[st.id] = !isExpanded;
+      renderShalonList();
+    };
+    // sa buttons — appear on hover, left of chev
+    var btnAdd = document.createElement('button');
+    btnAdd.className = 'sa-add';
+    btnAdd.setAttribute('data-tip', currentLang==='he'?'+ מועד':'+ Срок');
+    btnAdd.textContent = '+';
+    btnAdd.onclick = function(ev){ ev.stopPropagation(); addSession(st.id); };
+    acts.appendChild(btnAdd);
+    var btnRen = document.createElement('button');
+    btnRen.className = 'sa';
+    btnRen.setAttribute('data-tip', currentLang==='he'?'שינוי שם':'Переименовать');
+    btnRen.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+    btnRen.onclick = function(ev){ ev.stopPropagation(); openRenameShalonModal(st.id); };
+    acts.appendChild(btnRen);
+    var btnDel = document.createElement('button');
+    btnDel.className = 'sa';
+    btnDel.setAttribute('data-tip', currentLang==='he'?'מחיקה':'Удалить');
+    btnDel.style.color = '#f87171';
+    btnDel.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
+    btnDel.onclick = function(ev){ ev.stopPropagation(); deleteShalonType(st.id); };
+    acts.appendChild(btnDel);
+    // chev always last — stays rightmost, never moves
+    acts.appendChild(chev);
+    row.appendChild(acts);
+    esAttachDrag(row, st);
+    row.onclick = function(){ selectedTypeId=st.id; esExpanded[st.id]=true; if(st.sessions&&st.sessions.length>0) selectedSessionId=st.sessions[0].id; renderShalonList(); renderEditor(); updateAddBtn(); };
+    container.appendChild(row);
+
+    // Sessions
+    if(hasKids){
+      var childWrap = document.createElement('div');
+      childWrap.className = 'es-children'+(isExpanded?' open':'');
+      st.sessions.forEach(function(sess){
+        var isSel = selectedSessionId===sess.id;
+        var sRow = document.createElement('div');
+        sRow.className = 'es-sess'+(isSel?' active':'');
+        var sActs = document.createElement('span');
+        sActs.className = 'sn-acts';
+        var sBtnRen = document.createElement('button');
+        sBtnRen.className = 'sa';
+        sBtnRen.setAttribute('data-tip', currentLang==='he'?'שינוי שם':'Переименовать');
+        sBtnRen.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+        sBtnRen.onclick = function(ev){ ev.stopPropagation(); openRenameSessionModal(st.id, sess.id); };
+        sActs.appendChild(sBtnRen);
+        var sBtnDel = document.createElement('button');
+        sBtnDel.className = 'sa';
+        sBtnDel.setAttribute('data-tip', currentLang==='he'?'מחיקה':'Удалить');
+        sBtnDel.style.color = '#f87171';
+        sBtnDel.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
+        sBtnDel.onclick = function(ev){ ev.stopPropagation(); deleteSessionItem(st.id, sess.id); };
+        sActs.appendChild(sBtnDel);
+        var icon = document.createElement('svg');
+        icon.setAttribute('width','13'); icon.setAttribute('height','13');
+        icon.setAttribute('viewBox','0 0 24 24'); icon.setAttribute('fill','none');
+        icon.setAttribute('stroke','currentColor'); icon.setAttribute('stroke-width','1.8');
+        icon.setAttribute('stroke-linecap','round'); icon.setAttribute('stroke-linejoin','round');
+        icon.style.flexShrink = '0';
+        icon.innerHTML = '<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/>';
+        var sLbl = document.createElement('span');
+        sLbl.className = 'es-lbl';
+        sLbl.textContent = sessionLabel(sess, currentLang);
+        sRow.appendChild(icon);
+        sRow.appendChild(sLbl);
+        sRow.appendChild(sActs);
+        sRow.onclick = function(e){ e.stopPropagation(); selectedSessionId=sess.id; previewMode=false; renderShalonList(); renderEditor(); updateAddBtn(); };
+        childWrap.appendChild(sRow);
+      });
+      container.appendChild(childWrap);
+    }
+    wrap.appendChild(container);
+  });
+
+  // Add button
+  var addBtn = document.createElement('div');
+  addBtn.className = 'gr-add-row';
+  addBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> '+t.addShalon;
+  addBtn.onclick = addShalon;
+  wrap.appendChild(addBtn);
 }
 
-function toggleType(typeId){
-  selectedTypeId = typeId;
-  var st = typeById(typeId);
-  if(st && st.sessions.length>0) selectedSessionId = st.sessions[0].id;
-  renderShalonList(); renderEditor();
-}
 
-// ===================== Preview toggle =====================
-function togglePreview(){
-  previewMode = !previewMode;
-  document.getElementById('btnPreview').className = 'tcb tcb-act'+(previewMode?' on':'');
-  renderEditor();
-}
-
-// ===================== Editor render =====================
 function renderEditor(){
   var sess = sessionById(selectedSessionId);
   if(!sess){ document.getElementById('editorPanel').innerHTML=''; return; }
   if(previewMode){ renderPreview(sess); return; }
 
   var t = TR[currentLang];
-  var totalQ = sess.prakim.reduce(function(s,p){ return s+p.questions.length; },0);
+  var totalQActual = sess.prakim.reduce(function(s,p){ return s+p.questions.length; },0);
+  var totalQ = sess.totalQOverride || totalQActual;
   var html = '';
 
   // Session header
   var st = shalonTypes.find(function(s){ return s.id===selectedTypeId; });
   html += '<div class="meta-card">';
-  html += '<div style="font-size:14px;font-weight:700;margin-bottom:10px;color:#22D3EE">'+(st?st.number+' · ':'')+sessionLabel(sess,currentLang)+'</div>';
+  html += '<div style="display:flex;align-items:center;margin-bottom:10px">';
+  html += '<span style="font-size:14px;font-weight:700;color:#22D3EE;flex:1">'+(st?st.number+' · ':'')+sessionLabel(sess,currentLang)+'</span>';
+  html += '<button onclick="togglePreview()" style="display:inline-flex;align-items:center;gap:5px;background:transparent;border:1px solid #334155;cursor:pointer;font-size:11px;font-weight:500;padding:4px 10px;border-radius:6px;color:#64748b;font-family:inherit;flex-shrink:0;transition:color .15s,border-color .15s" onmouseover="this.style.color=\'#22D3EE\';this.style.borderColor=\'#22D3EE\'" onmouseout="this.style.color=\'#64748b\';this.style.borderColor=\'#334155\'">'
+  + '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+  + '<span data-i18n="previewBtn">'+t.previewBtn+'</span></button>';
+  html += '</div>';
   html += '<div class="meta-grid">';
   html += metaField('examDuration',sess.durationMin,t,'durationMin');
-  html += metaField('examTotalQ',totalQ,t,'totalQ_readonly',true);
-  html += metaField('examAnswerK',sess.rules.totalAnswer,t,'answerK');
-  html += metaField('examPtsPerQ',sess.pointsPerQ,t,'ptsPerQ');
+  html += metaField('examExtraTime',sess.extraTime||0,t,'extraTime');
+  html += '</div>';
+  // Global Σ = Σ(pk.requiredQ × pk.pointsPerQ) must equal 100
+  var gSum = sess.prakim.reduce(function(s,pk){ return s+((pk.requiredQ||0)*(pk.pointsPerQ||0)); },0);
+  var gOk = Math.abs(gSum-100)<0.01;
+  html += '<div id="pts-sum-indicator" style="font-size:11px;margin-top:8px;color:'+(gOk?'#22D3EE':'#f87171')+'">';
+  html += (gOk?'✓ ':'⚠ ')+'Σ = '+gSum.toFixed(1)+(gOk?' = 100 ✓':' ≠ 100');
   html += '</div></div>';
 
   // Instructions field
@@ -950,6 +1174,9 @@ function renderEditor(){
   html += '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px" class="t3">'+t.instructionsLabel+'</div>';
   html += '<textarea class="topics-input" rows="3" style="margin:0;font-style:normal" placeholder="'+t.instructionsPlh+'" oninput="onInstructionsChange(this.value)">'+((sess.instructions||''))+'</textarea>';
   html += '</div>';
+
+  // Selection rules — before prakim (critical info)
+  html += renderRules(sess, t);
 
   // פרקים
   html += '<div style="font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;margin-top:4px" class="t3">'+t.prakim+'</div>';
@@ -961,8 +1188,19 @@ function renderEditor(){
     html += '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></span>';
     html += '<span class="prek-badge">'+(currentLang==='he'?'פ':'Р')+(pi+1)+'</span>';
     html += '<span class="prek-name"><input class="prek-name-input t1" value="'+(currentLang==='he'?pk.nameHE:pk.nameRU)+'" oninput="onPrekNameChange(\''+pk.id+'\',this.value)"></span>';
-    html += '<span style="font-size:11px;color:#64748b;margin-inline-end:8px">'+pk.questions.length+' '+t.questionsCount+'</span>';
-    html += '<span class="q-tb-btn danger" onclick="event.stopPropagation();deletePrek(\''+pk.id+'\')" title="'+t.deletePrek+'">✕</span>';
+    var pReq = (pk.requiredQ !== undefined) ? pk.requiredQ : pk.questions.length;
+    var pPts = pk.pointsPerQ || 0;
+    var pSum = pReq * pPts;
+    var reqLbl = currentLang==='he' ? 'לפתור' : 'решить';
+    html += '<span style="font-size:11px;color:#64748b">' + pk.questions.length + ' ' + t.questionsCount + ',&nbsp;</span>';
+    html += '<span style="font-size:11px;color:#94a3b8">' + reqLbl + '&nbsp;</span>';
+    html += '<input type="number" value="' + pReq + '" min="1" max="' + pk.questions.length + '" onclick="event.stopPropagation()" oninput="onPrekReqChange(\'' + pk.id + '\',this.value)" style="width:28px;text-align:center;font-size:11px;font-weight:600;color:#22D3EE;background:transparent;border:0;border-bottom:1px solid #475569;outline:none">';
+    html += '<span style="font-size:11px;color:#64748b">&nbsp;×&nbsp;</span>';
+    html += '<input type="number" value="' + pPts + '" min="0" onclick="event.stopPropagation()" oninput="onPrekPtsChange(\'' + pk.id + '\',this.value)" style="width:34px;text-align:center;font-size:11px;font-weight:600;color:#FBBF24;background:transparent;border:0;border-bottom:1px solid #475569;outline:none">';
+    html += '<span style="font-size:11px;color:#64748b">&nbsp;=&nbsp;</span>';
+    var ptsWord = currentLang==='he' ? 'נקודות' : ptsBallRU(pSum);
+    html += '<span style="font-size:11px;font-weight:600;color:' + (pSum > 0 ? '#22D3EE' : '#475569') + ';margin-inline-start:4px;margin-inline-end:8px">' + pSum.toFixed(0) + '&nbsp;' + ptsWord + '</span>';
+    html += '<span class="q-tb-btn danger" onclick="event.stopPropagation();deletePrek(\'' + pk.id + '\')" title="' + t.deletePrek + '">✕</span>';
     html += '</div>';
     if(pk.open){
       html += '<div class="prek-body">';
@@ -982,8 +1220,6 @@ function renderEditor(){
 
   html += '<div class="add-prek-btn" onclick="addPrek()">'+
     '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> '+t.addPrek+'</div>';
-
-  html += renderRules(sess, t);
 
   document.getElementById('editorPanel').innerHTML = html;
 }
@@ -1025,6 +1261,7 @@ function renderQRow(q,pkId,sess,t){
   html += '<button class="rtbtn" id="fbtn_'+q.id+'" onmousedown="event.preventDefault()" onclick="onSigmaClick(\''+q.id+'\',this)" title="'+t.insertFormula+'">∑</button>';
   html += '<button class="rmbtn" onclick="insertImageInQ(\''+q.id+'\')" title="'+t.insertImage+'">📎</button>';
   html += '<input type="file" id="imgInput_'+q.id+'" accept="image/*" style="display:none" onchange="onImageSelected(\''+q.id+'\',this)">';
+  html += '<button class="q-save-btn" onclick="saveQuestion(\''+q.id+'\')" title="Сохранить"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button>';
   html += '<button class="q-tb-btn danger" onclick="deleteQuestion(\''+pkId+'\',\''+q.id+'\')" title="'+t.deleteQ+'">✕</button>';
   html += '</div></div>';
   var hasImg = q.images && q.images.length>0;
@@ -1089,6 +1326,17 @@ function renderPreview(sess){
   var st = shalonTypes.find(function(s){ return s.id===selectedTypeId; });
   var dH = Math.floor(sess.durationMin/60), dM = sess.durationMin%60;
   var durStr = (dH?dH+(isHE?' שעות ':' ч '):'')+(dM?dM+' '+t.minutesLabel:'');
+
+  // Extra time calculation
+  var extraPct = sess.extraTime || 0;
+  var extraStr = '';
+  if(extraPct > 0){
+    var extraMin = Math.round(sess.durationMin * extraPct / 100);
+    var totalMin = sess.durationMin + extraMin;
+    var tH = Math.floor(totalMin/60), tM = totalMin%60;
+    var totalStr = (tH?tH+(isHE?' שעות ':' ч '):'')+(tM?tM+' '+t.minutesLabel:'');
+    extraStr = (isHE ? ' | זכאי להארכה: '+extraPct+'% = '+totalStr : ' | с доп. временем: +'+extraPct+'% = '+totalStr);
+  }
   var pv = parseFloat(sess.pointsPerQ);
   var ptsLabel = isHE ? t.previewPts : ptsBallRU(pv);
 
@@ -1107,6 +1355,10 @@ function renderPreview(sess){
     + ' – ' + ptsStr;
 
   var html = '<div class="preview-wrap" dir="'+dir+'">';
+  // Back button — returns to editor
+  html += '<div style="margin-bottom:16px">';
+  html += '<button class="tcb" onclick="togglePreview()" style="display:inline-flex;align-items:center;gap:6px">← <span data-i18n="backToEditor">'+( currentLang==='he' ? 'חזור לעריכה' : 'Назад к редактору')+'</span></button>';
+  html += '</div>';
 
   // Header: ministry + title
   html += '<div class="preview-header">';
@@ -1116,6 +1368,7 @@ function renderPreview(sess){
   html += '<div style="font-size:12px;margin-bottom:10px;color:#475569">'+(st?'35'+st.number+' ':'')+' · '+sessionLabel(sess,currentLang)+'</div>';
   html += '<div class="preview-meta">';
   html += '<span>⏱ '+durStr+'</span>';
+  if(extraStr) html += '<span style="font-size:11px;color:#94a3b8;display:block;margin-top:3px">'+extraStr+'</span>';
   html += '</div></div>';
 
   // Instructions — author-written free text
@@ -1169,7 +1422,20 @@ function onMetaChange(el){
   var v = parseFloat(el.value)||0;
   if(k==='durationMin') sess.durationMin = v;
   else if(k==='answerK') sess.rules.totalAnswer = v;
-  else if(k==='ptsPerQ') sess.pointsPerQ = v;
+  else if(k==='totalQ') sess.totalQOverride = v;
+  else if(k==='extraTime') sess.extraTime = v;
+  else if(k==='ptsPerQ'){
+    sess.pointsPerQ = v;
+    // Validate sum
+    var totalQ = sess.prakim.reduce(function(s,p){ return s+p.questions.length; },0);
+    var indicator = document.getElementById('pts-sum-indicator');
+    if(indicator && totalQ > 0){
+      var sum = v * totalQ;
+      var ok = Math.abs(sum - 100) < 0.01;
+      indicator.textContent = (ok?'✓ ':'⚠ ')+sum.toFixed(2)+(ok?' = 100':' ≠ 100');
+      indicator.style.color = ok ? '#22D3EE' : '#f87171';
+    }
+  }
 }
 var _saveTimers = {};
 function onQContentChange(qId, el){
@@ -1429,6 +1695,53 @@ function deleteImage(qId,idx){
 }
 
 // ===================== Session / Shalon CRUD =====================
+function deleteShalonType(typeId){
+  var st = typeById(typeId);
+  if(!st) return;
+  if(!confirm((currentLang==='he'?'למחוק שאלון ':'Удалить вопросник ')+st.number+'?')) return;
+  shalonTypes = shalonTypes.filter(function(x){ return x.id!==typeId; });
+  if(selectedTypeId===typeId){ selectedTypeId=shalonTypes.length?shalonTypes[0].id:null; selectedSessionId=null; }
+  renderShalonList(); renderEditor(); updateAddBtn();
+}
+function deleteSessionItem(typeId, sessId){
+  var st = typeById(typeId);
+  if(!st) return;
+  if(!confirm(currentLang==='he'?'למחוק מועד זה?':'Удалить этот срок?')) return;
+  st.sessions = st.sessions.filter(function(s){ return s.id!==sessId; });
+  if(selectedSessionId===sessId){ selectedSessionId=st.sessions.length?st.sessions[0].id:null; }
+  renderShalonList(); renderEditor(); updateAddBtn();
+}
+function openRenameSessionModal(typeId, sessId){
+  var st = typeById(typeId);
+  if(!st) return;
+  var sess = st.sessions.find(function(s){ return s.id===sessId; });
+  if(!sess) return;
+  var modal = document.getElementById('shalonModal');
+  document.getElementById('shalonModalTitle').textContent = currentLang==='he'?'עריכת מועד':'Редактировать срок';
+  document.getElementById('shalonNumInput').style.display = 'none';
+  document.getElementById('shalonNameInput').value = sess.label||'';
+  document.getElementById('shalonNameInput').placeholder = currentLang==='he'?'שם המועד':'Название срока';
+  modal._editingSession = { typeId: typeId, sessId: sessId };
+  modal._editingType = null;
+  modal._addingSession = null;
+  modal.classList.add('show');
+  setTimeout(function(){ document.getElementById('shalonNameInput').focus(); },50);
+}
+function openRenameShalonModal(typeId){
+  var st = typeById(typeId);
+  if(!st) return;
+  var modal = document.getElementById('shalonModal');
+  document.getElementById('shalonModalTitle').textContent = TR[currentLang].shalonModalEdit || (currentLang==='he'?'עריכת שאלון':'Редактировать вопросник');
+  document.getElementById('shalonNumInput').style.display = '';
+  document.getElementById('shalonNumInput').value = st.number||'';
+  document.getElementById('shalonNumInput').placeholder = currentLang==='he'?'מספר השאלון':'Номер вопросника';
+  document.getElementById('shalonNameInput').value = st.name||'';
+  document.getElementById('shalonNameInput').placeholder = currentLang==='he'?'שם (לא חובה)':'Название (необязательно)';
+  modal._editingType = typeId;
+  modal._addingSession = null;
+  modal.classList.add('show');
+  setTimeout(function(){ document.getElementById('shalonNumInput').focus(); },50);
+}
 function addSession(typeId){
   var st = typeById(typeId);
   if(!st) return;
@@ -1465,7 +1778,17 @@ function confirmShalonModal(){
   // name is already read in the session/shalon branch below
   var modal = document.getElementById('shalonModal');
   var name = document.getElementById('shalonNameInput').value.trim();
-  if(modal._addingSession){
+  if(modal._editingSession){
+    var st = typeById(modal._editingSession.typeId);
+    var sess = st && st.sessions.find(function(s){ return s.id===modal._editingSession.sessId; });
+    if(sess) sess.label = name;
+    modal._editingSession = null;
+  } else if(modal._editingType){
+    // editing existing shalon type
+    var st = typeById(modal._editingType);
+    if(st){ st.number = num||st.number; st.name = name; }
+    modal._editingType = null;
+  } else if(modal._addingSession){
     // new session inside existing type — name only, no date fields
     var st = typeById(modal._addingSession);
     var sessId = 'sess_'+Date.now();
@@ -1488,10 +1811,7 @@ function confirmShalonModal(){
 }
 
 // ===================== Translate =====================
-function updateTranslateBtn(){
-  var btn = document.getElementById('translateBtn');
-  if(btn) btn.textContent = currentLang==='ru'?'RU \u2192 HE':'HE \u2192 RU';
-}
+function updateTranslateBtn(){ /* translateBtn removed */ }
 function openTranslateModal(){
   var fromRU = currentLang==='ru';
   var fromWord = fromRU ? 'русского' : 'иврита';
@@ -1612,6 +1932,120 @@ renderEditor();
 applyI18n();
 updateTranslateBtn();
 updateAddBtn();
+
+// ===================== Header dropdowns =====================
+function toggleLangDD(){
+  var dd=document.getElementById('lgDropdown'),isOpen=dd.classList.contains('open');
+  closeDropdown();
+  if(isOpen){ closeLangDD(); }
+  else{ dd.classList.add('open'); document.getElementById('lgOverlay').classList.add('open'); }
+}
+function closeLangDD(){
+  document.getElementById('lgDropdown').classList.remove('open');
+  document.getElementById('lgOverlay').classList.remove('open');
+}
+function toggleDropdown(){
+  var dd=document.getElementById('avDropdown'),isOpen=dd.classList.contains('open');
+  closeLangDD();
+  if(isOpen){ closeDropdown(); }
+  else{ dd.classList.add('open'); document.getElementById('avOverlay').classList.add('open'); }
+}
+function closeDropdown(){
+  document.getElementById('avDropdown').classList.remove('open');
+  document.getElementById('avOverlay').classList.remove('open');
+}
+
+// ===================== ES-List toggle =====================
+function toggleEsList(){
+  document.getElementById('esList').classList.toggle('closed');
+}
+
+// ===================== Drag-and-drop for shalon types =====================
+var esDragId = null;
+
+function esAttachDrag(row, st){
+  row.setAttribute('draggable', 'true');
+
+  row.addEventListener('dragstart', function(e){
+    esDragId = st.id;
+    setTimeout(function(){ row.classList.add('drag-source'); }, 0);
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
+  row.addEventListener('dragend', function(){
+    row.classList.remove('drag-source');
+    document.querySelectorAll('.es-node.drag-over').forEach(function(el){
+      el.classList.remove('drag-over');
+    });
+    esDragId = null;
+  });
+
+  row.addEventListener('dragover', function(e){
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if(esDragId && esDragId !== st.id){
+      document.querySelectorAll('.es-node.drag-over').forEach(function(el){
+        el.classList.remove('drag-over');
+      });
+      row.classList.add('drag-over');
+    }
+  });
+
+  row.addEventListener('dragleave', function(){
+    row.classList.remove('drag-over');
+  });
+
+  row.addEventListener('drop', function(e){
+    e.preventDefault();
+    row.classList.remove('drag-over');
+    if(!esDragId || esDragId === st.id) return;
+    // Reorder shalonTypes
+    var fromIdx = shalonTypes.findIndex(function(x){ return x.id===esDragId; });
+    var toIdx   = shalonTypes.findIndex(function(x){ return x.id===st.id; });
+    if(fromIdx === -1 || toIdx === -1) return;
+    var moved = shalonTypes.splice(fromIdx, 1)[0];
+    shalonTypes.splice(toIdx, 0, moved);
+    esDragId = null;
+    renderShalonList();
+  });
+}
+
+// ===================== Prek requiredQ / pointsPerQ handlers =====================
+function onPrekReqChange(pkId, val){
+  var sess = sessionById(selectedSessionId);
+  if(!sess) return;
+  var pk = prekById(sess, pkId);
+  if(!pk) return;
+  pk.requiredQ = Math.max(1, parseInt(val)||1);
+  updateSumIndicator(sess);
+  // Refresh prek header only (avoid full re-render that loses focus)
+  renderEditor();
+}
+function onPrekPtsChange(pkId, val){
+  var sess = sessionById(selectedSessionId);
+  if(!sess) return;
+  var pk = prekById(sess, pkId);
+  if(!pk) return;
+  pk.pointsPerQ = parseFloat(val)||0;
+  updateSumIndicator(sess);
+  renderEditor();
+}
+function updateSumIndicator(sess){
+  var ind = document.getElementById('pts-sum-indicator');
+  if(!ind) return;
+  var gSum = sess.prakim.reduce(function(s,pk){ return s+((pk.requiredQ||0)*(pk.pointsPerQ||0)); },0);
+  var gOk = Math.abs(gSum-100)<0.01;
+  ind.textContent = (gOk?'✓ ':'⚠ ')+'Σ = '+gSum.toFixed(1)+(gOk?' = 100 ✓':' ≠ 100');
+  ind.style.color = gOk ? '#22D3EE' : '#f87171';
+}
+
+function saveQuestion(qId){
+  // Show save indicator with floppy animation
+  var ind = document.getElementById('qsave_'+qId);
+  if(ind){ ind.classList.add('show'); setTimeout(function(){ ind.classList.remove('show'); }, 1400); }
+  // In production: persist to backend. In mockup: data already in model.
+  console.log('Question saved:', qId);
+}
 </script>
 </body>
 </html>

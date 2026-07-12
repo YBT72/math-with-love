@@ -31,23 +31,81 @@ body{font-family:system-ui,sans-serif}
 .d .b2{background:#0f172a!important}
 .l .b2{background:#f1f5f9!important}
 
-.hdr{height:48px;display:flex;align-items:center;padding:0 14px;gap:10px;border-bottom:1px solid;flex-shrink:0}
+.hdr{height:48px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 14px;border-bottom:1px solid;flex-shrink:0}
+.hdr-left{display:flex;align-items:center;gap:10px}
+.hdr-center{display:flex;align-items:center;justify-content:center}
+.hdr-right{display:flex;align-items:center;justify-content:flex-end;gap:6px}
 .logo{width:26px;height:26px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo svg{stroke:#0f172a}
 .brand{font-size:13px;font-weight:500}.brand b{color:#22D3EE;font-weight:500}
-.srch{flex:1;max-width:280px;margin:0 10px;position:relative}
+.srch{width:100%;max-width:320px;position:relative}
 .srch input{width:100%;border-radius:8px;padding:6px 28px 6px 10px;font-size:12px;outline:none;font-family:inherit;border:1px solid}
 .d .srch input{background:#334155;border-color:#475569;color:#f1f5f9}
 .l .srch input{background:#f1f5f9;border-color:#e2e8f0;color:#0f172a}
-.si2{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none}
-.hdr-r{display:flex;align-items:center;gap:6px;margin-inline-start:auto}
-.lang{display:flex;border-radius:6px;overflow:hidden;border:1px solid}
-.lb{padding:3px 7px;font-size:11px;cursor:pointer}
-.d .lb{color:#94a3b8}
-.l .lb{color:#64748b}
-.lb.on{background:#22D3EE;color:#0f172a;font-weight:500}
+.srch-ic{position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%);pointer-events:none}
 .hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid}
-.hico i{font-size:15px}
+/* Globe lang dropdown */
+.lg-wrap{position:relative;flex-shrink:0}
+.lg-dropdown{position:absolute;top:calc(100% + 8px);right:0;min-width:80px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.lg-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.d .lg-dropdown{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.l .lg-dropdown{background:#ffffff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+.lg-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s}
+.d .lg-item{color:#94a3b8}.l .lg-item{color:#64748b}
+.d .lg-item:hover{background:#334155}.l .lg-item:hover{background:#f1f5f9}
+.lg-item.on{color:#22D3EE}
+.lg-check{width:12px;height:12px;flex-shrink:0;opacity:0}
+.lg-item.on .lg-check{opacity:1}
+.lg-overlay{position:fixed;inset:0;z-index:99;display:none}
+.lg-overlay.open{display:block}
+/* Avatar dropdown */
+.av-wrap{position:relative;flex-shrink:0}
+.hav{width:28px;height:28px;min-width:28px;min-height:28px;border-radius:50%;background:#22D3EE;color:#0f172a;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;border:2px solid #22D3EE;flex-shrink:0}
+.av-dropdown{position:absolute;top:calc(100% + 8px);right:0;width:200px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.av-drop-user{padding:10px 14px 8px;display:flex;flex-direction:column;gap:2px}
+.av-drop-name{font-size:12px;font-weight:600}
+.d .av-drop-name{color:#f1f5f9}.l .av-drop-name{color:#0f172a}
+.av-drop-email{font-size:11px;word-break:break-all}
+.d .av-drop-email{color:#94a3b8}.l .av-drop-email{color:#64748b}
+.av-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.d .av-dropdown{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.l .av-dropdown{background:#ffffff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+.av-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s}
+.d .av-item{color:#e2e8f0}.l .av-item{color:#0f172a}
+.d .av-item:hover{background:#334155}.l .av-item:hover{background:#f1f5f9}
+.av-item svg{flex-shrink:0;opacity:.7}
+.d .av-item svg{stroke:#94a3b8}.l .av-item svg{stroke:#64748b}
+.av-item.danger{color:#f87171}
+.av-item.danger svg{stroke:#f87171;opacity:1}
+.av-divider{height:1px;margin:2px 0}
+.d .av-divider{background:#334155}.l .av-divider{background:#e2e8f0}
+.av-overlay{position:fixed;inset:0;z-index:99;display:none}
+.av-overlay.open{display:block}
+[dir="rtl"] .lg-dropdown{right:auto;left:0}
+[dir="rtl"] .av-dropdown{right:auto;left:0}
+
+.sb{width:46px;display:flex;flex-direction:column;padding:8px 0;border-inline-end:1px solid;overflow:hidden;flex-shrink:0;transition:width .2s ease}
+.sb.open{width:164px}
+.sbt{display:flex;align-items:center;justify-content:center;width:46px;height:38px;margin:0 0 8px 0;border-radius:8px;cursor:pointer;border:0;background:transparent;flex-shrink:0}
+.d .sbt svg{stroke:#475569}.l .sbt svg{stroke:#94a3b8}
+.sbt:hover svg{stroke:#94a3b8!important}
+.sb-g{display:flex;flex-direction:column;gap:2px}
+.sb-mid{margin:auto 0;display:flex;flex-direction:column;gap:2px}
+.sb-bot{display:flex;flex-direction:column;gap:2px}
+.sb-sep{height:1px;margin:6px 4px}
+.d .sb-sep{background:#1e293b}.l .sb-sep{background:#e2e8f0}
+.ni{display:flex;align-items:center;width:46px;height:38px;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden;border:0;background:transparent;flex-shrink:0;transition:background .15s}
+.sb.open .ni{width:100%;border-radius:6px}
+.d .ni:hover{background:#1e293b}.l .ni:hover{background:#f1f5f9}
+.ni .icon-wrap{width:46px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ni svg{flex-shrink:0;display:block;transition:stroke .15s}
+.d .ni svg{stroke:#475569}.l .ni svg{stroke:#64748b}
+.ni.on svg{stroke:#22D3EE!important}
+.nl{font-size:12px;font-weight:500;opacity:0;transition:opacity .15s,color .15s;white-space:nowrap;margin-inline-start:0}
+.d .nl{color:#475569}.l .nl{color:#64748b}
+.ni.on .nl{color:#22D3EE!important}
+.sb.open .nl{opacity:1}
+
 
 .ctrl{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid;align-items:center;flex-wrap:wrap}
 .l .ctrl{background:#c5e3eb!important}
@@ -55,85 +113,12 @@ body{font-family:system-ui,sans-serif}
 .d .tcb{color:#94a3b8;border-color:#334155}
 .l .tcb{color:#64748b;border-color:#e2e8f0}
 .tcb.on{background:#22D3EE!important;color:#0f172a!important;border-color:#22D3EE!important}
-.d .tcb-link,.d .tcb-new{border-color:#475569}
-.l .tcb-link,.l .tcb-new{border-color:#94a3b8}
 .div1{width:1px;height:16px;margin:0 2px}
 .d .div1{background:#334155}
 .l .div1{background:#e2e8f0}
 
 .body{display:flex;flex:1;min-height:0}
 .gm-col{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
-
-.sb{
-  width:46px;
-  display:flex;flex-direction:column;
-  padding:8px 0;
-  border-inline-end:1px solid;
-  transition:width 0.2s ease;
-  overflow:hidden;
-  flex-shrink:0;
-}
-.sb.open{width:164px;padding:8px 6px}
-
-.sbt{
-  display:flex;align-items:center;justify-content:center;
-  width:38px;height:38px;
-  margin:0 auto 8px;
-  border-radius:8px;cursor:pointer;
-  border:0;background:transparent;
-  flex-shrink:0;
-}
-.sbt svg{flex-shrink:0}
-.d .sbt svg{stroke:#475569}
-.l .sbt svg{stroke:#94a3b8}
-.sbt:hover svg{stroke:#94a3b8!important}
-
-.sg,.sbm,.sbb{display:flex;flex-direction:column;gap:2px}
-
-.nav-sub{display:none;flex-direction:column;gap:1px;padding-inline-start:14px;margin-top:2px;margin-bottom:4px}
-.sb.open .nav-sub{display:flex}
-.ni-sub{
-  display:flex;align-items:center;gap:8px;
-  font-size:11.5px;padding:6px 8px;border-radius:6px;cursor:pointer;
-  white-space:nowrap;
-}
-.ni-sub svg{flex-shrink:0}
-.d .ni-sub{color:#64748b}
-.l .ni-sub{color:#94a3b8}
-.d .ni-sub svg{stroke:#475569}
-.l .ni-sub svg{stroke:#94a3b8}
-.d .ni-sub:hover{background:#334155;color:#cbd5e1}
-.l .ni-sub:hover{background:#f1f5f9;color:#475569}
-.ni-sub:hover svg{stroke:#94a3b8}
-.ni-sub.on{color:#22D3EE!important;font-weight:600}
-.ni-sub.on svg{stroke:#22D3EE!important}
-.sbm{margin:auto 0}
-
-.ni{
-  display:flex;align-items:center;
-  width:38px;height:38px;
-  margin:0 auto;
-  border-radius:8px;cursor:pointer;
-  white-space:nowrap;overflow:hidden;border:0;background:transparent;
-  flex-shrink:0;
-}
-.sb.open .ni{width:100%;margin:0;padding:0 8px}
-.ni:hover svg{stroke:#94a3b8!important}
-.ni:hover .nl{color:#94a3b8!important}
-
-.ni .icon-wrap{width:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.sb.open .ni .icon-wrap{width:18px}
-
-.ni svg{flex-shrink:0;transition:stroke 0.15s;display:block}
-.d .ni svg{stroke:#475569}
-.l .ni svg{stroke:#64748b}
-.ni.on svg{stroke:#22D3EE!important}
-
-.nl{font-size:12px;font-weight:500;opacity:0;transition:opacity 0.15s,color 0.15s;white-space:nowrap;margin-inline-start:8px}
-.d .nl{color:#475569}
-.l .nl{color:#64748b}
-.ni.on .nl{color:#22D3EE!important}
-.sb.open .nl{opacity:1}
 
 /* ============================================================
    Graph map specific styles (namespaced gm-*)
@@ -197,18 +182,66 @@ svg.gm-graph.linking{cursor:crosshair}
 .gm-zoom-controls{
   position:absolute;bottom:18px;right:18px;
   display:flex;flex-direction:column;gap:6px;
-  background:#1e293b;border:1px solid #334155;border-radius:8px;padding:4px;
+  border:1px solid;border-radius:8px;padding:4px;
 }
-.gm-zoom-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:5px;cursor:pointer;color:#94a3b8}
-.gm-zoom-btn:hover{background:#334155;color:#e2e8f0}
-
+.d .gm-zoom-controls{background:#1e293b;border-color:#334155}
+.l .gm-zoom-controls{background:#ffffff;border-color:#c8e8f0;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.gm-zoom-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:5px;cursor:pointer}
+.d .gm-zoom-btn{color:#94a3b8}
+.l .gm-zoom-btn{color:#64748b}
+.d .gm-zoom-btn:hover{background:#334155;color:#e2e8f0}
+.l .gm-zoom-btn:hover{background:#e2f3f7;color:#0891b2}
+.gm-zoom-btn.active{color:#22D3EE;background:rgba(34,211,238,.12)}
+.gm-zoom-sep{height:1px;margin:2px 0}
+.d .gm-zoom-sep{background:#334155}
+.l .gm-zoom-sep{background:#c8e8f0}
+/* Linking hint — top center of canvas */
 .gm-linking-hint{
   position:absolute;top:14px;left:50%;transform:translateX(-50%);
-  background:rgba(34,211,238,0.12);border:1px solid #22D3EE;color:#22D3EE;
-  font-size:12px;padding:7px 13px;border-radius:8px;display:none;align-items:center;gap:8px;
+  display:none;align-items:center;gap:10px;
+  padding:8px 14px;border-radius:8px;border:1px solid #22D3EE;color:#22D3EE;
+  font-size:12px;font-weight:500;white-space:nowrap;z-index:10;
 }
+.d .gm-linking-hint{background:#0f2744;box-shadow:0 4px 16px rgba(0,0,0,.6)}
+.l .gm-linking-hint{background:#e8f9fc;box-shadow:0 4px 16px rgba(34,211,238,.15)}
 .gm-linking-hint.show{display:flex}
-.gm-cancel-link{cursor:pointer;padding:2px 7px;border-radius:5px;background:rgba(255,255,255,0.08)}
+.gm-cancel-link{cursor:pointer;padding:3px 8px;border-radius:5px;font-size:11px;border:1px solid;transition:color .1s,border-color .1s}
+.d .gm-cancel-link{background:#1e3a5f;border-color:#334155;color:#94a3b8}
+.d .gm-cancel-link:hover{color:#f1f5f9;border-color:#475569}
+.l .gm-cancel-link{background:#c8f0f8;border-color:#7dd8ed;color:#0891b2}
+.l .gm-cancel-link:hover{background:#b0eaf6;border-color:#22D3EE}
+
+/* New atom hint — same visual style as linking hint */
+.gm-atom-hint{
+  position:absolute;top:14px;left:50%;transform:translateX(-50%);
+  display:none;align-items:center;gap:8px;
+  padding:7px 12px;border-radius:8px;border:1px solid #22D3EE;
+  font-size:12px;font-weight:500;white-space:nowrap;z-index:10;
+}
+.d .gm-atom-hint{background:#0f2744;box-shadow:0 4px 16px rgba(0,0,0,.6)}
+.l .gm-atom-hint{background:#e8f9fc;box-shadow:0 4px 16px rgba(34,211,238,.15)}
+.gm-atom-hint.show{display:flex}
+/* Type toggle buttons */
+.na-type{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:5px;
+  border:1px solid;cursor:pointer;transition:all .15s}
+.d .na-type{border-color:#334155;background:#1e3a5f;color:#94a3b8}
+.l .na-type{border-color:#7dd8ed;background:#c8f0f8;color:#0891b2}
+.na-type.on{border-color:#22D3EE!important;color:#22D3EE!important;background:rgba(34,211,238,.15)!important}
+/* Name input */
+.na-inp{border-radius:5px;padding:3px 8px;font-size:12px;outline:none;font-family:inherit;width:180px;border:1px solid;transition:border-color .15s}
+.d .na-inp{background:#1e3a5f;border-color:#334155;color:#f1f5f9}
+.l .na-inp{background:#ffffff;border-color:#7dd8ed;color:#0f172a}
+.na-inp:focus{border-color:#22D3EE!important}
+/* Group select */
+.na-sel{border-radius:5px;padding:3px 6px;font-size:11px;outline:none;font-family:inherit;cursor:pointer;border:1px solid}
+.d .na-sel{background:#1e3a5f;border-color:#334155;color:#94a3b8}
+.l .na-sel{background:#ffffff;border-color:#7dd8ed;color:#0f172a}
+/* Create button */
+.na-create{padding:3px 10px;border-radius:5px;background:#22D3EE;
+  border:none;color:#0f172a;font-size:11px;font-weight:600;
+  cursor:pointer;font-family:inherit;transition:opacity .15s}
+.na-create:hover{opacity:.85}
+.na-create:disabled{opacity:.4;cursor:not-allowed}
 
 .gm-detail{width:0;flex-shrink:0;overflow:hidden;border-inline-start:1px solid;transition:width .18s ease}
 .d .gm-detail{background:#1e293b;border-color:#334155}
@@ -235,6 +268,11 @@ svg.gm-graph.linking{cursor:crosshair}
 .gm-section-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;margin:14px 0 8px 0}
 .d .gm-section-label{color:#475569}
 .l .gm-section-label{color:#94a3b8}
+.gm-edit-inp{width:100%;border-radius:7px;padding:7px 10px;font-size:12px;outline:none;font-family:inherit;border:1px solid;display:block}
+.d .gm-edit-inp{background:#0f172a;border-color:#334155;color:#f1f5f9}
+.l .gm-edit-inp{background:#f8fafc;border-color:#e2e8f0;color:#0f172a}
+.d .gm-edit-inp:focus{border-color:#22D3EE}
+.l .gm-edit-inp:focus{border-color:#0891b2}
 .gm-prereq-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;font-size:12px;cursor:pointer;margin-bottom:6px}
 .d .gm-prereq-item{background:#334155;color:#e2e8f0}
 .l .gm-prereq-item{background:#f1f5f9;color:#0f172a}
@@ -272,80 +310,122 @@ svg.gm-graph.linking{cursor:crosshair}
 
   <!-- ===== Header (copied from dashboard v5) ===== -->
   <div class="hdr p1 bd">
-    <div class="logo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 4h-10l6 8l-6 8h10"/></svg></div>
-    <div class="brand t1">Math <b>With Love</b></div>
-    <div class="srch"><input placeholder="Поиск тем, формул..."><svg class="t3 si2" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg></div>
-    <div class="hdr-r">
-      <div class="lang bd"><span class="lb on" id="lbRu" onclick="setLang('ru')">RU</span><span class="lb" id="lbHe" onclick="setLang('he')">HE</span></div>
-      <div class="hico bd t2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg></div>
-      <div class="hico bd t2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5a5 5 0 0 1 11 0"/></svg></div>
+    <div class="hdr-left">
+      <div class="logo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 4h-10l6 8l-6 8h10"/></svg>
+      </div>
+      <div class="brand t1">Math <b>With Love</b></div>
+    </div>
+    <div class="hdr-center">
+      <div class="srch">
+        <input placeholder="Поиск..." id="srch-inp">
+        <span class="srch-ic t3"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg></span>
+      </div>
+    </div>
+      <div class="hdr-right">
+      <!-- Globe lang dropdown -->
+      <div class="lg-wrap">
+        <div class="hico bd t2" id="lgBtn" onclick="toggleLangDD()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div class="lg-dropdown p1 bd" id="lgDropdown">
+          <div class="lg-item on" id="lgItemRu" onclick="setLang('ru');closeLangDD()">
+            <span>RU</span>
+            <svg class="lg-check" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="lg-item" id="lgItemHe" onclick="setLang('he');closeLangDD()">
+            <span>HE</span>
+            <svg class="lg-check" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="lg-overlay" id="lgOverlay" onclick="closeLangDD()"></div>
+      <!-- Bell -->
+      <div class="hico bd t2">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg>
+      </div>
+      <!-- Avatar dropdown -->
+      <div class="av-wrap">
+        <div class="hav" id="havBtn" onclick="toggleDropdown()">ИА</div>
+        <div class="av-dropdown p1 bd" id="avDropdown">
+          <div class="av-drop-user">
+            <div class="av-drop-name">Игаль</div>
+            <div class="av-drop-email">user@example.com</div>
+          </div>
+          <div class="av-divider"></div>
+          <div class="av-item" onclick="closeDropdown()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+            <span data-i18n="dropProfile">Профиль</span>
+          </div>
+          <div class="av-item" onclick="closeDropdown()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span data-i18n="dropSettings">Настройки</span>
+          </div>
+          <div class="av-divider"></div>
+          <div class="av-item danger" onclick="closeDropdown()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span data-i18n="dropLogout">Выйти</span>
+          </div>
+        </div>
+      </div>
+      <div class="av-overlay" id="avOverlay" onclick="closeDropdown()"></div>
     </div>
   </div>
 
-  <div class="body">
+<div class="body">
 
     <!-- ===== Sidebar (copied 1:1 from dashboard v5, "Контент" item added), full height under header ===== -->
+    <!-- Sidebar -->
     <div class="sb p1 bd" id="sb">
-      <div class="sbt" onclick="toggleSb()">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
-      </div>
-      <div class="sg">
-        <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9 -9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"/><path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/></svg></span>
-          <span class="nl" data-i18n="navDashboard">Дашборд</span>
+      <button class="sbt" onclick="toggleSb()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+      </button>
+      <!-- Top group -->
+      <div class="sb-g">
+        <div class="ni" title="Главная">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></svg></span>
+          <span class="nl" data-i18n="navHome">Главная</span>
         </div>
-        <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><line x1="3" y1="6" x2="3" y2="19"/><line x1="12" y1="6" x2="12" y2="19"/><line x1="21" y1="6" x2="21" y2="19"/></svg></span>
-          <span class="nl" data-i18n="navModules">Модули</span>
-        </div>
-        <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="3" y2="21"/><line x1="21" y1="21" x2="3" y2="21"/><path d="M7 17v-3"/><path d="M11 17v-6"/><path d="M15 17v-9"/></svg></span>
-          <span class="nl" data-i18n="navProgress">Прогресс</span>
-        </div>
-        <div class="ni on" id="contentNavToggle" onclick="onContentClick()">
+        <div class="ni" title="Шейлоны">
           <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
-          <span class="nl" data-i18n="navContent">Контент</span>
+          <span class="nl" data-i18n="navShalon">Шейлоны</span>
         </div>
-        <div class="nav-sub" id="contentSubNav">
-          <div class="ni-sub on">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="13" r="2.5"/><circle cx="6" cy="20" r="2.5"/><circle cx="18" cy="20" r="2.5"/><path d="M8.2 7.2L10.5 11.3M15.8 7.2L13.5 11.3M10.5 14.7L7.8 18M13.5 14.7L16.2 18"/></svg>
-            <span data-i18n="subGraph">Карта графа</span>
-          </div>
-          <div class="ni-sub">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg>
-            <span data-i18n="subAtomEditor">Редактор атома</span>
-          </div>
-          <div class="ni-sub">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="13" width="7" height="7" rx="1.5"/><rect x="14" y="13" width="7" height="7" rx="1.5"/></svg>
-            <span data-i18n="subGroups">Группы</span>
-          </div>
-          <div class="ni-sub">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6a1 1 0 0 1 1 1v3.5a1 1 0 0 1 -.4 .8l-3.6 2.7l3.6 2.7a1 1 0 0 1 .4 .8v3.5a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1v-3.5a1 1 0 0 1 .4 -.8l3.6 -2.7l-3.6 -2.7a1 1 0 0 1 -.4 -.8v-3.5a1 1 0 0 1 1 -1z"/></svg>
-            <span data-i18n="subExam">Схема экзамена</span>
-          </div>
+        <div class="ni" title="Группы">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="13" width="7" height="7" rx="1.5"/><rect x="14" y="13" width="7" height="7" rx="1.5"/></svg></span>
+          <span class="nl" data-i18n="navGroups">Группы</span>
+        </div>
+        <div class="ni" title="Атом">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="14" y2="13"/></svg></span>
+          <span class="nl" data-i18n="navAtom">Атом</span>
+        </div>
+        <div class="ni" title="Экзамен">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6a1 1 0 0 1 1 1v3.5a1 1 0 0 1-.4.8l-3.6 2.7l3.6 2.7a1 1 0 0 1 .4.8v3.5a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-3.5a1 1 0 0 1 .4-.8l3.6-2.7l-3.6-2.7a1 1 0 0 1-.4-.8v-3.5a1 1 0 0 1 1-1z"/></svg></span>
+          <span class="nl" data-i18n="navExam">Экзамен</span>
+        </div>
+        <div class="ni on" title="Граф">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="6" cy="20" r="2"/><circle cx="18" cy="20" r="2"/><path d="M7.8 7.2l2.5 4.1M16.2 7.2l-2.5 4.1M10.5 14.7l-2.7 3.8M13.5 14.7l2.7 3.8"/></svg></span>
+          <span class="nl" data-i18n="navGraph">Граф</span>
         </div>
       </div>
-      <div class="sbm">
-        <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="9" y2="4"/><line x1="6" y1="13" x2="13" y2="13"/><path d="M15 20l5 -16"/><path d="M14 8h7"/></svg></span>
-          <span class="nl" data-i18n="navFormulas">Формулы</span>
-        </div>
-        <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9l-8 4.5l-8 -4.5v-9z"/><path d="M12 12l8 -4.5"/><path d="M12 12v9"/><path d="M12 12l-8 -4.5"/></svg></span>
+      <!-- Separator -->
+      <div class="sb-sep"></div>
+      <!-- Middle group -->
+      <div class="sb-mid">
+        <div class="ni" title="Лаборатория">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="9" ry="4"/><ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(120 12 12)"/></svg></span>
           <span class="nl" data-i18n="navLab">Лаборатория</span>
         </div>
-        <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21l8 0"/><path d="M12 17l0 4"/><path d="M7 4l10 0"/><path d="M17 4v8a5 5 0 0 1 -10 0v-8"/><path d="M5 9a2 2 0 0 1 -2 -2v-1a2 2 0 0 1 2 -2"/><path d="M19 9a2 2 0 0 0 2 -2v-1a2 2 0 0 0 -2 -2"/></svg></span>
-          <span class="nl" data-i18n="navAchievements">Достижения</span>
-        </div>
       </div>
-      <div class="sbb">
-        <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="17" x2="12.01" y2="17"/><path d="M12 13.5a1.5 1.5 0 0 1 1 -1.5a2.6 2.6 0 1 0 -3 -4"/></svg></span>
+      <!-- Separator -->
+      <div class="sb-sep"></div>
+      <!-- Bottom group -->
+      <div class="sb-bot">
+        <div class="ni" title="Помощь">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="17" x2="12.01" y2="17"/><path d="M12 13.5a1.5 1.5 0 0 1 1-1.5a2.6 2.6 0 1 0-3-4"/></svg></span>
           <span class="nl" data-i18n="navHelp">Помощь</span>
         </div>
-        <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06 .06a2 2 0 1 1 -2.83 2.83l-.06 -.06a1.65 1.65 0 0 0 -1.82 -.33a1.65 1.65 0 0 0 -1 1.51v.17a2 2 0 0 1 -4 0v-.09a1.65 1.65 0 0 0 -1.08 -1.51a1.65 1.65 0 0 0 -1.82 .33l-.06 .06a2 2 0 1 1 -2.83 -2.83l.06 -.06a1.65 1.65 0 0 0 .33 -1.82a1.65 1.65 0 0 0 -1.51 -1h-.17a2 2 0 0 1 0 -4h.09a1.65 1.65 0 0 0 1.51 -1.08a1.65 1.65 0 0 0 -.33 -1.82l-.06 -.06a2 2 0 1 1 2.83 -2.83l.06 .06a1.65 1.65 0 0 0 1.82 .33h0a1.65 1.65 0 0 0 1 -1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82 -.33l.06 -.06a2 2 0 1 1 2.83 2.83l-.06 .06a1.65 1.65 0 0 0 -.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0 -1.51 1z"/></svg></span>
+        <div class="ni" title="Настройки">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51v.17a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82a1.65 1.65 0 0 0-1.51-1h-.17a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
           <span class="nl" data-i18n="navSettings">Настройки</span>
         </div>
       </div>
@@ -359,9 +439,6 @@ svg.gm-graph.linking{cursor:crosshair}
         <button class="tcb" id="bl" onclick="setMode('l')">☀ <span data-i18n="themeLight">Светлая</span></button>
         <div class="div1"></div>
         <span class="t2" style="font-size:12px;" data-i18n="ctxLabel">Карта графа · Багрут 572</span>
-        <div style="flex:1;"></div>
-        <button class="tcb tcb-link" id="btnLinkMode" data-i18n="linkNodesBtn">⤳ Связать узлы</button>
-        <button class="tcb tcb-new" data-i18n="newAtomBtn">+ Новый атом</button>
       </div>
 
       <div class="gm-main">
@@ -401,12 +478,50 @@ svg.gm-graph.linking{cursor:crosshair}
       </div>
 
       <div class="gm-canvas-wrap" id="canvasWrap">
+        <!-- Floating canvas toolbar -->
+        <!-- Linking hint — top center, visible in link mode -->
         <div class="gm-linking-hint" id="linkingHint">
           <span data-i18n="linkingHint">Выберите узел-источник, затем узел-цель связи</span>
           <span class="gm-cancel-link" id="btnCancelLink" data-i18n="cancel">Отмена</span>
         </div>
+        <!-- New atom hint — top center, visible in create mode -->
+        <div class="gm-atom-hint" id="atomHint">
+          <!-- Type toggles — icon only -->
+          <div class="na-type on" id="na-t-atom" onclick="naSetType('atom')" title="Атом">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/></svg>
+          </div>
+          <div class="na-type" id="na-t-checkpoint" onclick="naSetType('checkpoint')" title="Контрольная точка">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 22,12 12,22 2,12"/></svg>
+          </div>
+          <!-- Divider -->
+          <div style="width:1px;height:18px;background:#334155"></div>
+          <!-- Name input -->
+          <input class="na-inp" id="na-name" placeholder="Название...">
+          <!-- Group -->
+          <select class="na-sel" id="na-grp">
+            <option value="vectors">Векторы</option>
+            <option value="trig">Тригонометрия</option>
+            <option value="deriv">Производная</option>
+          </select>
+          <!-- Create -->
+          <button class="na-create" id="na-create-btn" onclick="naCreate()">+ Создать</button>
+          <!-- Status -->
+          <span id="na-status" style="font-size:11px;color:#475569"></span>
+          <!-- Cancel -->
+          <span class="gm-cancel-link" onclick="naClose()">✕</span>
+        </div>
         <svg class="gm-graph" id="graph"></svg>
         <div class="gm-zoom-controls">
+          <!-- New atom -->
+          <div class="gm-zoom-btn" id="btnNewAtom" title="Новый атом" onclick="createNewAtom()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <!-- Link nodes -->
+          <div class="gm-zoom-btn" id="btnLinkMode" title="Связать узлы" onclick="enterLinkMode()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          </div>
+          <div class="gm-zoom-sep"></div>
+          <!-- Zoom controls -->
           <div class="gm-zoom-btn" id="zoomIn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
           </div>
@@ -452,8 +567,11 @@ const TR = {
   ru:{
     search:'Поиск тем, формул...',
     navDashboard:'Дашборд', navModules:'Модули', navProgress:'Прогресс', navContent:'Контент',
+    navHome:'Главная', navShalon:'Шейлоны', navGroups:'Группы',
+    navAtom:'Атом', navExam:'Экзамен', navGraph:'Граф',
     navFormulas:'Формулы', navLab:'Лаборатория', navAchievements:'Достижения',
     navHelp:'Помощь', navSettings:'Настройки',
+    dropProfile:'Профиль', dropSettings:'Настройки', dropLogout:'Выйти',
     subGraph:'Карта графа', subAtomEditor:'Редактор атома', subGroups:'Группы', subExam:'Схема экзамена',
     themeDark:'Тёмная', themeLight:'Светлая',
     ctxLabel:'Карта графа · Багрут 572',
@@ -471,13 +589,17 @@ const TR = {
     addLinkFromHere:'Добавить связь от этого узла',
     prereqKindDirect:'точечная', prereqKindCheckpoint:'через КТ',
     fromLabel:'Из', toLabel:'В', deleteEdge:'Удалить связь',
-    checkpointSub:'контрольная точка'
+    checkpointSub:'контрольная точка',
+    naPlaceholder:'Название...', naCreate:'+ Создать'
   },
   he:{
     search:'חיפוש נושאים, נוסחאות...',
     navDashboard:'לוח בקרה', navModules:'מודולים', navProgress:'התקדמות', navContent:'תוכן',
+    navHome:'ראשי', navShalon:'שאלונים', navGroups:'קבוצות',
+    navAtom:'יחידה', navExam:'מבחן', navGraph:'גרף',
     navFormulas:'נוסחאות', navLab:'מעבדה', navAchievements:'הישגים',
     navHelp:'עזרה', navSettings:'הגדרות',
+    dropProfile:'פרופיל', dropSettings:'הגדרות', dropLogout:'יציאה',
     subGraph:'מפת הגרף', subAtomEditor:'עורך אטום', subGroups:'קבוצות', subExam:'מבנה הבגרות',
     themeDark:'כהה', themeLight:'בהיר',
     ctxLabel:'מפת הגרף · בגרות 572',
@@ -495,7 +617,8 @@ const TR = {
     addLinkFromHere:'הוסף קשר מצומת זה',
     prereqKindDirect:'ישיר', prereqKindCheckpoint:'דרך נ.ב.',
     fromLabel:'מ', toLabel:'אל', deleteEdge:'מחק קשר',
-    checkpointSub:'נקודת בקרה'
+    checkpointSub:'נקודת בקרה',
+    naPlaceholder:'שם...', naCreate:'+ צור'
   }
 };
 function applyStaticTranslations(){
@@ -509,10 +632,11 @@ function applyStaticTranslations(){
 }
 function setLang(lang){
   currentLang = lang;
-  document.getElementById('lbRu').className = 'lb'+(lang==='ru'?' on':'');
-  document.getElementById('lbHe').className = 'lb'+(lang==='he'?' on':'');
+  document.getElementById('lgItemRu').classList.toggle('on', lang === 'ru');
+  document.getElementById('lgItemHe').classList.toggle('on', lang === 'he');
   document.getElementById('shell').setAttribute('dir', lang==='he' ? 'rtl' : 'ltr');
   applyStaticTranslations();
+  updateAtomHint();
   renderAll();
   if(selectedNodeId){ openDetail(nodeById[selectedNodeId]); }
   else if(selectedEdgeIdx!==null){ openEdgeDetail(edges[selectedEdgeIdx]); }
@@ -928,22 +1052,115 @@ const linkingHint = document.getElementById('linkingHint');
 const linkPopover = document.getElementById('linkPopover');
 
 function enterLinkMode(){
+  naClose();
   linkMode = true; linkSource=null;
-  btnLinkMode.classList.add('on');
+  btnLinkMode.classList.add('active');
   svg.classList.add('linking');
   linkingHint.classList.add('show');
 }
 function exitLinkMode(){
   linkMode=false; linkSource=null;
-  btnLinkMode.classList.remove('on');
+  btnLinkMode.classList.remove('active');
   svg.classList.remove('linking');
   linkingHint.classList.remove('show');
   linkPopover.classList.remove('show');
   renderAll();
 }
-btnLinkMode.addEventListener('click', ()=>{
-  if(linkMode) exitLinkMode(); else enterLinkMode();
-});
+// Updates atom hint texts when language changes
+function updateAtomHint(){
+  const t = TR[currentLang];
+  const isHe = currentLang === 'he';
+  // Placeholder & dir
+  const inp = document.getElementById('na-name');
+  if(inp){ inp.placeholder = t.naPlaceholder; inp.dir = isHe ? 'rtl' : 'ltr'; }
+  // Group options
+  const sel = document.getElementById('na-grp');
+  if(sel){
+    sel.options[0].text = t.grpVectors;
+    sel.options[1].text = t.grpTrig;
+    sel.options[2].text = t.grpDeriv;
+  }
+  // Create button
+  const btn = document.getElementById('na-create-btn');
+  if(btn) btn.textContent = t.naCreate;
+}
+
+// ===================== New atom hint =====================
+let naType = 'atom';
+
+function createNewAtom(){
+  // Close link mode if active
+  if(linkMode) exitLinkMode();
+  // Toggle: if already open, close
+  const hint = document.getElementById('atomHint');
+  if(hint.classList.contains('show')){ naClose(); return; }
+  document.getElementById('btnNewAtom').classList.add('active');
+  hint.classList.add('show');
+  document.getElementById('na-name').value = '';
+  document.getElementById('na-status').textContent = '';
+  document.getElementById('na-name').focus();
+  naSetType('atom');
+}
+
+function naClose(){
+  document.getElementById('atomHint').classList.remove('show');
+  document.getElementById('btnNewAtom').classList.remove('active');
+}
+
+function naSetType(type){
+  naType = type;
+  ['atom','checkpoint'].forEach(tp => {
+    const btn = document.getElementById('na-t-' + tp);
+    if(btn) btn.classList.toggle('on', tp === type);
+  });
+}
+
+async function naCreate(){
+  const name = document.getElementById('na-name').value.trim();
+  if(!name){ document.getElementById('na-name').focus(); return; }
+  const grp  = document.getElementById('na-grp').value;
+  const btn  = document.getElementById('na-create-btn');
+  const stat = document.getElementById('na-status');
+
+  btn.disabled = true;
+  stat.textContent = 'Переводим...';
+  stat.style.color = '#22D3EE';
+
+  let titleRu = name, titleHe = name;
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6', max_tokens: 80,
+        messages:[{role:'user', content:
+          `Translate this math topic name from ${currentLang==='ru'?'Russian to Hebrew':'Hebrew to Russian'}. Reply with ONLY the translation: "${name}"`
+        }]
+      })
+    });
+    const data = await resp.json();
+    const translated = data.content?.[0]?.text?.trim() || name;
+    if(currentLang === 'ru'){ titleRu = name; titleHe = translated; }
+    else                     { titleHe = name; titleRu = translated; }
+    stat.textContent = '✓';
+  } catch(e) {
+    stat.textContent = '⚠';
+    stat.style.color = '#f87171';
+  }
+
+  const id = 'atom_' + Date.now();
+  nodes.push({id, type:naType, title:titleRu, titleHe, grp,
+    x: Math.round(-viewX / viewScale + 300),
+    y: Math.round(-viewY / viewScale + 200)
+  });
+  nodeById[id] = nodes[nodes.length-1];
+  selectedNodeId = id;
+  naClose();
+  renderAll();
+  openDetail(nodeById[id]);
+  btn.disabled = false;
+}
+// btnLinkMode click handled via onclick in HTML
 document.getElementById('btnCancelLink').addEventListener('click', exitLinkMode);
 
 let pendingLink = null;
@@ -1000,6 +1217,30 @@ function positionTooltip(ev){
   tooltip.style.top = (ev.clientY - wrap.top + 10) + 'px';
 }
 function hideTooltip(){ tooltip.style.display='none'; }
+
+// ===================== Header dropdowns =====================
+function toggleLangDD() {
+  var dd = document.getElementById('lgDropdown');
+  var isOpen = dd.classList.contains('open');
+  closeDropdown();
+  if (isOpen) { closeLangDD(); }
+  else { dd.classList.add('open'); document.getElementById('lgOverlay').classList.add('open'); }
+}
+function closeLangDD() {
+  document.getElementById('lgDropdown').classList.remove('open');
+  document.getElementById('lgOverlay').classList.remove('open');
+}
+function toggleDropdown() {
+  var dd = document.getElementById('avDropdown');
+  var isOpen = dd.classList.contains('open');
+  closeLangDD();
+  if (isOpen) { closeDropdown(); }
+  else { dd.classList.add('open'); document.getElementById('avOverlay').classList.add('open'); }
+}
+function closeDropdown() {
+  document.getElementById('avDropdown').classList.remove('open');
+  document.getElementById('avOverlay').classList.remove('open');
+}
 </script>
 </body>
 </html>

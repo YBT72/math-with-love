@@ -28,12 +28,14 @@ math-site/
     main.py
     .env
   _old/              ← legacy files (reference only, do not touch)
-  ARCHITECTURE.md    ← this file
+  ARCHITECTURE.md              ← this file
   PLAN.md
   BACKLOG.md
   DESIGN_SYSTEM.md
   NAVIGATION.md
   MWL_CONTENT_ARCHITECTURE.md
+  DATABASE.md                  ← Supabase schema (all tables, fields, RLS)
+  MULTILANG.md                 ← i18n rules: UI strings + content translation
 ```
 
 ---
@@ -448,5 +450,55 @@ const { setLang } = useLocale();   // LocaleContext
 
 ---
 
+---
+
+## 13. Account settings
+
+Settings stored in `profiles` table (Supabase) — sync across devices automatically.
+
+| Setting | Field | Values | Default |
+|---------|-------|--------|---------|
+| UI language | `lang` | `'he'` \| `'ru'` | `'he'` |
+| Theme | `theme` | `'dark'` \| `'light'` | `'dark'` |
+| Display name | `display_name` | varchar | — |
+| Password | — | Supabase Auth email reset flow | — |
+
+**Guest users (unauthenticated):** no profile row. Defaults applied from code (lang='he', theme='dark').
+Settings menu is NOT accessible to guests.
+
+**Password change:** handled entirely by Supabase Auth (send reset email → link → new password).
+No password field in the settings form — only a "Change password" button that triggers the email flow.
+
+**Author-specific settings:** none defined yet.
+
+---
+
+## 14. Session persistence
+
+Everything needed to resume exactly where the student left off is stored in
+`session_state` table (Supabase). See DATABASE.md §9 for full schema.
+
+| Context | What is saved |
+|---------|---------------|
+| Atom | Current block index + per-block state (completed, score, answer draft, solution viewed) |
+| Test | Current question index + all intermediate answers (test has no time limit) |
+| Maze | Scroll position, zoom level, full traversal path with problem markers |
+| Lab | Active module + all parameter values student configured |
+
+**Test rules:**
+- Each test: one attempt only
+- Intermediate answers saved continuously (browser close safe)
+- No time limit
+- If student failed: after remedial study, a reformulated test appears (same concept, new wording)
+- Student cannot advance past a failed test until concept is mastered
+
+**Maze path:** stores full real path including backtracking and problem nodes —
+not just final state. Used for Status page visualization.
+
+**Lab session:** parameters saved per module. Restored on next open.
+
+---
+
 *Created: 07/07/2026*
 *Обновлён: 2026-07-08 — §12 дополнен: test/exam ctrl-bar явно добавлен в список mockup-only элементов (.ctrl-bar, .tcb, .tcb-amber, .tcb-red).*
+*Обновлён: 2026-07-12 — §13 (Account settings) и §14 (Session persistence) добавлены по итогам архитектурного обсуждения.*

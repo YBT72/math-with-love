@@ -35,7 +35,42 @@ body{font-family:system-ui,sans-serif}
 .lg-item.on .lg-check{opacity:1}
 .lg-overlay{position:fixed;inset:0;z-index:99;display:none}
 .lg-overlay.open{display:block}
-[dir="rtl"] .lg-dropdown{right:auto;left:0}
+/* RTL handled via logical CSS */
+/* Avatar dropdown */
+.hav-wrap{position:relative;flex-shrink:0}
+.hav{width:28px;height:28px;min-width:28px;min-height:28px;border-radius:50%;background:#22D3EE;color:#0f172a;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;border:2px solid #22D3EE;flex-shrink:0}
+.av-drop{position:absolute;top:calc(100% + 8px);inset-inline-end:0;width:140px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.av-drop.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.d .av-drop{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.l .av-drop{background:#ffffff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+.av-drop-user{padding:10px 14px 8px}
+.av-drop-name{font-size:12px;font-weight:600}
+.d .av-drop-name{color:#f1f5f9}.l .av-drop-name{color:#0f172a}
+.av-drop-email{font-size:11px;margin-top:1px}
+.d .av-drop-email{color:#64748b}.l .av-drop-email{color:#94a3b8}
+.av-drop-divider{height:1px;margin:2px 0}
+.d .av-drop-divider{background:#334155}.l .av-drop-divider{background:#e2e8f0}
+.av-drop-item{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s;width:100%;border:0;background:transparent;font-family:inherit;text-align:start;min-height:44px}
+.d .av-drop-item{color:#e2e8f0}.l .av-drop-item{color:#0f172a}
+.d .av-drop-item:hover{background:#334155}.l .av-drop-item:hover{background:#f1f5f9}
+.av-drop-item svg{flex-shrink:0;opacity:0.7}
+.d .av-drop-item svg{stroke:#94a3b8}.l .av-drop-item svg{stroke:#64748b}
+.av-drop-item.danger{color:#f87171}
+.av-drop-item.danger svg{stroke:#f87171;opacity:1}
+.overlay{position:fixed;inset:0;z-index:99;display:none}
+.overlay.open{display:block}
+/* Help context popup menu */
+.help-menu{position:fixed;bottom:calc(64px + env(safe-area-inset-bottom,0px) + 6px);inset-inline-end:0;width:180px;border-radius:10px;border:1px solid;overflow:hidden;z-index:200;opacity:0;transform:translateY(6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.help-menu.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.d .help-menu{background:#1e293b;border-color:#334155;box-shadow:0 -4px 24px rgba(0,0,0,0.4)}
+.l .help-menu{background:#ffffff;border-color:#e2e8f0;box-shadow:0 -4px 24px rgba(0,0,0,0.12)}
+.help-menu-item{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s;min-height:44px;border:0;background:transparent;width:100%;font-family:inherit;text-align:start}
+.d .help-menu-item{color:#e2e8f0}.l .help-menu-item{color:#0f172a}
+.d .help-menu-item:hover{background:#334155}.l .help-menu-item:hover{background:#f1f5f9}
+.help-menu-item svg{flex-shrink:0}
+.d .help-menu-item svg{stroke:#94a3b8}.l .help-menu-item svg{stroke:#64748b}
+.help-overlay{position:fixed;inset:0;z-index:199;display:none}
+.help-overlay.open{display:block}
 .hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid;flex-shrink:0}
 .srch-overlay{display:none;position:absolute;top:0;left:0;right:0;height:48px;align-items:center;padding:0 12px;gap:8px;z-index:10}
 .d .srch-overlay{background:#1e293b}.l .srch-overlay{background:#ffffff}
@@ -224,11 +259,34 @@ body{font-family:system-ui,sans-serif}
         </div>
       </div>
       <div class="lg-overlay" id="lgOverlay" onclick="closeLangDD()"></div>
-    <!-- Bell -->
-    <div class="hico bd t2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg></div>
-    <!-- Avatar -->
-    <div class="hico bd t2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5a5 5 0 0 1 11 0"/></svg></div>
-  </div>
+      <!-- Bell -->
+      <div class="hico bd t2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg></div>
+      <!-- Avatar with dropdown -->
+      <div class="hav-wrap">
+        <div class="hav" id="havBtn" onclick="callFn('toggleDrop()')">ИГ</div>
+        <div class="av-drop p1 bd" id="avDrop">
+          <div class="av-drop-user">
+            <div class="av-drop-name" id="avName">Игаль</div>
+            <div class="av-drop-email" id="avEmail">user@example.com</div>
+          </div>
+          <div class="av-drop-divider"></div>
+          <button class="av-drop-item" onclick="callFn('closeDrop()')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+            <span data-i18n="dropProfile">Профиль</span>
+          </button>
+          <button class="av-drop-item" onclick="callFn('closeDrop()')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span data-i18n="dropSettings">Настройки</span>
+          </button>
+          <div class="av-drop-divider"></div>
+          <button class="av-drop-item danger" onclick="callFn('closeDrop()')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span data-i18n="dropLogout">Выйти</span>
+          </button>
+        </div>
+      </div>
+      <div class="overlay" id="overlay" onclick="callFn('closeDrop()')"></div>
+    </div>
   <!-- Expandable search overlay -->
   <div class="srch-overlay p1 bd" id="srchOverlay">
     <input type="text" id="searchInput" placeholder="Поиск тем, формул...">
@@ -315,27 +373,44 @@ body{font-family:system-ui,sans-serif}
 </div>
 </div>
 <div class="bnav p1 bd">
+  <!-- Home — ACTIVE -->
   <div class="bni on" id="bniHome" onclick="setActiveTab('bniHome')">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9 -9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"/><path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/></svg>
-    <span class="bnl" data-i18n="navDashboard">Главная</span>
+    <span class="bnl" data-i18n="navHome">Главная</span>
   </div>
-  <div class="bni" id="bniModules" onclick="setActiveTab('bniModules')">
+  <!-- Courses -->
+  <div class="bni" id="bniCourses" onclick="setActiveTab('bniCourses')">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 5-10 5L2 8z"/><path d="M7 11.5v4.5a5 5 0 0 0 10 0v-4.5"/><line x1="22" y1="8" x2="22" y2="14"/></svg>
-    <span class="bnl" data-i18n="navModules">Модули</span>
+    <span class="bnl" data-i18n="navCourses">Курсы</span>
   </div>
-  <div class="bni" id="bniFormulas" onclick="setActiveTab('bniFormulas')">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l18 0"/><path d="M12 3l0 18"/><path d="M16.5 4.5l3 3"/><path d="M19.5 4.5l-3 3"/><path d="M6 4l0 4"/><path d="M4 6l4 0"/><path d="M18 16l.01 0"/><path d="M18 20l.01 0"/><path d="M4 18l4 0"/></svg>
-    <span class="bnl" data-i18n="navFormulas">Формулы</span>
+  <!-- Status -->
+  <div class="bni" id="bniStatus" onclick="setActiveTab('bniStatus')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+    <span class="bnl" data-i18n="navStatus">Статус</span>
   </div>
+  <!-- Lab -->
   <div class="bni" id="bniLab" onclick="setActiveTab('bniLab')">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg>
     <span class="bnl" data-i18n="navLab">Лаборатория</span>
   </div>
-  <div class="bni" id="bniSettings" onclick="setActiveTab('bniSettings')">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06 .06a2 2 0 1 1 -2.83 2.83l-.06 -.06a1.65 1.65 0 0 0 -1.82 -.33a1.65 1.65 0 0 0 -1 1.51v.17a2 2 0 0 1 -4 0v-.09a1.65 1.65 0 0 0 -1.08 -1.51a1.65 1.65 0 0 0 -1.82 .33l-.06 .06a2 2 0 1 1 -2.83 -2.83l.06 -.06a1.65 1.65 0 0 0 .33 -1.82a1.65 1.65 0 0 0 -1.51 -1h-.17a2 2 0 0 1 0 -4h.09a1.65 1.65 0 0 0 1.51 -1.08a1.65 1.65 0 0 0 -.33 -1.82l-.06 -.06a2 2 0 1 1 2.83 -2.83l.06 .06a1.65 1.65 0 0 0 1.82 .33h0a1.65 1.65 0 0 0 1 -1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82 -.33l.06 -.06a2 2 0 1 1 2.83 2.83l-.06 .06a1.65 1.65 0 0 0 -.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0 -1.51 1z"/></svg>
-    <span class="bnl" data-i18n="navSettings">Настройки</span>
+  <!-- Help — opens context popup menu upward -->
+  <div class="bni" id="bniHelp" onclick="callFn('toggleHelpMenu()')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span class="bnl" data-i18n="navHelp">Помощь</span>
   </div>
 </div>
+<!-- Help context popup menu -->
+<div class="help-menu p1 bd" id="helpMenu">
+  <button class="help-menu-item" onclick="callFn('closeHelpMenu()')">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16v2a1 1 0 0 1-1 1h-11l6-7-6-7h11a1 1 0 0 1 1 1v2"/></svg>
+    <span data-i18n="navFormulas">Формулы</span>
+  </button>
+  <button class="help-menu-item" onclick="callFn('closeHelpMenu()')">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span data-i18n="navYosiChat">Диалог с Йоси</span>
+  </button>
+</div>
+<div class="help-overlay" id="helpOverlay" onclick="callFn('closeHelpMenu()')"></div>
 </div>
 
 <script>
@@ -685,8 +760,10 @@ ua();
 // ── i18n ──────────────────────────────────────────────────────────────
 var TR_DASH = {
   ru:{
-    navDashboard:'Главная', navModules:'Модули', navFormulas:'Формулы',
-    navLab:'Лаборатория', navSettings:'Настройки',
+    navHome:'Главная', navCourses:'Курсы', navStatus:'Статус',
+    navLab:'Лаборатория', navHelp:'Помощь', navFormulas:'Формулы', navYosiChat:'Диалог с Йоси',
+    dropProfile:'Профиль', dropSettings:'Настройки', dropLogout:'Выйти',
+    navDashboard:'Главная', navModules:'Модули', navSettings:'Настройки',
     greeting:'Добрый день', greeting2:'Что сегодня делаем?',
     profName:'Профессор Йоси', ymsg:'Выбери тему слева и начинай!',
     statDays:'Серия дней', statPoints:'Очки', statDone:'Пройдено',
@@ -707,8 +784,10 @@ var TR_DASH = {
     mRemedialFirst:'🔄 Сначала пройди доп.курс ниже теста'
   },
   he:{
-    navDashboard:'ראשי', navModules:'מודולים', navFormulas:'נוסחאות',
-    navLab:'מעבדה', navSettings:'הגדרות',
+    navHome:'ראשי', navCourses:'קורסים', navStatus:'סטטוס',
+    navLab:'מעבדה', navHelp:'עזרה', navFormulas:'נוסחאות', navYosiChat:'שיחה עם יוסי',
+    dropProfile:'פרופיל', dropSettings:'הגדרות', dropLogout:'יציאה',
+    navDashboard:'ראשי', navModules:'מודולים', navSettings:'הגדרות',
     greeting:'שלום', greeting2:'מה לומדים היום?',
     profName:'פרופסור יוסי', ymsg:'בחר נושא משמאל והתחל!',
     statDays:'ימי רצף', statPoints:'נקודות', statDone:'הושלם',
@@ -775,6 +854,7 @@ function toggleSearch(){
 function toggleLangDD(){
   var dd = document.getElementById('lgDropdown');
   var isOpen = dd.classList.contains('open');
+  closeDrop();
   if(isOpen){ closeLangDD(); }
   else {
     dd.classList.add('open');
@@ -785,6 +865,40 @@ function toggleLangDD(){
 function closeLangDD(){
   document.getElementById('lgDropdown').classList.remove('open');
   document.getElementById('lgOverlay').classList.remove('open');
+}
+
+// ── Avatar dropdown ───────────────────────────────────────────────────
+function openDrop(){
+  document.getElementById('avDrop').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+function closeDrop(){
+  document.getElementById('avDrop').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+function toggleDrop(){
+  var d = document.getElementById('avDrop');
+  closeLangDD();
+  closeHelpMenu();
+  d.classList.contains('open') ? closeDrop() : openDrop();
+}
+
+// ── Help context popup menu ───────────────────────────────────────────
+function openHelpMenu(){
+  document.getElementById('helpMenu').classList.add('open');
+  document.getElementById('helpOverlay').classList.add('open');
+  document.getElementById('bniHelp').classList.add('on');
+}
+function closeHelpMenu(){
+  document.getElementById('helpMenu').classList.remove('open');
+  document.getElementById('helpOverlay').classList.remove('open');
+  document.getElementById('bniHelp').classList.remove('on');
+}
+function toggleHelpMenu(){
+  var m = document.getElementById('helpMenu');
+  closeDrop();
+  closeLangDD();
+  m.classList.contains('open') ? closeHelpMenu() : openHelpMenu();
 }
 
 // ── Bottom tab active state ────────────────────────────────────────────

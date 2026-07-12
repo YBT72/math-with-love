@@ -43,7 +43,7 @@ body{font-family:system-ui,sans-serif}
 .srch-close{font-size:20px;cursor:pointer;line-height:1;padding:4px;opacity:0.5;flex-shrink:0}
 /* Lang globe button + dropdown */
 .lg-wrap{position:relative;flex-shrink:0}
-.lg-dropdown{position:absolute;top:calc(100% + 8px);right:0;min-width:80px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.lg-dropdown{position:absolute;top:calc(100% + 8px);inset-inline-end:0;min-width:80px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
 .lg-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
 .d .lg-dropdown{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
 .l .lg-dropdown{background:#ffffff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
@@ -59,16 +59,16 @@ body{font-family:system-ui,sans-serif}
 .hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid}
 
 /* ── Avatar button in header ── */
-.hav-wrap{position:relative}
-.hav{width:28px;height:28px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#0f172a;cursor:pointer;border:2px solid #22D3EE;overflow:hidden;flex-shrink:0;transition:opacity 0.15s}
+.hav-wrap{position:relative;flex-shrink:0}
+.hav{width:28px;height:28px;min-width:28px;min-height:28px;border-radius:50%;background:#22D3EE;color:#0f172a;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;border:2px solid #22D3EE;flex-shrink:0}
 .hav:hover{opacity:0.85}
 .hav img{width:100%;height:100%;object-fit:cover}
 
 /* ── Avatar dropdown ── */
-.av-drop{position:absolute;top:calc(100% + 6px);right:0;width:190px;border-radius:10px;border:1px solid;padding:4px;z-index:200;display:none;flex-direction:column;gap:1px}
+.av-drop{position:absolute;top:calc(100% + 8px);inset-inline-end:0;width:140px;border-radius:10px;border:1px solid;overflow:hidden;z-index:200;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
 .d .av-drop{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
 .l .av-drop{background:#ffffff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
-.av-drop.open{display:flex}
+.av-drop.open{opacity:1;transform:translateY(0);pointer-events:auto}
 .av-drop-user{padding:8px 10px 8px;border-bottom:1px solid;margin-bottom:3px}
 .d .av-drop-user{border-color:#334155}
 .l .av-drop-user{border-color:#e2e8f0}
@@ -96,17 +96,17 @@ body{font-family:system-ui,sans-serif}
 .body{display:flex;flex:1;min-height:0}
 .sb{width:46px;display:flex;flex-direction:column;padding:8px 0;border-inline:1px solid;transition:width 0.2s ease;overflow:hidden;flex-shrink:0}
 .sb.open{width:164px}
-.sbt{display:flex;align-items:center;justify-content:center;width:46px;height:38px;margin:0 0 8px 0;border-radius:8px;cursor:pointer;border:0;background:transparent;flex-shrink:0}
+.sbt{display:flex;align-items:center;justify-content:center;width:38px;height:38px;margin:0 0 8px 0;border-radius:8px;cursor:pointer;border:0;background:transparent;flex-shrink:0}
 .sbt svg{flex-shrink:0}
 .d .sbt svg{stroke:#475569}.l .sbt svg{stroke:#94a3b8}
 .sbt:hover svg{stroke:#94a3b8!important}
 .sg,.sbm,.sbb{display:flex;flex-direction:column;gap:2px}
-.sbm{margin:auto 0}
-.ni{display:flex;align-items:center;width:46px;height:38px;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden;border:0;background:transparent;flex-shrink:0}
+.sbm{margin-top:auto;margin-bottom:auto}
+.ni{display:flex;align-items:center;width:38px;height:38px;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden;border:0;background:transparent;flex-shrink:0}
 .sb.open .ni{width:100%;border-radius:6px}
 .ni:hover svg{stroke:#94a3b8!important}
 .ni:hover .nl{color:#94a3b8!important}
-.ni .icon-wrap{width:46px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ni .icon-wrap{width:38px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .ni svg{flex-shrink:0;transition:stroke 0.15s;display:block}
 .d .ni svg{stroke:#475569}.l .ni svg{stroke:#64748b}
 .ni.on svg{stroke:#22D3EE!important}
@@ -241,7 +241,8 @@ body{font-family:system-ui,sans-serif}
 ───────────────────────────────────────────────────────── */
 
 /* Touch target bump — applies at all tablet sizes */
-.ni,.sbt,.hico,.hav,.av-btn,.btn-save{min-height:38px}
+.ni,.sbt,.av-btn,.btn-save{min-height:38px}
+.hico{min-height:28px!important;height:28px!important}
 .ni,.sbt{min-width:38px}
 
 /* Portrait tablet */
@@ -319,6 +320,11 @@ body{font-family:system-ui,sans-serif}
             <div class="av-drop-name t1" id="dropName">Игаль</div>
             <div class="av-drop-email t2" id="dropEmail">igal@example.com</div>
           </div>
+          <div class="av-drop-divider"></div>
+          <button class="av-drop-item" id="dropProfile">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+            <span data-i18n="dropProfile">Профиль</span>
+          </button>
           <button class="av-drop-item active-page" id="dropSettings">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51v.17a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1h-.17a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span data-i18n="navSettings">Настройки</span>
@@ -348,43 +354,38 @@ body{font-family:system-ui,sans-serif}
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
       </div>
       <div class="sg">
-        <div class="ni" id="niDashboard">
+        <div class="ni" id="niHome">
           <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></svg></span>
-          <span class="nl" data-i18n="navDashboard">Дашборд</span>
+          <span class="nl" data-i18n="navHome">Главная</span>
         </div>
-        <div class="ni" id="niModules">
+        <div class="ni" id="niCourses">
           <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 5-10 5L2 8z"/><path d="M7 11.5v4.5a5 5 0 0 0 10 0v-4.5"/><line x1="22" y1="8" x2="22" y2="14"/></svg></span>
-          <span class="nl" data-i18n="navModules">Модули</span>
+          <span class="nl" data-i18n="navCourses">Курсы</span>
         </div>
-        <div class="ni" id="niProgress">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="3" x2="3" y2="21"/><line x1="21" y1="21" x2="3" y2="21"/><path d="M7 17v-3"/><path d="M11 17v-6"/><path d="M15 17v-9"/></svg></span>
-          <span class="nl" data-i18n="navProgress">Прогресс</span>
+        <div class="ni" id="niStatus">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg></span>
+          <span class="nl" data-i18n="navStatus">Статус</span>
         </div>
-        <div class="ni" id="niContent">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M10 13l-1 4 4-1 5-5-3-3z"/><path d="M13.5 10.5l3 3"/></svg></span>
-          <span class="nl" data-i18n="navContent">Редактор</span>
-        </div>
-      </div>
-      <div class="sbm">
-        <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l18 0"/><path d="M12 3l0 18"/><path d="M16.5 4.5l3 3"/><path d="M19.5 4.5l-3 3"/><path d="M6 4l0 4"/><path d="M4 6l4 0"/><path d="M18 16l.01 0"/><path d="M18 20l.01 0"/><path d="M4 18l4 0"/></svg></span>
-          <span class="nl" data-i18n="navFormulas">Формулы</span>
-        </div>
-        <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg></span>
-          <span class="nl" data-i18n="navLab">Лаборатория</span>
-        </div>
-        <div class="ni">
+        <div class="ni" id="niAchievements">
           <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21l8 0"/><path d="M12 17l0 4"/><path d="M7 4l10 0"/><path d="M17 4v8a5 5 0 0 1-10 0v-8"/><path d="M5 9a2 2 0 0 1-2-2v-1a2 2 0 0 1 2-2"/><path d="M19 9a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2"/></svg></span>
           <span class="nl" data-i18n="navAchievements">Достижения</span>
         </div>
       </div>
+      <div class="sbm">
+        <div class="ni" id="niFormulas">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16v2a1 1 0 0 1-1 1h-11l6-7-6-7h11a1 1 0 0 1 1 1v2"/></svg></span>
+          <span class="nl" data-i18n="navFormulas">Формулы</span>
+        </div>
+        <div class="ni" id="niLab">
+          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg></span>
+          <span class="nl" data-i18n="navLab">Лаборатория</span>
+        </div>
+      </div>
       <div class="sbb">
-        <div class="ni">
+        <div class="ni" id="niHelp">
           <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="17" x2="12.01" y2="17"/><path d="M12 13.5a1.5 1.5 0 0 1 1-1.5a2.6 2.6 0 1 0-3-4"/></svg></span>
           <span class="nl" data-i18n="navHelp">Помощь</span>
         </div>
-        <!-- Settings — active -->
         <div class="ni on" id="niSettings">
           <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51v.17a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1h-.17a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
           <span class="nl" data-i18n="navSettings">Настройки</span>
@@ -556,10 +557,11 @@ var avatarDataUrl = null; // custom avatar base64 or null
 // ── i18n dictionary ──────────────────────────────────────────────────
 var TR = {
   ru: {
+    navHome: 'Главная', navCourses: 'Курсы', navStatus: 'Статус',
     navDashboard: 'Дашборд', navModules: 'Модули', navProgress: 'Прогресс',
     navContent: 'Редактор', navFormulas: 'Формулы', navLab: 'Лаборатория',
     navAchievements: 'Достижения', navHelp: 'Помощь', navSettings: 'Настройки',
-    logout: 'Выйти',
+    dropProfile: 'Профиль', logout: 'Выйти',
     pageTitle: 'Настройки',
     secProfile: 'Профиль', secAppearance: 'Внешний вид', secLanguage: 'Язык интерфейса',
     labelFirstName: 'Имя', labelLastName: 'Фамилия', labelEmail: 'Email',
@@ -573,10 +575,11 @@ var TR = {
     btnSave: 'Сохранить', saved: 'Сохранено'
   },
   he: {
+    navHome: 'ראשי', navCourses: 'קורסים', navStatus: 'סטטוס',
     navDashboard: 'לוח בקרה', navModules: 'מודולים', navProgress: 'התקדמות',
     navContent: 'עורך', navFormulas: 'נוסחאות', navLab: 'מעבדה',
     navAchievements: 'הישגים', navHelp: 'עזרה', navSettings: 'הגדרות',
-    logout: 'התנתק',
+    dropProfile: 'פרופיל', logout: 'התנתק',
     pageTitle: 'הגדרות',
     secProfile: 'פרופיל', secAppearance: 'מראה', secLanguage: 'שפת ממשק',
     labelFirstName: 'שם פרטי', labelLastName: 'שם משפחה', labelEmail: 'דוא"ל',

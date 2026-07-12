@@ -70,6 +70,27 @@ body{font-family:system-ui,sans-serif}
 
 /* Avatar — STRICT CIRCLE per §22 */
 .hav{width:28px;height:28px;min-width:28px;min-height:28px;border-radius:50%;background:#22D3EE;color:#0f172a;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;border:2px solid #22D3EE;flex-shrink:0;overflow:hidden}
+.hav-wrap{position:relative;flex-shrink:0}
+.av-drop{position:absolute;top:calc(100% + 8px);inset-inline-end:0;width:140px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.av-drop.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.d .av-drop{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.l .av-drop{background:#ffffff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+.av-drop-user{padding:10px 14px 8px}
+.av-drop-name{font-size:12px;font-weight:600}
+.d .av-drop-name{color:#f1f5f9}.l .av-drop-name{color:#0f172a}
+.av-drop-email{font-size:11px;margin-top:1px}
+.d .av-drop-email{color:#64748b}.l .av-drop-email{color:#94a3b8}
+.av-drop-divider{height:1px;margin:2px 0}
+.d .av-drop-divider{background:#334155}.l .av-drop-divider{background:#e2e8f0}
+.av-drop-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s;width:100%;border:0;background:transparent;font-family:inherit;text-align:start}
+.d .av-drop-item{color:#e2e8f0}.l .av-drop-item{color:#0f172a}
+.d .av-drop-item:hover{background:#334155}.l .av-drop-item:hover{background:#f1f5f9}
+.av-drop-item svg{flex-shrink:0;opacity:0.7}
+.d .av-drop-item svg{stroke:#94a3b8}.l .av-drop-item svg{stroke:#64748b}
+.av-drop-item.danger{color:#f87171}
+.av-drop-item.danger svg{stroke:#f87171;opacity:1}
+.overlay{position:fixed;inset:0;z-index:99;display:none}
+.overlay.open{display:block}
 
 /* ── Ctrl bar (mockup only) ── */
 .d .tcb{background:#1e293b;border-color:#334155;color:#94a3b8}
@@ -212,10 +233,33 @@ body{font-family:system-ui,sans-serif}
         </div>
       </div>
       <div class="lg-overlay" id="lgOverlay" onclick="closeLangDD()"></div>
-      <div class="hico bd t2">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg>
+      <!-- Bell -->
+      <div class="hico bd t2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg></div>
+      <!-- Avatar with dropdown -->
+      <div class="hav-wrap">
+        <div class="hav" id="havBtn" onclick="toggleDrop()">ИГ</div>
+        <div class="av-drop p1 bd" id="avDrop">
+          <div class="av-drop-user">
+            <div class="av-drop-name" id="avName">Игаль</div>
+            <div class="av-drop-email" id="avEmail">user@example.com</div>
+          </div>
+          <div class="av-drop-divider"></div>
+          <button class="av-drop-item" onclick="closeDrop()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+            <span data-i18n="dropProfile">Профиль</span>
+          </button>
+          <button class="av-drop-item" onclick="closeDrop()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span data-i18n="dropSettings">Настройки</span>
+          </button>
+          <div class="av-drop-divider"></div>
+          <button class="av-drop-item danger" onclick="closeDrop()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span data-i18n="dropLogout">Выйти</span>
+          </button>
+        </div>
       </div>
-      <div class="hav" id="havBtn">ИГ</div>
+      <div class="overlay" id="overlay" onclick="closeDrop()"></div>
     </div>
   </div>
 
@@ -234,23 +278,14 @@ body{font-family:system-ui,sans-serif}
       <div class="sbt" id="sbtBtn">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
       </div>
-      <!-- Group 1: Дашборд / Темы / Достижения -->
+      <!-- Group 1: Main nav -->
       <div class="sg">
-        <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></svg></span>
-          <span class="nl t2" data-i18n="navDashboard">Дашборд</span>
-        </div>
-        <div class="ni">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 5-10 5L2 8z"/><path d="M7 11.5v4.5a5 5 0 0 0 10 0v-4.5"/><line x1="22" y1="8" x2="22" y2="14"/></svg></span>
-          <span class="nl t2" data-i18n="navTopics">Темы</span>
-        </div>
-        <!-- Достижения — active (trophy) -->
-        <div class="ni on">
-          <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21l8 0"/><path d="M12 17l0 4"/><path d="M7 4l10 0"/><path d="M17 4v8a5 5 0 0 1-10 0v-8"/><path d="M5 9a2 2 0 0 1-2-2v-1a2 2 0 0 1 2-2"/><path d="M19 9a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2"/></svg></span>
-          <span class="nl" data-i18n="navAchievements">Достижения</span>
-        </div>
+        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></svg></span><span class="nl" data-i18n="navHome">Главная</span></div>
+        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 5-10 5L2 8z"/><path d="M7 11.5v4.5a5 5 0 0 0 10 0v-4.5"/><line x1="22" y1="8" x2="22" y2="14"/></svg></span><span class="nl" data-i18n="navCourses">Курсы</span></div>
+        <div class="ni"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg></span><span class="nl" data-i18n="navStatus">Статус</span></div>
+        <div class="ni on"><span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21l8 0"/><path d="M12 17l0 4"/><path d="M7 4l10 0"/><path d="M17 4v8a5 5 0 0 1-10 0v-8"/><path d="M5 9a2 2 0 0 1-2-2v-1a2 2 0 0 1 2-2"/><path d="M19 9a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2"/></svg></span><span class="nl" data-i18n="navAchievements">Достижения</span></div>
       </div>
-      <!-- Group 2: Лаборатория / Формулы -->
+      <!-- Group 2:      <!-- Group 2: Лаборатория / Формулы -->
       <div class="sbm">
         <div class="ni">
           <span class="icon-wrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg></span>
@@ -449,7 +484,8 @@ var TR = {
     deadlineAtom:'Атом: Скалярное произведение', deadlineAtomSub:'В работе с 24 июня · Завершить за 3 дня',
     timeTitle:'Время обучения', timeToday:'Сегодня', timeWeek:'На этой неделе',
     timeMonth:'В этом месяце', timeTotal:'Всего', timeAvg:'Среднее в день',
-    navDashboard:'Дашборд', navTopics:'Темы', navAchievements:'Достижения',
+    navHome:'Главная', navCourses:'Курсы', navStatus:'Статус', navAchievements:'Достижения',
+    dropProfile:'Профиль', dropSettings:'Настройки', dropLogout:'Выйти',
     navLab:'Лаборатория', navFormulas:'Формулы', navHelp:'Помощь', navSettings:'Настройки'
   },
   he:{
@@ -470,7 +506,8 @@ var TR = {
     deadlineAtom:'אטום: מכפלה סקלרית', deadlineAtomSub:'בעבודה מ-24 ביוני · לסיים תוך 3 ימים',
     timeTitle:'זמן לימוד', timeToday:'היום', timeWeek:'השבוע',
     timeMonth:'החודש', timeTotal:'סה"כ', timeAvg:'ממוצע ביום',
-    navDashboard:'לוח בקרה', navTopics:'נושאים', navAchievements:'הישגים',
+    navHome:'ראשי', navCourses:'קורסים', navStatus:'סטטוס', navAchievements:'הישגים',
+    dropProfile:'פרופיל', dropSettings:'הגדרות', dropLogout:'יציאה',
     navLab:'מעבדה', navFormulas:'נוסחאות', navHelp:'עזרה', navSettings:'הגדרות'
   }
 };
@@ -543,6 +580,20 @@ function toggleLangDD(){
 function closeLangDD(){
   document.getElementById('lgDropdown').classList.remove('open');
   document.getElementById('lgOverlay').classList.remove('open');
+}
+// ── Avatar dropdown ───────────────────────────────────────────────────
+function openDrop(){
+  document.getElementById('avDrop').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+function closeDrop(){
+  document.getElementById('avDrop').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+function toggleDrop(){
+  var d = document.getElementById('avDrop');
+  closeLangDD();
+  d.classList.contains('open') ? closeDrop() : openDrop();
 }
 
 </script>

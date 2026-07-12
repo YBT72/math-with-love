@@ -6,125 +6,204 @@
 <title>MWL — Прогресс</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9}
+body{font-family:system-ui,sans-serif}
+
+/* ── Theme tokens ── */
+.d{background:#0f172a;color:#f1f5f9}
+.l{background:#ffffff;color:#0f172a}
 
 /* ── Shell ── */
 .shell{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 
 /* ── Header ── */
-.hdr{height:48px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 14px;border-bottom:1px solid #334155;flex-shrink:0;background:#1e293b}
+.hdr{height:48px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 14px;border-bottom:1px solid;flex-shrink:0}
+.d .hdr{background:#1e293b;border-color:#334155}
+.l .hdr{background:#f8fafc;border-color:#e2e8f0}
 .hdr-left{display:flex;align-items:center;gap:10px}
 .hdr-right{display:flex;align-items:center;justify-content:flex-end;gap:6px}
 .logo{width:26px;height:26px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.brand{font-size:13px;font-weight:500;color:#f1f5f9}.brand b{color:#22D3EE;font-weight:500}
+.brand{font-size:13px;font-weight:500}.brand b{color:#22D3EE;font-weight:500}
+.d .brand{color:#f1f5f9}.l .brand{color:#0f172a}
 .srch{width:280px;position:relative}
-.srch input{width:100%;border-radius:8px;padding:6px 28px 6px 10px;font-size:12px;outline:none;font-family:inherit;border:1px solid #475569;background:#334155;color:#f1f5f9}
-.si2{position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;stroke:#475569}
-.lang{display:flex;border-radius:6px;overflow:hidden;border:1px solid #334155}
-.lb{padding:3px 7px;font-size:11px;cursor:pointer;color:#94a3b8}
-.lb.on{background:#22D3EE;color:#0f172a;font-weight:500}
-.hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid #334155;color:#94a3b8}
-.hav{width:28px;height:28px;border-radius:50%;background:#22D3EE;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#0f172a;cursor:pointer;border:2px solid #22D3EE}
+.srch input{width:100%;border-radius:8px;padding:6px 28px 6px 10px;font-size:12px;outline:none;font-family:inherit;border:1px solid}
+.d .srch input{border-color:#475569;background:#334155;color:#f1f5f9}
+.l .srch input{border-color:#e2e8f0;background:#f1f5f9;color:#0f172a}
+.si2{position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none}
+.d .si2{stroke:#475569}.l .si2{stroke:#94a3b8}
+.hico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid}
+.d .hico{border-color:#334155;color:#94a3b8}.l .hico{border-color:#e2e8f0;color:#64748b}
+
+/* Globe dropdown */
+.lg-wrap{position:relative;flex-shrink:0}
+.lg-dropdown{position:absolute;top:calc(100% + 8px);inset-inline-end:0;min-width:80px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.d .lg-dropdown{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.l .lg-dropdown{background:#ffffff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+.lg-dropdown.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.lg-item{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;cursor:pointer;font-size:12px;font-weight:500;gap:8px;transition:background .1s}
+.d .lg-item{color:#94a3b8}.l .lg-item{color:#64748b}
+.d .lg-item:hover{background:#334155;color:#e2e8f0}.l .lg-item:hover{background:#f1f5f9;color:#0f172a}
+.lg-item.on{color:#22D3EE}
+.lg-check{width:14px;height:14px;opacity:0}
+.lg-item.on .lg-check{opacity:1}
+.lg-overlay{position:fixed;inset:0;z-index:99;display:none}
+.lg-overlay.open{display:block}
+
+/* Avatar dropdown */
+.hav-wrap{position:relative;flex-shrink:0}
+.hav{width:28px;height:28px;min-width:28px;min-height:28px;border-radius:50%;background:#22D3EE;color:#0f172a;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;cursor:pointer;border:2px solid #22D3EE;flex-shrink:0}
+.av-drop{position:absolute;top:calc(100% + 8px);inset-inline-end:0;width:140px;border-radius:10px;border:1px solid;overflow:hidden;z-index:100;opacity:0;transform:translateY(-6px);pointer-events:none;transition:opacity .15s ease,transform .15s ease}
+.d .av-drop{background:#1e293b;border-color:#334155;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.l .av-drop{background:#ffffff;border-color:#e2e8f0;box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+.av-drop.open{opacity:1;transform:translateY(0);pointer-events:auto}
+.av-drop-user{padding:10px 14px 8px}
+.av-drop-name{font-size:12px;font-weight:600}
+.d .av-drop-name{color:#f1f5f9}.l .av-drop-name{color:#0f172a}
+.av-drop-email{font-size:11px;margin-top:1px}
+.d .av-drop-email{color:#64748b}.l .av-drop-email{color:#94a3b8}
+.av-drop-divider{height:1px;margin:2px 0}
+.d .av-drop-divider{background:#334155}.l .av-drop-divider{background:#e2e8f0}
+.av-drop-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;font-size:12px;font-weight:500;transition:background .1s;width:100%;border:0;background:transparent;font-family:inherit;text-align:start}
+.d .av-drop-item{color:#e2e8f0}.l .av-drop-item{color:#0f172a}
+.d .av-drop-item:hover{background:#334155}.l .av-drop-item:hover{background:#f1f5f9}
+.av-drop-item svg{flex-shrink:0;opacity:0.7}
+.d .av-drop-item svg{stroke:#94a3b8}.l .av-drop-item svg{stroke:#64748b}
+.av-drop-item.danger{color:#f87171}
+.av-drop-item.danger svg{stroke:#f87171;opacity:1}
+.overlay{position:fixed;inset:0;z-index:99;display:none}
+.overlay.open{display:block}
 
 /* ── Body ── */
-.body{display:flex;flex:1;min-height:0}
+.body{display:flex;flex:1;min-height:0;overflow:hidden}
 
 /* ── Sidebar ── */
-.sb{width:46px;display:flex;flex-direction:column;padding:8px 0;border-inline:1px solid #334155;flex-shrink:0;background:#1e293b}
-.sbt{display:flex;align-items:center;justify-content:center;width:46px;height:38px;margin-bottom:8px;border-radius:8px;cursor:pointer;border:0;background:transparent}
-.sbt svg{stroke:#475569}
-.ni{display:flex;align-items:center;width:46px;height:38px;border-radius:8px;cursor:pointer;border:0;background:transparent}
-.ni .iw{width:46px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.ni svg{stroke:#475569;display:block;flex-shrink:0}
+.sb{width:46px;display:flex;flex-direction:column;padding:8px 0;border-inline-end:1px solid;flex-shrink:0;height:100%;overflow-y:auto;transition:width .2s ease;overflow-x:hidden}
+.d .sb{background:#1e293b;border-color:#334155}.l .sb{background:#f8fafc;border-color:#e2e8f0}
+.sb.open{width:164px}
+.sbt{display:flex;align-items:center;justify-content:center;width:46px;height:38px;margin-bottom:8px;border-radius:8px;cursor:pointer;border:0;background:transparent;flex-shrink:0}
+.d .sbt svg{stroke:#475569}.l .sbt svg{stroke:#94a3b8}
+.ni{display:flex;align-items:center;width:46px;height:38px;border-radius:8px;cursor:pointer;border:0;background:transparent;white-space:nowrap;overflow:hidden;flex-shrink:0;transition:background .1s}
+.sb.open .ni{width:148px}
+.d .ni:hover{background:rgba(255,255,255,0.05)}.l .ni:hover{background:rgba(0,0,0,0.04)}
+.ni .iw,.ni .icon-wrap{width:46px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.d .ni svg{stroke:#475569}.l .ni svg{stroke:#94a3b8}
+.ni svg{display:block;flex-shrink:0}
 .ni.on svg{stroke:#22D3EE!important}
+.ni.on{background:rgba(34,211,238,0.08)}
+.nl{font-size:12px;font-weight:500;padding-inline-start:4px;opacity:0;transition:opacity .15s ease .05s}
+.d .nl{color:#94a3b8}.l .nl{color:#64748b}
+.sb.open .nl{opacity:1}
+.ni.on .nl{color:#22D3EE}
 .sg,.sbm,.sbb{display:flex;flex-direction:column;gap:2px}
-.sbm{margin:auto 0}
+.sbm{margin-top:auto;margin-bottom:auto}
 
 /* ── Main ── */
 .main{flex:1;overflow-y:auto;padding:20px 24px;min-width:0}
 
 /* ── Page title ── */
-.pg-title{font-size:20px;font-weight:500;margin-bottom:20px;color:#f1f5f9}
+.pg-title{font-size:20px;font-weight:500;margin-bottom:20px}
+.d .pg-title{color:#f1f5f9}.l .pg-title{color:#0f172a}
 
 /* ── Top row: 3 stat cards ── */
 .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
-.stat-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:4px}
-.stat-label{font-size:11px;color:#94a3b8;font-weight:500}
-.stat-val{font-size:26px;font-weight:600;color:#f1f5f9;line-height:1.1}
-.stat-sub{font-size:11px;color:#475569}
+.stat-card{border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;border:1px solid}
+.d .stat-card{background:#1e293b;border-color:#334155}.l .stat-card{background:#f8fafc;border-color:#e2e8f0}
+.stat-label{font-size:11px;font-weight:500}
+.d .stat-label{color:#94a3b8}.l .stat-label{color:#64748b}
+.stat-val{font-size:26px;font-weight:600;line-height:1.1}
+.d .stat-val{color:#f1f5f9}.l .stat-val{color:#0f172a}
+.stat-sub{font-size:11px}
+.d .stat-sub{color:#475569}.l .stat-sub{color:#94a3b8}
 .stat-accent{color:#22D3EE}
 .stat-amber{color:#FBBF24}
 
 /* ── Middle row: activity + module ── */
 .mid-row{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:20px}
 
-/* ── Activity chart card ── */
-.card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:18px}
-.card-title{font-size:13px;font-weight:500;color:#f1f5f9;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+/* ── Cards ── */
+.card,.module-card{border-radius:12px;padding:18px;border:1px solid}
+.d .card,.d .module-card{background:#1e293b;border-color:#334155}
+.l .card,.l .module-card{background:#f8fafc;border-color:#e2e8f0}
+.module-card{display:flex;flex-direction:column;gap:14px}
+.card-title{font-size:13px;font-weight:500;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.d .card-title{color:#f1f5f9}.l .card-title{color:#0f172a}
 .card-title svg{stroke:#22D3EE;flex-shrink:0}
 
-/* Activity heatmap grid */
+/* Activity heatmap */
 .activity-grid{display:flex;flex-direction:column;gap:6px}
 .activity-week-labels{display:flex;gap:4px;margin-bottom:2px;padding-left:28px}
-.activity-week-labels span{width:14px;font-size:9px;color:#475569;text-align:center}
+.activity-week-labels span{width:14px;font-size:9px;text-align:center}
+.d .activity-week-labels span{color:#475569}.l .activity-week-labels span{color:#94a3b8}
 .activity-rows{display:flex;gap:6px}
 .activity-day-labels{display:flex;flex-direction:column;gap:4px;justify-content:space-around;padding-top:2px}
-.activity-day-labels span{font-size:9px;color:#475569;width:22px;text-align:right}
+.activity-day-labels span{font-size:9px;width:22px;text-align:right}
+.d .activity-day-labels span{color:#475569}.l .activity-day-labels span{color:#94a3b8}
 .activity-cells{display:flex;flex-direction:column;gap:4px}
 .activity-row{display:flex;gap:4px}
-.cell{width:14px;height:14px;border-radius:3px;background:#1e293b;border:1px solid #334155;flex-shrink:0}
+.cell{width:14px;height:14px;border-radius:3px;flex-shrink:0;border:1px solid}
+.d .cell{background:#1e293b;border-color:#334155}.l .cell{background:#e2e8f0;border-color:#cbd5e1}
 .cell.l1{background:#164e63;border-color:#0e7490}
 .cell.l2{background:#0e7490;border-color:#22D3EE44}
 .cell.l3{background:#22D3EE;border-color:#22D3EE;opacity:0.7}
 .cell.l4{background:#22D3EE;border-color:#22D3EE}
 .activity-legend{display:flex;align-items:center;gap:6px;margin-top:10px;justify-content:flex-end}
-.activity-legend span{font-size:10px;color:#475569}
+.activity-legend span{font-size:10px}
+.d .activity-legend span{color:#475569}.l .activity-legend span{color:#94a3b8}
 .legend-cells{display:flex;gap:3px}
 
-/* ── Streak ── */
-.streak-block{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid #334155}
+/* Streak */
+.streak-block{display:flex;align-items:center;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid}
+.d .streak-block{border-color:#334155}.l .streak-block{border-color:#e2e8f0}
 .streak-icon{font-size:22px}
 .streak-val{font-size:22px;font-weight:600;color:#FBBF24}
-.streak-label{font-size:11px;color:#94a3b8}
+.streak-label{font-size:11px}
+.d .streak-label{color:#94a3b8}.l .streak-label{color:#64748b}
 
-/* ── Module progress card ── */
-.module-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:14px}
-.module-name{font-size:13px;font-weight:500;color:#f1f5f9}
+/* Module card */
+.module-name{font-size:13px;font-weight:500}
+.d .module-name{color:#f1f5f9}.l .module-name{color:#0f172a}
 .module-tag{display:inline-flex;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500;background:#164e63;border:1px solid #0e7490;color:#22D3EE;margin-bottom:4px}
 .ring-wrap{display:flex;justify-content:center;padding:8px 0}
-.ring-label{text-anchor:middle;dominant-baseline:middle}
 .atom-list{display:flex;flex-direction:column;gap:6px}
 .atom-item{display:flex;align-items:center;gap:8px;font-size:11px}
 .atom-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .dot-done{background:#4ade80}
 .dot-active{background:#22D3EE}
 .dot-locked{background:#334155}
-.atom-name{color:#94a3b8;flex:1}
-.atom-name.done{color:#f1f5f9}
+.atom-name{flex:1}
+.d .atom-name{color:#94a3b8}.l .atom-name{color:#64748b}
+.d .atom-name.done{color:#f1f5f9}.l .atom-name.done{color:#0f172a}
 .atom-name.active{color:#22D3EE}
-.atom-score{font-size:10px;color:#475569}
+.atom-score{font-size:10px}
+.d .atom-score{color:#475569}.l .atom-score{color:#94a3b8}
 .atom-score.done{color:#4ade80}
 
-/* ── Bottom row: topic breakdown ── */
+/* Bottom row */
 .bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.topic-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #334155}
+.topic-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid}
+.d .topic-row{border-color:#334155}.l .topic-row{border-color:#e2e8f0}
 .topic-row:last-child{border-bottom:none}
-.topic-name{font-size:12px;color:#f1f5f9;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.topic-bar-wrap{width:100px;height:6px;background:#334155;border-radius:3px;flex-shrink:0}
+.topic-name{font-size:12px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.d .topic-name{color:#f1f5f9}.l .topic-name{color:#0f172a}
+.topic-bar-wrap{width:100px;height:6px;border-radius:3px;flex-shrink:0}
+.d .topic-bar-wrap{background:#334155}.l .topic-bar-wrap{background:#e2e8f0}
 .topic-bar{height:6px;border-radius:3px;background:#22D3EE}
-.topic-pct{font-size:11px;color:#94a3b8;width:28px;text-align:right;flex-shrink:0}
+.topic-pct{font-size:11px;width:28px;text-align:right;flex-shrink:0}
+.d .topic-pct{color:#94a3b8}.l .topic-pct{color:#64748b}
 
-/* ── Time card ── */
+/* Time card */
 .time-rows{display:flex;flex-direction:column;gap:10px}
-.time-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #334155}
+.time-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid}
+.d .time-row{border-color:#334155}.l .time-row{border-color:#e2e8f0}
 .time-row:last-child{border-bottom:none}
-.time-label{font-size:12px;color:#94a3b8}
-.time-val{font-size:13px;font-weight:500;color:#f1f5f9}
+.time-label{font-size:12px}
+.d .time-label{color:#94a3b8}.l .time-label{color:#64748b}
+.time-val{font-size:13px;font-weight:500}
+.d .time-val{color:#f1f5f9}.l .time-val{color:#0f172a}
 .time-val.accent{color:#22D3EE}
 </style>
 </head>
 <body>
-<div class="shell">
+<div class="shell d" id="shell">
 
   <!-- HEADER -->
   <div class="hdr">
@@ -139,54 +218,103 @@ body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9}
       </div>
     </div>
     <div class="hdr-right">
-      <div class="lang"><span class="lb on">RU</span><span class="lb">HE</span></div>
-      <div class="hico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg></div>
-      <div class="hav">ИГ</div>
+      <!-- Globe dropdown -->
+      <div class="lg-wrap">
+        <div class="hico" id="lgBtn" onclick="toggleLangDD()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div class="lg-dropdown" id="lgDropdown">
+          <div class="lg-item on" id="lgItemRu" onclick="setLang('ru');closeLangDD()">
+            <span>RU</span>
+            <svg class="lg-check" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div class="lg-item" id="lgItemHe" onclick="setLang('he');closeLangDD()">
+            <span>HE</span>
+            <svg class="lg-check" viewBox="0 0 24 24" fill="none" stroke="#22D3EE" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="lg-overlay" id="lgOverlay" onclick="closeLangDD()"></div>
+      <!-- Bell -->
+      <div class="hico">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2-3v-3a7 7 0 0 1 4-6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg>
+      </div>
+      <!-- Avatar with dropdown -->
+      <div class="hav-wrap">
+        <div class="hav" id="havBtn" onclick="toggleDrop()">ИГ</div>
+        <div class="av-drop" id="avDrop">
+          <div class="av-drop-user">
+            <div class="av-drop-name" id="avName">Игаль</div>
+            <div class="av-drop-email" id="avEmail">user@example.com</div>
+          </div>
+          <div class="av-drop-divider"></div>
+          <button class="av-drop-item" onclick="closeDrop()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+            <span data-i18n="dropProfile">Профиль</span>
+          </button>
+          <button class="av-drop-item" onclick="closeDrop()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span data-i18n="dropSettings">Настройки</span>
+          </button>
+          <div class="av-drop-divider"></div>
+          <button class="av-drop-item danger" onclick="closeDrop()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span data-i18n="dropLogout">Выйти</span>
+          </button>
+        </div>
+      </div>
+      <div class="overlay" id="overlay" onclick="closeDrop()"></div>
     </div>
+  </div><!-- /hdr -->
+
+  <!-- Dev ctrl-bar -->
+  <div id="ctrlBar" style="display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid;align-items:center;flex-wrap:wrap;flex-shrink:0">
+    <button onclick="setMode('d')" id="btnDark" style="padding:4px 10px;border-radius:6px;border:1px solid #334155;background:rgba(34,211,238,0.1);color:#22D3EE;font-size:11px;cursor:pointer">🌙 Тёмная</button>
+    <button onclick="setMode('l')" id="btnLight" style="padding:4px 10px;border-radius:6px;border:1px solid #334155;background:transparent;color:#64748b;font-size:11px;cursor:pointer">☀ Светлая</button>
   </div>
 
   <!-- BODY -->
   <div class="body">
 
     <!-- SIDEBAR -->
-    <div class="sb">
-      <div class="sbt"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg></div>
+    <div class="sb" id="sb">
+      <div class="sbt" onclick="toggleSb()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg></div>
       <div class="sg">
-        <div class="ni"><span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></svg></span></div>
-        <div class="ni"><span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 3l10 5-10 5L2 8z"/><path d="M7 11.5v4.5a5 5 0 0 0 10 0v-4.5"/><line x1="22" y1="8" x2="22" y2="14"/></svg></span></div>
-        <div class="ni on"><span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="3" y1="3" x2="3" y2="21"/><line x1="21" y1="21" x2="3" y2="21"/><path d="M7 17v-3"/><path d="M11 17v-6"/><path d="M15 17v-9"/></svg></span></div>
-        <div class="ni"><span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M8 21l8 0"/><path d="M12 17l0 4"/><path d="M7 4l10 0"/><path d="M17 4v8a5 5 0 0 1-10 0v-8"/><path d="M5 9a2 2 0 0 1-2-2v-1a2 2 0 0 1 2-2"/><path d="M19 9a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2"/></svg></span></div>
+        <div class="ni"><span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12l-2 0l9-9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></svg></span><span class="nl" data-i18n="navHome">Главная</span></div>
+        <div class="ni"><span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 3l10 5-10 5L2 8z"/><path d="M7 11.5v4.5a5 5 0 0 0 10 0v-4.5"/><line x1="22" y1="8" x2="22" y2="14"/></svg></span><span class="nl" data-i18n="navCourses">Курсы</span></div>
+        <div class="ni"><span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 11.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg></span><span class="nl" data-i18n="navStatus">Статус</span></div>
+        <div class="ni on"><span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M8 21l8 0"/><path d="M12 17l0 4"/><path d="M7 4l10 0"/><path d="M17 4v8a5 5 0 0 1-10 0v-8"/><path d="M5 9a2 2 0 0 1-2-2v-1a2 2 0 0 0 2-2"/><path d="M19 9a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2"/></svg></span><span class="nl" data-i18n="navAchievements">Достижения</span></div>
       </div>
       <div class="sbm">
-        <div class="ni"><span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 12l18 0"/><path d="M12 3l0 18"/><path d="M16.5 4.5l3 3"/><path d="M19.5 4.5l-3 3"/><path d="M6 4l0 4"/><path d="M4 6l4 0"/><path d="M18 16l.01 0"/><path d="M18 20l.01 0"/><path d="M4 18l4 0"/></svg></span></div>
-        <div class="ni"><span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg></span></div>
+        <div class="ni"><span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 12l18 0"/><path d="M12 3l0 18"/><path d="M16.5 4.5l3 3"/><path d="M19.5 4.5l-3 3"/><path d="M6 4l0 4"/><path d="M4 6l4 0"/><path d="M18 16l.01 0"/><path d="M18 20l.01 0"/><path d="M4 18l4 0"/></svg></span><span class="nl" data-i18n="navFormulas">Формулы</span></div>
+        <div class="ni"><span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/></svg></span><span class="nl" data-i18n="navLab">Лаборатория</span></div>
       </div>
       <div class="sbb">
-        <div class="ni"><span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="17" x2="12.01" y2="17"/><path d="M12 13.5a1.5 1.5 0 0 1 1-1.5a2.6 2.6 0 1 0-3-4"/></svg></span></div>
-        <div class="ni"><span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51v.17a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1h-.17a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span></div>
+        <div class="ni"><span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="17" x2="12.01" y2="17"/><path d="M12 13.5a1.5 1.5 0 0 1 1-1.5a2.6 2.6 0 1 0-3-4"/></svg></span><span class="nl" data-i18n="navHelp">Помощь</span></div>
+        <div class="ni"><span class="iw"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51v.17a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1h-.17a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51v-.17a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1h.17a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span><span class="nl" data-i18n="navSettings">Настройки</span></div>
       </div>
     </div>
 
     <!-- MAIN -->
     <div class="main">
-      <div class="pg-title">Прогресс</div>
+      <div class="pg-title" data-i18n="pageTitle">Прогресс</div>
 
       <!-- Top stat cards -->
       <div class="stat-row">
         <div class="stat-card">
-          <div class="stat-label">Пройдено атомов</div>
+          <div class="stat-label" data-i18n="statAtoms">Пройдено атомов</div>
           <div class="stat-val">12 <span style="font-size:14px;color:#475569">/ 47</span></div>
-          <div class="stat-sub">Модуль: Векторы</div>
+          <div class="stat-sub" data-i18n="statAtomsSub">Модуль: Векторы</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Средний балл</div>
+          <div class="stat-label" data-i18n="statAvg">Средний балл</div>
           <div class="stat-val stat-accent">78<span style="font-size:14px">%</span></div>
-          <div class="stat-sub">По всем тестам</div>
+          <div class="stat-sub" data-i18n="statAvgSub">По всем тестам</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Серия дней</div>
+          <div class="stat-label" data-i18n="statStreak">Серия дней</div>
           <div class="stat-val stat-amber">🔥 5</div>
-          <div class="stat-sub">Лучшая серия: 12 дней</div>
+          <div class="stat-sub" data-i18n="statStreakSub">Лучшая серия: 12 дней</div>
         </div>
       </div>
 
@@ -197,12 +325,12 @@ body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9}
         <div class="card">
           <div class="card-title">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            Активность за 4 недели
+            <span data-i18n="cardActivity">Активность за 4 недели</span>
           </div>
           <div class="activity-grid">
             <div class="activity-rows">
               <div class="activity-day-labels">
-                <span>Пн</span><span>Ср</span><span>Пт</span><span>Вс</span>
+                <span data-i18n="dayMon">Пн</span><span data-i18n="dayWed">Ср</span><span data-i18n="dayFri">Пт</span><span data-i18n="daySun">Вс</span>
               </div>
               <div class="activity-cells">
                 <!-- Week 1 -->
@@ -225,7 +353,7 @@ body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9}
             </div>
           </div>
           <div class="activity-legend">
-            <span>Меньше</span>
+            <span data-i18n="legendLess">Меньше</span>
             <div class="legend-cells">
               <div class="cell" style="width:12px;height:12px"></div>
               <div class="cell l1" style="width:12px;height:12px"></div>
@@ -233,16 +361,16 @@ body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9}
               <div class="cell l3" style="width:12px;height:12px"></div>
               <div class="cell l4" style="width:12px;height:12px"></div>
             </div>
-            <span>Больше</span>
+            <span data-i18n="legendMore">Больше</span>
           </div>
           <div class="streak-block">
             <span class="streak-icon">🔥</span>
             <div>
               <div style="display:flex;align-items:baseline;gap:4px">
                 <span class="streak-val">5</span>
-                <span style="font-size:12px;color:#94a3b8">дней подряд</span>
+                <span style="font-size:12px;color:#94a3b8" data-i18n="streakDays">дней подряд</span>
               </div>
-              <div class="streak-label">Лучшая серия: 12 дней · Всего активных дней: 19</div>
+              <div class="streak-label" data-i18n="streakLabel">Лучшая серия: 12 дней · Всего активных дней: 19</div>
             </div>
           </div>
         </div>
@@ -251,11 +379,11 @@ body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9}
         <div class="module-card">
           <div class="card-title">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 3l10 5-10 5L2 8z"/><path d="M7 11.5v4.5a5 5 0 0 0 10 0v-4.5"/></svg>
-            Текущий модуль
+            <span data-i18n="cardModule">Текущий модуль</span>
           </div>
           <div>
-            <div class="module-tag">Векторы</div>
-            <div class="module-name">Алгебра векторов</div>
+            <div class="module-tag" data-i18n="moduleTag">Векторы</div>
+            <div class="module-name" data-i18n="moduleName">Алгебра векторов</div>
           </div>
           <!-- Progress ring via SVG -->
           <div class="ring-wrap">
@@ -264,7 +392,7 @@ body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9}
               <circle cx="55" cy="55" r="44" fill="none" stroke="#22D3EE" stroke-width="10"
                 stroke-dasharray="276.5" stroke-dashoffset="212"
                 stroke-linecap="round" transform="rotate(-90 55 55)"/>
-              <text x="55" y="50" text-anchor="middle" font-size="20" font-weight="600" fill="#f1f5f9" font-family="system-ui">25%</text>
+              <text x="55" y="50" text-anchor="middle" font-size="20" font-weight="600" fill="currentColor" font-family="system-ui">25%</text>
               <text x="55" y="66" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="system-ui">12 из 47</text>
             </svg>
           </div>
@@ -272,27 +400,27 @@ body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9}
           <div class="atom-list">
             <div class="atom-item">
               <div class="atom-dot dot-done"></div>
-              <span class="atom-name done">Понятие вектора</span>
+              <span class="atom-name done" data-i18n="atom1">Понятие вектора</span>
               <span class="atom-score done">94%</span>
             </div>
             <div class="atom-item">
               <div class="atom-dot dot-done"></div>
-              <span class="atom-name done">Сложение векторов</span>
+              <span class="atom-name done" data-i18n="atom2">Сложение векторов</span>
               <span class="atom-score done">81%</span>
             </div>
             <div class="atom-item">
               <div class="atom-dot dot-active"></div>
-              <span class="atom-name active">Скалярное произведение</span>
-              <span class="atom-score" style="color:#22D3EE">в работе</span>
+              <span class="atom-name active" data-i18n="atom3">Скалярное произведение</span>
+              <span class="atom-score" style="color:#22D3EE" data-i18n="atomInProgress">в работе</span>
             </div>
             <div class="atom-item">
               <div class="atom-dot dot-locked"></div>
-              <span class="atom-name">Угол между векторами</span>
+              <span class="atom-name" data-i18n="atom4">Угол между векторами</span>
               <span class="atom-score">—</span>
             </div>
             <div class="atom-item">
               <div class="atom-dot dot-locked"></div>
-              <span class="atom-name">Проекция вектора</span>
+              <span class="atom-name" data-i18n="atom5">Проекция вектора</span>
               <span class="atom-score">—</span>
             </div>
           </div>
@@ -306,31 +434,31 @@ body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9}
         <div class="card">
           <div class="card-title">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="3" y1="3" x2="3" y2="21"/><line x1="21" y1="21" x2="3" y2="21"/><path d="M7 17v-5"/><path d="M11 17v-9"/><path d="M15 17v-6"/><path d="M19 17v-11"/></svg>
-            Успеваемость по темам
+            <span data-i18n="cardTopics">Успеваемость по темам</span>
           </div>
           <div>
             <div class="topic-row">
-              <span class="topic-name">Понятие вектора</span>
+              <span class="topic-name" data-i18n="atom1">Понятие вектора</span>
               <div class="topic-bar-wrap"><div class="topic-bar" style="width:94%"></div></div>
               <span class="topic-pct">94%</span>
             </div>
             <div class="topic-row">
-              <span class="topic-name">Сложение и вычитание</span>
+              <span class="topic-name" data-i18n="topicAdd">Сложение и вычитание</span>
               <div class="topic-bar-wrap"><div class="topic-bar" style="width:81%"></div></div>
               <span class="topic-pct">81%</span>
             </div>
             <div class="topic-row">
-              <span class="topic-name">Умножение на число</span>
+              <span class="topic-name" data-i18n="topicMul">Умножение на число</span>
               <div class="topic-bar-wrap"><div class="topic-bar" style="width:76%"></div></div>
               <span class="topic-pct">76%</span>
             </div>
             <div class="topic-row">
-              <span class="topic-name">Координатная форма</span>
+              <span class="topic-name" data-i18n="topicCoord">Координатная форма</span>
               <div class="topic-bar-wrap"><div class="topic-bar" style="width:68%"></div></div>
               <span class="topic-pct">68%</span>
             </div>
             <div class="topic-row">
-              <span class="topic-name">Длина вектора</span>
+              <span class="topic-name" data-i18n="topicLen">Длина вектора</span>
               <div class="topic-bar-wrap"><div class="topic-bar" style="width:55%"></div></div>
               <span class="topic-pct">55%</span>
             </div>
@@ -341,7 +469,7 @@ body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9}
         <div class="card">
           <div class="card-title">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-            Время обучения
+            <span data-i18n="cardTime">Время обучения</span>
           </div>
           <div class="time-rows">
             <div class="time-row">
@@ -349,19 +477,19 @@ body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9}
               <span class="time-val accent">42 мин</span>
             </div>
             <div class="time-row">
-              <span class="time-label">На этой неделе</span>
+              <span class="time-label" data-i18n="timeWeek">На этой неделе</span>
               <span class="time-val">3 ч 18 мин</span>
             </div>
             <div class="time-row">
-              <span class="time-label">В этом месяце</span>
+              <span class="time-label" data-i18n="timeMonth">В этом месяце</span>
               <span class="time-val">11 ч 45 мин</span>
             </div>
             <div class="time-row">
-              <span class="time-label">Всего</span>
+              <span class="time-label" data-i18n="timeTotal">Всего</span>
               <span class="time-val">24 ч 30 мин</span>
             </div>
             <div class="time-row">
-              <span class="time-label">Среднее в день</span>
+              <span class="time-label" data-i18n="timeAvg">Среднее в день</span>
               <span class="time-val">37 мин</span>
             </div>
           </div>
@@ -371,5 +499,112 @@ body{font-family:system-ui,sans-serif;background:#0f172a;color:#f1f5f9}
     </div><!-- /main -->
   </div><!-- /body -->
 </div><!-- /shell -->
+
+<script>
+var CL = 'ru';
+
+// ── i18n ──────────────────────────────────────────────────────────────
+var TR = {
+  ru:{
+    navHome:'Главная', navCourses:'Курсы', navStatus:'Статус', navAchievements:'Достижения',
+    navFormulas:'Формулы', navLab:'Лаборатория', navHelp:'Помощь', navSettings:'Настройки',
+    dropProfile:'Профиль', dropSettings:'Настройки', dropLogout:'Выйти',
+    pageTitle:'Прогресс',
+    statAtoms:'Пройдено атомов', statAtomsSub:'Модуль: Векторы',
+    statAvg:'Средний балл', statAvgSub:'По всем тестам',
+    statStreak:'Серия дней', statStreakSub:'Лучшая серия: 12 дней',
+    cardActivity:'Активность за 4 недели', cardModule:'Текущий модуль',
+    cardTopics:'Успеваемость по темам', cardTime:'Время обучения',
+    dayMon:'Пн', dayWed:'Ср', dayFri:'Пт', daySun:'Вс',
+    legendLess:'Меньше', legendMore:'Больше',
+    streakDays:'дней подряд', streakLabel:'Лучшая серия: 12 дней · Всего активных дней: 19',
+    moduleTag:'Векторы', moduleName:'Алгебра векторов',
+    atom1:'Понятие вектора', atom2:'Сложение векторов', atom3:'Скалярное произведение',
+    atom4:'Угол между векторами', atom5:'Проекция вектора', atomInProgress:'в работе',
+    topicAdd:'Сложение и вычитание', topicMul:'Умножение на число',
+    topicCoord:'Координатная форма', topicLen:'Длина вектора', topicGeo:'Геометрия в 3D',
+    timeWeek:'На этой неделе', timeMonth:'В этом месяце', timeTotal:'Всего', timeAvg:'Среднее в день'
+  },
+  he:{
+    navHome:'ראשי', navCourses:'קורסים', navStatus:'סטטוס', navAchievements:'הישגים',
+    navFormulas:'נוסחאות', navLab:'מעבדה', navHelp:'עזרה', navSettings:'הגדרות',
+    dropProfile:'פרופיל', dropSettings:'הגדרות', dropLogout:'יציאה',
+    pageTitle:'התקדמות',
+    statAtoms:'אטומים שהושלמו', statAtomsSub:'מודול: וקטורים',
+    statAvg:'ציון ממוצע', statAvgSub:'על כל הבחינות',
+    statStreak:'רצף ימים', statStreakSub:'הרצף הטוב ביותר: 12 ימים',
+    cardActivity:'פעילות ב-4 שבועות', cardModule:'מודול נוכחי',
+    cardTopics:'ביצועים לפי נושא', cardTime:'זמן לימוד',
+    dayMon:"ב'", dayWed:"ד'", dayFri:"ו'", daySun:"א'",
+    legendLess:'פחות', legendMore:'יותר',
+    streakDays:'ימים ברצף', streakLabel:'הרצף הטוב: 12 ימים · סך הכל ימים פעילים: 19',
+    moduleTag:'וקטורים', moduleName:'אלגברה של וקטורים',
+    atom1:'מושג הוקטור', atom2:'חיבור וקטורים', atom3:'מכפלה סקלרית',
+    atom4:'זווית בין וקטורים', atom5:'הטלת וקטור', atomInProgress:'בעבודה',
+    topicAdd:'חיבור וחיסור', topicMul:'כפל בסקלר',
+    topicCoord:'צורה קואורדינטית', topicLen:'אורך וקטור', topicGeo:'גיאומטריה ב-3D',
+    timeWeek:'השבוע', timeMonth:'החודש', timeTotal:'סה"כ', timeAvg:'ממוצע ליום'
+  }
+};
+
+function applyI18n(){
+  var t = TR[CL];
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var k = el.getAttribute('data-i18n');
+    if(t[k]) el.textContent = t[k];
+  });
+  document.getElementById('shell').setAttribute('dir', CL==='he'?'rtl':'ltr');
+}
+
+// ── Sidebar toggle ───────────────────────────────────────────────────
+function toggleSb(){
+  document.getElementById('sb').classList.toggle('open');
+}
+
+// ── Theme ─────────────────────────────────────────────────────────────
+function setMode(m){
+  var shell = document.getElementById('shell');
+  shell.className = 'shell ' + m;
+  var bar = document.getElementById('ctrlBar');
+  if(bar) bar.style.borderColor = m==='d' ? '#334155' : '#e2e8f0';
+  document.getElementById('btnDark').style.background  = m==='d' ? 'rgba(34,211,238,0.1)' : 'transparent';
+  document.getElementById('btnDark').style.color       = m==='d' ? '#22D3EE' : '#64748b';
+  document.getElementById('btnLight').style.background = m==='l' ? 'rgba(34,211,238,0.1)' : 'transparent';
+  document.getElementById('btnLight').style.color      = m==='l' ? '#22D3EE' : '#64748b';
+}
+
+// ── Lang dropdown ──────────────────────────────────────────────────────
+function toggleLangDD(){
+  var dd = document.getElementById('lgDropdown');
+  var isOpen = dd.classList.contains('open');
+  closeDrop();
+  isOpen ? closeLangDD() : (dd.classList.add('open'), document.getElementById('lgOverlay').classList.add('open'));
+}
+function closeLangDD(){
+  document.getElementById('lgDropdown').classList.remove('open');
+  document.getElementById('lgOverlay').classList.remove('open');
+}
+function setLang(lang){
+  CL = lang;
+  document.getElementById('lgItemRu').className = 'lg-item' + (lang==='ru'?' on':'');
+  document.getElementById('lgItemHe').className = 'lg-item' + (lang==='he'?' on':'');
+  applyI18n();
+}
+
+// ── Avatar dropdown ────────────────────────────────────────────────────
+function openDrop(){
+  document.getElementById('avDrop').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+function closeDrop(){
+  document.getElementById('avDrop').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+function toggleDrop(){
+  var d = document.getElementById('avDrop');
+  closeLangDD();
+  d.classList.contains('open') ? closeDrop() : openDrop();
+}
+</script>
 </body>
 </html>
