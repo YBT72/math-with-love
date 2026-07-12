@@ -324,6 +324,19 @@
 
 ---
 
+## Технический долг — auth файлы (2026-07-12)
+
+Обнаружено при аудите Claude Code. Не блокируют Фазу 0, исправить до реализации auth.
+
+- [ ] `app/auth/callback/route.ts` — лежит не там. Перенести в `app/api/auth/callback/route.ts` согласно ARCHITECTURE.md §2. Добавить ролевой редирект согласно §4 (student → /dashboard, author → /constructor/graph, admin → /constructor/dashboard)
+- [ ] `frontend/middleware.ts` — сейчас заглушка, роли не проверяет. Реализовать полные route guards согласно ARCHITECTURE.md §4 до начала тестирования auth
+- [ ] `lib/supabase.ts` — только browser-клиент. Вынести `createServerClient` сюда для централизации когда auth заработает
+- [ ] Таблица `profiles` в Supabase — добавить поля `lang varchar DEFAULT 'he'` и `theme varchar DEFAULT 'dark'` при первой миграции. До этого `AuthContext.fetchProfile` вернёт неполные данные (не сломает JS, но lang/theme из профиля работать не будут)
+
+*Добавлено: 2026-07-12*
+
+---
+
 ## Архитектурные решения — обсудить перед Фазой 1 (2026-07-11)
 
 Четыре темы требуют отдельного обсуждения и фиксации в контролирующих документах

@@ -1,180 +1,40 @@
 {
-  "header": {
-    "siteName": "Math With Love",
-    "login": "כניסה",
-    "register": "הרשמה",
-    "langRu": "RU",
-    "langHe": "HE"
-  },
-  "hero": {
-    "badge": "★ בגרות 572 · מתמטיקה וקטורית",
-    "titleLine1": "מתמטיקה",
-    "titleLine2": "שרוצים",
-    "titleAccent": "להבין",
-    "description": "פלטפורמה אינטראקטיבית ללימוד וקטורים. ויזואליזציות תלת-ממד, תרגילים חכמים, התקדמות צעד אחר צעד.",
-    "ctaPrimary": "התחל בחינם",
-    "ctaSecondary": "לצפייה בקורסים",
-    "professorName": "פרופסור יוסי",
-    "professorDescription": "המדריך שלך בעולם הוקטורים. יסביר, ירמוז וישמח איתך!"
-  },
-  "stats": {
-    "modulesValue": "4",
-    "modulesLabel": "מודולי קורס",
-    "tasksValue": "40+",
-    "tasksLabel": "תרגילים אינטראקטיביים",
-    "vizValue": "3D",
-    "vizLabel": "ויזואליזציות"
-  },
-  "courses": {
-    "sectionLabel": "תוכנית",
-    "title": "קורסי הפלטפורמה",
-    "subtitle": "המודול הבא נפתח לאחר 100% תשובות נכונות.",
-    "activeBadge": "פעיל",
-    "lockedLabel": "נעול",
-    "completedSuffix": "הושלם",
-    "items": [
-      {
-        "tag": "מודול 1",
-        "title": "יסודות הוקטורים",
-        "description": "אורך וקטור, כיוון, פעולות ליניאריות. גישה גיאומטרית וקואורדינטות.",
-        "progress": 60,
-        "active": true,
-        "locked": false
-      },
-      {
-        "tag": "מודול 2",
-        "title": "מכפלה סקלרית",
-        "description": "זווית בין וקטורים, ניצבות, הטלות.",
-        "progress": 0,
-        "active": false,
-        "locked": false
-      },
-      {
-        "tag": "מודול 3",
-        "title": "ישרים ומישורים",
-        "description": "משוואות ישרים ומישורים במרחב.",
-        "progress": 0,
-        "active": false,
-        "locked": false
-      }
-    ]
-  },
-  "lessonPreview": {
-    "sectionLabel": "איך זה נראה",
-    "title": "שיעור מבפנים",
-    "subtitle": "נוסחה + ויזואליזציה תלת-ממד + תרגיל על מסך אחד.",
-    "formulaLabel": "מכפלה סקלרית",
-    "formulaMain": "a\u20D7 \u00B7 b\u20D7 = |a\u20D7| \u00B7 |b\u20D7| \u00B7 cos \u03B8",
-    "formulaAlt": "= a\u2081b\u2081 + a\u2082b\u2082 + a\u2083b\u2083",
-    "formulaDesc": "המכפלה הסקלרית של שני וקטורים שווה למכפלת אורכיהם בקוסינוס הזווית ביניהם. התוצאה היא מספר, לא וקטור.",
-    "vizLabel": "ויזואליזציה תלת-ממד",
-    "vizSub": "React Three Fiber"
-  },
-  "gamification": {
-    "sectionLabel": "מוטיבציה",
-    "title": "אלמנטים של משחק",
-    "subtitle": "רק ההתקדמות האישית שלך — ללא טבלת מובילים.",
-    "items": [
-      { "emoji": "🔥", "type": "amber", "title": "רצף ימים", "subtitle": "למד כל יום" },
-      { "emoji": null,  "type": "cyan",  "title": "נקודות XP",  "subtitle": "על כל תשובה נכונה" },
-      { "emoji": "✓",  "type": "green", "title": "100% התקדמות", "subtitle": "הנושא נפתח — ממשיכים" }
-    ]
-  },
-  "cta": {
-    "title": "מוכן להתחיל?",
-    "subtitle": "חינם. ללא פרסומות. רק מתמטיקה שרוצים להבין.",
-    "button": "צור חשבון"
-  },
-  "footer": {
-    "text": "Math With Love · בגרות 572 · מתמטיקה וקטורית"
-  },
-  "dashboard": {
-    "greeting": "שלום",
-    "greetingSub": "מה עושים היום?",
-    "btnContinue": "המשך",
-    "btnRepeat": "חזרה",
-    "btnNewTopic": "נושא חדש",
-    "professorName": "פרופסור יוסי",
-    "professorMessage": "7 ימים ברצף — כל הכבוד! היום נלמד חיבור וקטורים 🎯",
-    "statStreak": "ימים ברצף",
-    "statXp": "נקודות",
-    "statDone": "נושאים שנלמדו",
-    "topicsTitle": "נושאי הקורס",
-    "topicSelectPrompt": "בחר נושא משמאל",
-    "topicSelectHint": "← לחץ על נושא משמאל",
-    "topicStatusNow": "עכשיו",
-    "topicBtnStart": "התחל שיעור",
-    "topicBtnRepeat": "חזרה",
-    "topicLockedMsg": "הנושא נעול.\nסיים את הנושאים הקודמים.",
-    "moduleTitle": "המודול הנוכחי",
-    "moduleAvgScore": "ציון ממוצע",
-    "moduleProgress": "הושלם",
-    "moduleOf": "מתוך",
-    "moduleTopics": "נושאים",
-    "topicNow": "עכשיו",
-    "resultsTitle": "תוצאות אחרונות",
-    "resultToday": "היום",
-    "resultYesterday": "אתמול",
-    "resultDaysAgo": "ימים לפני",
-    "navDashboard": "לוח בקרה",
-    "navModules": "מודולים",
-    "navProgress": "התקדמות",
-    "navContent": "עורך",
-    "navFormulas": "נוסחאות",
-    "navLab": "מעבדה",
-    "navAchievements": "הישגים",
-    "navHelp": "עזרה",
-    "navSettings": "הגדרות",
-    "subGraph": "גרף",
-    "subAtomEditor": "אטום",
-    "subGroups": "קבוצות",
-    "subExam": "מבחנים",
-    "mockCourses": [
-      {
-        "name": "יסודות וקטורים",
-        "topics": [
-          { "name": "מבוא", "status": "done", "xp": 10 },
-          { "name": "קוארדינטות נקודה", "status": "done", "xp": 10 },
-          { "name": "אורך הוקטור", "status": "done", "xp": 15 },
-          { "name": "חיבור וקטורים", "status": "current", "xp": 15 },
-          { "name": "חיסור וקטורים", "status": "available", "xp": 15 },
-          { "name": "וקטורים קוליניאריים", "status": "locked", "xp": 20 },
-          { "name": "פירוק וקטור", "status": "locked", "xp": 20 },
-          { "name": "מבדק: יסודות", "status": "locked", "xp": 30 }
-        ]
-      },
-      {
-        "name": "מכפלה סקלרית",
-        "topics": [
-          { "name": "הגדרה", "status": "available", "xp": 10 },
-          { "name": "זווית בין וקטורים", "status": "locked", "xp": 15 },
-          { "name": "ניצבות", "status": "locked", "xp": 15 },
-          { "name": "הטלות", "status": "locked", "xp": 20 },
-          { "name": "מבדק: סקלרי", "status": "locked", "xp": 30 }
-        ]
-      },
-      {
-        "name": "גאומטריה תלת מימדית",
-        "topics": [
-          { "name": "מערכת צירים", "status": "locked", "xp": 10 },
-          { "name": "מרחק במרחב", "status": "locked", "xp": 15 },
-          { "name": "משוואת מישור", "status": "locked", "xp": 20 },
-          { "name": "מבדק: גאומטריה", "status": "locked", "xp": 30 }
-        ]
-      },
-      {
-        "name": "בגרות: וקטורים 572",
-        "topics": [
-          { "name": "מבדק גישה 1", "status": "locked", "xp": 50 },
-          { "name": "מבדק גישה 2", "status": "locked", "xp": 50 },
-          { "name": "בגרות סיום", "status": "locked", "xp": 100 }
-        ]
-      }
-    ]
-  },
-  "loginModal": {
-    "title": "כניסה לחשבון",
-    "notice": "ההתחברות כרגע מושבתת",
-    "close": "סגור"
-  }
+  "navHome": "ראשי",
+  "navCourses": "קורסים",
+  "navStatus": "סטטוס",
+  "navAchievements": "הישגים",
+  "navFormulas": "נוסחאות",
+  "navLab": "מעבדה",
+  "navHelp": "עזרה",
+  "navSettings": "הגדרות",
+  "navProfile": "פרופיל",
+  "navLogout": "יציאה",
+  "dropProfile": "פרופיל",
+  "dropSettings": "הגדרות",
+  "dropLogout": "יציאה",
+  "navGraph": "גרף",
+  "navAtom": "אטום",
+  "navGroups": "קבוצות",
+  "navExam": "מבחנים",
+  "navConstructorHome": "ראשי",
+  "themeLight": "בהיר",
+  "themeDark": "כהה",
+  "langHe": "עברית",
+  "langRu": "רוסית",
+  "btnSave": "שמור",
+  "btnCancel": "ביטול",
+  "btnContinue": "המשך",
+  "btnBack": "חזרה",
+  "btnStart": "התחל",
+  "btnRepeat": "חזרה על החומר",
+  "btnLogout": "יציאה",
+  "authProfile": "פרופיל",
+  "authSettings": "הגדרות",
+  "searchPlaceholder": "חיפוש...",
+  "helpFormulas": "נוסחאות",
+  "helpYosi": "שיחה עם יוסי",
+  "statusTranslating": "מתרגם...",
+  "statusTranslated": "תורגם ✓",
+  "statusSaved": "נשמר ✓",
+  "statusErrorTranslation": "שגיאת תרגום"
 }
