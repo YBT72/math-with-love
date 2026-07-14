@@ -47,6 +47,11 @@ export default function Header() {
   const langRef = useRef<HTMLDivElement>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
 
+  // Responsive search state
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   // Close dropdowns on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -72,6 +77,28 @@ export default function Header() {
     setLangOpen(false);
   };
 
+  const handleSearch = (): void => {
+    if (searchQuery.trim()) {
+      // Search functionality — stub until Phase 1 search implementation
+      console.log("Search:", searchQuery.trim());
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (e.key === "Enter") handleSearch();
+    if (e.key === "Escape") { setSearchOpen(false); setSearchQuery(""); }
+  };
+
+  const openSearch = (): void => {
+    setSearchOpen(true);
+    setTimeout(() => searchInputRef.current?.focus(), 50);
+  };
+
+  const closeSearch = (): void => {
+    setSearchOpen(false);
+    setSearchQuery("");
+  };
+
   // Build avatar initials from display_name or email
   const initials = profile?.display_name
     ? profile.display_name.slice(0, 2).toUpperCase()
@@ -82,34 +109,78 @@ export default function Header() {
   const displayName = profile?.display_name ?? user?.email ?? "";
   const displayEmail = user?.email ?? "";
 
+  // Logo variant by language (RTL for Hebrew, LTR for Russian)
+  const logoSrc =
+    lang === "he" ? "/logo-rtl.png" :
+    lang === "ru" ? "/logo-ltr.png" :
+    "/logo-mwl_transparent.png";
+
   return (
     <div className="hdr p1 bd">
-      {/* Left: Logo + Brand */}
+      {/* Left: Logo */}
       <div className="hdr-left">
         <div className="logo">
           <Image
-            src="/logo-mwl_transparent.png"
-            alt="MWL"
-            width={32}
+            src={logoSrc}
+            alt="Math With Love"
+            width={128}
             height={32}
-            style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }}
+            style={{ display: "block", height: "32px", width: "auto",
+                     objectFit: "contain", objectPosition: "left center" }}
             priority
             unoptimized
           />
         </div>
-        <div className="brand t1">Math <b>With Love</b></div>
       </div>
 
-      {/* Center: Search */}
+      {/* Center: Search — desktop shows full field, tablet/mobile shows icon */}
       <div className="hdr-center">
-        <div className="srch">
-          <input placeholder={t("searchPlaceholder")} />
-          <svg className="t3 si2" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        {/* Desktop search field (hidden on tablet/mobile via CSS) */}
+        <div className="srch-desktop">
+          <input
+            placeholder={t("searchPlaceholder")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
+          />
+          <svg
+            className="t3 si2 si2-clickable"
+            width="14" height="14" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" strokeWidth="2"
+            strokeLinecap="round" strokeLinejoin="round"
+            onClick={handleSearch}
+            style={{ cursor: "pointer", pointerEvents: "auto" }}
+          >
+            <circle cx="10" cy="10" r="7"/>
+            <line x1="21" y1="21" x2="15" y2="15"/>
+          </svg>
+        </div>
+
+        {/* Tablet/mobile search icon (hidden on desktop via CSS) */}
+        <div className="hico bd t2 srch-icon-mobile" onClick={openSearch}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2"
+            strokeLinecap="round" strokeLinejoin="round">
             <circle cx="10" cy="10" r="7"/>
             <line x1="21" y1="21" x2="15" y2="15"/>
           </svg>
         </div>
       </div>
+
+      {/* Search overlay — tablet/mobile only, covers full header width */}
+      {searchOpen && (
+        <div className="srch-overlay">
+          <input
+            ref={searchInputRef}
+            type="text"
+            placeholder={t("searchPlaceholder")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearchKeyDown}
+          />
+          <span className="srch-close t2" onClick={closeSearch}>×</span>
+        </div>
+      )}
 
       {/* Right: Globe + Bell + Avatar */}
       <div className="hdr-right">

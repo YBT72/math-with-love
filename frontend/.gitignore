@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local logo backups (kept locally, not in repo)
+/public/logo-backup/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
