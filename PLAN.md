@@ -50,6 +50,44 @@
 
 ---
 
+---
+
+## Фаза 0.7 — Student Shell: реализация Next.js (в процессе, 2026-07-14)
+
+### Выполнено:
+- [x] `contexts/LocaleContext.tsx` — useLocale(), lang (he/ru), setLang(), t()
+- [x] `contexts/ThemeContext.tsx` — useTheme(), theme (dark/light), setTheme()
+- [x] `contexts/AuthContext.tsx` — useAuth(), user, profile, signOut()
+- [x] `components/shell/ThemeShell.tsx` — wrapper, применяет .dark на html
+- [x] `components/shell/Header.tsx`:
+      Логотип динамический: logo-rtl.png (he) / logo-ltr.png (ru) / fallback logo-mwl_transparent.png.
+      Поиск адаптивный: desktop — поле растягивается на всю ширину hdr-center;
+      tablet/mobile — иконка лупы → overlay на всю ширину хедера (font-size:16px, iOS zoom prevention).
+      Globe-dropdown (RU/HE), Bell, Avatar-dropdown (профиль/настройки/выйти).
+- [x] `components/shell/StudentSidebar.tsx`:
+      3 группы: [Главная/Курсы/Статус/Достижения] / [Формулы/Лаборатория] / [Помощь/Настройки].
+      Toggle кнопка с LayoutIcon (иконка двух панелей).
+      collapsed/expanded с localStorage ('mwl-sidebar-collapsed').
+      Закрытие по клику вне (mousedown listener).
+      Кастомный tooltip (position:fixed, getBoundingClientRect, direction-aware RTL/LTR).
+      RTL позиционирование через CSS order ([dir="rtl"] .sb { order: 2 }).
+      onHelpClick?: () => void проп для будущей интеграции Yosi.
+      Все стили вынесены в globals.css.
+- [x] `app/(student)/layout.tsx` — ThemeShell → Header / body(StudentSidebar + main{children})
+- [x] `app/(student)/dashboard/page.tsx` — Phase 0 placeholder
+- [x] `app/globals.css` — CSS custom properties dark/light, shell layout, полный блок sidebar
+- [x] `locales/he.json` / `locales/ru.json` — базовый набор ключей
+
+### Не начато (следующие шаги):
+- [ ] `components/shell/BottomNav.tsx` — мобильная нижняя навигация
+      5 табов: Главная / Курсы / Статус / Лаборатория / Помощь(→popup: Формулы + Йоси).
+      Показывать только на mobile (<768px).
+- [ ] Адаптивность сайдбара по breakpoints:
+      Desktop (≥1024px): expanded по умолчанию (если localStorage не задан).
+      Tablet (768–1023px): collapsed по умолчанию.
+      Mobile (<768px): display:none (заменяется BottomNav).
+
+
 ## Фаза 1 — Dashboard v2 (ждём макеты)
 
 Триггер: загрузка новых макетов (desktop + tablet + mobile, оба theme).
@@ -345,3 +383,4 @@ Claude Code (VS Code) + claude.ai/chat тянут из **одного пула**
 *Обновлён: 2026-07-07 — Фаза 8b обновлена: все 5 макетов конструктора готовы. Author sidebar стандарт финализирован (flat, без подменю). Добавлен /constructor/dashboard. Auto-translate через FastAPI backend (не browser fetch). Retrofit globe-dropdown в старые мокапы — в backlog. Создан ARCHITECTURE.md — полная техническая архитектура для Claude Code (shell, routes, DB, auth, i18n, Phase 0).*
 *Обновлён: 2026-07-08 — Фаза 4 детализирована: полная спецификация страницы теста (shell, topbar, Q-circles, timer, stats block, zone 1, 3 типа ответов, AI-проверка текста, action buttons, FABs, dev toolbar). Спецификация также зафиксирована в DESIGN_SYSTEM.md §27 и NAVIGATION.md §3c.*
 *Обновлён: 2026-07-08 — Фаза 4 дополнена: навигация по вопросам, points badge, dev ctrl-bar mockup-only. Фаза 5 переписана: полная спецификация экзамена (отличия от теста, отсутствие Йоси, «Сдать» вместо per-question Check).*
+*Обновлён: 2026-07-14 — Добавлена Фаза 0.7: Student Shell реализация Next.js (в процессе). Выполнено: все контексты, Header.tsx (динамический логотип по lang, адаптивный поиск), StudentSidebar.tsx (3 группы, localStorage, tooltip, RTL order, стили в globals.css), layout.tsx, globals.css. Не начато: BottomNav.tsx, адаптивность сайдбара по breakpoints.*

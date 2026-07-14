@@ -95,8 +95,9 @@ body { font-family: system-ui, sans-serif; background: var(--c-body); color: var
 .si2 {
   position: absolute; inset-inline-end: 8px;
   top: 50%; transform: translateY(-50%);
-  pointer-events: none; color: var(--c-t3);
+  pointer-events: none; color: #94a3b8;
 }
+html:not(.dark) .si2 { color: #64748b; }
 
 /* Desktop search: stretches between left and right header groups */
 .srch-desktop {
@@ -129,15 +130,6 @@ body { font-family: system-ui, sans-serif; background: var(--c-body); color: var
   padding: 0 12px;
   gap: 8px;
   z-index: 10;
-}
-.srch-overlay input {
-  flex: 1;
-  border-radius: 8px;
-  padding: 7px 10px;
-  font-size: 16px;
-  outline: none;
-  font-family: inherit;
-  border: 1px solid;
 }
 .srch-close {
   font-size: 20px;
@@ -177,16 +169,47 @@ html.dark .srch-overlay {
   background: #1e293b;
   border-bottom: 1px solid #334155;
 }
-html:not(.dark) .srch-overlay input {
+html:not(.dark) .srch-overlay-field input {
   background: #f1f5f9;
   border-color: #e2e8f0;
   color: #0f172a;
 }
-html.dark .srch-overlay input {
+html.dark .srch-overlay-field input {
   background: #334155;
   border-color: #475569;
   color: #f1f5f9;
 }
+
+.srch-overlay-field {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.srch-overlay-field input {
+  width: 100%;
+  border-radius: 8px;
+  padding: 7px 36px 7px 10px;
+  font-size: 16px;
+  outline: none;
+  font-family: inherit;
+  border: 1px solid;
+}
+.srch-overlay-icon {
+  position: absolute;
+  inset-inline-end: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}
+html:not(.dark) .srch-overlay-icon { color: #64748b; }
+.srch-overlay-icon.active { color: #22D3EE; }
+.srch-overlay-icon:hover { color: var(--c-t1); }
 
 .hico {
   width: 28px; height: 28px; border-radius: 8px;
@@ -398,4 +421,107 @@ html:not(.dark) .sb-item { color: #64748b; }
 @keyframes sb-tooltip-in {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@media (max-width: 767px) {
+  .sb { display: none !important; }
+}
+
+/* ── Bottom Nav ── */
+
+/* Visibility by breakpoint */
+.bnav { display: none; }
+@media (max-width: 767px) { .bnav { display: flex; } }
+
+/* Container */
+.bnav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 64px;
+  align-items: stretch;
+  border-top: 1px solid var(--c-bd);
+  background: var(--c-p2-bg);
+  z-index: 40;
+}
+
+/* Each tab */
+.bnav-tab {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  border: none; background: transparent;
+  padding: 0;
+  transition: opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Icon wrapper */
+.bnav-icon {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+}
+.bnav-icon svg {
+  width: 30px; height: 30px;
+  stroke: #94a3b8;
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.15s;
+}
+
+/* Label */
+.bnav-label {
+  display: none !important;
+}
+html:not(.dark) .bnav-icon svg { stroke: #64748b; }
+html:not(.dark) .bnav-label    { color: #64748b; }
+
+/* Active tab */
+.bnav-tab.active .bnav-icon svg { stroke: #22D3EE; }
+
+/* Help popup */
+.bnav-popup {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%; transform: translateX(-50%);
+  min-width: 180px;
+  background: var(--c-p2-bg);
+  border: 1px solid var(--c-bd);
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 50;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+}
+
+/* Popup item */
+.bnav-popup-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 13px; font-weight: 500;
+  color: var(--c-t1);
+  border: none; background: transparent; width: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+.bnav-popup-item:hover { background: var(--c-p1-bg); }
+.bnav-popup-item svg {
+  width: 18px; height: 18px;
+  stroke: var(--c-t2); fill: none;
+  stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+/* Overlay for closing popup */
+.bnav-overlay {
+  position: fixed; inset: 0; z-index: 45;
+}
+
+/* RTL: tabs mirror automatically via dir="rtl" — no extra rules needed */
+
+/* Mobile content padding — prevent content hidden behind BottomNav */
+@media (max-width: 767px) {
+  .shell-main { padding-bottom: 64px; }
 }

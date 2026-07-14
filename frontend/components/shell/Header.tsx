@@ -51,6 +51,7 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchOverlayRef = useRef<HTMLDivElement>(null);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -60,6 +61,9 @@ export default function Header() {
       }
       if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
         setAvatarOpen(false);
+      }
+      if (searchOverlayRef.current && !searchOverlayRef.current.contains(e.target as Node)) {
+        closeSearch();
       }
     }
     document.addEventListener("mousedown", handleClick);
@@ -79,8 +83,8 @@ export default function Header() {
 
   const handleSearch = (): void => {
     if (searchQuery.trim()) {
-      // Search functionality — stub until Phase 1 search implementation
-      console.log("Search:", searchQuery.trim());
+      console.log('Search:', searchQuery.trim());
+      setSearchQuery('');
     }
   };
 
@@ -169,17 +173,33 @@ export default function Header() {
 
       {/* Search overlay — tablet/mobile only, covers full header width */}
       {searchOpen && (
-        <div className="srch-overlay">
-          <input
-            ref={searchInputRef}
-            type="text"
-            placeholder={t("searchPlaceholder")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={handleSearchKeyDown}
-          />
+        <>
+          <div className="srch-overlay-backdrop" onClick={closeSearch} />
+          <div className="srch-overlay" ref={searchOverlayRef}>
+          <div className="srch-overlay-field">
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder={t("searchPlaceholder")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+            />
+            <span
+              className={`srch-overlay-icon${searchQuery.trim() ? ' active' : ''}`}
+              onClick={handleSearch}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth={1.5}
+                strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
+              </svg>
+            </span>
+          </div>
           <span className="srch-close t2" onClick={closeSearch}>×</span>
         </div>
+        </>
       )}
 
       {/* Right: Globe + Bell + Avatar */}
