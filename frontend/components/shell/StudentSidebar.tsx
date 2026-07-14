@@ -24,8 +24,8 @@ interface NavItem {
 
 // ── Icons (Tabler paths) — 18x18, stroke currentColor, strokeWidth 1.5 ──
 const iconProps = {
-  width: 18,
-  height: 18,
+  width: 22,
+  height: 22,
   viewBox: "0 0 24 24",
   fill: "none",
   stroke: "currentColor",
