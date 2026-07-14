@@ -314,7 +314,7 @@ html.dark .sb { background: #243044; }
   border: none;
   padding: 0;
   cursor: pointer;
-  color: #475569;
+  color: #94a3b8;
   transition: color 150ms;
 }
 html:not(.dark) .sb-toggle { color: #64748b; }
@@ -344,7 +344,7 @@ html:not(.dark) .sb-toggle { color: #64748b; }
   text-align: start;
   text-decoration: none;
   cursor: pointer;
-  color: #475569;
+  color: #94a3b8;
   transition: color 150ms;
   white-space: nowrap;
   overflow: hidden;
