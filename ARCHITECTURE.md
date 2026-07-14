@@ -376,20 +376,25 @@ function threeToMath(threeAngle: number): number {
 
 Before any feature work Claude Code must complete:
 
-- [ ] Verify `frontend/` and `backend/` structure matches §2 above
-- [ ] Create `frontend/contexts/LocaleContext.tsx`
-- [ ] Create `frontend/contexts/ThemeContext.tsx`
-- [ ] Create `frontend/contexts/AuthContext.tsx`
-- [ ] Create `frontend/components/shell/Header.tsx`
-- [ ] Create `frontend/components/shell/StudentSidebar.tsx`
+- [x] Verify `frontend/` and `backend/` structure matches §2 above
+- [x] Create `frontend/contexts/LocaleContext.tsx`
+- [x] Create `frontend/contexts/ThemeContext.tsx`
+- [x] Create `frontend/contexts/AuthContext.tsx`
+- [x] Create `frontend/components/shell/Header.tsx`
+      Адаптивный поиск (desktop stretch / tablet+mobile overlay с кликабельной лупой).
+      Закрытие overlay: ✕, Escape, Enter, mousedown вне поля (searchOverlayRef).
+      Globe-dropdown, Bell, Avatar-dropdown встроены.
+- [x] Create `frontend/components/shell/StudentSidebar.tsx`
+      3 группы навигации, localStorage, tooltip fixed RTL-aware, display:none на mobile.
 - [ ] Create `frontend/components/shell/ConstructorSidebar.tsx`
-- [ ] Create `frontend/components/shell/BottomNav.tsx`
-- [ ] Create `frontend/components/shell/GlobeDropdown.tsx`
-- [ ] Create `frontend/components/shell/AvatarDropdown.tsx`
+- [x] Create `frontend/components/shell/BottomNav.tsx`
+      5 табов, только иконки 30px, popup Помощь, RTL, mobile-only (<768px).
+- [ ] Create `frontend/components/shell/GlobeDropdown.tsx` (встроен в Header.tsx)
+- [ ] Create `frontend/components/shell/AvatarDropdown.tsx` (встроен в Header.tsx)
 - [ ] Create `frontend/components/shell/AuthorBanner.tsx`
-- [ ] Create `frontend/app/(student)/layout.tsx` using StudentShell
+- [x] Create `frontend/app/(student)/layout.tsx` using StudentShell
 - [ ] Create `frontend/app/(constructor)/layout.tsx` using ConstructorShell
-- [ ] Create `frontend/locales/ru.json` and `he.json` with all nav strings
+- [x] Create `frontend/locales/ru.json` and `he.json` with all nav strings
 - [ ] Verify `frontend/middleware.ts` covers all routes from §4
 - [ ] Add `/translate` endpoint to `backend/routers/translate.py`
 - [ ] Update CORS in `backend/main.py` with production URL
@@ -502,3 +507,4 @@ not just final state. Used for Status page visualization.
 *Created: 07/07/2026*
 *Обновлён: 2026-07-08 — §12 дополнен: test/exam ctrl-bar явно добавлен в список mockup-only элементов (.ctrl-bar, .tcb, .tcb-amber, .tcb-red).*
 *Обновлён: 2026-07-12 — §13 (Account settings) и §14 (Session persistence) добавлены по итогам архитектурного обсуждения.*
+*Обновлён: 2026-07-14 — §11 Phase 0 checklist обновлён: отмечены [x] реализованные компоненты (LocaleContext, ThemeContext, AuthContext, Header, StudentSidebar, BottomNav, layout, locales). GlobeDropdown и AvatarDropdown встроены в Header.tsx, отдельными компонентами не созданы.*

@@ -1848,6 +1848,30 @@ Right-side order (LTR): `[lang-btn]` `[hico…]` `[avatar]`
 
 **Retrofit**: применить во всех существующих макетах при следующем касании (dashboard, settings, achievements, courses, lesson, test, exam). Убрать `direction:ltr` с `.bnav` во всех mobile-макетах.
 
+### Bottom nav — реализация Next.js (2026-07-14)
+
+**Файл:** `components/shell/BottomNav.tsx`
+**CSS:** `globals.css` блок `/* ── Bottom Nav ── */`
+
+| Параметр | Значение |
+|---|---|
+| Высота панели | 64px |
+| Иконки | 30×30px, stroke-based SVG (скопированы из StudentSidebar) |
+| Подписи | `display: none !important` — скрыты всегда |
+| Активный таб | `stroke: #22D3EE` |
+| Неактивный dark | `stroke: #94a3b8` |
+| Неактивный light | `stroke: #64748b` |
+| Видимость | `display:none` (default) → `display:flex` на `max-width: 767px` |
+| RTL | `dir="rtl"` зеркалирует порядок табов автоматически |
+| Помощь popup | `position:absolute; bottom:calc(100%+8px); z-index:50` |
+| Popup overlay | `position:fixed; inset:0; z-index:45` — закрытие по клику вне |
+| shell-main отступ | `padding-bottom: 64px` на mobile |
+
+**Цветовой стандарт неактивных иконок навигации** (единый для sidebar и bottom nav):
+- Dark theme: `#94a3b8`
+- Light theme: `#64748b`
+- **Не использовать** `var(--c-t3)` для иконок навигации — он темнее (#475569 dark / #94a3b8 light).
+
 ### Lang globe dropdown
 
 Заменяет `.lang-btn` во всех макетах. Иконка глобуса в `.hico` 28×28, клик → dropdown с языками.
@@ -2404,4 +2428,5 @@ In production: theme via ThemeContext, question type from atom data, timer is re
 *(07/07/2026 — §19 Shalon Manager: статус mockup→complete (desktop only, no tablet/mobile); detail panel переработан — одно поле активного языка, descRu/descHe раздельно, batch-translate убран, авто-перевод при Save с shimmer+toast flow; sidebar редактора финализирован — flat без подменю: Главная/Шейлоны/Группы/Атом/Экзамен/Граф // Лаборатория // Помощь/Настройки; globe-dropdown + bell + avatar-dropdown в header.)*
 *(07/07/2026 — §13 AI Chat Drawer полностью переписан: убран ctx-strip; floating card vs bottom sheet по breakpoints; PNG Йоси по ситуации; динамический статус; контекстные приветствия по странице; session-only история; char counter 500/≤100; кнопка → иконка стрелки; экзамен — только sidebar. "Text answer type (AI-checked)" перенесена в §12.)*
 *Обновлён: 2026-07-08 — §27 дополнен: points badge spec (q-points класс, amber цвет), правила навигации по вопросам, dev ctrl-bar явно помечен как mockup-only со ссылкой на ARCHITECTURE.md §12.*
+*Обновлён: 2026-07-14 — §22 Bottom nav: добавлена таблица реализации Next.js (BottomNav.tsx). Цветовой стандарт неактивных иконок навигации зафиксирован: #94a3b8 (dark) / #64748b (light) — не var(--c-t3).*
 *Обновлён: 2026-07-08 (ночь) — Auth Modal задокументирован в «Approved screens». Desktop/tablet: centered overlay (position:fixed, backdrop rgba+blur, card max-width 420px, border-radius 16px). Mobile: bottom sheet (border-radius 20px 20px 0 0, drag handle 36×4px, max-height 92vh, safe-area-inset-bottom). Оба варианта: tabs Войти/Регистрация, Google OAuth кнопка, поля name(reg-only)/email/password/confirm(reg-only), forgot link(login-only), submit btn, switch-mode link. Язык — только от глобального CL (нет отдельного переключателя внутри modal). Закрытие: клик на backdrop, Escape. Mockup: встроен в landing page. Продакшн: отдельные роуты /login и /register.*

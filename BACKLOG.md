@@ -105,8 +105,8 @@
 - [ ] Динамическое приветствие по времени суток
 - [ ] Подтягивать реальные данные: прогресс, очки, серия дней
 - [ ] Кнопка "Продолжить" → последний незавершённый урок
-- [x] Sidebar: сохранять состояние (свёрнут/развёрнут) в localStorage — реализовано в StudentSidebar.tsx
-- [x] Sidebar: student menu — Главная / Курсы / Статус / Достижения / Формулы / Лаборатория / Помощь / Настройки — реализовано
+- [ ] Sidebar: сохранять состояние (свёрнут/развёрнут) в localStorage
+- [ ] Sidebar: student menu — Главная / Курсы / Статус / Достижения / Формулы / Лаборатория / Помощь / Настройки
 - [ ] Sidebar: author submenu «Контент» — Карта графа / Редактор атома / Группы / Примеры вопросников
 - [ ] [MOCKUP FIX] Привести sidebar-меню dashboard (desktop + tablet + mobile) в соответствие с установленным стандартом навигации — сейчас пункты меню отличаются от эталона
 
@@ -292,6 +292,28 @@
 
 ---
 
+## Student Shell — реализация Next.js (Фаза 0.7, завершена 2026-07-14)
+
+- [x] `contexts/LocaleContext.tsx` / `ThemeContext.tsx` / `AuthContext.tsx`
+- [x] `components/shell/ThemeShell.tsx`
+- [x] `components/shell/Header.tsx` — динамический логотип (logo-rtl/ltr по lang), адаптивный поиск
+- [x] `components/shell/StudentSidebar.tsx` — 3 группы, localStorage, tooltip, display:none на mobile
+- [x] `components/shell/BottomNav.tsx` — 5 табов, только иконки 30px, popup Помощь, RTL, mobile-only
+- [x] `app/(student)/layout.tsx` — student shell подключён
+- [x] `app/globals.css` — полный блок sidebar + bottom nav styles
+- [x] `locales/he.json` / `locales/ru.json` — базовый набор ключей
+
+### Header.tsx — финальное состояние (2026-07-14)
+- Overlay поиска: лупа кликабельна, активируется cyan при вводе, очищает поле после поиска
+- Закрытие overlay: ✕, Escape, Enter, mousedown вне поля (searchOverlayRef)
+
+### BottomNav.tsx — финальное состояние (2026-07-14)
+- Только иконки (подписи `display:none !important`)
+- Активный таб: cyan иконка. Неактивные: #94a3b8 dark / #64748b light
+- Помощь popup: Формулы + Диалог с Йоси (stub)
+
+---
+
 ## Header.tsx — доработки (Next.js, 2026-07-14)
 
 Зафиксировано после анализа макетов и замечаний по адаптивности.
@@ -345,42 +367,5 @@
 *Обновлён: 2026-07-08 (ночь) · Landing page retrofit завершён: globe-dropdown добавлен во все три варианта (desktop/tablet/mobile), логотип убран из header мокапа, кнопка регистрации убрана из header. Auth modal встроен в landing: desktop/tablet — centered overlay, mobile — bottom sheet. Секция «Login / Register modal» обновлена: архитектура продакшна (отдельные роуты /login, /register) зафиксирована в NAVIGATION.md §2a. Добавлена открытая задача: поведение кнопки «Посмотреть курсы».*
 *Обновлён: 2026-07-09 · Навигация финализирована. Header стандарт: [Logo][Name]→gap→[Search]→gap→[Globe][Bell][Avatar] — одинаков для student и author shell. Avatar-dropdown стандарт: Name/Email/—/Профиль/Настройки/—/Выйти. Bottom nav «Помощь(?)»: context menu вверх (не bottom sheet) — Формулы + Диалог с Йоси. Retrofit-задачи обновлены под новый стандарт.*
 *Обновлён: 2026-07-11 · Retrofit mwl_atom_editor, mwl_groups_editor, mwl_exam_schema_editor завершён. Новая модель פרק (requiredQ × pointsPerQ). Подвопросы — следующий шаг.*
-
-## Student Shell — реализация Next.js (Фаза 0.7, 2026-07-14)
-
-- [x] `contexts/LocaleContext.tsx` / `ThemeContext.tsx` / `AuthContext.tsx`
-- [x] `components/shell/ThemeShell.tsx`
-- [x] `components/shell/Header.tsx` — динамический логотип (logo-rtl/ltr по lang), адаптивный поиск
-- [x] `components/shell/StudentSidebar.tsx` — 3 группы, localStorage, tooltip, RTL order, globals.css
-- [x] `app/(student)/layout.tsx` — student shell подключён
-- [x] `app/globals.css` — полный блок .sb sidebar styles
-- [x] `locales/he.json` / `locales/ru.json`
-- [ ] `components/shell/BottomNav.tsx` — мобильная нижняя навигация (5 табов)
-- [ ] Адаптивность сайдбара: desktop expanded / tablet collapsed / mobile hidden
-
-## Header.tsx — доработки (Next.js, 2026-07-14)
-
-### Поиск — финализированное поведение
-
-| Breakpoint | Поведение |
-|---|---|
-| Desktop (≥1024px) | Поле растягивается между левой и правой группами хедера; иконка лупы кликабельная внутри поля — запускает поиск; Enter тоже запускает |
-| Tablet (768–1023px) | Иконка лупы в центре хедера; клик открывает overlay на всю ширину хедера; поле + кнопка ✕ |
-| Mobile (<768px) | Та же логика что и tablet |
-
-### Стили поля в overlay (из макетов)
-- Input `font-size: 16px` — предотвращает zoom на iOS
-- Dark: `background:#334155; border-color:#475569; color:#f1f5f9`
-- Light: `background:#f1f5f9; border-color:#e2e8f0; color:#0f172a`
-
-### Функциональность поиска — отложено до после Фазы 1
-
-- [x] Доработать `Header.tsx`: адаптивное поле поиска (desktop stretch / tablet+mobile overlay)
-- [ ] Реализовать функциональность поиска (что искать, результаты, API) — **после Фазы 1**
-
-### Технический долг — CSS в Header (зафиксировано 2026-07-14)
-- [ ] `.srch-overlay` использует физические `left/right` вместо логического `inset-inline`
-- [ ] Цвета темы в правилах поиска захардкожены hex вместо CSS-переменных — токенизировать при рефакторинге
-
 *Обновлён: 2026-07-14 · Добавлен раздел «Header.tsx — доработки»: финализировано поведение поиска по breakpoints (desktop stretch / tablet+mobile overlay), стили overlay из макетов, функциональность поиска отложена до после Фазы 1.*
-*Обновлён: 2026-07-14 (2) · Фаза 0.7 Student Shell реализация зафиксирована. Dashboard: sidebar-задачи отмечены [x]. Добавлены разделы: Student Shell реализация, Header.tsx доработки с финализированным поведением поиска и техдолгом.*
+*Обновлён: 2026-07-14 (2) · Добавлен раздел «Student Shell — реализация Next.js»: зафиксированы все компоненты Фазы 0.7 включая финальное состояние Header.tsx (кликабельная лупа overlay, закрытие по mousedown) и BottomNav.tsx (только иконки, цвета, popup).*
