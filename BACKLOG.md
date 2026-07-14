@@ -130,29 +130,7 @@
 - [x] Карта графа desktop (`mwl_graph_map.html`)
 - [x] Конструктор групп desktop (`mwl_groups.html`)
 - [x] Примеры вопросников desktop (`mwl_exam_schema.html`)
-      Двухуровневый список (тип → сессии), разделы, вопросы с формулами
-      и изображениями, правила выбора, превью, batch-перевод, auto-save индикатор.
-- [x] Управление шейлоном desktop (`mwl_shalon_manager.html`) — пятый экран конструктора. ГОТОВО (07/07/2026).
-      Иерархическое дерево: шейлон → темы → модули. D&D + ↑↓ + inline edit + expand/collapse.
-      Detail panel: одно поле активного языка (titleRu/titleHe, descRu/descHe разделены).
-      Save → toast "Сохранено ✓" → авто-перевод через API → shimmer → toast "Переведено ✓".
-      Batch-translate убран — перевод автоматически при сохранении.
-      Новый sidebar редактора: Главная/Шейлоны/Группы/Атом/Экзамен/Граф // Лаборатория // Помощь/Настройки (без подменю).
-      Globe-dropdown в header вместо RU/HE toggle. Bell + Avatar dropdown (Профиль/Настройки/Выйти).
-      Desktop only — tablet и mobile версии не создаются.
-      Спецификация: MWL_CONTENT_ARCHITECTURE.md §8, DESIGN_SYSTEM.md §19.
-
----
-
-## Конструктор контента — исправления мокапов (обнаружены в процессе)
-
-- [x] Bidi-изоляция inline-формул (`<bdi>` обёртка) — реализована и проверена
-- [x] Баг курсора после вставки формулы — исправлен (zero-width-space якорь)
-- [x] Сайдбар в desktop-версии редактора атома — добавлен (отсутствовал)
-- [x] Подменю «Контент» в сайдбаре — добавлено во все четыре авторских экрана
-- [x] `.shell{min-height}` → `height:100vh;overflow:hidden` — исправлено на всех файлах
-- [x] Баг потери контента полей вопроса при перерендере — исправлен (oninput → data model)
-- [x] Виртуальная клавиатура MathLive — подавлена через CSS + JS (частично, см. спайк)
+- [x] Управление шейлоном desktop (`mwl_shalon_manager.html`)
 
 ---
 
@@ -190,40 +168,13 @@
 - [x] Страница достижений tablet (`mwl_achievements_tablet.html`)
 - [x] Страница достижений mobile (`mwl_achievements_mobile.html`)
 - [x] /courses — уровень 1: каталог курсов — desktop + tablet + mobile
-      Две карточки вопросников (35571 / 35572), список тем с иконками и прогрессом,
-      попап силлабуса (ready) + попап «В работе» (in_work), locked темы без клика.
-      Оба theme, RU/HE, RTL.
-      Файлы: `mwl_courses_desktop.html`, `mwl_courses_tablet.html`, `mwl_courses_mobile.html`.
 - [x] /courses/[themeId] — уровень 2: список модулей — desktop + tablet + mobile
-      Крошки, шапка с иконкой темы + счётчики модулей и баллов + прогресс-бар.
-      Карточки модулей: бейдж, название, баллы (набрано/макс), прогресс атомов,
-      подтемы с полными описаниями и цветными точками статуса, КТ-карточка (пунктир amber).
-      Сетка 2 колонки desktop/tablet, одна колонка mobile. Оба theme, RU/HE, RTL.
-      Файлы: `mwl_courses_theme_desktop.html`, `mwl_courses_theme_tablet.html`, `mwl_courses_theme_mobile.html`.
 - [x] /courses/[themeId]/[moduleId] — уровень 3: лабиринт атомов — desktop + tablet + mobile
-      Движок v17 (done/current/next/locked/problem/remedial-needed), статусы engine v17.
-      Узлы: скруглённые прямоугольники (атомы) + ромбы (КТ) — те же формы что в mwl_graph_map.html.
-      Рёбра: сплошная заливка отрезка (без стрелок): cyan = пройден, purple = shortcut, red = return.
-      Desktop/tablet: 3 модуля × 5 узлов, облака модулей, cross-module рёбра пунктиром.
-      Mobile: только текущий модуль (5 узлов), вертикальный layout, bottom sheet легенда.
-      Touch events (tablet/mobile): pan одним пальцем, pinch-zoom двумя.
-      RTL поддержка: zoom-controls, легенда, breadcrumbs зеркалятся через [dir="rtl"].
-      Файлы: `mwl_courses_module_desktop.html`, `mwl_courses_module_tablet.html`, `mwl_courses_module_mobile.html`.
 - [x] /status — страница статуса студента — desktop + tablet + mobile
-      Активные темы (параллельное обучение): название темы + текущий модуль + кнопка «Продолжить».
-      Обзор всех тем: done / in_progress / not_started, сгруппировано по шейлону.
-      Файлы: `mwl_status_desktop.html`, `mwl_status_tablet.html`, `mwl_status_mobile.html`.
-      Оба theme, RU/HE, RTL. Глобус-dropdown (lang), аватар-dropdown (profile/settings/logout).
 - [x] Страница урока — desktop + tablet + mobile
-      Файлы: `mwl_lesson_desktop.html`, `mwl_lesson_tablet.html`, `mwl_lesson_mobile.html`.
 - [x] Страница теста — desktop + tablet + mobile
-      Файлы: `mwl_test_desktop.html`, `mwl_test_tablet.html`, `mwl_test_mobile.html`.
 - [x] Страница экзамена — desktop + tablet + mobile
-      Файлы: `mwl_exam_desktop.html`, `mwl_exam_tablet.html`, `mwl_exam_mobile.html`.
 - [x] Компонент Йоси (AI Chat Drawer) — макеты готовы (desktop + tablet + mobile, оба theme, RU/HE, RTL)
-      Файлы: `mwl_ai_chat_desktop.html`, `mwl_ai_chat_tablet.html`, `mwl_ai_chat_mobile.html`.
-      Floating card (desktop/tablet landscape) + bottom sheet (tablet portrait/mobile).
-      Trigger: icon-circle 52px amber. Context-aware greeting. Char counter 500. PNG Йоси по ситуации.
 - [ ] Лаборатория — после решения о рефакторинге Three.js / React Three Fiber
 
 ---
@@ -275,52 +226,12 @@
 
 - [ ] **Rich text + формулы** — см. «Конструктор контента — инженерный спайк» выше.
       Это первоочерёдная задача перед Фазой 8.
-
 - [ ] Настроить локализацию RU/HE (файлы `/frontend/locales/ru.json` и `he.json`)
 - [ ] RTL поддержка: везде использовать логические CSS-свойства
       (`padding-inline-*`, `margin-inline-*`, `border-inline-*`) вместо физических
       `padding-left/right` — особенно в компонентах сайдбара и модалок
 - [x] Мобильный мокап login/register модала (планшет и мобайл) — `mwl_login_modal_tablet.html`, `mwl_login_modal_mobile.html`. ГОТОВО.
 - [ ] Финализировать название платформы
-
----
-
-*Обновлён: 2026-07-05 · Навигация финализирована: Главная (home) → позиция 1; Курсы (graduation cap) → позиция 2; Статус (map-pin, /status) → позиция 3; Достижения → позиция 4. /maze упразднён — лабиринт в /courses/[themeId]/[moduleId]. Добавлены задачи: лабиринт уровень 3 (spec уточнён), /status страница.*
-*Обновлён: 2026-07-05 (3) · Лабиринт уровня 3 отмечен [x]: desktop + tablet + mobile готовы. Имена файлов групп и схемы экзамена исправлены (без суффиксов _v4/_v2).*
-*Обновлён: 2026-07-05 (4) · Конструктор контента — desktop only. Достижения tablet/mobile отмечены [x].*
-*Обновлён: 2026-07-05 (5) · Добавлен пятый экран конструктора: Управление шейлоном (mwl_shalon_manager.html). Спецификация в MWL_CONTENT_ARCHITECTURE.md §8 и DESIGN_SYSTEM.md §19.*
-*Обновлён: 2026-07-06 · /status отмечен [x]: desktop + tablet + mobile готовы. Lang-btn заменён на глобус-dropdown (новый стандарт). Добавлены retrofit-задачи: глобус-dropdown, аватар-dropdown, bottom nav RTL (direction:ltr убран), навигация. Добавлена задача: компонент Йоси (AI Chat Drawer). Mobile bottom nav финализирован: Главная / Курсы / Статус / Лаборатория / Помощь(?). Landing page, dashboard, lesson, test, exam — отмечены как готовые макеты. Добавлен раздел правил взаимодействия с Claude.*
-*Обновлён: 2026-07-07 · Компонент Йоси [x]: макеты desktop + tablet + mobile готовы. §13 DESIGN_SYSTEM.md переписан. Trigger icon-circle, floating card / bottom sheet, context-aware greeting, PNG по ситуации, char counter 500, RTL. Задача в дизайн-системе также закрыта [x].*
-*Обновлён: 2026-07-07 · Shalon Manager [x]: mockup complete (desktop only). Detail panel: одно поле активного языка, descRu/descHe раздельно, авто-перевод при Save. Sidebar редактора финализирован (flat, без подменю). Globe-dropdown + bell + avatar-dropdown в header. Batch-translate убран. AI Chat Drawer [x]: все три breakpoints готовы, §13 переписан.*
-*Обновлён: 2026-07-07 (вечер) · Login/register modal tablet + mobile отмечены [x]. Все основные макеты завершены. Открыты только retrofit-задачи (глобус-dropdown, аватар-dropdown, bottom nav RTL, навигация).*
-*Обновлён: 2026-07-08 (ночь) · Landing page retrofit завершён: globe-dropdown добавлен во все три варианта (desktop/tablet/mobile), логотип убран из header мокапа, кнопка регистрации убрана из header. Auth modal встроен в landing: desktop/tablet — centered overlay, mobile — bottom sheet. Секция «Login / Register modal» обновлена: архитектура продакшна (отдельные роуты /login, /register) зафиксирована в NAVIGATION.md §2a. Добавлена открытая задача: поведение кнопки «Посмотреть курсы».*
-
----
-
-## Конструктор схемы экзамена — retrofit и новая функциональность (2026-07-11)
-
-- [x] `mwl_exam_schema_editor.html` — полный retrofit header/sidebar под стандарт
-- [x] es-list колонка «Экзамены»: бургер-toggle, нумерация шейлонов в закрытом состоянии
-- [x] Hover-иконки на строках шейлонов/сессий (CRUD) — drag-and-drop
-- [x] Модель פרק: `pk.requiredQ × pk.pointsPerQ`, Σ = 100 с live-индикатором
-- [x] meta-card упрощён: Длительность + Доп. время (%) + Σ
-- [x] Порядок блоков: Инструкции → Правила выбора → Разделы
-- [x] Стрелки разделов белые в тёмной теме
-- [x] Тулбар вопроса: ∑/📎/💾/✕ — однородный стиль
-- [x] Предпросмотр: доп. время (+X% = Y ч Z мин)
-- [x] Кнопка «Предпросмотр» перенесена в meta-card заголовок
-- [x] Spinner скрыт у всех `input[type=number]`
-- [ ] **Подвопросы в вопросах** — кнопка «+ Подпункт», нумерация а/б/в или א/ב/ג
-
-## Конструктор (atom, groups) — retrofit (2026-07-11)
-
-- [x] `mwl_atom_editor.html` — header/sidebar стандарт, крошки в crumb-bar, Save в боксах
-- [x] `mwl_groups_editor.html` — header/sidebar стандарт, нумерация тем, hover-иконки D&D
-
-
-*Обновлён: 2026-07-09 · Навигация финализирована. Header стандарт: [Logo][Name]→gap→[Search]→gap→[Globe][Bell][Avatar] — одинаков для student и author shell. Avatar-dropdown стандарт: Name/Email/—/Профиль/Настройки/—/Выйти. Bottom nav «Помощь(?)»: context menu вверх (не bottom sheet) — Формулы + Диалог с Йоси. Retrofit-задачи обновлены под новый стандарт. Завтра: retrofit avatar-dropdown + навигация во всех макетах.*
-
-*Обновлён: 2026-07-11 · Retrofit mwl_atom_editor, mwl_groups_editor, mwl_exam_schema_editor завершён. Новая модель פרק (requiredQ × pointsPerQ). Подвопросы — следующий шаг.*
 
 ---
 
@@ -356,3 +267,82 @@
 - [ ] Fallback если RU перевод ещё не готов → `MULTILANG.md §8`
 
 *Добавлено: 2026-07-11. Обновлено: 2026-07-12 — все 4 темы закрыты, зафиксированы в документах.*
+
+---
+
+## Конструктор схемы экзамена — retrofit и новая функциональность (2026-07-11)
+
+- [x] `mwl_exam_schema_editor.html` — полный retrofit header/sidebar под стандарт
+- [x] es-list колонка «Экзамены»: бургер-toggle, нумерация шейлонов в закрытом состоянии
+- [x] Hover-иконки на строках шейлонов/сессий (CRUD) — drag-and-drop
+- [x] Модель פרק: `pk.requiredQ × pk.pointsPerQ`, Σ = 100 с live-индикатором
+- [x] meta-card упрощён: Длительность + Доп. время (%) + Σ
+- [x] Порядок блоков: Инструкции → Правила выбора → Разделы
+- [x] Стрелки разделов белые в тёмной теме
+- [x] Тулбар вопроса: ∑/📎/💾/✕ — однородный стиль
+- [x] Предпросмотр: доп. время (+X% = Y ч Z мин)
+- [x] Кнопка «Предпросмотр» перенесена в meta-card заголовок
+- [x] Spinner скрыт у всех `input[type=number]`
+- [ ] **Подвопросы в вопросах** — кнопка «+ Подпункт», нумерация а/б/в или א/ב/ג
+
+## Конструктор (atom, groups) — retrofit (2026-07-11)
+
+- [x] `mwl_atom_editor.html` — header/sidebar стандарт, крошки в crumb-bar, Save в боксах
+- [x] `mwl_groups_editor.html` — header/sidebar стандарт, нумерация тем, hover-иконки D&D
+
+---
+
+## Header.tsx — доработки (Next.js, 2026-07-14)
+
+Зафиксировано после анализа макетов и замечаний по адаптивности.
+
+### Поиск — финализированное поведение
+
+| Breakpoint | Поведение |
+|---|---|
+| Desktop (≥1024px) | Поле растягивается между левой и правой группами хедера с зазором; иконка лупы кликабельная внутри поля справа — запускает поиск; Enter тоже запускает |
+| Tablet (768–1023px) | Иконка лупы в центре хедера (`.hdr-center`); клик открывает overlay на всю ширину хедера (`position:absolute, top:0, left:0, right:0, height:48px`); поле + кнопка ✕ справа |
+| Mobile (<768px) | Та же логика что и tablet |
+
+### Стили поля в overlay (tablet + mobile, из макетов)
+- Input `font-size: 16px` — обязательно, предотвращает zoom на iOS
+- Dark: `background:#334155; border-color:#475569; color:#f1f5f9`
+- Light: `background:#f1f5f9; border-color:#e2e8f0; color:#0f172a`
+- Overlay фон: Dark `#1e293b` / Light `#ffffff`
+- Кнопка закрытия: символ `×`, `font-size:20px`, opacity 0.5
+
+### Функциональность поиска — отложено
+Что искать, где выводить результаты, API — **не реализовывать сейчас**.
+Текущая задача: визуально корректная заглушка. Обработчики `onSearch` принимают
+строку запроса и пишут `console.log` до реализации реального поиска.
+
+- [x] Доработать `Header.tsx`: адаптивное поле поиска (desktop stretch / tablet+mobile overlay)
+- [ ] Реализовать функциональность поиска (что искать, результаты, API) — **после Фазы 1**
+
+### Технический долг — CSS в Header (зафиксировано 2026-07-14)
+
+Два отступления от стандартов проекта, внесённые при реализации поиска.
+Исправить при следующем рефакторинге CSS:
+
+- [ ] `.srch-overlay` использует физические свойства `left: 0; right: 0` вместо логического
+      `inset-inline: 0`. Симметрично — RTL не ломается, но нарушает правило проекта
+      «только логические CSS-свойства». Заменить при рефакторинге.
+- [ ] Цвета темы в правилах поиска (`srch-desktop`, `srch-overlay`) захардкожены hex-значениями
+      (`#334155`, `#1e293b` и т.д.) вместо CSS-переменных (`--c-p2-bg`, `--c-p1-bg` и т.д.).
+      Значения корректны и совпадают с токенами — визуально идентично.
+      Токенизировать при рефакторинге globals.css.
+
+---
+
+*Обновлён: 2026-07-05 · Навигация финализирована: Главная (home) → позиция 1; Курсы (graduation cap) → позиция 2; Статус (map-pin, /status) → позиция 3; Достижения → позиция 4. /maze упразднён — лабиринт в /courses/[themeId]/[moduleId]. Добавлены задачи: лабиринт уровень 3 (spec уточнён), /status страница.*
+*Обновлён: 2026-07-05 (3) · Лабиринт уровня 3 отмечен [x]: desktop + tablet + mobile готовы. Имена файлов групп и схемы экзамена исправлены (без суффиксов _v4/_v2).*
+*Обновлён: 2026-07-05 (4) · Конструктор контента — desktop only. Достижения tablet/mobile отмечены [x].*
+*Обновлён: 2026-07-05 (5) · Добавлен пятый экран конструктора: Управление шейлоном (mwl_shalon_manager.html). Спецификация в MWL_CONTENT_ARCHITECTURE.md §8 и DESIGN_SYSTEM.md §19.*
+*Обновлён: 2026-07-06 · /status отмечен [x]: desktop + tablet + mobile готовы. Lang-btn заменён на глобус-dropdown (новый стандарт). Добавлены retrofit-задачи: глобус-dropdown, аватар-dropdown, bottom nav RTL (direction:ltr убран), навигация. Добавлена задача: компонент Йоси (AI Chat Drawer). Mobile bottom nav финализирован: Главная / Курсы / Статус / Лаборатория / Помощь(?). Landing page, dashboard, lesson, test, exam — отмечены как готовые макеты. Добавлен раздел правил взаимодействия с Claude.*
+*Обновлён: 2026-07-07 · Компонент Йоси [x]: макеты desktop + tablet + mobile готовы. §13 DESIGN_SYSTEM.md переписан. Trigger icon-circle, floating card / bottom sheet, context-aware greeting, PNG по ситуации, char counter 500, RTL. Задача в дизайн-системе также закрыта [x].*
+*Обновлён: 2026-07-07 · Shalon Manager [x]: mockup complete (desktop only). Detail panel: одно поле активного языка, descRu/descHe раздельно, авто-перевод при Save. Sidebar редактора финализирован (flat, без подменю). Globe-dropdown + bell + avatar-dropdown в header. Batch-translate убран. AI Chat Drawer [x]: все три breakpoints готовы, §13 переписан.*
+*Обновлён: 2026-07-07 (вечер) · Login/register modal tablet + mobile отмечены [x]. Все основные макеты завершены. Открыты только retrofit-задачи (глобус-dropdown, аватар-dropdown, bottom nav RTL, навигация).*
+*Обновлён: 2026-07-08 (ночь) · Landing page retrofit завершён: globe-dropdown добавлен во все три варианта (desktop/tablet/mobile), логотип убран из header мокапа, кнопка регистрации убрана из header. Auth modal встроен в landing: desktop/tablet — centered overlay, mobile — bottom sheet. Секция «Login / Register modal» обновлена: архитектура продакшна (отдельные роуты /login, /register) зафиксирована в NAVIGATION.md §2a. Добавлена открытая задача: поведение кнопки «Посмотреть курсы».*
+*Обновлён: 2026-07-09 · Навигация финализирована. Header стандарт: [Logo][Name]→gap→[Search]→gap→[Globe][Bell][Avatar] — одинаков для student и author shell. Avatar-dropdown стандарт: Name/Email/—/Профиль/Настройки/—/Выйти. Bottom nav «Помощь(?)»: context menu вверх (не bottom sheet) — Формулы + Диалог с Йоси. Retrofit-задачи обновлены под новый стандарт.*
+*Обновлён: 2026-07-11 · Retrofit mwl_atom_editor, mwl_groups_editor, mwl_exam_schema_editor завершён. Новая модель פרק (requiredQ × pointsPerQ). Подвопросы — следующий шаг.*
+*Обновлён: 2026-07-14 · Добавлен раздел «Header.tsx — доработки»: финализировано поведение поиска по breakpoints (desktop stretch / tablet+mobile overlay), стили overlay из макетов, функциональность поиска отложена до после Фазы 1.*
