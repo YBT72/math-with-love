@@ -61,27 +61,33 @@ Controls which UI shell is rendered.
 Header (desktop/tablet/mobile — identical structure):
   [Logo] [Platform name]  →  flex gap  →  [Search]  →  flex gap  →  [Globe-dropdown] [Bell] [Avatar-dropdown]
 
+  Logo click = умный редирект:
+    profiles.active_shalon заполнен → /maze
+    profiles.active_shalon пуст     → /courses
+
 Sidebar (desktop/tablet) — 3 groups:
   Group 1 — Main:
-    - Главная       → /dashboard      icon: home           ← точка входа после логина
-    - Курсы         → /courses        icon: graduation-cap ← каталог, 3 уровня
-    - Статус        → /status         icon: map-pin        ← текущее положение + список тем
+    - Карта         → /maze           icon: ti-map (карта/маршрут)  ← главная рабочая страница
+    - Курсы         → /courses        icon: graduation-cap ← каталог шейлонов
+    - Статус        → /status         icon: map-pin        ← учебная история по всем шейлонам
     - Достижения    → /achievements   icon: trophy
   ── separator ──
   Group 2 — Tools:
     - Формулы       → /formulas       icon: Σ (ti-sum)
-    - Лаборатория   → /lab            icon: atom (placeholder)
+    - Лаборатория   → /lab            icon: atom
   ── separator ──
   Group 3 — System:
     - Помощь        → opens Yosi AI Chat (help context mode)   icon: message-circle
     - Настройки     → /settings                                icon: gear
 
-Bottom nav (mobile only, 5 tabs):
-  - Главная       → /dashboard      icon: home
-  - Курсы         → /courses        icon: graduation-cap
-  - Статус        → /status         icon: map-pin
-  - Лаборатория   → /lab            icon: atom
-  - Помощь(?)     → popup menu (opens upward above tab):
+  УБРАН пункт «Главная» — логотип в header выполняет функцию умного редиректа.
+
+Bottom nav (mobile only, 5 tabs) — РЕШЕНО 2026-07-15:
+  - Карта        → /maze        icon: ti-map (карта)
+  - Курсы        → /courses     icon: graduation-cap
+  - Статус       → /status      icon: map-pin
+  - Лаборатория  → /lab         icon: atom
+  - Помощь       → popup menu (opens upward above tab):
       ┌─────────────────────┐
       │  Σ  Формулы         │  → /formulas
       │  💬 Диалог с Йоси   │  → opens Yosi AI Chat
@@ -100,12 +106,13 @@ Avatar-dropdown (desktop/tablet/mobile):
   Выйти
 
 Notes:
-  - Главная (/dashboard) — точка входа: приветствие, кнопка «Продолжить», статистика, Йоси
-  - Курсы (/courses) — 3-уровневый каталог: шейлон → тема → лабиринт модуля
-  - Статус (/status) — текущее положение студента + список тем; параллельное обучение
-  - map-pin для «Статус»: метафора «где я сейчас»
-  - Достижения и Настройки недоступны из bottom nav — только через avatar-dropdown
-  - Поиск: always-visible open field на desktop; icon с overlay-expansion на tablet/mobile
+  - «Главная» как пункт меню УДАЛЕНА — логотип = умный редирект (maze/courses)
+  - Курсы (/courses) — каталог-витрина. Read-only. Единственное место выбора шейлона.
+  - Лабиринт (/maze) — операционная карта активного шейлона. ЕДИНСТВЕННОЕ место откуда запускаются атомы.
+  - Статус (/status) — учебная история по всем шейлонам (академический взгляд, не игровой).
+  - last_page — записывается в profiles.last_page при каждом переходе; восстанавливается при повторном входе.
+  - Достижения и Настройки в mobile — только через avatar-dropdown.
+  - Поиск: always-visible field на desktop; icon с overlay-expansion на tablet/mobile.
 ```
 
 ### Author shell
@@ -205,13 +212,16 @@ User fills email + password (or clicks Google OAuth)
 Submit → loading state on button
   ↓
 Success:
-  role='student'          → /dashboard
+  role='student':
+    profiles.last_page заполнен      → profiles.last_page
+    profiles.active_shalon заполнен  → /maze
+    иначе                            → /courses
   role='author', activeMode='author'  → /constructor/graph
-  role='author', activeMode='student' → /dashboard (with banner)
+  role='author', activeMode='student' → /courses (with banner)
   role='admin'            → /admin
   ↓
 First login (onboarding_done=false, role='student'):
-  → /onboarding  (instead of /dashboard)
+  → /onboarding  (instead of /courses)
   ↓
 Error: show inline error under relevant field
   "Неверный пароль" / "Email не найден" / "Аккаунт не подтверждён"
@@ -553,10 +563,28 @@ Submit → results overlay (full-screen)
 
 ## 4. Maze / Labyrinth navigation
 
-Лабиринт живёт внутри раздела Курсы (уровень 3). Отдельного URL /maze нет.
+### Архитектурное решение (2026-07-15)
+
+Лабиринт — центральная рабочая страница активного шейлона. Живёт по URL `/maze`.
+Это ЕДИНСТВЕННОЕ место откуда студент запускает атомы.
+
+Отличие от Курсов:
+- Курсы (/courses) — каталог-витрина. Read-only. Выбор шейлона.
+- Лабиринт (/maze) — операционная карта. Запуск атомов, прогресс, Йоси.
+
+⚠️ МАКЕТ ЛАБИРИНТА НЕ СОЗДАН. Требуется спроектировать /maze desktop+tablet+mobile.
+До создания макета — `/maze` существует как страница-заглушка.
+
+Игровой цикл:
+```
+/maze → клик на атом → /lesson/[atomId] → ... → /test/[atomId]/atom-test → /maze (обновлённый)
+```
+
+После выхода из атома студент всегда возвращается в /maze (не в /courses).
+После завершения сессии — студент идёт в /status намеренно через меню.
 
 ```
-/courses/[themeId]/[moduleId]
+/maze  (активный шейлон)
   ↓
 Renders Atom Labyrinth SVG — engine v17 (ProgressMaze.tsx)
 Node states — engine v17:
@@ -705,7 +733,7 @@ Welcome Tour screen:
   ↓
 "Начать" button on last page:
   → set profiles.onboarding_done = true
-  → redirect to /dashboard
+  → redirect to /courses  (нет активного шейлона после онбординга)
   ↓
 Re-access: sidebar "Как работает платформа" → /onboarding
   (onboarding_done not reset — page always accessible)
@@ -718,12 +746,15 @@ Re-access: sidebar "Как работает платформа" → /onboarding
 ```
 /                          Landing page (public)
 /onboarding                Welcome Tour (protected, student — first login only)
-/dashboard                 Главная — точка входа после логина: приветствие, кнопка «Продолжить», статистика, Йоси (protected)
-                           Entry point after login for all student roles.
-/courses                   Course catalog: two exam-type cards (35571 / 35572), themes with progress (protected)
-/courses/[themeId]         Theme detail: module list with atom counts and points (protected)
-/courses/[themeId]/[moduleId]  Atom labyrinth for a specific module — engine v17 (protected)
-/status                    Student status: active themes + current labyrinth position(s) + all themes overview (protected)
+/courses                   Каталог шейлонов — витрина, выбор шейлона (protected)
+                           Точка входа для студента без активного шейлона.
+/courses/[themeId]         Список модулей темы (protected)
+/courses/[themeId]/[moduleId]  Список атомов модуля — read-only preview (protected)
+/maze                      Лабиринт активного шейлона — операционная карта, запуск атомов (protected)
+                           ⚠️ Макет не создан. Placeholder до проектирования.
+                           Точка входа для студента с активным шейлоном.
+/dashboard                 УСТАРЕЛ. redirect → /courses (сохранён для совместимости)
+/status                    Учебная история по всем шейлонам (academic view, not game) (protected)
 /achievements              Achievements: badges, streaks, XP history (protected)
 /formulas                  Formula reference — official + platform (protected)
 /lab                       Laboratory — interactive 3D/graph env (protected, placeholder)
@@ -755,21 +786,22 @@ Re-access: sidebar "Как работает платформа" → /onboarding
 | Route | student | author (student mode) | author (author mode) | admin |
 |---|---|---|---|---|
 | / | ✓ | ✓ | ✓ | ✓ |
-| /login | redirect → /dashboard | redirect → /dashboard | redirect → /constructor/dashboard | redirect → /admin |
-| /register | redirect → /dashboard | redirect → /dashboard | redirect → /constructor/dashboard | redirect → /admin |
-| /dashboard | ✓ | ✓ | redirect → /constructor/dashboard | ✓ |
+| /login | redirect → /courses | redirect → /courses | redirect → /constructor/dashboard | redirect → /admin |
+| /register | redirect → /courses | redirect → /courses | redirect → /constructor/dashboard | redirect → /admin |
+| /dashboard | redirect → /courses | redirect → /courses | redirect → /constructor/dashboard | redirect → /courses |
 | /courses | ✓ | ✓ | ✓ | ✓ |
 | /courses/* | ✓ | ✓ | ✓ | ✓ |
-| /status | ✓ | ✓ | ✗ → /dashboard | ✓ |
-| /achievements | ✓ | ✓ | ✗ → /dashboard | ✓ |
+| /maze | ✓ (active_shalon required) | ✓ | ✗ → /courses | ✓ |
+| /status | ✓ | ✓ | ✗ → /courses | ✓ |
+| /achievements | ✓ | ✓ | ✗ → /courses | ✓ |
 | /formulas | ✓ | ✓ | ✓ | ✓ |
 | /lab | ✓ | ✓ | ✓ | ✓ |
 | /lesson/* | ✓* | ✓* | ✓* | ✓ |
 | /test/* | ✓* | ✓* | ✓* | ✓ |
 | /exam/* | ✓* | ✓* | ✓* | ✓ |
 | /settings | ✓ | ✓ | ✓ | ✓ |
-| /constructor/* | ✗ → /dashboard | ✗ → /dashboard | ✓ | ✓ |
-| /admin | ✗ → /dashboard | ✗ → /dashboard | ✗ → /constructor/dashboard | ✓ |
+| /constructor/* | ✗ → /courses | ✗ → /courses | ✓ | ✓ |
+| /admin | ✗ → /courses | ✗ → /courses | ✗ → /constructor/dashboard | ✓ |
 
 *Access subject to `student_access` check (currently: all content free).
 
@@ -841,3 +873,5 @@ Checkpoint unlock toast also triggers labyrinth node animation (separate from to
 *Обновлён: 2026-07-08 — §2a переработан: auth routes зафиксированы как отдельные страницы (/login, /register, /auth/callback). Redirect pattern: protected route → /login?next=. Mockup note добавлен: AuthModal в мокапах = симуляция этих переходов, не продакшн-архитектура. URL structure и access control matrix обновлены.*
 *Обновлён: 2026-07-08 (ночь) — Landing page mockups завершены: header содержит только «Войти» (без кнопки регистрации); CTA «Начать бесплатно» и «Создать аккаунт» → openModal('register'); кнопка «Посмотреть курсы» — поведение TBD. Auth modal в мокапах: desktop/tablet centered overlay, mobile bottom sheet. В продакшне — переходы на /login и /register соответственно.*
 *Обновлён: 2026-07-09 — §1 Shell specs финализированы. Header стандарт для обоих shell: [Logo][Name] → gap → [Search] → gap → [Globe][Bell][Avatar]. Поиск и Bell присутствуют в обоих shell (student + author). Student sidebar: 3 группы (Main/Tools/System), иконки финализированы. Bottom nav: «Помощь(?)» → context menu вверх (не bottom sheet) с двумя пунктами: Формулы и Диалог с Йоси. Avatar-dropdown финализирован: Name / Email / — / Профиль / Настройки / — / Выйти — одинаков для обоих shell. Достижения и Настройки в mobile только через avatar-dropdown.*
+*Обновлён: 2026-07-15 — АРХИТЕКТУРНЫЙ ПЕРЕСМОТР навигационного флоу. «Главная» как пункт меню УДАЛЕНА. Логотип = умный редирект (active_shalon → /maze, иначе → /courses). /dashboard УСТАРЕЛ → redirect /courses. /maze добавлен как самостоятельный URL — центральная рабочая страница (лабиринт активного шейлона, единственное место запуска атомов). Курсы = каталог-витрина. Статус = учебная история (намеренный переход, не автоматический). last_page сохраняется в profiles. Access control matrix обновлён. Логин redirect: student → last_page → /maze → /courses. Онбординг → /courses. ⚠️ Макет /maze не создан — следующая крупная задача.*
+*Обновлён: 2026-07-15 (2) — Страница /maze названа «Карта» (מפה). Иконка ti-map. Добавлена в sidebar (первый пункт группы 1) и BottomNav (первый таб). Состав BottomNav 5 табов финализирован: Карта/Курсы/Статус/Лаборатория/Помощь.*

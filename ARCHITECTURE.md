@@ -386,6 +386,8 @@ Before any feature work Claude Code must complete:
       Globe-dropdown, Bell, Avatar-dropdown встроены.
 - [x] Create `frontend/components/shell/StudentSidebar.tsx`
       3 группы навигации, localStorage, tooltip fixed RTL-aware, display:none на mobile.
+      Адаптивность: collapsed по умолчанию на всех breakpoints (localStorage persists user choice).
+      Mobile (<768px): display:none !important — заменяется BottomNav.
 - [ ] Create `frontend/components/shell/ConstructorSidebar.tsx`
 - [x] Create `frontend/components/shell/BottomNav.tsx`
       5 табов, только иконки 30px, popup Помощь, RTL, mobile-only (<768px).
@@ -508,3 +510,4 @@ not just final state. Used for Status page visualization.
 *Обновлён: 2026-07-08 — §12 дополнен: test/exam ctrl-bar явно добавлен в список mockup-only элементов (.ctrl-bar, .tcb, .tcb-amber, .tcb-red).*
 *Обновлён: 2026-07-12 — §13 (Account settings) и §14 (Session persistence) добавлены по итогам архитектурного обсуждения.*
 *Обновлён: 2026-07-14 — §11 Phase 0 checklist обновлён: отмечены [x] реализованные компоненты (LocaleContext, ThemeContext, AuthContext, Header, StudentSidebar, BottomNav, layout, locales). GlobeDropdown и AvatarDropdown встроены в Header.tsx, отдельными компонентами не созданы.*
+*Обновлён: 2026-07-14 (2) — StudentSidebar: collapsed по умолчанию на всех breakpoints, localStorage persists user choice, mobile display:none !important.*

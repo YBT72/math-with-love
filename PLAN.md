@@ -65,7 +65,7 @@
       Globe-dropdown (RU/HE), Bell, Avatar-dropdown (профиль/настройки/выйти).
 - [x] `components/shell/StudentSidebar.tsx`:
       3 группы: [Главная/Курсы/Статус/Достижения] / [Формулы/Лаборатория] / [Помощь/Настройки].
-      collapsed/expanded с localStorage ('mwl-sidebar-collapsed').
+      collapsed по умолчанию на всех breakpoints. localStorage persists user choice.
       Tooltip (position:fixed, getBoundingClientRect, RTL-aware).
       display:none !important на mobile (<768px).
 - [x] `components/shell/BottomNav.tsx`:
@@ -81,26 +81,52 @@
 
 ---
 
-## Фаза 1 — Dashboard v2 (ждём макеты)
+## Фаза 1 — Адаптация кода к новому флоу (2026-07-15)
 
-Триггер: загрузка новых макетов (desktop + tablet + mobile, оба theme).
+Архитектурный пересмотр навигации. Dashboard упразднён. /maze — новый центр.
 
-- [ ] Принять макеты от пользователя
-- [ ] Адаптировать `app/dashboard/page.tsx` под новый layout
-- [ ] Обновить/переписать компоненты в `components/dashboard/`:
-  - [ ] `WelcomeBlock` — аватар, приветствие по времени, кнопки действий, Yosi card
-  - [ ] `Sidebar` — student menu: Главная / Курсы / Статус / Достижения / Формулы / Лаборатория / Помощь / Настройки; collapse, active states
-  - [ ] `StatsRow` — 3 карточки (серия / очки / темы), без знака %
-  - [ ] `TopicsAndPreview` — список тем + превью (Progress Maze встанет сюда)
-  - [ ] `CurrentModule` — прогресс бар, кнопка Продолжить
-  - [ ] `RecentResults` — таблица последних результатов
-  - [ ] `DashboardHeader` — search field
-- [x] Bottom Navigation для мобайла — реализован в Фазе 0.7 (BottomNav.tsx)
-- [ ] Sidebar: сохранять состояние (collapsed/expanded) в localStorage
+### 1a — Минимальные правки кода (не ломающие текущее)
+
+- [x] **StudentSidebar.tsx** — убрать пункт «Главная» (HOME); «Курсы» → первый пункт группы 1
+- [x] **BottomNav.tsx** — убрать таб «Главная» (HOME); временно 4 таба (состав 5 — ОТКРЫТЫЙ ВОПРОС)
+- [x] **Header.tsx** — логотип → Link href="/courses", cursor:pointer на .logo в globals.css
+- [x] **app/(student)/dashboard/page.tsx** → redirect("/courses")
+- [x] **app/(student)/courses/page.tsx** → placeholder "Courses — Phase 1 placeholder"
+- [x] **app/(student)/maze/page.tsx** → placeholder "Maze — Phase 1 placeholder"
+- [x] **locales/he.json + ru.json** — добавлен ключ `navMaze` (מפה / Карта)
+- [x] **StudentSidebar.tsx** — добавлен пункт «Карта» (/maze, MazeIcon ti-map) первым в группе 1
+- [x] **BottomNav.tsx** — добавлен таб «Карта» первым; состав 5 табов финализирован: Карта/Курсы/Статус/Лаборатория/Помощь
+
+### 1b — База данных
+
+- [ ] Миграция Supabase: добавить поля в profiles:
+  ```sql
+  ALTER TABLE profiles ADD COLUMN active_shalon uuid REFERENCES shalons(id);
+  ALTER TABLE profiles ADD COLUMN last_page varchar;
+  ```
+
+### 1c — Открытые вопросы (заблокированы до макета /maze)
+
+- [ ] ⚠️ Состав 5 табов BottomNav — решить после проектирования /maze макета
+- [ ] ⚠️ Верхняя зона /maze (приветствие, Продолжить, Йоси) — из макета
+- [ ] ⚠️ Механизм выбора шейлона в /courses → записывает active_shalon → редирект на /maze
 
 ---
 
-## Фаза 2 — Progress Maze (после Dashboard)
+## Фаза 2 — Макет и реализация /maze (Лабиринт)
+
+⚠️ БЛОКЕР: макет /maze НЕ СОЗДАН. Следующая крупная задача перед реализацией.
+
+Что нужно спроектировать (desktop + tablet + mobile):
+- Карта атомов активного шейлона (engine v17)
+- Верхняя зона: приветствие, кнопка «Продолжить», Йоси (yosi_hint)
+- Достижения — всплывают при завершении атома
+- Состояние без активного шейлона (empty state → /courses)
+
+### После создания макета:
+
+- [ ] Создать `app/(student)/maze/page.tsx` (полная реализация)
+- [ ] Создать `components/maze/ProgressMaze.tsx` (SVG-based, engine v17)
 
 Источник логики: `DESIGN_SYSTEM.md` §11 + `mwl_maze_v10.html`.
 
@@ -377,3 +403,6 @@ Claude Code (VS Code) + claude.ai/chat тянут из **одного пула**
 *Обновлён: 2026-07-08 — Фаза 4 детализирована: полная спецификация страницы теста (shell, topbar, Q-circles, timer, stats block, zone 1, 3 типа ответов, AI-проверка текста, action buttons, FABs, dev toolbar). Спецификация также зафиксирована в DESIGN_SYSTEM.md §27 и NAVIGATION.md §3c.*
 *Обновлён: 2026-07-08 — Фаза 4 дополнена: навигация по вопросам, points badge, dev ctrl-bar mockup-only. Фаза 5 переписана: полная спецификация экзамена (отличия от теста, отсутствие Йоси, «Сдать» вместо per-question Check).*
 *Обновлён: 2026-07-14 — Добавлена Фаза 0.7 (завершена): Student Shell реализован в Next.js. Header (адаптивный поиск, overlay с кликабельной лупой, закрытие по mousedown), StudentSidebar (3 группы, localStorage, tooltip, display:none на mobile), BottomNav (5 табов, только иконки 30px, popup Помощь, RTL, mobile-only), layout.tsx, globals.css, locales. В Фазе 1 BottomNav отмечен [x].*
+*Обновлён: 2026-07-14 (2) — StudentSidebar: collapsed по умолчанию на всех breakpoints (desktop и tablet), localStorage persists user choice.*
+*Обновлён: 2026-07-15 — АРХИТЕКТУРНЫЙ ПЕРЕСМОТР. Фаза 1 «Dashboard v2» заменена на «Адаптация к новому флоу» (1a код + 1b БД). Фаза 2 = «Макет и реализация /maze» — ГЛАВНЫЙ БЛОКЕР. /dashboard упразднён → redirect /courses. /maze = центральная рабочая страница. «Главная» удалена из меню. Логотип = умный редирект.*
+*Обновлён: 2026-07-15 (2) — Фаза 1a завершена: все [x] отмечены. /maze = «Карта» (מפה), иконка ti-map. BottomNav 5 табов финализирован: Карта/Курсы/Статус/Лаборатория/Помощь.*

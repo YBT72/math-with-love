@@ -34,16 +34,6 @@ const iconProps = {
   strokeLinejoin: "round" as const,
 };
 
-function HomeIcon() {
-  return (
-    <svg {...iconProps}>
-      <path d="M5 12l-2 0l9-9l9 9l-2 0" />
-      <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
-      <path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6" />
-    </svg>
-  );
-}
-
 function CoursesIcon() {
   return (
     <svg {...iconProps}>
@@ -121,9 +111,19 @@ function LayoutIcon() {
   );
 }
 
+function MazeIcon() {
+  return (
+    <svg {...iconProps}>
+      <polyline points="3 7 9 4 15 7 21 4 21 17 15 20 9 17 3 20 3 7" />
+      <line x1="9" y1="4" x2="9" y2="17" />
+      <line x1="15" y1="7" x2="15" y2="20" />
+    </svg>
+  );
+}
+
 // Three visual groups, separated by spacing (not divider lines).
 const GROUP_1: NavItem[] = [
-  { key: "navHome", href: "/dashboard", icon: <HomeIcon /> },
+  { key: "navMaze", href: "/maze", icon: <MazeIcon /> },
   { key: "navCourses", href: "/courses", icon: <CoursesIcon /> },
   { key: "navStatus", href: "/status", icon: <StatusIcon /> },
   { key: "navAchievements", href: "/achievements", icon: <AchievementsIcon /> },
@@ -173,6 +173,7 @@ export default function StudentSidebar({ onHelpClick }: StudentSidebarProps) {
       if (stored !== null) {
         setCollapsed(stored === "true");
       }
+      // No stored value: keep default collapsed state (true).
     } catch {
       // Ignore storage access errors.
     }

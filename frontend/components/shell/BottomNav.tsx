@@ -11,14 +11,14 @@ interface BottomNavProps {
 // ── Icons (Tabler paths) — 20x20 viewport 24, stroke only, strokeWidth 1.5 ──
 // Paths copied from StudentSidebar.tsx where applicable.
 
-function HomeIcon() {
+function MazeIcon() {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none"
       stroke="currentColor" strokeWidth={1.5}
       strokeLinecap="round" strokeLinejoin="round">
-      <path d="M5 12l-2 0l9-9l9 9l-2 0" />
-      <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
-      <path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6" />
+      <polyline points="3 7 9 4 15 7 21 4 21 17 15 20 9 17 3 20 3 7" />
+      <line x1="9" y1="4" x2="9" y2="17" />
+      <line x1="15" y1="7" x2="15" y2="20" />
     </svg>
   );
 }
@@ -115,14 +115,14 @@ export default function BottomNav({ onYosiClick }: BottomNavProps) {
 
   return (
     <nav className="bnav">
-      {/* Home */}
+      {/* Maze / Map */}
       <button
-        className={`bnav-tab${isActive("/dashboard") ? " active" : ""}`}
-        onClick={() => router.push("/dashboard")}
-        aria-label={t("navHome")}
+        className={`bnav-tab${isActive("/maze") ? " active" : ""}`}
+        onClick={() => router.push("/maze")}
+        aria-label={t("navMaze")}
       >
-        <span className="bnav-icon"><HomeIcon /></span>
-        <span className="bnav-label">{t("navHome")}</span>
+        <span className="bnav-icon"><MazeIcon /></span>
+        <span className="bnav-label">{t("navMaze")}</span>
       </button>
 
       {/* Courses */}

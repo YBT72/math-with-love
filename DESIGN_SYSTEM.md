@@ -1867,6 +1867,24 @@ Right-side order (LTR): `[lang-btn]` `[hico…]` `[avatar]`
 | Popup overlay | `position:fixed; inset:0; z-index:45` — закрытие по клику вне |
 | shell-main отступ | `padding-bottom: 64px` на mobile |
 
+### StudentSidebar — финальные размеры (2026-07-14)
+
+| Параметр | Значение |
+|---|---|
+| Иконки SVG | 22×22px |
+| Σ (Формулы) | font-size: 19px |
+| Подписи | font-size: 15px |
+| Высота строки `.sb-item` | 42px |
+| Ширина expanded | 164px |
+| Ширина collapsed | 46px |
+| Иконки неактивные dark | `#94a3b8` |
+| Иконки неактивные light | `#64748b` |
+| Иконки активные | `#22D3EE` |
+
+**Адаптивное поведение:**
+- Desktop / Tablet: collapsed по умолчанию. Пользователь разворачивает вручную. Состояние сохраняется в localStorage (`mwl-sidebar-collapsed`).
+- Mobile (<768px): `display:none !important` — sidebar полностью скрыт, навигацию обеспечивает BottomNav.
+
 **Цветовой стандарт неактивных иконок навигации** (единый для sidebar и bottom nav):
 - Dark theme: `#94a3b8`
 - Light theme: `#64748b`
@@ -2428,5 +2446,5 @@ In production: theme via ThemeContext, question type from atom data, timer is re
 *(07/07/2026 — §19 Shalon Manager: статус mockup→complete (desktop only, no tablet/mobile); detail panel переработан — одно поле активного языка, descRu/descHe раздельно, batch-translate убран, авто-перевод при Save с shimmer+toast flow; sidebar редактора финализирован — flat без подменю: Главная/Шейлоны/Группы/Атом/Экзамен/Граф // Лаборатория // Помощь/Настройки; globe-dropdown + bell + avatar-dropdown в header.)*
 *(07/07/2026 — §13 AI Chat Drawer полностью переписан: убран ctx-strip; floating card vs bottom sheet по breakpoints; PNG Йоси по ситуации; динамический статус; контекстные приветствия по странице; session-only история; char counter 500/≤100; кнопка → иконка стрелки; экзамен — только sidebar. "Text answer type (AI-checked)" перенесена в §12.)*
 *Обновлён: 2026-07-08 — §27 дополнен: points badge spec (q-points класс, amber цвет), правила навигации по вопросам, dev ctrl-bar явно помечен как mockup-only со ссылкой на ARCHITECTURE.md §12.*
-*Обновлён: 2026-07-14 — §22 Bottom nav: добавлена таблица реализации Next.js (BottomNav.tsx). Цветовой стандарт неактивных иконок навигации зафиксирован: #94a3b8 (dark) / #64748b (light) — не var(--c-t3).*
+*Обновлён: 2026-07-14 — §22 Bottom nav: добавлена таблица реализации Next.js (BottomNav.tsx). Цветовой стандарт неактивных иконок навигации зафиксирован: #94a3b8 (dark) / #64748b (light) — не var(--c-t3). Добавлена таблица финальных размеров StudentSidebar: иконки 22px, подписи 15px, высота строки 42px. Адаптивное поведение: collapsed по умолчанию на всех breakpoints, mobile display:none.*
 *Обновлён: 2026-07-08 (ночь) — Auth Modal задокументирован в «Approved screens». Desktop/tablet: centered overlay (position:fixed, backdrop rgba+blur, card max-width 420px, border-radius 16px). Mobile: bottom sheet (border-radius 20px 20px 0 0, drag handle 36×4px, max-height 92vh, safe-area-inset-bottom). Оба варианта: tabs Войти/Регистрация, Google OAuth кнопка, поля name(reg-only)/email/password/confirm(reg-only), forgot link(login-only), submit btn, switch-mode link. Язык — только от глобального CL (нет отдельного переключателя внутри modal). Закрытие: клик на backdrop, Escape. Mockup: встроен в landing page. Продакшн: отдельные роуты /login и /register.*

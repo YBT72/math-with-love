@@ -292,6 +292,42 @@
 
 ---
 
+## Адаптация к новому навигационному флоу (2026-07-15)
+
+Архитектурный пересмотр — подробности в NAVIGATION.md, PLAN.md §Фаза 1.
+
+### Код — минимальные правки (Фаза 1a) — ЗАВЕРШЕНО 2026-07-15
+- [x] StudentSidebar.tsx — убрать пункт «Главная», «Курсы» первый
+- [x] BottomNav.tsx — убрать таб «Главная»; временно 4 таба
+- [x] Header.tsx — логотип = Link href="/courses", cursor:pointer
+- [x] app/(student)/dashboard/page.tsx → redirect("/courses")
+- [x] app/(student)/courses/page.tsx → placeholder
+- [x] app/(student)/maze/page.tsx → placeholder
+- [x] locales: navMaze = מבוך / Лабиринт
+
+### База данных (Фаза 1b)
+- [ ] Миграция Supabase: profiles.active_shalon (uuid, FK shalons), profiles.last_page (varchar)
+
+### Открытые вопросы — РЕШЕНЫ 2026-07-15
+- [x] ⚠️ Состав 5 табов BottomNav — РЕШЕНО: Карта/Курсы/Статус/Лаборатория/Помощь
+- [ ] ⚠️ Механизм выбора шейлона в Курсах → записывает active_shalon → редирект /maze
+- [ ] ⚠️ Макет /maze (desktop+tablet+mobile) — ГЛАВНЫЙ БЛОКЕР следующего этапа
+
+---
+
+## Профессор Йоси — текст на Dashboard (зафиксировано 2026-07-14)
+
+Решение: поле `yosi_hint` на уровне темы, вводится автором в конструкторе.
+Детали в `MWL_CONTENT_ARCHITECTURE.md §11`.
+
+- [ ] Добавить `yosi_hint_he` / `yosi_hint_ru` в схему Supabase (таблица тем/групп)
+- [ ] Добавить поле в UI конструктора групп (экран 2)
+- [ ] Подключить авто-перевод через FastAPI
+- [ ] На Dashboard: загружать `yosi_hint` активной темы студента
+- [ ] Добавить ключ `yosiDefault` в `locales/he.json` и `ru.json` (для Фазы 1 заглушка)
+
+---
+
 ## Student Shell — реализация Next.js (Фаза 0.7, завершена 2026-07-14)
 
 - [x] `contexts/LocaleContext.tsx` / `ThemeContext.tsx` / `AuthContext.tsx`
@@ -306,6 +342,13 @@
 ### Header.tsx — финальное состояние (2026-07-14)
 - Overlay поиска: лупа кликабельна, активируется cyan при вводе, очищает поле после поиска
 - Закрытие overlay: ✕, Escape, Enter, mousedown вне поля (searchOverlayRef)
+
+### StudentSidebar.tsx — финальное состояние (2026-07-14)
+- Иконки SVG: 22×22px, Σ: 19px
+- Подписи: 15px, высота строки `.sb-item`: 42px
+- Collapsed по умолчанию на всех breakpoints (desktop и tablet)
+- localStorage persists user choice (`mwl-sidebar-collapsed`)
+- display:none !important на mobile (<768px)
 
 ### BottomNav.tsx — финальное состояние (2026-07-14)
 - Только иконки (подписи `display:none !important`)
@@ -369,3 +412,7 @@
 *Обновлён: 2026-07-11 · Retrofit mwl_atom_editor, mwl_groups_editor, mwl_exam_schema_editor завершён. Новая модель פרק (requiredQ × pointsPerQ). Подвопросы — следующий шаг.*
 *Обновлён: 2026-07-14 · Добавлен раздел «Header.tsx — доработки»: финализировано поведение поиска по breakpoints (desktop stretch / tablet+mobile overlay), стили overlay из макетов, функциональность поиска отложена до после Фазы 1.*
 *Обновлён: 2026-07-14 (2) · Добавлен раздел «Student Shell — реализация Next.js»: зафиксированы все компоненты Фазы 0.7 включая финальное состояние Header.tsx (кликабельная лупа overlay, закрытие по mousedown) и BottomNav.tsx (только иконки, цвета, popup).*
+*Обновлён: 2026-07-14 (3) · StudentSidebar финальные размеры: иконки 22px, Σ 19px, подписи 15px, высота строки 42px. Адаптивность: collapsed по умолчанию на всех breakpoints, localStorage persists user choice.*
+*Обновлён: 2026-07-14 (4) · CSS переменные: хардкод заменён на var() в search и avatar. Добавлена --c-input-border. Намеренный хардкод задокументирован в DESIGN_SYSTEM.md.*
+*Обновлён: 2026-07-15 · Добавлен раздел «Адаптация к новому навигационному флоу»: задачи Фазы 1a (код), 1b (БД), открытые вопросы (BottomNav табы, механизм выбора шейлона, макет /maze).*
+*Обновлён: 2026-07-15 (2) · Фаза 1a завершена: StudentSidebar/BottomNav/Header обновлены, /dashboard→redirect, /courses и /maze placeholders созданы, navMaze (מבוך) добавлен в locales.*

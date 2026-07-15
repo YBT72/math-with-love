@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useLocale } from "../../contexts/LocaleContext";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -123,7 +124,7 @@ export default function Header() {
     <div className="hdr p1 bd">
       {/* Left: Logo */}
       <div className="hdr-left">
-        <div className="logo">
+        <Link href="/courses" className="logo" style={{ textDecoration: "none" }}>
           <Image
             src={logoSrc}
             alt="Math With Love"
@@ -134,7 +135,7 @@ export default function Header() {
             priority
             unoptimized
           />
-        </div>
+        </Link>
       </div>
 
       {/* Center: Search — desktop shows full field, tablet/mobile shows icon */}

@@ -15,6 +15,7 @@
   --c-p2-bg: #334155;
   --c-p2-border: #334155;
   --c-bd: #334155;
+  --c-input-border: #475569;
   --c-mbg: #0f172a;
   --c-body: #0f172a;
 }
@@ -29,6 +30,7 @@
   --c-p2-bg: #f1f5f9;
   --c-p2-border: #e2e8f0;
   --c-bd: #e2e8f0;
+  --c-input-border: #e2e8f0;
   --c-mbg: #f1f5f9;
   --c-body: #f8fafc;
 }
@@ -78,6 +80,7 @@ body { font-family: system-ui, sans-serif; background: var(--c-body); color: var
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  cursor: pointer;
 }
 .brand { font-size: 13px; font-weight: 500; color: var(--c-t1); }
 .brand b { color: #22D3EE; font-weight: 500; }
@@ -152,32 +155,32 @@ html:not(.dark) .si2 { color: #64748b; }
 
 /* Theme colors for search elements */
 html:not(.dark) .srch-desktop input {
-  background: #f1f5f9;
-  border-color: #e2e8f0;
-  color: #0f172a;
+  background: var(--c-p2-bg);
+  border-color: var(--c-bd);
+  color: var(--c-t1);
 }
 html.dark .srch-desktop input {
-  background: #334155;
-  border-color: #475569;
-  color: #f1f5f9;
+  background: var(--c-p2-bg);
+  border-color: var(--c-input-border);
+  color: var(--c-t1);
 }
 html:not(.dark) .srch-overlay {
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  background: var(--c-p1-bg);
+  border-bottom: 1px solid var(--c-bd);
 }
 html.dark .srch-overlay {
-  background: #1e293b;
-  border-bottom: 1px solid #334155;
+  background: var(--c-p1-bg);
+  border-bottom: 1px solid var(--c-bd);
 }
 html:not(.dark) .srch-overlay-field input {
-  background: #f1f5f9;
-  border-color: #e2e8f0;
-  color: #0f172a;
+  background: var(--c-p2-bg);
+  border-color: var(--c-bd);
+  color: var(--c-t1);
 }
 html.dark .srch-overlay-field input {
-  background: #334155;
-  border-color: #475569;
-  color: #f1f5f9;
+  background: var(--c-p2-bg);
+  border-color: var(--c-input-border);
+  color: var(--c-t1);
 }
 
 .srch-overlay-field {

@@ -30,6 +30,8 @@ profiles (
   avatar_url      varchar,
   lang            varchar NOT NULL DEFAULT 'he',       -- 'he' | 'ru' — UI language preference
   theme           varchar NOT NULL DEFAULT 'dark',     -- 'dark' | 'light'
+  active_shalon   uuid REFERENCES shalons(id),         -- текущий активный шейлон студента (NULL = не выбран)
+  last_page       varchar,                             -- последняя страница студента для восстановления сессии (e.g. '/maze', '/status')
   created_at      timestamptz DEFAULT now(),
   updated_at      timestamptz DEFAULT now()
 )
